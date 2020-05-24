@@ -1,0 +1,19 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "cSpell.words": [
+    "Devtools",
+    "Stateful",
+    "Untracked",
+    "debounced",
+    "graywolfai",
+    "graywolftech",
+    "recurse",
+    "servor",
+    "unmount"
+  ],
+  "search.exclude": {
+    ".cache/": true,
+    "dist/": true
+  }
+}
