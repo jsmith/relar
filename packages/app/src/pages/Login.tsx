@@ -31,7 +31,7 @@ export const Login = () => {
   return (
     <div className="flex flex-col items-center justify-center h-full">
       <header>
-        <h1 className="text-4xl">TOGA</h1>
+        <h1 className="text-4xl">Relar</h1>
       </header>
       <div className="shadow-xl rounded p-4 bg-white mt-5">
         <form>

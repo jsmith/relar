@@ -3,13 +3,17 @@
   "editor.formatOnSave": true,
   "cSpell.words": [
     "Devtools",
+    "Relar",
     "Stateful",
+    "Typesafe",
     "Untracked",
     "debounced",
+    "firestore",
     "graywolfai",
     "graywolftech",
     "recurse",
     "servor",
+    "tabbable",
     "unmount"
   ],
   "search.exclude": {

@@ -10,17 +10,11 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "jsx": "react",
-    // You can't currently define paths in your 'extends' config,
-    // so we have to set 'baseUrl' & 'paths' here.
-    // Don't change these unless you know what you're doing.
-    // See: https://github.com/microsoft/TypeScript/issues/25430
     "baseUrl": "./",
     "paths": {
       "~/*": [
         "src/*"
       ]
     }
-    // Feel free to add/edit new config options below:
-    // ...
   }
 }
