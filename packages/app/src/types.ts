@@ -6,14 +6,14 @@ import {
   Literal,
   Static,
   Boolean,
-} from 'runtypes';
+} from "runtypes";
 
 export const FourDigitYear = Number.withConstraint((value) => value < 10000);
 
 export const SongType = Record({
   originalFileName: String,
   id: String,
-  format: Literal('mp3'),
+  format: Literal("mp3"),
   title: String,
   /**
    * The artist ID.
@@ -30,6 +30,18 @@ export const SongType = Record({
   comment: String.Or(Undefined),
   // Whether this person has "liked" this song
   liked: Boolean.Or(Undefined),
+
+  // TODO implement
+  /**
+   * The # of times you've played this song.
+   */
+  played: Number.Or(Undefined),
+
+  // TODO implement
+  /**
+   * The last time you played a song.
+   */
+  lastPlayed: Number.Or(Undefined),
 });
 
 export type Song = Static<typeof SongType>;

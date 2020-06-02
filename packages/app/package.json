@@ -1,10 +1,12 @@
 {
   "scripts": {
-    "start": "parcel src/index.html",
-    "build": "snowpack build",
+    "dev": "parcel src/index.html",
+    "build": "parcel build src/index.html",
     "test": "jest",
-    "format": "prettier --write 'src/**/*.{js,jsx,ts,tsx}'",
-    "lint": "prettier --check 'src/**/*.{js,jsx,ts,tsx}'"
+    "check-style": "prettier --list-different \"**/*.{ts,tsx,js}\"",
+    "lint": "eslint \"**/*.{ts,tsx}\"",
+    "compile": "tsc --noEmit",
+    "deps": "depcheck --ignore-dirs node_modules --ignores \"@types/*\""
   },
   "devDependencies": {
     "@snowpack/app-scripts-react": "^0.8.0",
@@ -14,12 +16,13 @@
     "@types/classnames": "^2.2.10",
     "@types/react-sidebar": "^3.0.0",
     "@types/react-slider": "^1.0.0",
+    "@types/tinycolor2": "^1.4.2",
     "@typescript-eslint/eslint-plugin": "^2.29.0",
     "@typescript-eslint/parser": "^2.29.0",
+    "babel-core": "^6.26.3",
     "eslint": "^6.8.0",
     "eslint-plugin-react": "^7.19.0",
     "eslint-plugin-react-hooks": "^3.0.0",
-    "babel-core": "^6.26.3",
     "jest": "^25.4.0",
     "prettier": "^2.0.0",
     "react": "^16.13.0",
@@ -31,6 +34,7 @@
     "@hot-loader/react-dom": "^16.13.0",
     "@sentry/browser": "^5.15.5",
     "classnames": "^2.2.6",
+    "fast-average-color": "^6.0.2",
     "firebase": "^7.14.5",
     "neverthrow": "^2.3.2",
     "parcel-bundler": "^1.12.4",
@@ -38,9 +42,11 @@
     "react-icons": "^3.10.0",
     "react-infinite-scroll-component": "^5.0.4",
     "react-loading-skeleton": "^2.0.1",
+    "react-query": "^1.5.3",
     "react-sidebar": "^3.0.2",
     "react-tiniest-router": "^0.1.2",
-    "runtypes": "^4.2.0"
+    "runtypes": "^4.2.0",
+    "tinycolor2": "^1.4.1"
   },
   "alias": {
     "react-dom": "@hot-loader/react-dom"

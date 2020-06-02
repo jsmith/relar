@@ -1,4 +1,5 @@
-import { MutableRefObject, useEffect } from 'react';
+import { MutableRefObject, useEffect } from "react";
+import * as Sentry from "@sentry/browser";
 
 /**
  * Hook that alerts clicks outside of the passed ref.
@@ -18,10 +19,10 @@ export function useOutsideAlerter<T extends HTMLElement | null>(
     }
 
     // Bind the event listener
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
       // Unbind the event listener on clean up
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [ref, callback]);
 }
@@ -58,7 +59,7 @@ export const addEventListener = <K extends WindowEvents>(
 };
 
 type WindowEventListeners = {
-  [P in keyof WindowEventMap]?: WindowEventListener<P> | 'remove';
+  [P in keyof WindowEventMap]?: WindowEventListener<P> | "remove";
 };
 
 /**
@@ -76,7 +77,7 @@ export const addEventListeners = (
   const remove = () => {
     for (const type of types) {
       const ev = events[type];
-      if (ev === 'remove') {
+      if (ev === "remove") {
         continue;
       }
 
@@ -86,7 +87,7 @@ export const addEventListeners = (
 
   for (const type of types) {
     const ev = events[type];
-    if (ev === 'remove') {
+    if (ev === "remove") {
       // @ts-ignore
       // There is a weird error with union types
       // Going to just ignore this
@@ -105,49 +106,49 @@ export function clamp(value: number, min: number, max: number) {
 }
 
 export type Key =
-  | 'Backspace'
-  | 'Shift'
-  | 'CmdOrCtrl'
-  | 'AltOrOption'
-  | 'Ctrl'
-  | 'Cmd'
-  | 'Space'
-  | 'Esc'
-  | 'Tab'
-  | 'Return'
-  | 'Left'
-  | 'Up'
-  | 'Right'
-  | 'Down'
-  | 'Delete'
-  | 'A'
-  | 'B'
-  | 'C'
-  | 'D'
-  | 'E'
-  | 'F'
-  | 'G'
-  | 'H'
-  | 'I'
-  | 'J'
-  | 'K'
-  | 'L'
-  | 'M'
-  | 'N'
-  | 'O'
-  | 'P'
-  | 'Q'
-  | 'R'
-  | 'S'
-  | 'T'
-  | 'U'
-  | 'V'
-  | 'W'
-  | 'X'
-  | 'Y'
-  | 'Z';
+  | "Backspace"
+  | "Shift"
+  | "CmdOrCtrl"
+  | "AltOrOption"
+  | "Ctrl"
+  | "Cmd"
+  | "Space"
+  | "Esc"
+  | "Tab"
+  | "Return"
+  | "Left"
+  | "Up"
+  | "Right"
+  | "Down"
+  | "Delete"
+  | "A"
+  | "B"
+  | "C"
+  | "D"
+  | "E"
+  | "F"
+  | "G"
+  | "H"
+  | "I"
+  | "J"
+  | "K"
+  | "L"
+  | "M"
+  | "N"
+  | "O"
+  | "P"
+  | "Q"
+  | "R"
+  | "S"
+  | "T"
+  | "U"
+  | "V"
+  | "W"
+  | "X"
+  | "Y"
+  | "Z";
 
-type KeyNoVariable = Exclude<Exclude<Key, 'CmdOrCtrl'>, 'AltOrOption'>;
+type KeyNoVariable = Exclude<Exclude<Key, "CmdOrCtrl">, "AltOrOption">;
 
 export const Keys: { [K in KeyNoVariable]: number } = {
   Backspace: 8,
@@ -195,4 +196,10 @@ export const Mouse = {
   LEFT: 0,
   MIDDLE: 1,
   RIGHT: 2,
+};
+
+export const captureException = (e: Error) => {
+  // Very similar to captureException except it doesn't return anything
+  // This was useful for type inference
+  Sentry.captureException(e);
 };

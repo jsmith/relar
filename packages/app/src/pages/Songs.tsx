@@ -1,13 +1,13 @@
-import React, { useRef, useEffect, useState } from 'react';
-import InfiniteScroll from 'react-infinite-scroll-component';
-import { useUser } from '~/auth';
-import { useUserData } from '~/firestore';
-import Skeleton from 'react-loading-skeleton';
-import { useUserStorage } from '~/storage';
-import { Song } from '~/types';
-import { usePlayer } from '~/player';
+import React, { useRef, useEffect, useState } from "react";
+import InfiniteScroll from "react-infinite-scroll-component";
+import { useUser } from "~/auth";
+import { useUserData } from "~/firestore";
+import Skeleton from "react-loading-skeleton";
+import { useUserStorage } from "~/storage";
+import { Song } from "~/types";
+import { usePlayer } from "~/player";
 
-const headerNames = ['Title', 'Artist', 'Album'];
+const headerNames = ["Title", "Artist", "Album"];
 
 const Row = ({ children }: { children: React.ReactNode }) => {
   return (
@@ -52,7 +52,7 @@ export const Songs = () => {
 
   useEffect(() => {
     userData
-      .collection('songs')
+      .collection("songs")
       // .startAfter(lastVisible.current)
       .limit(25)
       .get()
@@ -62,14 +62,14 @@ export const Songs = () => {
           ...doc.data(),
           id: doc.id,
         })) as Song[];
-        console.log('Loaded -> ', loaded);
+        console.log("Loaded -> ", loaded);
         setSongs(loaded);
 
         setTimeout(() => {
           setLoading(false);
         }, 2000);
       });
-  }, []);
+  }, [userData]);
 
   const playSong = async (song: Song) => {
     setSong(song);

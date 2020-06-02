@@ -41,8 +41,10 @@ module.exports = {
     },
   },
   variants: {
-    display: ['responsive', 'group-hover', 'group-focus'],
-    opacity: ['responsive', 'hover', 'focus', 'group-hover'],
+    height: ["responsive", "hover", "focus"],
+    width: ["responsive", "hover", "focus"],
+    display: ["responsive", "group-hover", "group-focus"],
+    opacity: ["responsive", "hover", "focus", "group-hover", "group-focus"],
   },
-  plugins: [require('@tailwindcss/custom-forms')],
+  plugins: [require("@tailwindcss/custom-forms")],
 };

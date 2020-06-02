@@ -1,18 +1,21 @@
-import { hot } from 'react-hot-loader';
-import React, { useEffect } from 'react';
-import { routes } from './routes';
-import { useRouter } from 'react-tiniest-router';
-import { Login } from './pages/Login';
-import { useUser } from '~/auth';
-import { Sidebar } from './components/Sidebar';
-import { Songs } from '~/pages/Songs';
-import { FaMusic } from 'react-icons/fa';
-import { GiSwordSpin } from 'react-icons/gi';
-import classNames from 'classnames';
-import { Player } from '~/components/Player';
-import { MdLibraryMusic, MdSearch } from 'react-icons/md';
-import { Artists } from '~/pages/Artists';
-import { Albums } from '~/pages/Albums';
+import { hot } from "react-hot-loader";
+import React, { useEffect, useMemo } from "react";
+import { routes } from "~/routes";
+import { useRouter } from "react-tiniest-router";
+import { Login } from "~/pages/Login";
+import { useUser } from "~/auth";
+import { Sidebar } from "~/components/Sidebar";
+import { Songs } from "~/pages/Songs";
+import { FaMusic } from "react-icons/fa";
+import { GiSwordSpin } from "react-icons/gi";
+import classNames from "classnames";
+import { Player } from "~/components/Player";
+import { MdLibraryMusic, MdSearch, MdAddCircle } from "react-icons/md";
+import { Artists } from "~/pages/Artists";
+import { Albums } from "~/pages/Albums";
+import { Home } from "~/pages/Home";
+import { Search } from "~/pages/Search";
+import { AlbumOverview } from "~/pages/AlbumOverview";
 
 interface AppProps {}
 
@@ -23,18 +26,18 @@ export interface SideBarItem {
 
 const sideLinks = [
   {
-    label: 'Home',
+    label: "Home",
     icon: FaMusic,
     route: routes.home,
   },
   {
-    label: 'Search',
+    label: "Search",
     icon: MdSearch,
     route: routes.search,
   },
   {
     // TODO save most recent inner tab
-    label: 'Library',
+    label: "Library",
     icon: MdLibraryMusic,
     route: routes.songs,
   },
@@ -42,22 +45,22 @@ const sideLinks = [
 
 const libraryLinks = [
   {
-    label: 'Songs',
+    label: "Songs",
     route: routes.songs,
   },
   {
-    label: 'Artists',
+    label: "Artists",
     route: routes.artists,
   },
   {
-    label: 'Albums',
+    label: "Albums",
     route: routes.albums,
   },
 ];
 
 // items: SideBarItem[]
 
-function App({}: React.Props<AppProps>) {
+function App(_: React.Props<AppProps>) {
   const { isRoute, goTo, routeId } = useRouter();
   const { user, loading } = useUser();
 
@@ -75,107 +78,108 @@ function App({}: React.Props<AppProps>) {
     if (route.protected && !user) {
       goTo(routes.login);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routeId, loading]);
+
+  const route = useMemo(
+    () => Object.values(routes).find((route) => route.id === routeId),
+    [routeId],
+  );
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  const content =
-    isRoute(routes.home) ||
-    isRoute(routes.search) ||
-    isRoute(routes.songs) ||
-    isRoute(routes.albums) ||
-    isRoute(routes.artists) ? (
-      <div className="flex flex-col h-full overflow-hidden">
-        <div className="relative flex-grow">
-          <Sidebar
-            sidebar={
-              <div className="h-full bg-primary-700 w-56">
-                <div className="flex items-center">
-                  <h1 className="pl-5 pr-3 py-3 text-2xl tracking-wider">
-                    RELAR
-                  </h1>
-                  <GiSwordSpin className="w-6 h-6" />
-                </div>
-                <ul>
-                  {sideLinks.map(({ icon: Icon, route, label }) => (
-                    <li
-                      className={classNames(
-                        'flex py-2 px-5 items-center hover:bg-primary-600 cursor-pointer',
-                        isRoute(route) ? 'bg-primary-600' : undefined,
-                      )}
-                      onClick={() => goTo(route)}
-                      key={label}
-                    >
-                      <Icon className="w-6 h-6" />
-                      <span className="ml-4">{label}</span>
-                    </li>
-                  ))}
-                </ul>
+  const content = route?.sidebar ? (
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="relative flex-grow">
+        <Sidebar
+          sidebar={
+            <div className="h-full bg-primary-700 w-56">
+              <div className="flex items-center">
+                <h1 className="pl-5 pr-3 py-3 text-2xl tracking-wider">
+                  RELAR
+                </h1>
+                <GiSwordSpin className="w-6 h-6" />
               </div>
-            }
-          >
-            <div className="h-full bg-primary-800 px-5">
-              <div>
-                {(isRoute(routes.songs) ||
-                  isRoute(routes.artists) ||
-                  isRoute(routes.albums)) && (
-                  <ul className="flex space-x-4 text-xl">
-                    {libraryLinks.map(({ label, route }) => (
-                      <li
-                        key={label}
-                        className={classNames(
-                          'my-2 border-gray-300 cursor-pointer hover:text-gray-200',
-                          isRoute(route)
-                            ? 'border-b text-gray-200'
-                            : ' text-gray-400',
-                        )}
-                        onClick={() => goTo(route)}
-                      >
-                        {label}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <div className="py-3">
-                  {isRoute(routes.songs) && <Songs />}
-                  {isRoute(routes.artists) && <Artists />}
-                  {isRoute(routes.albums) && <Albums />}
-                </div>
-              </div>
+              <ul>
+                {sideLinks.map(({ icon: Icon, route, label }) => (
+                  <li
+                    className={classNames(
+                      "flex py-2 px-5 items-center hover:bg-primary-600 cursor-pointer",
+                      isRoute(route) ? "bg-primary-600" : undefined,
+                    )}
+                    onClick={() => goTo(route)}
+                    key={label}
+                  >
+                    <Icon className="w-6 h-6" />
+                    <span className="ml-4">{label}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="border-b border-gray-600 my-3 mx-3" />
+              <button className="flex py-2 px-5 items-center hover:bg-primary-600 w-full">
+                <MdAddCircle className="w-6 h-6" />
+                <div className="ml-4">Upload Music</div>
+              </button>
             </div>
-          </Sidebar>
-        </div>
-        <Player />
-      </div>
-    ) : isRoute(routes.login) ? (
-      <Login />
-    ) : isRoute(routes.profile) ? (
-      <div>Profile</div>
-    ) : (
-      <div>404</div>
-    );
-
-  return (
-    <div className="h-screen text-white">
-      {/* <header className="App-header bg-primary-500">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
+          }
         >
-          Learn React
-        </a>
-      </header> */}
-      {content}
+          <div
+            className={classNames(
+              "h-full bg-primary-800",
+              route.containerClassName,
+            )}
+          >
+            {(isRoute(routes.songs) ||
+              isRoute(routes.artists) ||
+              isRoute(routes.albums)) && (
+              <ul className="flex space-x-4 text-xl">
+                {libraryLinks.map(({ label, route }) => (
+                  <li
+                    key={label}
+                    className={classNames(
+                      "my-2 border-gray-300 cursor-pointer hover:text-gray-200",
+                      isRoute(route)
+                        ? "border-b text-gray-200"
+                        : " text-gray-400",
+                    )}
+                    onClick={() => goTo(route)}
+                  >
+                    {label}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className={route.className}>
+              {isRoute(routes.songs) ? (
+                <Songs />
+              ) : isRoute(routes.artists) ? (
+                <Artists />
+              ) : isRoute(routes.albums) ? (
+                <Albums />
+              ) : isRoute(routes.home) ? (
+                <Home />
+              ) : isRoute(routes.search) ? (
+                <Search />
+              ) : isRoute(routes.album) ? (
+                <AlbumOverview />
+              ) : null}
+            </div>
+          </div>
+        </Sidebar>
+      </div>
+      <Player />
     </div>
+  ) : route?.id === "login" ? (
+    <Login />
+  ) : route?.id === "profile" ? (
+    <div>Profile</div>
+  ) : (
+    <div className="text-black">404</div>
   );
+
+  return <div className="h-screen text-white">{content}</div>;
 }
 
 export default hot(module)(App);

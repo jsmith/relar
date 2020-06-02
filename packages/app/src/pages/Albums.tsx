@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useUserData } from '~/firestore';
-import { AlbumCard } from '~/sections/AlbumCard';
-import { Album } from '~/types';
+import React, { useState, useEffect } from "react";
+import { useUserData } from "~/firestore";
+import { AlbumCard } from "~/sections/AlbumCard";
+import { Album } from "~/types";
 
 export const Albums = () => {
   const userData = useUserData();
@@ -14,7 +14,7 @@ export const Albums = () => {
 
   useEffect(() => {
     userData
-      .collection('albums')
+      .collection("albums")
       .limit(25)
       .get()
       .then((result) => {
@@ -23,14 +23,14 @@ export const Albums = () => {
           ...doc.data(),
           id: doc.id,
         })) as Album[];
-        console.log('Loaded -> ', loaded);
+        console.log("Loaded -> ", loaded);
         setAlbums(loaded);
 
         setTimeout(() => {
           setLoading(false);
         }, 1000);
       });
-  }, []);
+  }, [userData]);
 
   return (
     <div className="flex flex-wrap">

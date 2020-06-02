@@ -17,3 +17,30 @@ The Relar app.
 ## Docs
 - Document how album thumbnails are stored
 - Snippets (className, Sentry)
+
+## Before Beta
+- Add stats recorder. ie. how many people use "x" and how many people make firestore call "y". I will need this info to optimize usage before the release.
+- How to turn off sign-ups? Because it will be a email based sign up.
+- Customize email templates.
+- Ensure you are using server timestamps.
+- Limit storage.
+- Add analytics.
+- Ensure firebase rules are as strict as possible.
+- Does firebase have suspicious activity monitoring?
+- Ensure all errors are reported to Sentry. Test unhandled in production.
+- Add contact info to app to comply with GDPR.
+- Make sure I am complying with all GDPR.
+  - Maybe limit IP addresses?
+- Switch to Blaze but add budget alert information.
+
+## Before Release
+- Limit sign ups to "x" amount of people based on usage info from beta to stay within your price range (ideally the free). Or maybe just budget alerts.
+- Add backups. Use coldline storage for storage backups.
+
+## Monitoring
+- Monitor billing reports to see what is costing me the most money.
+- Set up stackdriver.
+
+
+## Resources
+- https://www.youtube.com/watch?v=iWEgpdVSZyg&feature=emb_rel_end
