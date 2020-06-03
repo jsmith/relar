@@ -46,35 +46,3 @@ export const getDownloadURL = (
     (e) => (e as any).code as StorageErrorCode,
   );
 };
-
-export const useThumbnail = (album?: Album) => {
-  const storage = useUserStorage();
-  const [thumbnail, setThumbnail] = useState<string>();
-
-  useEffect(() => {
-    if (!album) {
-      setThumbnail(undefined);
-      return;
-    }
-
-    // Right now we always check for a thumbnail and will actually get a 404 if it's not found
-    // Instead, we *could* keep some kind of boolean value indicating whether the file exists?
-    // This works for now though
-    getDownloadURL(storage.child("thumbnails").child(album.id)).match(
-      (ok) => setThumbnail(ok),
-      (err) => {
-        switch (err) {
-          case "storage/object-not-found":
-            setThumbnail(undefined);
-            break;
-          default:
-            Sentry.captureMessage(
-              `Unknown error when getting thumbnail (${album.id}): ${err}`,
-            );
-        }
-      },
-    );
-  }, [album, storage]);
-
-  return thumbnail;
-};

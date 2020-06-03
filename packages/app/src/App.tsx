@@ -16,6 +16,7 @@ import { Albums } from "~/pages/Albums";
 import { Home } from "~/pages/Home";
 import { Search } from "~/pages/Search";
 import { AlbumOverview } from "~/pages/AlbumOverview";
+import { ReactQueryDevtools } from "react-query-devtools";
 
 interface AppProps {}
 
@@ -179,7 +180,12 @@ function App(_: React.Props<AppProps>) {
     <div className="text-black">404</div>
   );
 
-  return <div className="h-screen text-white">{content}</div>;
+  return (
+    <div className="h-screen text-white">
+      {content}
+      <ReactQueryDevtools initialIsOpen={false} />
+    </div>
+  );
 }
 
 export default hot(module)(App);

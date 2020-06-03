@@ -1,19 +1,17 @@
-import React, { useRef, useState, useMemo } from "react";
-import { Album } from "~/types";
-import { useThumbnail } from "~/storage";
-import { useArtist, useAlbum } from "~/firestore";
-import { ThumbnailCard } from "~/components/ThumbnailCard";
+import React, { useState, useMemo } from "react";
+import { useThumbnail } from "~/queries/thumbnail";
 import { useRouter } from "react-tiniest-router";
-import { routes } from "~/routes";
 import FastAverageColor from "fast-average-color";
 import { Thumbnail } from "~/components/Thumbnail";
 import { ResultAsync } from "neverthrow";
 import { captureException } from "~/utils";
 import tiny from "tinycolor2";
 import classNames from "classnames";
-import { useAlbumSongs } from "~/queries/album";
+import { useAlbumSongs, useAlbum } from "~/queries/album";
 import { SongsTable } from "~/components/SongsTable";
 import { ErrorTemplate } from "~/components/ErrorTemplate";
+import { MdPlayCircleOutline } from "react-icons/md";
+import { useArtist } from "~/queries/artist";
 
 const fac = new FastAverageColor();
 
@@ -22,8 +20,12 @@ export const AlbumOverview = () => {
   // TODO validation
   const { albumId } = params as { albumId: string };
   const album = useAlbum(albumId);
-  const artist = useArtist(album);
-  const thumbnail = useThumbnail(album);
+  const artist = useArtist(
+    album.status === "success" ? album.data.id : undefined,
+  );
+  const thumbnail = useThumbnail(
+    album.status === "success" ? album.data : undefined,
+  );
   const [averageColor, setAverageColor] = useState("#cbd5e0");
   const { from, to } = useMemo(
     () => ({
@@ -47,7 +49,7 @@ export const AlbumOverview = () => {
       >
         <Thumbnail
           className="w-48 h-48"
-          thumbnail={thumbnail}
+          thumbnail={thumbnail.data}
           onLoad={(e) => {
             ResultAsync.fromPromise(
               fac.getColorAsync(e.currentTarget),
@@ -57,17 +59,30 @@ export const AlbumOverview = () => {
             }, captureException);
           }}
         />
-        {album && artist ? (
+        {/* TODO error pages */}
+        {album.status === "success" && artist.status === "success" ? (
           <div
             className={classNames(
               "ml-4",
               isLight ? "text-gray-700" : "text-gray-200",
             )}
           >
-            <div className="font-bold text-5xl">{album.name}</div>
-            <span>{artist.name} •</span>
+            <div className="flex items-center">
+              <div className="font-bold text-5xl">{album.data.name}</div>
+              {/* TODO play album */}
+              <button onClick={() => {}}>
+                <MdPlayCircleOutline className="w-10 h-10 ml-3" />
+              </button>
+            </div>
+            <span>{artist.data.name} •</span>
             {/* TODO store length in song */}
-            <span> 1 song •</span>
+            <span>
+              {" "}
+              {`${songs.data?.length} ${
+                songs.data?.length === 1 ? "song" : "songs"
+              }`}{" "}
+              •
+            </span>
             <span> 4:12</span>
           </div>
         ) : (
@@ -87,7 +102,7 @@ export const AlbumOverview = () => {
             ) : (
               <SongsTable
                 songs={songs.status === "loading" ? undefined : songs.data}
-                attrs={["title", "artist", "length"]}
+                attrs={["play", "title", "artist", "length"]}
               />
             )}
           </div>

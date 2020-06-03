@@ -1,10 +1,11 @@
 import React, { useMemo } from "react";
 import { Song } from "~/types";
-import { MdMusicNote } from "react-icons/md";
-import { LoadingCell, TextCell } from "~/components/Cell";
+import { MdMusicNote, MdPlayArrow } from "react-icons/md";
+import { LoadingCell, TextCell, Cell } from "~/components/Cell";
 import { usePlayer } from "~/player";
+import classNames from "classnames";
 
-type Attrs = "title" | "artist" | "count" | "length" | "favorite";
+type Attrs = "play" | "title" | "artist" | "count" | "length" | "favorite";
 
 export interface SongsTableProps {
   /**
@@ -15,13 +16,34 @@ export interface SongsTableProps {
   loadingRows?: number;
 }
 
-const attrToHeader: { [Attr in Attrs]: string | (() => JSX.Element) } = {
-  title: "Title",
-  artist: "Artist",
-  // eslint-disable-next-line react/display-name
-  count: () => <MdMusicNote className="w-5 h-5" />,
-  length: "",
-  favorite: "",
+const attrToHeader: {
+  [Attr in Attrs]: { element: string | (() => JSX.Element); className: string };
+} = {
+  play: {
+    element: "",
+    className: "",
+  },
+  title: {
+    element: "Title",
+    className: "px-6 py-3",
+  },
+  artist: {
+    element: "Artist",
+    className: "px-6 py-3",
+  },
+  count: {
+    // eslint-disable-next-line react/display-name
+    element: () => <MdMusicNote className="w-5 h-5" />,
+    className: "px-6 py-3",
+  },
+  length: {
+    element: "",
+    className: "px-6 py-3",
+  },
+  favorite: {
+    element: "",
+    className: "px-6 py-3",
+  },
 };
 
 export const SongsTable = ({
@@ -32,18 +54,23 @@ export const SongsTable = ({
   const [_, setSong] = usePlayer();
 
   const headers = useMemo(() => {
-    return attrs.map((attr) => {
-      const value = attrToHeader[attr];
-      const header = typeof value === "string" ? value : value();
+    const headers = attrs.map((attr) => {
+      const { element, className } = attrToHeader[attr];
+      const header = typeof element === "string" ? element : element();
       return (
         <th
           key={attr}
-          className="px-6 py-3 border-b border-gray-200 border-opacity-25 text-left text-xs font-medium uppercase tracking-wider"
+          className={classNames(
+            "border-b border-gray-200 border-opacity-25 text-left text-xs font-medium uppercase tracking-wider",
+            className,
+          )}
         >
           {header}
         </th>
       );
     });
+
+    return headers;
   }, [attrs]);
 
   // console.log(songs);
@@ -61,7 +88,15 @@ export const SongsTable = ({
         ));
     } else {
       return songs.map((song) => (
-        <tr key={song.id} onClick={() => setSong(song)}>
+        <tr
+          className="group hover:bg-primary-700"
+          key={song.id}
+          onClick={() => setSong(song)}
+        >
+          <Cell>
+            <MdMusicNote className="w-5 h-5 group-hover:opacity-0 absolute" />
+            <MdPlayArrow className="w-5 h-5 group-hover:opacity-100 opacity-0" />
+          </Cell>
           <TextCell text={song.title} />
           <TextCell text={song.artist} />
           <TextCell text={song.album} />

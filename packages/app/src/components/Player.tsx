@@ -1,13 +1,13 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
-import { usePlayer } from '~/player';
-import { useUserStorage, StorageErrorCode } from '~/storage';
+import React, { useEffect, useState, useRef, useMemo } from "react";
+import { usePlayer } from "~/player";
+import { useUserStorage, StorageErrorCode } from "~/storage";
 import {
   FaRegHeart,
   FaHeart,
   FaVolumeMute,
   FaVolumeDown,
   FaVolumeUp,
-} from 'react-icons/fa';
+} from "react-icons/fa";
 import {
   MdQueueMusic,
   MdRepeat,
@@ -17,14 +17,14 @@ import {
   MdSkipNext,
   MdShuffle,
   MdPauseCircleOutline,
-} from 'react-icons/md';
-import { FiDisc } from 'react-icons/fi';
-import { useUserData } from '~/firestore';
-import { ResultAsync } from 'neverthrow';
-import * as Sentry from '@sentry/browser';
-import { Slider } from '~/components/Slider';
-import classNames from 'classnames';
-import { Thumbnail } from '~/components/Thumbnail';
+} from "react-icons/md";
+import { FiDisc } from "react-icons/fi";
+import { useUserData } from "~/firestore";
+import { ResultAsync } from "neverthrow";
+import * as Sentry from "@sentry/browser";
+import { Slider } from "~/components/Slider";
+import classNames from "classnames";
+import { Thumbnail } from "~/components/Thumbnail";
 
 /**
  *
@@ -43,12 +43,12 @@ import { Thumbnail } from '~/components/Thumbnail';
  */
 function fmtMSS(s: number) {
   s = Math.round(s);
-  return (s - (s %= 60)) / 60 + (9 < s ? ':' : ':0') + s;
+  return (s - (s %= 60)) / 60 + (9 < s ? ":" : ":0") + s;
 }
 
 export const Player = () => {
-  const [repeat, setRepeat] = useState<'none' | 'repeat-one' | 'repeat'>(
-    'none',
+  const [repeat, setRepeat] = useState<"none" | "repeat-one" | "repeat">(
+    "none",
   );
   const [song, setSong] = usePlayer();
   const storage = useUserStorage();
@@ -71,18 +71,18 @@ export const Player = () => {
     }
 
     ResultAsync.fromPromise(
-      userData.collection('songs').doc(song.id).update({
+      userData.collection("songs").doc(song.id).update({
         liked,
       }),
       (e) => e as any,
     ).match(
       () => {
-        console.log('SUCCESS');
+        console.log("SUCCESS");
         setSong({ ...song, liked });
       },
       (e) => {
         // TODO notif
-        console.error('Error updating liked: ' + e);
+        console.error("Error updating liked: " + e);
         Sentry.captureException(e);
       },
     );
@@ -96,7 +96,7 @@ export const Player = () => {
       // TODO pause
       return;
     }
-    const ref = storage.child('songs').child(`${song.id}.${song.format}`);
+    const ref = storage.child("songs").child(`${song.id}.${song.format}`);
     try {
       const url = await ref.getDownloadURL();
       console.info(`Get download URL from firebase storage: "${url}"`);
@@ -163,6 +163,8 @@ export const Player = () => {
 
   useEffect(() => {
     playSong();
+    // TODO should we disable eslint?
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [song]);
 
   return (
@@ -170,7 +172,7 @@ export const Player = () => {
       <audio
         ref={audioRef}
         preload="metadata"
-        loop={repeat === 'repeat-one'}
+        loop={repeat === "repeat-one"}
         src={src}
         onLoadedMetadata={onLoadedMetadata}
         onTimeUpdate={onTimeUpdate}
@@ -178,7 +180,7 @@ export const Player = () => {
         Your browser does not support HTML5 Audio!
       </audio>
 
-      <div className="flex items-center" style={{ width: '30%' }}>
+      <div className="flex items-center" style={{ width: "30%" }}>
         {song && <Thumbnail className="w-12 h-12" thumbnail={thumbnail} />}
         {song && (
           <div className="ml-3">
@@ -200,29 +202,29 @@ export const Player = () => {
         <div className="space-x-2 flex items-center">
           <button
             title={
-              repeat === 'none'
-                ? 'No Repeat'
-                : repeat === 'repeat'
-                ? 'Repeat All Songs'
-                : 'Repeat Current Song'
+              repeat === "none"
+                ? "No Repeat"
+                : repeat === "repeat"
+                ? "Repeat All Songs"
+                : "Repeat Current Song"
             }
             className={classNames(
-              'focus:outline-none ',
-              repeat === 'none'
-                ? 'text-gray-300 hover:text-gray-100'
-                : 'text-secondary-400',
+              "focus:outline-none ",
+              repeat === "none"
+                ? "text-gray-300 hover:text-gray-100"
+                : "text-secondary-400",
             )}
             onClick={() =>
               setRepeat(
-                repeat === 'none'
-                  ? 'repeat'
-                  : repeat === 'repeat'
-                  ? 'repeat-one'
-                  : 'none',
+                repeat === "none"
+                  ? "repeat"
+                  : repeat === "repeat"
+                  ? "repeat-one"
+                  : "none",
               )
             }
           >
-            {repeat === 'repeat-one' ? (
+            {repeat === "repeat-one" ? (
               <MdRepeatOne className="w-6 h-6" />
             ) : (
               <MdRepeat className="w-6 h-6" />
@@ -273,7 +275,7 @@ export const Player = () => {
           </span>
         </div>
       </div>
-      <div className="flex justify-end" style={{ width: '30%' }}>
+      <div className="flex justify-end" style={{ width: "30%" }}>
         <button
           className="text-gray-300 hover:text-gray-100"
           title="Music Queue"

@@ -43,6 +43,7 @@
     "react-infinite-scroll-component": "^5.0.4",
     "react-loading-skeleton": "^2.0.1",
     "react-query": "^1.5.3",
+    "react-query-devtools": "^1.1.17",
     "react-sidebar": "^3.0.2",
     "react-tiniest-router": "^0.1.2",
     "runtypes": "^4.2.0",
