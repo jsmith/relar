@@ -36,9 +36,7 @@ export const useThumbnail = (album?: Album) => {
                 resolve(undefined);
                 break;
               default:
-                Sentry.captureMessage(
-                  `Unknown error when getting thumbnail (${album.id}): ${err}`,
-                );
+                Sentry.captureMessage(`Unknown error when getting thumbnail (${album.id}): ${err}`);
                 reject(err);
             }
           },

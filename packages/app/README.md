@@ -30,17 +30,21 @@ The Relar app.
 - Ensure all errors are reported to Sentry. Test unhandled in production.
 - Add contact info to app to comply with GDPR.
 - Make sure I am complying with all GDPR.
-  - Maybe limit IP addresses?
+  - Maybe limit IP addresses to US and Canada?
 - Switch to Blaze but add budget alert information.
+- Add "Recently Added" playlist that watches for new songs.
 
 ## Before Release
 - Limit sign ups to "x" amount of people based on usage info from beta to stay within your price range (ideally the free). Or maybe just budget alerts.
 - Add backups. Use coldline storage for storage backups.
+- Support different currencies.
 
 ## Monitoring
 - Monitor billing reports to see what is costing me the most money.
 - Set up stackdriver.
 
+## Other
+- Create dev environment so I don't have to be worried about deleting production data
 
 ## Resources
 - https://www.youtube.com/watch?v=iWEgpdVSZyg&feature=emb_rel_end

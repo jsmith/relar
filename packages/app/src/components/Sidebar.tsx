@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import ReactSidebar from "react-sidebar";
 
 const mql = window.matchMedia(`(min-width: 800px)`);
 
-export const Sidebar = (props: { sidebar: JSX.Element } & React.Props<null>) => {
+export const Sidebar = (
+  props: { sidebar: JSX.Element } & React.Props<null>,
+) => {
   const [docked, setDocked] = useState(mql.matches);
   const [open, setOpen] = useState(false);
 
@@ -11,11 +13,11 @@ export const Sidebar = (props: { sidebar: JSX.Element } & React.Props<null>) => 
     const mediaQueryChanged = () => {
       setOpen(false);
       setDocked(mql.matches);
-    }
+    };
 
     mql.addListener(mediaQueryChanged);
     return () => mql.removeListener(mediaQueryChanged);
-  }, [])
+  }, []);
 
   return (
     <ReactSidebar
@@ -26,5 +28,5 @@ export const Sidebar = (props: { sidebar: JSX.Element } & React.Props<null>) => 
     >
       {props.children}
     </ReactSidebar>
-  )
-}
+  );
+};

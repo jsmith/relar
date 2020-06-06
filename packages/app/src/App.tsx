@@ -1,5 +1,5 @@
 import { hot } from "react-hot-loader";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { routes } from "~/routes";
 import { useRouter } from "react-tiniest-router";
 import { Login } from "~/pages/Login";
@@ -17,6 +17,7 @@ import { Home } from "~/pages/Home";
 import { Search } from "~/pages/Search";
 import { AlbumOverview } from "~/pages/AlbumOverview";
 import { ReactQueryDevtools } from "react-query-devtools";
+import { DragCapture } from "~/components/DragCapture";
 
 interface AppProps {}
 
@@ -64,6 +65,7 @@ const libraryLinks = [
 function App(_: React.Props<AppProps>) {
   const { isRoute, goTo, routeId } = useRouter();
   const { user, loading } = useUser();
+  const [display, setDisplay] = useState(true);
 
   useEffect(() => {
     if (loading) {
@@ -92,7 +94,11 @@ function App(_: React.Props<AppProps>) {
   }
 
   const content = route?.sidebar ? (
-    <div className="flex flex-col h-full overflow-hidden">
+    <DragCapture
+      className="flex flex-col h-full overflow-hidden"
+      display={display}
+      setDisplay={setDisplay}
+    >
       <div className="relative flex-grow">
         <Sidebar
           sidebar={
@@ -103,23 +109,30 @@ function App(_: React.Props<AppProps>) {
                 </h1>
                 <GiSwordSpin className="w-6 h-6" />
               </div>
-              <ul>
-                {sideLinks.map(({ icon: Icon, route, label }) => (
-                  <li
-                    className={classNames(
-                      "flex py-2 px-5 items-center hover:bg-primary-600 cursor-pointer",
-                      isRoute(route) ? "bg-primary-600" : undefined,
-                    )}
-                    onClick={() => goTo(route)}
-                    key={label}
-                  >
-                    <Icon className="w-6 h-6" />
-                    <span className="ml-4">{label}</span>
-                  </li>
-                ))}
-              </ul>
+              {/* TODO accessible */}
+              <nav>
+                <ul>
+                  {sideLinks.map(({ icon: Icon, route, label }) => (
+                    <li
+                      tabIndex={0}
+                      className={classNames(
+                        "flex py-2 px-5 items-center hover:bg-primary-600 cursor-pointer",
+                        isRoute(route) ? "bg-primary-600" : undefined,
+                      )}
+                      onClick={() => goTo(route)}
+                      key={label}
+                    >
+                      <Icon className="w-6 h-6" />
+                      <span className="ml-4">{label}</span>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
               <div className="border-b border-gray-600 my-3 mx-3" />
-              <button className="flex py-2 px-5 items-center hover:bg-primary-600 w-full">
+              <button
+                className="flex py-2 px-5 items-center hover:bg-primary-600 w-full"
+                onClick={() => setDisplay(true)}
+              >
                 <MdAddCircle className="w-6 h-6" />
                 <div className="ml-4">Upload Music</div>
               </button>
@@ -136,6 +149,7 @@ function App(_: React.Props<AppProps>) {
               isRoute(routes.artists) ||
               isRoute(routes.albums)) && (
               <ul className="flex space-x-4 text-xl">
+                {/* TODO accessible */}
                 {libraryLinks.map(({ label, route }) => (
                   <li
                     key={label}
@@ -171,7 +185,7 @@ function App(_: React.Props<AppProps>) {
         </Sidebar>
       </div>
       <Player />
-    </div>
+    </DragCapture>
   ) : route?.id === "login" ? (
     <Login />
   ) : route?.id === "profile" ? (
