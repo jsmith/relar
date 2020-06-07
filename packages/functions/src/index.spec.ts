@@ -98,7 +98,7 @@ const getUserData = () => {
     .then((o) => o.data());
 };
 
-const deleteAll = async (collection: ReturnType<typeof firestore.collection>) => {
+const deleteCollection = async (collection: ReturnType<typeof firestore.collection>) => {
   const docs = await collection.listDocuments();
   await Promise.all(docs.map((doc) => doc.delete()));
 };
@@ -107,9 +107,9 @@ describe("functions", () => {
   describe("createSong", () => {
     afterEach(async () => {
       await firestore.doc("userData/testUser").delete();
-      deleteAll(await firestore.collection("userData/testUser/songs"));
-      deleteAll(await firestore.collection("userData/testUser/albums"));
-      deleteAll(await firestore.collection("userData/testUser/artists"));
+      deleteCollection(await firestore.collection("userData/testUser/songs"));
+      deleteCollection(await firestore.collection("userData/testUser/albums"));
+      deleteCollection(await firestore.collection("userData/testUser/artists"));
       const [files] = await storage.bucket().getFiles({
         prefix: "testUser/",
       });
@@ -212,6 +212,16 @@ describe("functions", () => {
       const albums = await getAlbums();
       expect(artists.length).toEqual(1);
       expect(albums.length).toEqual(1);
+    });
+
+    it("can upload artwork", async () => {
+      const wrapped = test.wrap(createSong);
+      const { objectMetadata, songId } = await upload("file_with_artwork.mp3");
+      await wrapped(objectMetadata);
+
+      const file = storage.bucket().file(`testUser/song_artwork/${songId}/artwork.jpg`);
+      const [exists] = await file.exists();
+      expect(exists).toEqual(true);
     });
   });
 });

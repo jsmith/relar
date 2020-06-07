@@ -33,11 +33,13 @@ db.settings({ ignoreUndefinedProperties: true });
 
 const gcs = admin.storage();
 
+type Bucket = ReturnType<typeof gcs.bucket>;
+
 interface CustomObject {
   filePath: string;
   fileDir: string;
   fileName: string;
-  bucket: ReturnType<typeof gcs.bucket>;
+  bucket: Bucket;
   contentType: string;
 }
 
@@ -124,7 +126,7 @@ const unwrap = (r: Result<unknown, Error | Warning | Info>) => {
   }
 };
 
-const downloadObject = (tmpDir: string) => <O extends CustomObject>(
+const downloadObject = (tmpDir: string) => <O extends { bucket: Bucket; filePath: string }>(
   o: O,
 ): ResultAsync<O & { tmpFilePath: string; tmpDir: string }, Error> => {
   // Download Source File
@@ -165,12 +167,12 @@ export const generateThumbs = functions.storage.object().onFinalize(async (objec
     .andThen(checkObjectName)
     .andThen(checkContentType)
     .andThen(getPaths)
-    .andThen(matchRegex(/^([a-z0-9A-Z]+)\/song_artwork\/([a-z0-9A-Z]+)\/(original\.(?:png|jpg))$/))
+    .andThen(matchRegex(/^([a-z0-9A-Z]+)\/song_artwork\/([a-z0-9A-Z]+)\/(artwork\.(?:png|jpg))$/))
     .andThen(matchContentType("image"))
     .andThenAsync(downloadObject(tmpDir))
     .andThen(({ tmpFilePath, filePath, fileName, fileDir, bucket }) => {
       // Resize the images and define an array of upload promises
-      const sizes = [64, 128, 256];
+      const sizes = [32, 64, 128, 256];
 
       const uploadPromises = sizes.map(async (size) => {
         const thumbName = `thumb@${size}_${fileName}`;
@@ -243,20 +245,6 @@ const parseSongMetadata = (object: ObjectMetadata) => <O extends CustomObject>(
     metadata: result.value,
   });
 };
-
-// type RecordStaticType<O extends { [_: string]: Runtype } = { [K in keyof O]: Static<O[K]> }
-type RecordStaticType<
-  O extends {
-    [_: string]: Runtype;
-  },
-  RO extends boolean
-> = RO extends true
-  ? {
-      readonly [K in keyof O]: Static<O[K]>;
-    }
-  : {
-      [K in keyof O]: Static<O[K]>;
-    };
 
 /**
  * Find the first document in the collection and start validation.
@@ -383,6 +371,25 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             };
           });
 
+          if (id3Tag.image) {
+            let fileName: string;
+            if (id3Tag.image.mime === "image/png") {
+              fileName = "artwork.png";
+            } else if (id3Tag.image.mime === "image/jpeg") {
+              fileName = "artwork.jpg";
+            } else {
+              throw Error(
+                `Invalid MIME type "${id3Tag.image.mime}". Expected "image/png" or "image/jpeg".`,
+              );
+            }
+
+            const imageFilePath = path.resolve(tmpDir, fileName);
+            const destination = `${userId}/song_artwork/${songId}/${fileName}`;
+            console.info(`Uploading artwork from "${imageFilePath}" to "${destination}"!`);
+            await fs.writeFile(imageFilePath, id3Tag.image.data);
+            await bucket.upload(imageFilePath, { destination });
+          }
+
           // Now we can create the song!
           const newSong: Song = {
             originalFileName: metadata.customMetadata.originalFileName,
@@ -410,6 +417,9 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
         console.warn(`Deleting "${filePath}" due to failure.`);
         await bucket.file(filePath).delete();
 
+        // TODO how can we send info the the user??
+        // Maybe create a custom error with properties?
+        // It would be type unsafe but the easiest way
         return err({
           type: "error",
           message: e.message,
