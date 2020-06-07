@@ -278,21 +278,38 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             throw Error(`User exceeded maximum song count (${MAX_SONGS}).`);
           }
 
-          // GET ARTIST
+          // QUERIEs
           const artistQuery = await (id3Tag.artist
             ? transaction.get(userRef.collection("artists").where("name", "==", id3Tag.artist))
             : undefined);
 
+          const albumQuery = await (id3Tag.album
+            ? transaction.get(
+                userRef
+                  .collection("albums")
+                  .where("name", "==", id3Tag.album)
+                  // `band` is TPE2 ie. album artist
+                  .where("albumArtist", "==", id3Tag.band ?? ""),
+              )
+            : undefined);
+
+          // PARSING
           const artistResult =
             artistQuery && !artistQuery.empty
               ? ArtistType.validate(artistQuery.docs[0].data())
               : undefined;
 
+          const albumResult =
+            albumQuery && !albumQuery.empty
+              ? AlbumType.validate(albumQuery.docs[0].data())
+              : undefined;
+
+          // LOGIC
           let artist: Artist | undefined;
           if (!artistResult) {
             if (id3Tag.artist) {
               artist = { id: uuid.v4(), name: id3Tag.artist };
-              transaction.set(userRef.collection("albums").doc(artist.id), artist);
+              transaction.set(userRef.collection("artists").doc(artist.id), artist);
             }
           } else if (!artistResult.success) {
             throw Error(`Found invalid artist: ${artistResult.message}`);
@@ -300,23 +317,13 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             artist = artistResult.value;
           }
 
-          // GET ALBUM
-          const albumQuery = await (id3Tag.album
-            ? transaction.get(userRef.collection("albums").where("name", "==", id3Tag.album))
-            : undefined);
-
-          const albumResult =
-            albumQuery && !albumQuery.empty
-              ? AlbumType.validate(albumQuery.docs[0].data())
-              : undefined;
-
           let album: Album | undefined;
           if (!albumResult) {
             if (id3Tag.album) {
               album = {
                 id: uuid.v4(),
                 name: id3Tag.album,
-                artist: artist ? { name: artist.name, id: artist.id } : undefined,
+                albumArtist: id3Tag.band ?? "",
               };
 
               transaction.set(userRef.collection("albums").doc(album.id), album);

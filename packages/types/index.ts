@@ -73,13 +73,13 @@ export const AlbumType = Record({
    * The name of the album.
    */
   name: String,
+
   /**
-   * The artist.
+   * The album artist.
    */
-  artist: Record({
-    id: String,
-    name: String,
-  }).Or(Undefined),
+  albumArtist: String,
+
+  // TODO thumbnail
 });
 
 export type Album = Static<typeof AlbumType>;
