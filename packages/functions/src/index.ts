@@ -27,6 +27,8 @@ const MAX_SONGS = 10;
 admin.initializeApp();
 // const gcs = new Storage();
 const db = admin.firestore();
+db.settings({ ignoreUndefinedProperties: true });
+
 const gcs = admin.storage();
 
 interface CustomObject {
@@ -83,7 +85,7 @@ const getPaths = <O extends ObjectMetadata & { name: string; contentType: string
 };
 
 const logVersion = <T>(o: T): T => {
-  console.info(`Running v$${version}`);
+  console.info(`Running v${version}`);
   return o;
 };
 
@@ -103,7 +105,7 @@ const matchContentType = (pattern: string) => <O extends CustomObject>(
     ? ok(object)
     : err({
         type: "warn",
-        message: `"${object.filePath}" does not have an image Content-Type: ${object.contentType}`,
+        message: `"${object.filePath}" does not have the correct Content-Type: ${object.contentType}`,
       });
 };
 
@@ -120,7 +122,7 @@ const unwrap = (r: Result<unknown, Error | Warning | Info>) => {
   }
 };
 
-export const downloadObject = (tmpDir: string) => <O extends CustomObject>(
+const downloadObject = (tmpDir: string) => <O extends CustomObject>(
   o: O,
 ): ResultAsync<O & { tmpFilePath: string; tmpDir: string }, Error> => {
   // Download Source File
@@ -137,7 +139,7 @@ export const downloadObject = (tmpDir: string) => <O extends CustomObject>(
   ).map(() => ({ ...o, tmpDir, tmpFilePath }));
 };
 
-export const createTmpDir = async () => {
+const createTmpDir = async () => {
   const token = crypto.randomBytes(32).toString("hex");
   const tmpDir = path.join(os.tmpdir(), "functions", token);
   // const tmpFilePath = path.join(tmpDir, path.basename(o.filePath));
@@ -161,9 +163,7 @@ export const generateThumbs = functions.storage.object().onFinalize(async (objec
     .andThen(checkObjectName)
     .andThen(checkContentType)
     .andThen(getPaths)
-    .andThen(
-      matchRegex(/^\/([a-z0-9A-Z]+)\/song_artwork\/([a-z0-9A-Z]+)\/(original\.(?:png|jpg))$/),
-    )
+    .andThen(matchRegex(/^([a-z0-9A-Z]+)\/song_artwork\/([a-z0-9A-Z]+)\/(original\.(?:png|jpg))$/))
     .andThen(matchContentType("image"))
     .andThenAsync(downloadObject(tmpDir))
     .andThen(({ tmpFilePath, filePath, fileName, fileDir, bucket }) => {
@@ -242,27 +242,26 @@ const parseSongMetadata = (object: ObjectMetadata) => <O extends CustomObject>(
   });
 };
 
-export const createSong = functions.storage.object().onFinalize(async (object, context) => {
+export const createSong = functions.storage.object().onFinalize(async (object) => {
+  // TODO extract image
   const { dispose, tmpDir } = await createTmpDir();
   return ok<ObjectMetadata, Warning | Error | Info>(object)
     .map(logVersion)
     .andThen(checkObjectName)
     .andThen(checkContentType)
     .andThen(getPaths)
-    .andThen(matchRegex(/^\/([a-z0-9A-Z]+)\/songs\/([a-z0-9A-Z]+)\/original\.mp3$/))
-    .andThen(matchContentType("mp3"))
+    .andThen(matchRegex(/^([-a-z0-9A-Z]+)\/songs\/([-a-z0-9A-Z]+)\/original\.mp3$/))
+    .andThen(matchContentType("audio/mpeg"))
     .andThenAsync(downloadObject(tmpDir))
     .andThen(parseID3Tags)
     .andThen(parseSongMetadata(object))
     .andPromise(async ({ bucket, filePath, match, metadata, id3Tag }) => {
       try {
-        // context.auth?.token
         const userId = match[1];
         const songId = match[2];
 
-        // Create a reference for a new rating, for use inside the transaction
         const userRef = db.collection("userData").doc(userId);
-        var newSongRef = userRef.collection("songs").doc(songId);
+        const newSongRef = userRef.collection("songs").doc(songId);
 
         // In a transaction, add the new rating and update the aggregate totals
         await db.runTransaction(async (transaction) => {
@@ -343,14 +342,16 @@ export const createSong = functions.storage.object().onFinalize(async (object, c
           };
 
           // Update the user information (ie. the # of songs)
-          transaction.update(userRef, result.value);
+          transaction.set(userRef, result.value);
 
           // Finally create the new song
           transaction.set(newSongRef, newSong);
         });
       } catch (e) {
+        // TODO does this only run once?
         // It's important that we delete this file from storage when
         // we detect an error
+        console.warn(`Deleting "${filePath}" due to failure.`);
         await bucket.file(filePath).delete();
 
         return err({
