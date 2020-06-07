@@ -3,6 +3,7 @@
   "editor.formatOnSave": true,
   "cSpell.words": [
     "firestore",
-    "relar"
+    "relar",
+    "runtype"
   ]
 }

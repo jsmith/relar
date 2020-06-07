@@ -20,7 +20,9 @@ import {
   ArtistType,
   Artist,
 } from "types";
+import { Record, Runtype, Result as RuntypeResult, Static } from "runtypes";
 import * as uuid from "uuid";
+import { Transaction, Query, DocumentReference } from "@google-cloud/firestore";
 
 const MAX_SONGS = 10;
 
@@ -242,6 +244,59 @@ const parseSongMetadata = (object: ObjectMetadata) => <O extends CustomObject>(
   });
 };
 
+// type RecordStaticType<O extends { [_: string]: Runtype } = { [K in keyof O]: Static<O[K]> }
+type RecordStaticType<
+  O extends {
+    [_: string]: Runtype;
+  },
+  RO extends boolean
+> = RO extends true
+  ? {
+      readonly [K in keyof O]: Static<O[K]>;
+    }
+  : {
+      [K in keyof O]: Static<O[K]>;
+    };
+
+/**
+ * Find the first document in the collection and start validation.
+ */
+const findOne = async <R extends Record<any, false>>(
+  transaction: Transaction,
+  query: Query<unknown>,
+  record: R,
+): Promise<RuntypeResult<Static<R>> | undefined> => {
+  const snapshot = await transaction.get(query);
+  return snapshot && !snapshot.empty ? record.validate(snapshot.docs[0].data()) : undefined;
+};
+
+/**
+ * Validate the runtype result OR write a new object if the given runtype is undefined.
+ * We only write if the object given to write is defined else we do nothing.
+ */
+const validateOrWrite = <A>(
+  transaction: Transaction,
+  result: RuntypeResult<A> | undefined,
+  create: () => { data: A; doc: DocumentReference } | undefined,
+): A | undefined => {
+  if (result) {
+    if (result.success) {
+      return result.value;
+    } else {
+      throw Error(`Found invalid value from db: ${result.key} -> ${result.message}`);
+    }
+  } else {
+    const creationInfo = create();
+    if (!creationInfo) {
+      return;
+    }
+
+    const { doc, data } = creationInfo;
+    transaction.set(doc, data);
+    return data;
+  }
+};
+
 export const createSong = functions.storage.object().onFinalize(async (object) => {
   // TODO extract image
   const { dispose, tmpDir } = await createTmpDir();
@@ -265,7 +320,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
 
         // In a transaction, add the new rating and update the aggregate totals
         await db.runTransaction(async (transaction) => {
-          const res = await transaction.get(newSongRef);
+          const res = await transaction.get(userRef);
 
           const result = UserDataType.validate(res.data() ?? {});
           if (!result.success) {
@@ -278,63 +333,57 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             throw Error(`User exceeded maximum song count (${MAX_SONGS}).`);
           }
 
-          // QUERIEs
-          const artistQuery = await (id3Tag.artist
-            ? transaction.get(userRef.collection("artists").where("name", "==", id3Tag.artist))
-            : undefined);
-
-          const albumQuery = await (id3Tag.album
-            ? transaction.get(
+          // reads must come before writes in a snapshot so the following reads are grouped together
+          const albumValidation = id3Tag.album
+            ? await findOne(
+                transaction,
                 userRef
                   .collection("albums")
                   .where("name", "==", id3Tag.album)
-                  // `band` is TPE2 ie. album artist
+                  // `band` is TPE2 aka the album artist
                   .where("albumArtist", "==", id3Tag.band ?? ""),
+                AlbumType,
               )
-            : undefined);
+            : undefined;
 
-          // PARSING
-          const artistResult =
-            artistQuery && !artistQuery.empty
-              ? ArtistType.validate(artistQuery.docs[0].data())
-              : undefined;
+          const artistValidation = id3Tag.album
+            ? await findOne(
+                transaction,
+                userRef.collection("artists").where("name", "==", id3Tag.artist),
+                ArtistType,
+              )
+            : undefined;
 
-          const albumResult =
-            albumQuery && !albumQuery.empty
-              ? AlbumType.validate(albumQuery.docs[0].data())
-              : undefined;
-
-          // LOGIC
-          let artist: Artist | undefined;
-          if (!artistResult) {
-            if (id3Tag.artist) {
-              artist = { id: uuid.v4(), name: id3Tag.artist };
-              transaction.set(userRef.collection("artists").doc(artist.id), artist);
+          const album = validateOrWrite(transaction, albumValidation, () => {
+            if (!id3Tag.album) {
+              return;
             }
-          } else if (!artistResult.success) {
-            throw Error(`Found invalid artist: ${artistResult.message}`);
-          } else {
-            artist = artistResult.value;
-          }
 
-          let album: Album | undefined;
-          if (!albumResult) {
-            if (id3Tag.album) {
-              album = {
-                id: uuid.v4(),
-                name: id3Tag.album,
-                albumArtist: id3Tag.band ?? "",
-              };
+            const newAlbum: Album = {
+              id: uuid.v4(),
+              name: id3Tag.album,
+              albumArtist: id3Tag.band ?? "",
+            };
 
-              transaction.set(userRef.collection("albums").doc(album.id), album);
+            return {
+              data: newAlbum,
+              doc: userRef.collection("albums").doc(newAlbum.id),
+            };
+          });
+
+          const artist = validateOrWrite(transaction, artistValidation, () => {
+            if (!id3Tag.artist) {
+              return;
             }
-          } else if (!albumResult.success) {
-            throw Error(`Found invalid album: ${albumResult.message}`);
-          } else {
-            album = albumResult.value;
-          }
 
-          // CREATE SONG
+            const newArtist: Artist = { id: uuid.v4(), name: id3Tag.artist };
+            return {
+              data: newArtist,
+              doc: userRef.collection("artists").doc(newArtist.id),
+            };
+          });
+
+          // Now we can create the song!
           const newSong: Song = {
             originalFileName: metadata.customMetadata.originalFileName,
             id: songId,

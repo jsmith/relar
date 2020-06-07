@@ -1,11 +1,9 @@
 import * as functions from "firebase-functions-test";
 import * as admin from "firebase-admin";
 import { Song, SongMetadata, Artist, Album } from "types";
-// import * as serviceAccount from "./serviceAccountKey.json";
 import * as uuid from "uuid";
 import * as path from "path";
 
-// TODO test bucket
 const test = functions(
   {
     databaseURL: "https://toga-4e3f5.firebaseio.com",
@@ -68,6 +66,30 @@ const getSong = (songId: string) => {
     .then((o) => o.data());
 };
 
+const getSongs = () => {
+  return admin
+    .firestore()
+    .collection(`/userData/testUser/songs`)
+    .get()
+    .then((o) => o.docs.map((doc) => doc.data()));
+};
+
+const getAlbums = () => {
+  return admin
+    .firestore()
+    .collection(`/userData/testUser/albums`)
+    .get()
+    .then((o) => o.docs.map((doc) => doc.data()));
+};
+
+const getArtists = () => {
+  return admin
+    .firestore()
+    .collection(`/userData/testUser/artists`)
+    .get()
+    .then((o) => o.docs.map((doc) => doc.data()));
+};
+
 const getUserData = () => {
   return admin
     .firestore()
@@ -76,10 +98,18 @@ const getUserData = () => {
     .then((o) => o.data());
 };
 
+const deleteAll = async (collection: ReturnType<typeof firestore.collection>) => {
+  const docs = await collection.listDocuments();
+  await Promise.all(docs.map((doc) => doc.delete()));
+};
+
 describe("functions", () => {
   describe("createSong", () => {
     afterEach(async () => {
       await firestore.doc("userData/testUser").delete();
+      deleteAll(await firestore.collection("userData/testUser/songs"));
+      deleteAll(await firestore.collection("userData/testUser/albums"));
+      deleteAll(await firestore.collection("userData/testUser/artists"));
       const [files] = await storage.bucket().getFiles({
         prefix: "testUser/",
       });
@@ -160,6 +190,28 @@ describe("functions", () => {
 
       expect(artist).toEqual(expectedArtist);
       expect(album).toEqual(expectedAlbum);
+    });
+
+    it("can upload two songs with the same artist/album", async () => {
+      const wrapped = test.wrap(createSong);
+      const { objectMetadata: om1, songId: s1 } = await upload("file_with_artist_album.mp3");
+      await wrapped(om1);
+
+      // This might eventually break when we check for duplicates using hashing
+      const { objectMetadata: om2, songId: s2 } = await upload("file_with_artist_album.mp3");
+      await wrapped(om2);
+
+      const userData = await getUserData();
+      expect(userData?.songCount).toEqual(2);
+
+      const songs = await getSongs();
+      expect(songs.length).toEqual(2);
+      expect([songs[0].id, songs[1].id]).toEqual(expect.arrayContaining([s1, s2]));
+
+      const artists = await getArtists();
+      const albums = await getAlbums();
+      expect(artists.length).toEqual(1);
+      expect(albums.length).toEqual(1);
     });
   });
 });
