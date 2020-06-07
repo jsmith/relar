@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Song } from "~/types";
+import { Song } from "types";
 import { MdMusicNote, MdPlayArrow } from "react-icons/md";
 import { LoadingCell, TextCell, Cell } from "~/components/Cell";
 import { usePlayer } from "~/player";
@@ -46,11 +46,7 @@ const attrToHeader: {
   },
 };
 
-export const SongsTable = ({
-  songs,
-  attrs,
-  loadingRows = 20,
-}: SongsTableProps) => {
+export const SongsTable = ({ songs, attrs, loadingRows = 20 }: SongsTableProps) => {
   const [_, setSong] = usePlayer();
 
   const headers = useMemo(() => {
@@ -88,11 +84,7 @@ export const SongsTable = ({
         ));
     } else {
       return songs.map((song) => (
-        <tr
-          className="group hover:bg-primary-700"
-          key={song.id}
-          onClick={() => setSong(song)}
-        >
+        <tr className="group hover:bg-primary-700" key={song.id} onClick={() => setSong(song)}>
           <Cell>
             <MdMusicNote className="w-5 h-5 group-hover:opacity-0 absolute" />
             <MdPlayArrow className="w-5 h-5 group-hover:opacity-100 opacity-0" />

@@ -18,13 +18,18 @@
     "firebase-admin": "^8.9.0",
     "firebase-functions": "^3.3.0",
     "fs-extra": "^9.0.1",
+    "id3-parser": "^2.0.0",
     "neverthrow": "^2.3.4",
-    "sharp": "^0.25.3"
+    "sharp": "^0.25.3",
+    "types": "^0.1.0",
+    "uuid": "^8.1.0"
   },
   "devDependencies": {
     "@types/sharp": "^0.25.0",
+    "@types/uuid": "^8.0.0",
     "firebase-functions-test": "^0.1.6",
-    "typescript": "^3.2.2"
+    "patch-package": "^6.2.2",
+    "typescript": "^3.8.0"
   },
   "private": true
 }

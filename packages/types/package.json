@@ -1,0 +1,15 @@
+{
+  "name": "types",
+  "version": "0.1.0",
+  "description": "The RELAR types!",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jacob Smith <jacob.smith@unb.ca>",
+  "peerDependencies": {
+    "runtypes": "^4.2.0",
+    "neverthrow": "^2.3.4"
+  },
+  "dependencies": {}
+}

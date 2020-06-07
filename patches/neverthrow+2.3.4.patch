@@ -1,0 +1,46 @@
+diff --git a/node_modules/neverthrow/dist/result.d.ts b/node_modules/neverthrow/dist/result.d.ts
+index 41fad70..f9d98d9 100644
+--- a/node_modules/neverthrow/dist/result.d.ts
++++ b/node_modules/neverthrow/dist/result.d.ts
+@@ -9,7 +9,7 @@ export declare class Ok<T, E> {
+     isErr(): this is Err<T, E>;
+     map<A>(f: (t: T) => A): Result<A, E>;
+     mapErr<U>(_f: (e: E) => U): Result<T, U>;
+-    andThen<U>(f: (t: T) => ResultAsync<U, E>): ResultAsync<U, E>;
++    andThenAsync<U>(f: (t: T) => ResultAsync<U, E>): ResultAsync<U, E>;
+     andThen<U>(f: (t: T) => Result<U, E>): Result<U, E>;
+     asyncMap<U>(f: (t: T) => Promise<U>): ResultAsync<U, E>;
+     match: <A>(ok: (t: T) => A, _err: (e: E) => A) => A;
+@@ -24,7 +24,7 @@ export declare class Err<T, E> {
+     map<A>(_f: (t: T) => A): Result<A, E>;
+     mapErr<U>(f: (e: E) => U): Result<T, U>;
+     andThen<U>(_f: (t: T) => Result<U, E>): Result<U, E>;
+-    andThen<U>(_f: (t: T) => ResultAsync<U, E>): Result<U, E>;
++    andThenAsync<U>(_f: (t: T) => ResultAsync<U, E>): ResultAsync<U, E>;
+     asyncMap<U>(_f: (t: T) => Promise<U>): ResultAsync<U, E>;
+     match: <A>(_ok: (t: T) => A, err: (e: E) => A) => A;
+     _unsafeUnwrap(): T;
+diff --git a/node_modules/neverthrow/dist/result.js b/node_modules/neverthrow/dist/result.js
+index 0a97152..fe08699 100644
+--- a/node_modules/neverthrow/dist/result.js
++++ b/node_modules/neverthrow/dist/result.js
+@@ -30,6 +30,9 @@ var Ok = /** @class */ (function () {
+     Ok.prototype.andThen = function (f) {
+         return f(this.value);
+     };
++    Ok.prototype.andThenAsync = function (f) {
++        return f(this.value);
++    };
+     Ok.prototype.asyncMap = function (f) {
+         return _1.ResultAsync.fromPromise(f(this.value));
+     };
+@@ -67,6 +70,9 @@ var Err = /** @class */ (function () {
+     Err.prototype.andThen = function (_f) {
+         return exports.err(this.error);
+     };
++    Err.prototype.andThenAsync = function (_f) {
++        return exports.err(this.error);
++    };
+     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     Err.prototype.asyncMap = function (_f) {
+         return _1.errAsync(this.error);

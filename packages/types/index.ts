@@ -8,7 +8,23 @@ import {
   Boolean,
 } from "runtypes";
 
-export const FourDigitYear = Number.withConstraint((value) => value < 10000);
+export const SongMetadataType = Record({
+  customMetadata: Record({
+    originalFileName: String,
+  }),
+});
+
+export type SongMetadata = Static<typeof SongMetadataType>;
+
+export const UserDataType = Record({
+  songCount: Number.Or(Undefined),
+});
+
+// export const decode = <T>(record: Record<T extends { [_: string]: Runtype }, false>) => {
+//   record.check()
+// }
+
+export type UserData = Static<typeof UserDataType>;
 
 export const SongType = Record({
   originalFileName: String,
@@ -16,18 +32,23 @@ export const SongType = Record({
   format: Literal("mp3"),
   title: String,
   /**
-   * The artist ID.
+   * The artist.
    */
-  artist: String.Or(Undefined),
+  artist: Record({
+    id: String,
+    name: String,
+  }).Or(Undefined),
+
   /**
-   * The album ID.
+   * The album.
    */
-  album: String.Or(Undefined),
+  album: Record({
+    id: String,
+    name: String,
+  }).Or(Undefined),
+
   // A four-digit year
-  year: FourDigitYear.Or(Undefined),
-  // The track number is stored in the last two bytes of the comment field. If the comment is 29
-  // or 30 characters long, no track number can be stored.
-  comment: String.Or(Undefined),
+  year: String.Or(Undefined),
   // Whether this person has "liked" this song
   liked: Boolean.Or(Undefined),
 
@@ -48,11 +69,17 @@ export type Song = Static<typeof SongType>;
 
 export const AlbumType = Record({
   id: String,
+  /**
+   * The name of the album.
+   */
   name: String,
   /**
-   * The artist ID.
+   * The artist.
    */
-  artist: String,
+  artist: Record({
+    id: String,
+    name: String,
+  }).Or(Undefined),
 });
 
 export type Album = Static<typeof AlbumType>;

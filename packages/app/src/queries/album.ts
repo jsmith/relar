@@ -1,5 +1,5 @@
 import { createQueryCache } from "~/queries/cache";
-import { Song, Album } from "~/types";
+import { Song, Album } from "types";
 import { useUserData, get } from "~/firestore";
 import { useDefinedUser } from "~/auth";
 import * as Sentry from "@sentry/browser";
@@ -76,10 +76,7 @@ export const useAlbum = (albumId: string) => {
 const {
   useQuery: useAlbumSongsQuery,
   // queryCache: albumSongsQueryCache,
-} = createQueryCache<
-  ["album-songs", { uid: string; albumId: string }],
-  Song[]
->();
+} = createQueryCache<["album-songs", { uid: string; albumId: string }], Song[]>();
 
 export const useAlbumSongs = (albumId: string) => {
   const user = useDefinedUser();

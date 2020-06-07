@@ -1,4 +1,5 @@
 {
+  "name": "app",
   "scripts": {
     "dev": "parcel src/index.html",
     "build": "parcel build src/index.html",
@@ -26,7 +27,7 @@
     "eslint-plugin-react": "^7.19.0",
     "eslint-plugin-react-hooks": "^3.0.0",
     "jest": "^25.4.0",
-    "prettier": "^2.0.0",
+    "prettier": "^2.0.5",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "tailwindcss": "^1.4.6",
@@ -38,7 +39,7 @@
     "classnames": "^2.2.6",
     "fast-average-color": "^6.0.2",
     "firebase": "^7.14.5",
-    "neverthrow": "^2.3.2",
+    "neverthrow": "^2.3.4",
     "parcel-bundler": "^1.12.4",
     "react-aria-modal": "^4.0.0",
     "react-hot-loader": "^4.12.21",
@@ -49,8 +50,9 @@
     "react-query-devtools": "^1.1.17",
     "react-sidebar": "^3.0.2",
     "react-tiniest-router": "^0.1.2",
-    "runtypes": "^4.2.0",
-    "tinycolor2": "^1.4.1"
+    "runtypes": "4.2.0",
+    "tinycolor2": "^1.4.1",
+    "types": "^0.1.0"
   },
   "alias": {
     "react-dom": "@hot-loader/react-dom"

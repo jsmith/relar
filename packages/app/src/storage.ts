@@ -1,9 +1,7 @@
 import { storage } from "~/firebase";
 import { useUser } from "~/auth";
-import { useMemo, useEffect, useState } from "react";
-import { Album } from "~/types";
+import { useMemo } from "react";
 import { ResultAsync } from "neverthrow";
-import * as Sentry from "@sentry/browser";
 
 export type StorageErrorCode =
   | "storage/unknown" // An unknown error occurred.
@@ -41,8 +39,5 @@ export const useUserStorage = () => {
 export const getDownloadURL = (
   ref: firebase.storage.Reference,
 ): ResultAsync<string, StorageErrorCode> => {
-  return ResultAsync.fromPromise(
-    ref.getDownloadURL(),
-    (e) => (e as any).code as StorageErrorCode,
-  );
+  return ResultAsync.fromPromise(ref.getDownloadURL(), (e) => (e as any).code as StorageErrorCode);
 };
