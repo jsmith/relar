@@ -1,8 +1,8 @@
 @font-face {
   font-family: "FiraMono";
-  src: url("./fonts/FiraMono-Regular.ttf") format("truetype");
+  src: url("https://code.cdn.mozilla.net/fonts/ttf/FiraMono-Regular.ttf") format("truetype");
 }
 
 body {
-  font-family: 'FiraMono';
+  font-family: "FiraMono";
 }

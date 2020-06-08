@@ -5,6 +5,5 @@ module.exports = {
   plugins: [require("vite-plugin-react")],
   alias: {
     "/@/": path.resolve(__dirname, "./src"),
-    "/@react-refresh": "/@react-refresh",
   },
 };
