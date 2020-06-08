@@ -1,5 +1,5 @@
 import { storage } from "/@/firebase";
-import { useUser } from "/@/auth";
+import { useUser, useDefinedUser } from "/@/auth";
 import { useMemo } from "react";
 import { ResultAsync } from "neverthrow";
 
@@ -22,11 +22,7 @@ export type StorageErrorCode =
   | "storage/server-file-wrong-size"; // File on the client does not match the size of the file recieved by the server. Try uploading again.
 
 export const useUserStorage = () => {
-  const { user } = useUser();
-
-  if (!user) {
-    throw Error("USER NOT DEFINED THIS SHOULD NOT HAPPEN haha");
-  }
+  const user = useDefinedUser();
 
   // TODO what if one user logs out and another logs in??
   // eslint-disable-next-line react-hooks/exhaustive-deps

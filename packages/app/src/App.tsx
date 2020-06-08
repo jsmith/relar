@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { routes } from "/@/routes";
+import { routes, CustomRoute } from "/@/routes";
 import { useRouter } from "react-tiniest-router";
 import { Login } from "/@/pages/Login";
 import { useUser } from "/@/auth";
@@ -17,6 +17,12 @@ import { Search } from "/@/pages/Search";
 import { AlbumOverview } from "/@/pages/AlbumOverview";
 import { ReactQueryDevtools } from "react-query-devtools";
 import { DragCapture } from "/@/components/DragCapture";
+import { Signup } from "/@/pages/Signup";
+import { ForgotPassword } from "/@/pages/ForgotPassword";
+import { ForgotPasswordSuccess } from "/@/pages/ForgotPasswordSuccess";
+import { RouteType } from "react-tiniest-router/dist/types";
+import { AccountDropdown } from "/@/components/AccountDropdown";
+import { auth } from "/@/firebase";
 
 interface AppProps {}
 
@@ -59,19 +65,23 @@ const libraryLinks = [
   },
 ];
 
-// items: SideBarItem[]
-
-function App(_: React.Props<AppProps>) {
+export const App = (_: React.Props<AppProps>) => {
   const { isRoute, goTo, routeId } = useRouter();
   const { user, loading } = useUser();
-  const [display, setDisplay] = useState(true);
+  const [display, setDisplay] = useState(false);
+
+  const routeIdLookup = useMemo(() => {
+    const lookup: { [id: string]: CustomRoute } = {};
+    Object.values(routes).forEach((route) => (lookup[route.id] = route));
+    return lookup;
+  }, []);
 
   useEffect(() => {
     if (loading) {
       return;
     }
 
-    const route = routes[routeId as keyof typeof routes];
+    const route = routeIdLookup[routeId as keyof typeof routes];
     if (!route) {
       console.warn(`No route for "${routeId}"`);
       return;
@@ -90,6 +100,11 @@ function App(_: React.Props<AppProps>) {
   if (loading || (route?.protected && !user)) {
     return <div>Loading...</div>;
   }
+
+  const logout = async () => {
+    await auth.signOut();
+    goTo(routes.login);
+  };
 
   const content = route?.sidebar ? (
     <DragCapture
@@ -136,23 +151,33 @@ function App(_: React.Props<AppProps>) {
           }
         >
           <div className={classNames("h-full bg-primary-800", route.containerClassName)}>
-            {(isRoute(routes.songs) || isRoute(routes.artists) || isRoute(routes.albums)) && (
-              <ul className="flex space-x-4 text-xl">
-                {/* TODO accessible */}
-                {libraryLinks.map(({ label, route }) => (
-                  <li
-                    key={label}
-                    className={classNames(
-                      "my-2 border-gray-300 cursor-pointer hover:text-gray-200",
-                      isRoute(route) ? "border-b text-gray-200" : " text-gray-400",
-                    )}
-                    onClick={() => goTo(route)}
-                  >
-                    {label}
-                  </li>
-                ))}
-              </ul>
-            )}
+            <div className="flex">
+              {(isRoute(routes.songs) || isRoute(routes.artists) || isRoute(routes.albums)) && (
+                <ul className="flex space-x-4 text-xl">
+                  {/* TODO accessible */}
+                  {libraryLinks.map(({ label, route }) => (
+                    <li
+                      key={label}
+                      className={classNames(
+                        "my-2 border-gray-300 cursor-pointer hover:text-gray-200",
+                        isRoute(route) ? "border-b text-gray-200" : " text-gray-400",
+                      )}
+                      onClick={() => goTo(route)}
+                    >
+                      {label}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div className="flex-grow" />
+              <AccountDropdown
+                className="mt-2"
+                onAccountClick={() => {
+                  // TODO
+                }}
+                onLogoutClick={logout}
+              />
+            </div>
             <div className={route.className}>
               {isRoute(routes.songs) ? (
                 <Songs />
@@ -175,6 +200,12 @@ function App(_: React.Props<AppProps>) {
     </DragCapture>
   ) : route?.id === "login" ? (
     <Login />
+  ) : route?.id === "signup" ? (
+    <Signup />
+  ) : route?.id === "forgot-password" ? (
+    <ForgotPassword />
+  ) : route?.id === "forgot-password-success" ? (
+    <ForgotPasswordSuccess />
   ) : route?.id === "profile" ? (
     <div>Profile</div>
   ) : (
@@ -187,6 +218,4 @@ function App(_: React.Props<AppProps>) {
       <ReactQueryDevtools initialIsOpen={false} />
     </div>
   );
-}
-
-export default App;
+};

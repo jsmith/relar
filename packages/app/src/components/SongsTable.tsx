@@ -90,8 +90,8 @@ export const SongsTable = ({ songs, attrs, loadingRows = 20 }: SongsTableProps) 
             <MdPlayArrow className="w-5 h-5 group-hover:opacity-100 opacity-0" />
           </Cell>
           <TextCell text={song.title} />
-          <TextCell text={song.artist} />
-          <TextCell text={song.album} />
+          <TextCell text={song.artist?.name} />
+          <TextCell text={song.album?.name} />
         </tr>
       ));
     }

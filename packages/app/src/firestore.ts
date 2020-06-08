@@ -1,14 +1,10 @@
 import { useMemo } from "react";
 import { firestore } from "/@/firebase";
-import { useUser } from "/@/auth";
+import { useUser, useDefinedUser } from "/@/auth";
 import { ResultAsync } from "neverthrow";
 
 export const useUserData = () => {
-  const { user } = useUser();
-
-  if (!user) {
-    throw Error("USER NOT DEFINED THIS SHOULD NOT HAPPEN haha");
-  }
+  const user = useDefinedUser();
 
   // TODO what if one user logs out and another logs in??
   // eslint-disable-next-line react-hooks/exhaustive-deps

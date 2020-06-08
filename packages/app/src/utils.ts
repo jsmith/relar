@@ -201,3 +201,10 @@ export const captureException = (e: Error) => {
   // This was useful for type inference
   Sentry.captureException(e);
 };
+
+export const preventAndCall = <E extends { preventDefault: () => void }>(f: (e: E) => void) => (
+  e: E,
+) => {
+  e.preventDefault();
+  f(e);
+};

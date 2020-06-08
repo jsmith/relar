@@ -16,6 +16,8 @@ The Relar app.
 
 ## Docs
 - Document how album thumbnails are stored
+- Document how songs are stored
+- Document firestore structure
 - Snippets (className, Sentry)
 
 ## Before Beta
@@ -33,6 +35,7 @@ The Relar app.
   - Maybe limit IP addresses to US and Canada?
 - Switch to Blaze but add budget alert information.
 - Add "Recently Added" playlist that watches for new songs.
+- Method to contact! A dedicated email?
 
 ## Before Release
 - Limit sign ups to "x" amount of people based on usage info from beta to stay within your price range (ideally the free). Or maybe just budget alerts.

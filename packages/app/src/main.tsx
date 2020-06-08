@@ -8,11 +8,10 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-import App from "/@/App"; // this must be first for hot reloading
+import { App } from "/@/App"; // this must be first for hot reloading
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import "/@/index.css";
-import "/@/fonts.css";
 import { Router } from "react-tiniest-router";
 import { routes } from "/@/routes";
 import { UserProvider } from "/@/auth";
