@@ -87,7 +87,7 @@ function App(_: React.Props<AppProps>) {
     routeId,
   ]);
 
-  if (loading) {
+  if (loading || (route?.protected && !user)) {
     return <div>Loading...</div>;
   }
 

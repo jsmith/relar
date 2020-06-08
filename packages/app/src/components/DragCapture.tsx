@@ -9,12 +9,7 @@ export interface DragCaptureProps {
   setDisplay: (display: boolean) => void;
 }
 
-export const DragCapture = ({
-  children,
-  className,
-  display,
-  setDisplay,
-}: DragCaptureProps) => {
+export const DragCapture = ({ children, className, display, setDisplay }: DragCaptureProps) => {
   return (
     <div
       className={className}

@@ -22,8 +22,7 @@ export const ErrorTemplate = (props: ErrorTemplateProps) => {
     >
       <FaExclamationCircle className="h-10 w-10 text-red-400" />
       <div className="text-gray-500">
-        {props.text ??
-          "Your error has been noted and will hopefully be resolved soon 😔"}
+        {props.text ?? "Your error has been noted and will hopefully be resolved soon 😔"}
       </div>
     </div>
   );

@@ -3,9 +3,7 @@ import ReactSidebar from "react-sidebar";
 
 const mql = window.matchMedia(`(min-width: 800px)`);
 
-export const Sidebar = (
-  props: { sidebar: JSX.Element } & React.Props<null>,
-) => {
+export const Sidebar = (props: { sidebar: JSX.Element } & React.Props<null>) => {
   const [docked, setDocked] = useState(mql.matches);
   const [open, setOpen] = useState(false);
 

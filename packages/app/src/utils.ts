@@ -33,9 +33,7 @@ export interface Disposer {
 
 type WindowEvents = keyof WindowEventMap;
 
-type WindowEventListener<K extends WindowEvents> = (
-  ev: WindowEventMap[K],
-) => any;
+type WindowEventListener<K extends WindowEvents> = (ev: WindowEventMap[K]) => any;
 
 /**
  * Add an event listener (like normal) but return an object with a dispose method to remove the same listener.

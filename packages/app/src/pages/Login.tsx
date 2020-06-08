@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "../components/Button";
-import { auth } from "../firebase";
+import { Button } from "/@/components/Button";
+import { auth } from "/@/firebase";
 import { useRouter } from "react-tiniest-router";
-import { routes } from "../routes";
+import { routes } from "/@/routes";
 import { useUser } from "/@/auth";
 
 export const Login = () => {
@@ -16,6 +16,7 @@ export const Login = () => {
     if (user) {
       goTo(routes.songs);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const login = async () => {
@@ -29,14 +30,14 @@ export const Login = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full">
+    <div className="flex flex-col items-center justify-center h-full text-gray-700">
       <header>
-        <h1 className="text-4xl">Relar</h1>
+        <h1 className="text-4xl">RELAR</h1>
       </header>
       <div className="shadow-xl rounded p-4 bg-white mt-5">
         <form>
           <label className="block">
-            <span className="text-gray-700">Email</span>
+            <span className="">Email</span>
             <input
               type="email"
               className="form-input mt-1 block w-full"
@@ -45,7 +46,7 @@ export const Login = () => {
             />
           </label>
           <label className="block mt-3">
-            <span className="text-gray-700">Password</span>
+            <span className="">Password</span>
             <input
               type="password"
               className="form-input mt-1 block w-full"

@@ -10,18 +10,10 @@ export interface ThumbnailProps {
   onLoad?: React.ReactEventHandler<HTMLImageElement>;
 }
 
-export const Thumbnail = ({
-  thumbnail,
-  className,
-  style,
-  onLoad,
-}: ThumbnailProps) => {
+export const Thumbnail = ({ thumbnail, className, style, onLoad }: ThumbnailProps) => {
   return (
     <div
-      className={classNames(
-        "bg-gray-400 shadow-2xl flex items-center justify-center",
-        className,
-      )}
+      className={classNames("bg-gray-400 shadow-2xl flex items-center justify-center", className)}
       style={style}
     >
       {thumbnail ? (
@@ -31,10 +23,7 @@ export const Thumbnail = ({
           alt="Album Cover"
           className="w-full h-full"
           onError={() => {
-            Sentry.captureMessage(
-              `Error loading image from "${thumbnail}"`,
-              Sentry.Severity.Error,
-            );
+            Sentry.captureMessage(`Error loading image from "${thumbnail}"`, Sentry.Severity.Error);
           }}
         ></img>
       ) : (

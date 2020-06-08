@@ -24,16 +24,9 @@ export interface QueryCache<TResult, TKey extends AnyQueryKey> {
   ): void;
   refetchQueries(
     queryKeyOrPredicateFn: TKey,
-    {
-      exact,
-      throwOnError,
-      force,
-    }?: { exact?: boolean; throwOnError?: boolean; force?: boolean },
+    { exact, throwOnError, force }?: { exact?: boolean; throwOnError?: boolean; force?: boolean },
   ): Promise<void>;
-  removeQueries(
-    queryKeyOrPredicateFn: TKey,
-    { exact }?: { exact?: boolean },
-  ): Promise<void>;
+  removeQueries(queryKeyOrPredicateFn: TKey, { exact }?: { exact?: boolean }): Promise<void>;
   getQuery(queryKey: TKey): CachedQuery<TResult> | undefined;
   getQueries(queryKey: TKey): CachedQuery<TResult>[];
   isFetching: number;
@@ -41,12 +34,7 @@ export interface QueryCache<TResult, TKey extends AnyQueryKey> {
 }
 
 export type UseQuery<TResult, TKey extends AnyQueryKey> = (
-  queryKey:
-    | TKey
-    | false
-    | null
-    | undefined
-    | (() => TKey | false | null | undefined),
+  queryKey: TKey | false | null | undefined | (() => TKey | false | null | undefined),
   queryFn: QueryFunction<TResult, TKey>,
   config?: QueryOptions<TResult>,
 ) => QueryResult<TResult>;
