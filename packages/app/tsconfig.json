@@ -1,20 +1,15 @@
 {
-  "include": [
-    "src",
-    "types"
-  ],
-  "exclude": [
-    "node_modules"
-  ],
+  "include": ["src", "types"],
+  "exclude": ["node_modules"],
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "jsx": "react",
     "baseUrl": "./",
     "paths": {
-      "~/*": [
-        "src/*"
-      ]
+      "/@/*": ["src/*"],
+      "react": ["@pika/react"],
+      "react-dom": ["@pika/react-dom"]
     }
   }
 }

@@ -1,6 +1,6 @@
-import React, { useRef, useState, useMemo } from 'react';
-import classNames from 'classnames';
-import { useOutsideAlerter, clamp, addEventListeners, Keys } from '~/utils';
+import React, { useRef, useState, useMemo } from "react";
+import classNames from "classnames";
+import { useOutsideAlerter, clamp, addEventListeners, Keys } from "/@/utils";
 
 export interface SliderProps {
   value: number;
@@ -9,12 +9,7 @@ export interface SliderProps {
   className?: string;
 }
 
-export const Slider = ({
-  value,
-  maxValue,
-  className,
-  onChange,
-}: SliderProps) => {
+export const Slider = ({ value, maxValue, className, onChange }: SliderProps) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const [hide, setHide] = useState(true);
 
@@ -30,26 +25,17 @@ export const Slider = ({
   const left = useMemo(() => `${(value / maxValue) * 100}%`, [value]);
 
   return (
-    <div
-      ref={ref}
-      className={classNames(
-        'flex items-center justify-center group',
-        className,
-      )}
-    >
+    <div ref={ref} className={classNames("flex items-center justify-center group", className)}>
       <div className="py-1 relative min-w-full">
         <div className="h-1 bg-gray-500 rounded-full">
+          <div className="absolute h-1 rounded-full bg-gray-200 w-0" style={{ width: left }}></div>
           <div
-            className="absolute h-1 rounded-full bg-gray-200 w-0"
-            style={{ width: left }}
-          ></div>
-          <div
-            title={'' + value}
+            title={"" + value}
             // We use opacity since using display none or visibility hidden removes the ability
             // to tab to this element :) See https://stackoverflow.com/a/51408521
             className={classNames(
-              'absolute h-3 w-3 flex items-center justify-center rounded-full bg-secondary-400 shadow border border-secondary-600 -ml-2 top-0 cursor-pointer group-hover:opacity-100',
-              hide ? 'opacity-0' : 'opacity-100',
+              "absolute h-3 w-3 flex items-center justify-center rounded-full bg-secondary-400 shadow border border-secondary-600 -ml-2 top-0 cursor-pointer group-hover:opacity-100",
+              hide ? "opacity-0" : "opacity-100",
             )}
             // Whether the user clicks or tabs to this, show it!!
             onFocus={() => setHide(false)}
@@ -82,9 +68,7 @@ export const Slider = ({
                   }
 
                   const { left, width } = ref.current.getBoundingClientRect();
-                  const newValue = Math.round(
-                    clamp((e.clientX - left) / width, 0, 1) * maxValue,
-                  );
+                  const newValue = Math.round(clamp((e.clientX - left) / width, 0, 1) * maxValue);
                   onChange(newValue);
                 },
                 mouseup: () => {

@@ -1,8 +1,8 @@
-import { createQueryCache } from "~/queries/cache";
+import { createQueryCache } from "/@/queries/cache";
 import { Artist } from "types";
-import { useUserData, get } from "~/firestore";
+import { useUserData, get } from "/@/firestore";
 import * as Sentry from "@sentry/browser";
-import { useDefinedUser } from "~/auth";
+import { useDefinedUser } from "/@/auth";
 
 const {
   useQuery: useArtistQuery,

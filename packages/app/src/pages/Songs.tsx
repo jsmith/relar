@@ -1,11 +1,11 @@
 import React, { useRef, useEffect, useState } from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { useUser } from "~/auth";
-import { useUserData } from "~/firestore";
-import Skeleton from "react-loading-skeleton";
-import { useUserStorage } from "~/storage";
+import { useUser } from "/@/auth";
+import { useUserData } from "/@/firestore";
+// import Skeleton from "react-loading-skeleton";
+import { useUserStorage } from "/@/storage";
 import { Song } from "types";
-import { usePlayer } from "~/player";
+import { usePlayer } from "/@/player";
 
 const headerNames = ["Title", "Artist", "Album"];
 
@@ -20,9 +20,7 @@ const Row = ({ children }: { children: React.ReactNode }) => {
 const LoadingCell = ({ width }: { width?: number }) => {
   return (
     <Row>
-      <div className="pr-3">
-        <Skeleton width={width} />
-      </div>
+      <div className="pr-3">{/* <Skeleton width={width} /> */}</div>
     </Row>
   );
 };

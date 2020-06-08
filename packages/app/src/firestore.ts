@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { firestore } from "~/firebase";
-import { useUser } from "~/auth";
+import { firestore } from "/@/firebase";
+import { useUser } from "/@/auth";
 import { ResultAsync } from "neverthrow";
 
 export const useUserData = () => {

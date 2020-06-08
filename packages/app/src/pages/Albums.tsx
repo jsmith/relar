@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useUserData } from "~/firestore";
-import { AlbumCard } from "~/sections/AlbumCard";
+import { useUserData } from "/@/firestore";
+import { AlbumCard } from "/@/sections/AlbumCard";
 import { Album } from "types";
-import { useAlbums } from "~/queries/album";
+import { useAlbums } from "/@/queries/album";
 
 export const Albums = () => {
   const albums = useAlbums();

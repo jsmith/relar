@@ -1,13 +1,7 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { usePlayer } from "~/player";
-import { useUserStorage, StorageErrorCode } from "~/storage";
-import {
-  FaRegHeart,
-  FaHeart,
-  FaVolumeMute,
-  FaVolumeDown,
-  FaVolumeUp,
-} from "react-icons/fa";
+import { usePlayer } from "/@/player";
+import { useUserStorage, StorageErrorCode } from "/@/storage";
+import { FaRegHeart, FaHeart, FaVolumeMute, FaVolumeDown, FaVolumeUp } from "react-icons/fa";
 import {
   MdQueueMusic,
   MdRepeat,
@@ -19,12 +13,12 @@ import {
   MdPauseCircleOutline,
 } from "react-icons/md";
 import { FiDisc } from "react-icons/fi";
-import { useUserData } from "~/firestore";
+import { useUserData } from "/@/firestore";
 import { ResultAsync } from "neverthrow";
 import * as Sentry from "@sentry/browser";
-import { Slider } from "~/components/Slider";
+import { Slider } from "/@/components/Slider";
 import classNames from "classnames";
-import { Thumbnail } from "~/components/Thumbnail";
+import { Thumbnail } from "/@/components/Thumbnail";
 
 /**
  *
@@ -47,9 +41,7 @@ function fmtMSS(s: number) {
 }
 
 export const Player = () => {
-  const [repeat, setRepeat] = useState<"none" | "repeat-one" | "repeat">(
-    "none",
-  );
+  const [repeat, setRepeat] = useState<"none" | "repeat-one" | "repeat">("none");
   const [song, setSong] = usePlayer();
   const storage = useUserStorage();
   const userData = useUserData();
@@ -127,9 +119,7 @@ export const Player = () => {
       return;
     }
 
-    console.info(
-      `Loaded metadata. Track length is ${audioRef.current.duration}`,
-    );
+    console.info(`Loaded metadata. Track length is ${audioRef.current.duration}`);
     setDuration(audioRef.current.duration);
   };
 
@@ -210,18 +200,10 @@ export const Player = () => {
             }
             className={classNames(
               "focus:outline-none ",
-              repeat === "none"
-                ? "text-gray-300 hover:text-gray-100"
-                : "text-secondary-400",
+              repeat === "none" ? "text-gray-300 hover:text-gray-100" : "text-secondary-400",
             )}
             onClick={() =>
-              setRepeat(
-                repeat === "none"
-                  ? "repeat"
-                  : repeat === "repeat"
-                  ? "repeat-one"
-                  : "none",
-              )
+              setRepeat(repeat === "none" ? "repeat" : repeat === "repeat" ? "repeat-one" : "none")
             }
           >
             {repeat === "repeat-one" ? (
@@ -230,10 +212,7 @@ export const Player = () => {
               <MdRepeat className="w-6 h-6" />
             )}
           </button>
-          <button
-            title="Previous Song"
-            className="text-gray-300 hover:text-gray-100"
-          >
+          <button title="Previous Song" className="text-gray-300 hover:text-gray-100">
             <MdSkipPrevious className="w-6 h-6" />
           </button>
           <button
@@ -247,61 +226,34 @@ export const Player = () => {
               <MdPlayCircleOutline className="w-8 h-8" />
             )}
           </button>
-          <button
-            title="Next Song"
-            className="text-gray-300 hover:text-gray-100"
-          >
+          <button title="Next Song" className="text-gray-300 hover:text-gray-100">
             <MdSkipNext className="w-6 h-6" />
           </button>
-          <button
-            title="Next Song"
-            className="text-gray-300 hover:text-gray-100"
-          >
+          <button title="Next Song" className="text-gray-300 hover:text-gray-100">
             <MdShuffle className="w-6 h-6" />
           </button>
         </div>
         <div className="h-2 w-full flex items-center space-x-2 mt-3">
-          <span className="text-xs text-gray-200 select-none">
-            {currentTimeText}
-          </span>
+          <span className="text-xs text-gray-200 select-none">{currentTimeText}</span>
           <Slider
             className="flex-grow"
             value={currentTime}
             maxValue={duration}
             onChange={seekTime}
           />
-          <span className="text-xs text-gray-200 select-none">
-            {endTimeText}
-          </span>
+          <span className="text-xs text-gray-200 select-none">{endTimeText}</span>
         </div>
       </div>
       <div className="flex justify-end" style={{ width: "30%" }}>
-        <button
-          className="text-gray-300 hover:text-gray-100"
-          title="Music Queue"
-        >
+        <button className="text-gray-300 hover:text-gray-100" title="Music Queue">
           <MdQueueMusic className="w-5 h-5" />
         </button>
 
-        <button
-          className="text-gray-300 hover:text-gray-100 ml-3"
-          title="Volume"
-        >
-          {volume === 0 ? (
-            <FaVolumeMute />
-          ) : volume < 50 ? (
-            <FaVolumeDown />
-          ) : (
-            <FaVolumeUp />
-          )}
+        <button className="text-gray-300 hover:text-gray-100 ml-3" title="Volume">
+          {volume === 0 ? <FaVolumeMute /> : volume < 50 ? <FaVolumeDown /> : <FaVolumeUp />}
         </button>
 
-        <Slider
-          value={volume}
-          maxValue={100}
-          onChange={setVolume}
-          className="w-32 ml-3"
-        />
+        <Slider value={volume} maxValue={100} onChange={setVolume} className="w-32 ml-3" />
       </div>
     </div>
   );

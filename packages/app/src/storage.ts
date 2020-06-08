@@ -1,5 +1,5 @@
-import { storage } from "~/firebase";
-import { useUser } from "~/auth";
+import { storage } from "/@/firebase";
+import { useUser } from "/@/auth";
 import { useMemo } from "react";
 import { ResultAsync } from "neverthrow";
 

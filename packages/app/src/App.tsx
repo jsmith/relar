@@ -1,23 +1,22 @@
-import { hot } from "react-hot-loader";
 import React, { useEffect, useMemo, useState } from "react";
-import { routes } from "~/routes";
+import { routes } from "/@/routes";
 import { useRouter } from "react-tiniest-router";
-import { Login } from "~/pages/Login";
-import { useUser } from "~/auth";
-import { Sidebar } from "~/components/Sidebar";
-import { Songs } from "~/pages/Songs";
+import { Login } from "/@/pages/Login";
+import { useUser } from "/@/auth";
+import { Sidebar } from "/@/components/Sidebar";
+import { Songs } from "/@/pages/Songs";
 import { FaMusic } from "react-icons/fa";
 import { GiSwordSpin } from "react-icons/gi";
 import classNames from "classnames";
-import { Player } from "~/components/Player";
+import { Player } from "/@/components/Player";
 import { MdLibraryMusic, MdSearch, MdAddCircle } from "react-icons/md";
-import { Artists } from "~/pages/Artists";
-import { Albums } from "~/pages/Albums";
-import { Home } from "~/pages/Home";
-import { Search } from "~/pages/Search";
-import { AlbumOverview } from "~/pages/AlbumOverview";
+import { Artists } from "/@/pages/Artists";
+import { Albums } from "/@/pages/Albums";
+import { Home } from "/@/pages/Home";
+import { Search } from "/@/pages/Search";
+import { AlbumOverview } from "/@/pages/AlbumOverview";
 import { ReactQueryDevtools } from "react-query-devtools";
-import { DragCapture } from "~/components/DragCapture";
+import { DragCapture } from "/@/components/DragCapture";
 
 interface AppProps {}
 
@@ -84,10 +83,9 @@ function App(_: React.Props<AppProps>) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [routeId, loading]);
 
-  const route = useMemo(
-    () => Object.values(routes).find((route) => route.id === routeId),
-    [routeId],
-  );
+  const route = useMemo(() => Object.values(routes).find((route) => route.id === routeId), [
+    routeId,
+  ]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -104,9 +102,7 @@ function App(_: React.Props<AppProps>) {
           sidebar={
             <div className="h-full bg-primary-700 w-56">
               <div className="flex items-center">
-                <h1 className="pl-5 pr-3 py-3 text-2xl tracking-wider">
-                  RELAR
-                </h1>
+                <h1 className="pl-5 pr-3 py-3 text-2xl tracking-wider">RELAR</h1>
                 <GiSwordSpin className="w-6 h-6" />
               </div>
               {/* TODO accessible */}
@@ -139,15 +135,8 @@ function App(_: React.Props<AppProps>) {
             </div>
           }
         >
-          <div
-            className={classNames(
-              "h-full bg-primary-800",
-              route.containerClassName,
-            )}
-          >
-            {(isRoute(routes.songs) ||
-              isRoute(routes.artists) ||
-              isRoute(routes.albums)) && (
+          <div className={classNames("h-full bg-primary-800", route.containerClassName)}>
+            {(isRoute(routes.songs) || isRoute(routes.artists) || isRoute(routes.albums)) && (
               <ul className="flex space-x-4 text-xl">
                 {/* TODO accessible */}
                 {libraryLinks.map(({ label, route }) => (
@@ -155,9 +144,7 @@ function App(_: React.Props<AppProps>) {
                     key={label}
                     className={classNames(
                       "my-2 border-gray-300 cursor-pointer hover:text-gray-200",
-                      isRoute(route)
-                        ? "border-b text-gray-200"
-                        : " text-gray-400",
+                      isRoute(route) ? "border-b text-gray-200" : " text-gray-400",
                     )}
                     onClick={() => goTo(route)}
                   >
@@ -202,4 +189,4 @@ function App(_: React.Props<AppProps>) {
   );
 }
 
-export default hot(module)(App);
+export default App;

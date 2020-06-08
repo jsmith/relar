@@ -1,10 +1,10 @@
 import React from "react";
 import { Album } from "types";
-import { useThumbnail } from "~/queries/thumbnail";
-import { useArtist } from "~/queries/artist";
-import { ThumbnailCard } from "~/components/ThumbnailCard";
+import { useThumbnail } from "/@/queries/thumbnail";
+import { useArtist } from "/@/queries/artist";
+import { ThumbnailCard } from "/@/components/ThumbnailCard";
 import { useRouter } from "react-tiniest-router";
-import { routes } from "~/routes";
+import { routes } from "/@/routes";
 
 export const AlbumCard = ({ album }: { album: Album }) => {
   const thumbnail = useThumbnail(album);

@@ -1,8 +1,8 @@
 import React, { useMemo } from "react";
 import { Song } from "types";
 import { MdMusicNote, MdPlayArrow } from "react-icons/md";
-import { LoadingCell, TextCell, Cell } from "~/components/Cell";
-import { usePlayer } from "~/player";
+import { LoadingCell, TextCell, Cell } from "/@/components/Cell";
+import { usePlayer } from "/@/player";
 import classNames from "classnames";
 
 type Attrs = "play" | "title" | "artist" | "count" | "length" | "favorite";

@@ -1,7 +1,7 @@
-import { useUserStorage, getDownloadURL } from "~/storage";
-import { useDefinedUser } from "~/auth";
+import { useUserStorage, getDownloadURL } from "/@/storage";
+import { useDefinedUser } from "/@/auth";
 import { Album } from "types";
-import { createQueryCache } from "~/queries/cache";
+import { createQueryCache } from "/@/queries/cache";
 import * as Sentry from "@sentry/browser";
 
 const {

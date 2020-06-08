@@ -1,13 +1,33 @@
 {
   "name": "app",
   "scripts": {
-    "dev": "parcel src/index.html",
-    "build": "parcel build src/index.html",
+    "dev": "vite serve src",
+    "build": "vite build src --outDir dist",
     "test": "jest",
     "check-style": "prettier --list-different \"**/*.{ts,tsx,js}\"",
     "lint": "eslint \"**/*.{ts,tsx}\"",
     "compile": "tsc --noEmit",
     "deps": "depcheck --ignore-dirs node_modules --ignores \"@types/*\""
+  },
+  "dependencies": {
+    "@pika/react": "^16.13.1",
+    "@pika/react-dom": "^16.13.1",
+    "@sentry/browser": "^5.15.5",
+    "classnames": "^2.2.6",
+    "fast-average-color": "^6.0.2",
+    "firebase": "^7.14.5",
+    "neverthrow": "^2.3.4",
+    "react-aria-modal": "^4.0.0",
+    "react-hot-loader": "^4.12.21",
+    "react-icons": "^3.10.0",
+    "react-infinite-scroll-component": "^5.0.4",
+    "react-query": "^1.5.3",
+    "react-query-devtools": "^1.1.17",
+    "react-sidebar": "^3.0.2",
+    "react-tiniest-router": "^0.1.2",
+    "runtypes": "4.2.0",
+    "tinycolor2": "^1.4.1",
+    "types": "^0.1.0"
   },
   "devDependencies": {
     "@snowpack/app-scripts-react": "^0.8.0",
@@ -26,35 +46,11 @@
     "eslint-config-restricted-globals": "^0.1.0",
     "eslint-plugin-react": "^7.19.0",
     "eslint-plugin-react-hooks": "^3.0.0",
-    "jest": "^25.4.0",
+    "jest": "^26.0.1",
     "prettier": "^2.0.5",
-    "react": "^16.13.0",
-    "react-dom": "^16.13.0",
     "tailwindcss": "^1.4.6",
-    "typescript": "^3.8.0"
-  },
-  "dependencies": {
-    "@hot-loader/react-dom": "^16.13.0",
-    "@sentry/browser": "^5.15.5",
-    "classnames": "^2.2.6",
-    "fast-average-color": "^6.0.2",
-    "firebase": "^7.14.5",
-    "neverthrow": "^2.3.4",
-    "parcel-bundler": "^1.12.4",
-    "react-aria-modal": "^4.0.0",
-    "react-hot-loader": "^4.12.21",
-    "react-icons": "^3.10.0",
-    "react-infinite-scroll-component": "^5.0.4",
-    "react-loading-skeleton": "^2.0.1",
-    "react-query": "^1.5.3",
-    "react-query-devtools": "^1.1.17",
-    "react-sidebar": "^3.0.2",
-    "react-tiniest-router": "^0.1.2",
-    "runtypes": "4.2.0",
-    "tinycolor2": "^1.4.1",
-    "types": "^0.1.0"
-  },
-  "alias": {
-    "react-dom": "@hot-loader/react-dom"
+    "typescript": "^3.8.0",
+    "vite": "0.20.1",
+    "vite-plugin-react": "^2.0.3"
   }
 }

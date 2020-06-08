@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useState, useContext } from "react";
-import { auth } from "~/firebase";
+import { auth } from "/@/firebase";
 
 export const UserContext = createContext<{
   user: firebase.User | undefined;
@@ -21,11 +21,7 @@ export const UserProvider = (props: React.Props<{}>) => {
     });
   }, [loading]);
 
-  return (
-    <UserContext.Provider value={{ user, loading }}>
-      {props.children}
-    </UserContext.Provider>
-  );
+  return <UserContext.Provider value={{ user, loading }}>{props.children}</UserContext.Provider>;
 };
 
 export const useUser = () => {

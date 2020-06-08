@@ -1,7 +1,7 @@
 import React from "react";
-import { HomeTopic } from "~/components/HomeTopic";
-import { useAlbums } from "~/queries/album";
-import { AlbumCard } from "~/sections/AlbumCard";
+import { HomeTopic } from "/@/components/HomeTopic";
+import { useAlbums } from "/@/queries/album";
+import { AlbumCard } from "/@/sections/AlbumCard";
 
 export const Home = () => {
   const albums = useAlbums();

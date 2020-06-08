@@ -1,7 +1,7 @@
-import { createQueryCache } from "~/queries/cache";
+import { createQueryCache } from "/@/queries/cache";
 import { Song, Album } from "types";
-import { useUserData, get } from "~/firestore";
-import { useDefinedUser } from "~/auth";
+import { useUserData, get } from "/@/firestore";
+import { useDefinedUser } from "/@/auth";
 import * as Sentry from "@sentry/browser";
 
 const {

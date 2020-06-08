@@ -1,5 +1,5 @@
 import React from "react";
-import { ThumbnailCard, ThumbnailCardProps } from "~/components/ThumbnailCard";
+import { ThumbnailCard, ThumbnailCardProps } from "/@/components/ThumbnailCard";
 
 export interface HomeTopicProps {
   title: string;

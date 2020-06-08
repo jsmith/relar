@@ -1,5 +1,5 @@
 import React from "react";
-import Skeleton from "react-loading-skeleton";
+// import Skeleton from "react-loading-skeleton";
 import classNames from "classnames";
 
 export const Cell = ({
@@ -24,9 +24,7 @@ export const Cell = ({
 export const LoadingCell = ({ width }: { width?: number }) => {
   return (
     <Cell className="px-6 py-4">
-      <div className="pr-3">
-        <Skeleton width={width} />
-      </div>
+      <div className="pr-3">{/* <Skeleton width={width} /> */}</div>
     </Cell>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Thumbnail } from "~/components/Thumbnail";
+import { Thumbnail } from "/@/components/Thumbnail";
 import { MdPlayCircleFilled } from "react-icons/md";
 import classNames from "classnames";
 
@@ -10,12 +10,7 @@ export interface ThumbnailCardProps {
   onClick?: () => void;
 }
 
-export const ThumbnailCard = ({
-  thumbnail,
-  title,
-  subtitle,
-  onClick,
-}: ThumbnailCardProps) => {
+export const ThumbnailCard = ({ thumbnail, title, subtitle, onClick }: ThumbnailCardProps) => {
   const [focused, setFocused] = useState(false);
 
   return (
@@ -46,9 +41,7 @@ export const ThumbnailCard = ({
           className="transform translate-x-1/2 translate-y-1/2"
         >
           <MdPlayCircleFilled
-            className={classNames(
-              "w-10 h-10 focus:w-12 focus:h-12 hover:w-12 hover:h-12",
-            )}
+            className={classNames("w-10 h-10 focus:w-12 focus:h-12 hover:w-12 hover:h-12")}
           />
         </button>
       </div>
