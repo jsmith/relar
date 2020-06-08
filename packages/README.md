@@ -5,3 +5,8 @@ Just some instructions about deployment.
 ```
 firebase deploy --only functions
 ```
+
+### Hosting
+```
+firebase deploy --only hosting
+```

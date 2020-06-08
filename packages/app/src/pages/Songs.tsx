@@ -88,8 +88,8 @@ export const Songs = () => {
     rows = songs.map((song) => (
       <tr key={song.id} onClick={() => playSong(song)}>
         <TextRow text={song.title} />
-        <TextRow text={song.artist} />
-        <TextRow text={song.album} />
+        <TextRow text={song.artist?.name} />
+        <TextRow text={song.album?.name} />
       </tr>
     ));
   }

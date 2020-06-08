@@ -4,6 +4,11 @@ import { auth } from "/@/firebase";
 import { useRouter } from "react-tiniest-router";
 import { routes } from "/@/routes";
 import { useUser } from "/@/auth";
+import * as Sentry from "@sentry/browser";
+import { CardPage } from "/@/components/CardPage";
+import { Input } from "/@/components/Input";
+import { Link } from "/@/components/Link";
+import { preventAndCall } from "/@/utils";
 
 export const Login = () => {
   const [email, setEmail] = useState("");
@@ -11,6 +16,8 @@ export const Login = () => {
   const [error, setError] = useState<string>();
   const { goTo } = useRouter();
   const { user } = useUser();
+
+  // TODO react hook keyboard shortcut
 
   useEffect(() => {
     if (user) {
@@ -22,48 +29,55 @@ export const Login = () => {
   const login = async () => {
     try {
       await auth.signInWithEmailAndPassword(email, password);
-      goTo(routes.songs);
+      goTo(routes.home);
     } catch (e) {
-      console.error(e);
-      setError("Invalid credentials. Please try again!");
+      const code: "auth/invalid-email" | "auth/wrong-password" | "auth/network-request-failed" =
+        e.code;
+      switch (code) {
+        case "auth/invalid-email":
+          setError("Please provide a valid email address.");
+          break;
+        case "auth/wrong-password":
+          setError("Please provide a valid password.");
+          break;
+        case "auth/network-request-failed":
+          setError("Network error.");
+          break;
+        default:
+          console.error(e);
+          Sentry.captureException(e);
+          setError("Invalid credentials. Please try again!");
+          break;
+      }
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-full text-gray-700">
-      <header>
-        <h1 className="text-4xl">RELAR</h1>
-      </header>
-      <div className="shadow-xl rounded p-4 bg-white mt-5">
-        <form>
-          <label className="block">
-            <span className="">Email</span>
-            <input
-              type="email"
-              className="form-input mt-1 block w-full"
-              placeholder="john@example.com"
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </label>
-          <label className="block mt-3">
-            <span className="">Password</span>
-            <input
-              type="password"
-              className="form-input mt-1 block w-full"
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </label>
-          {error && <div className="bg-red-300 text-red-700 text-center p-4 my-2">{error}</div>}
-          <Button
-            label="Login"
-            className="w-full mt-5"
-            onClick={(e) => {
-              e.preventDefault();
-              login();
-            }}
-          />
-        </form>
-      </div>
-    </div>
+    <CardPage
+      footer={
+        <div className="space-x-2 flex justify-center items-center h-full">
+          <span>{"Don't have an account?"}</span>
+          <Link route={routes.signup} label="Sign Up" />
+        </div>
+      }
+    >
+      <form className="space-y-3">
+        <Input
+          value={email}
+          onChange={setEmail}
+          label="Email"
+          type="email"
+          placeholder="john@example.com"
+        />
+        <Input value={password} onChange={setPassword} label="Password" type="password" />
+        {error && (
+          <div className="bg-red-200 text-red-700 rounded text-center p-4 my-2">{error}</div>
+        )}
+        <div>
+          <Link route={routes.forgotPassword} label="Forgot password?" />
+        </div>
+        <Button label="Login" className="w-full" onClick={preventAndCall(login)} />
+      </form>
+    </CardPage>
   );
 };

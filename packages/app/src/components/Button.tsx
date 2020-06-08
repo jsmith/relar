@@ -13,7 +13,7 @@ export interface ButtonProps
 export const Button = ({ invert, ...props }: ButtonProps) => {
   const className = invert
     ? "bg-transparent text-primary border-primary"
-    : "bg-primary-600 border-transparent hover:bg-primary-500 focus:outline-none focus:border-primary-700";
+    : "bg-primary-600 border-transparent focus:bg-primary-500 hover:bg-primary-500 focus:outline-none focus:border-primary-700";
 
   return (
     <button

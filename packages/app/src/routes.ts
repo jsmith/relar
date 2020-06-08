@@ -1,3 +1,12 @@
+import { RouteType } from "react-tiniest-router/dist/types";
+
+export interface CustomRoute extends RouteType {
+  protected: boolean;
+  sidebar: boolean;
+  className: string;
+  containerClassName: string;
+}
+
 // TODO better names for className and containerClassname
 // Also all of these don't *need* these attributes
 export const routes = {
@@ -12,6 +21,30 @@ export const routes = {
   login: {
     id: "login",
     path: "/login",
+    protected: false,
+    sidebar: false,
+    className: "py-2",
+    containerClassName: "px-5",
+  },
+  signup: {
+    id: "signup",
+    path: "/signup",
+    protected: false,
+    sidebar: false,
+    className: "py-2",
+    containerClassName: "px-5",
+  },
+  forgotPassword: {
+    id: "forgot-password",
+    path: "/forgot-password",
+    protected: false,
+    sidebar: false,
+    className: "py-2",
+    containerClassName: "px-5",
+  },
+  forgotPasswordSuccess: {
+    id: "forgot-password-success",
+    path: "/forgot-password-success",
     protected: false,
     sidebar: false,
     className: "py-2",
