@@ -20,14 +20,17 @@ import {
   ArtistType,
   Artist,
 } from "types";
-import { Record, Runtype, Result as RuntypeResult, Static } from "runtypes";
+import { Record, Result as RuntypeResult, Static } from "runtypes";
 import * as uuid from "uuid";
 import { Transaction, Query, DocumentReference } from "@google-cloud/firestore";
 
+// This is where the max songs limit is set
+// To update this in production just update this value and
+// then deploy
 const MAX_SONGS = 10;
 
 admin.initializeApp();
-// const gcs = new Storage();
+
 const db = admin.firestore();
 db.settings({ ignoreUndefinedProperties: true });
 
@@ -57,8 +60,6 @@ interface Info {
   type: "info";
   message: string;
 }
-
-// ok(object).andThen(checkObjectName).andThen(checkContentType)
 
 const checkObjectName = <O extends ObjectMetadata>(
   object: O,
@@ -286,7 +287,6 @@ const validateOrWrite = <A>(
 };
 
 export const createSong = functions.storage.object().onFinalize(async (object) => {
-  // TODO extract image
   const { dispose, tmpDir } = await createTmpDir();
   return ok<ObjectMetadata, Warning | Error | Info>(object)
     .map(logVersion)
