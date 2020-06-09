@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/browser";
 
 if (process.env.NODE_ENV === "production") {
-  // Only enable sentry is production
+  // Only enable sentry in production
   Sentry.init({
     environment: process.env.NODE_ENV,
     dsn: "https://ae6c432b2c074f17b223ddd11df69461@o400394.ingest.sentry.io/5258806",

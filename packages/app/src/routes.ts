@@ -5,6 +5,7 @@ export interface CustomRoute extends RouteType {
   sidebar: boolean;
   className: string;
   containerClassName: string;
+  title: string;
 }
 
 // TODO better names for className and containerClassname
@@ -17,6 +18,7 @@ export const routes = {
     sidebar: false,
     className: "py-2",
     containerClassName: "px-5",
+    title: "Account | RELAR",
   },
   login: {
     id: "login",
@@ -25,6 +27,7 @@ export const routes = {
     sidebar: false,
     className: "py-2",
     containerClassName: "px-5",
+    title: "Login | RELAR",
   },
   signup: {
     id: "signup",
@@ -33,6 +36,7 @@ export const routes = {
     sidebar: false,
     className: "py-2",
     containerClassName: "px-5",
+    title: "Sign Up | RELAR",
   },
   forgotPassword: {
     id: "forgot-password",
@@ -41,6 +45,7 @@ export const routes = {
     sidebar: false,
     className: "py-2",
     containerClassName: "px-5",
+    title: "Forgot Password | RELAR",
   },
   forgotPasswordSuccess: {
     id: "forgot-password-success",
@@ -49,6 +54,7 @@ export const routes = {
     sidebar: false,
     className: "py-2",
     containerClassName: "px-5",
+    title: "Forgot Password Confirmation | RELAR",
   },
   home: {
     id: "home",
@@ -57,6 +63,7 @@ export const routes = {
     sidebar: true,
     className: "py-2",
     containerClassName: "px-5",
+    title: "Home | RELAR",
   },
   search: {
     id: "search",
@@ -65,6 +72,7 @@ export const routes = {
     sidebar: true,
     className: "py-2",
     containerClassName: "px-5",
+    title: "Search | RELAR",
   },
   songs: {
     id: "songs",
@@ -73,6 +81,7 @@ export const routes = {
     sidebar: true,
     className: "py-2",
     containerClassName: "px-5",
+    title: "Songs | RELAR",
   },
   albums: {
     id: "albums",
@@ -81,6 +90,7 @@ export const routes = {
     sidebar: true,
     className: "py-2",
     containerClassName: "px-5",
+    title: "Albums | RELAR",
   },
   album: {
     id: "album",
@@ -89,6 +99,7 @@ export const routes = {
     sidebar: true,
     className: "",
     containerClassName: "px-5",
+    title: "Album | RELAR",
   },
   artists: {
     id: "artists",
@@ -97,6 +108,7 @@ export const routes = {
     sidebar: true,
     className: "py-2",
     containerClassName: "px-5",
+    title: "Artists | RELAR",
   },
   // gallery: {
   //   id: 'gallery',

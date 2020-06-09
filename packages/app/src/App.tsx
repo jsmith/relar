@@ -23,6 +23,7 @@ import { ForgotPasswordSuccess } from "/@/pages/ForgotPasswordSuccess";
 import { RouteType } from "react-tiniest-router/dist/types";
 import { AccountDropdown } from "/@/components/AccountDropdown";
 import { auth } from "/@/firebase";
+import { useDocumentTitle } from "/@/utils";
 
 interface AppProps {}
 
@@ -96,6 +97,8 @@ export const App = (_: React.Props<AppProps>) => {
   const route = useMemo(() => Object.values(routes).find((route) => route.id === routeId), [
     routeId,
   ]);
+
+  useDocumentTitle(route?.title);
 
   if (loading || (route?.protected && !user)) {
     return <div>Loading...</div>;

@@ -10,6 +10,9 @@ export interface ButtonProps
   invert?: boolean;
 }
 
+// TODO only outline on tab
+// https://stackoverflow.com/questions/31402576/enable-focus-only-on-keyboard-use-or-tab-press
+
 export const Button = ({ invert, ...props }: ButtonProps) => {
   const className = invert
     ? "bg-transparent text-primary border-primary"
