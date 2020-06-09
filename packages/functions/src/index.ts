@@ -5,7 +5,7 @@ import * as path from "path";
 import * as sharp from "sharp";
 import * as fs from "fs-extra";
 import * as crypto from "crypto";
-import { Result, ok, err, ResultAsync } from "neverthrow";
+import { Result, ok, err, ResultAsync, Err } from "neverthrow";
 import { version } from "../package.json";
 import * as id3 from "id3-parser";
 import { ObjectMetadata } from "firebase-functions/lib/providers/storage";
@@ -29,6 +29,16 @@ import { Transaction, Query, DocumentReference } from "@google-cloud/firestore";
 // then deploy
 const MAX_SONGS = 10;
 
+export const md5Hash = (localFilePath: string): Promise<Result<string, Error>> => {
+  return new Promise<Result<string, Error>>((resolve) => {
+    const md5sum = crypto.createHash("md5");
+    const stream = fs.createReadStream(localFilePath);
+    stream.on("data", (data) => md5sum.update(data));
+    stream.on("error", (e) => resolve(err(e)));
+    stream.on("end", () => resolve(ok(md5sum.digest("hex"))));
+  });
+};
+
 admin.initializeApp();
 
 const db = admin.firestore();
@@ -46,7 +56,7 @@ interface CustomObject {
   contentType: string;
 }
 
-interface Error {
+interface IError {
   type: "error";
   message: string;
 }
@@ -114,7 +124,7 @@ const matchContentType = (pattern: string) => <O extends CustomObject>(
       });
 };
 
-const unwrap = (r: Result<unknown, Error | Warning | Info>) => {
+const unwrap = (r: Result<unknown, IError | Warning | Info>) => {
   if (r.isErr()) {
     if (r.error.type === "error") {
       throw new Error(r.error.message);
@@ -129,7 +139,7 @@ const unwrap = (r: Result<unknown, Error | Warning | Info>) => {
 
 const downloadObject = (tmpDir: string) => <O extends { bucket: Bucket; filePath: string }>(
   o: O,
-): ResultAsync<O & { tmpFilePath: string; tmpDir: string }, Error> => {
+): ResultAsync<O & { tmpFilePath: string; tmpDir: string }, IError> => {
   // Download Source File
   const tmpFilePath = path.join(tmpDir, path.basename(o.filePath));
   console.info(`Downloading "${o.filePath}" to "${tmpFilePath}"!`);
@@ -137,7 +147,7 @@ const downloadObject = (tmpDir: string) => <O extends { bucket: Bucket; filePath
     o.bucket.file(o.filePath).download({
       destination: tmpFilePath,
     }),
-    (e): Error => ({
+    (e): IError => ({
       type: "error",
       message: `Unknown error while downloading "${o.filePath}": ` + e,
     }),
@@ -163,7 +173,7 @@ const createTmpDir = async () => {
 
 export const generateThumbs = functions.storage.object().onFinalize(async (object) => {
   const { dispose, tmpDir } = await createTmpDir();
-  return ok<ObjectMetadata, Warning | Error | Info>(object)
+  return ok<ObjectMetadata, Warning | IError | Info>(object)
     .map(logVersion)
     .andThen(checkObjectName)
     .andThen(checkContentType)
@@ -190,23 +200,23 @@ export const generateThumbs = functions.storage.object().onFinalize(async (objec
 
       return ResultAsync.fromPromise(
         Promise.all(uploadPromises),
-        (e): Error => ({ type: "error", message: `Unknown error resizing "${filePath}": ` + e }),
+        (e): IError => ({ type: "error", message: `Unknown error resizing "${filePath}": ` + e }),
       );
     })
     .then(dispose)
     .then(unwrap);
 });
 
-const readFile = (filePath: string): ResultAsync<Buffer, Error> => {
+const readFile = (filePath: string): ResultAsync<Buffer, IError> => {
   return ResultAsync.fromPromise(
     fs.readFile(filePath),
-    (e): Error => ({ type: "error", message: `Unable to read "${filePath}": ${e}` }),
+    (e): IError => ({ type: "error", message: `Unable to read "${filePath}": ${e}` }),
   );
 };
 
-const parseID3Tags = <O extends { tmpFilePath: string }>(
+export const parseID3Tags = <O extends { tmpFilePath: string }>(
   o: O,
-): ResultAsync<O & { id3Tag: IID3Tag }, Error> => {
+): ResultAsync<O & { id3Tag: IID3Tag }, IError> => {
   return readFile(o.tmpFilePath).andThen((buffer) => {
     const id3Tag = id3.parse(buffer);
     if (!id3Tag) {
@@ -225,7 +235,7 @@ const parseID3Tags = <O extends { tmpFilePath: string }>(
 
 const parseSongMetadata = (object: ObjectMetadata) => <O extends CustomObject>(
   o: O,
-): Result<O & { metadata: SongMetadata }, Error> => {
+): Result<O & { metadata: SongMetadata }, IError> => {
   if (!object.metadata) {
     return err({
       type: "error",
@@ -288,7 +298,7 @@ const validateOrWrite = <A>(
 
 export const createSong = functions.storage.object().onFinalize(async (object) => {
   const { dispose, tmpDir } = await createTmpDir();
-  return ok<ObjectMetadata, Warning | Error | Info>(object)
+  return ok<ObjectMetadata, Warning | IError | Info>(object)
     .map(logVersion)
     .andThen(checkObjectName)
     .andThen(checkContentType)
@@ -307,6 +317,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
         const newSongRef = userRef.collection("songs").doc(songId);
 
         // In a transaction, add the new rating and update the aggregate totals
+        let artworkHash: string | undefined;
         await db.runTransaction(async (transaction) => {
           const res = await transaction.get(userRef);
 
@@ -319,6 +330,43 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
           result.value.songCount = (result.value.songCount ?? 0) + 1;
           if (result.value.songCount > MAX_SONGS) {
             throw Error(`User exceeded maximum song count (${MAX_SONGS}).`);
+          }
+
+          // FIXME remove the uploaded file if we fail after this point
+          // I don't see this happening that often but it's very possible
+          // that we will throw an error after this if blocks finishes
+          if (id3Tag.image) {
+            let fileName: string;
+            if (id3Tag.image.mime === "image/png") {
+              fileName = "artwork.png";
+            } else if (id3Tag.image.mime === "image/jpeg") {
+              fileName = "artwork.jpg";
+            } else {
+              throw Error(
+                `Invalid MIME type "${id3Tag.image.mime}". Expected "image/png" or "image/jpeg".`,
+              );
+            }
+
+            const imageFilePath = path.resolve(tmpDir, fileName);
+            // This isn't the *most* efficient process 💁
+            // Basically we write the image data to disc and then stream the data back
+            // The example MD5 code I found online used a stream so it looks like I'm
+            // using a stream too 😂
+            await fs.writeFile(imageFilePath, id3Tag.image.data);
+            const hashResult = await md5Hash(imageFilePath);
+            if (hashResult.isErr()) {
+              throw Error(`Unable to hash song artwork for "${filePath}": ` + hashResult.error);
+            }
+
+            artworkHash = hashResult.value;
+            const destination = `${userId}/song_artwork/${artworkHash}/${fileName}`;
+            const [artworkExists] = await bucket.file(destination).exists();
+            if (artworkExists) {
+              console.log(`Artwork for song already exists: "${destination}"`);
+            } else {
+              console.info(`Uploading artwork from "${imageFilePath}" to "${destination}"!`);
+              await bucket.upload(imageFilePath, { destination });
+            }
           }
 
           // reads must come before writes in a snapshot so the following reads are grouped together
@@ -351,6 +399,9 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
               id: uuid.v4(),
               name: id3Tag.album,
               albumArtist: id3Tag.band ?? "",
+              // If this is a new album, initialize the artwork hash the the hash
+              // of the artwork for this song. Note that this value may be undefined.
+              artworkHash,
             };
 
             return {
@@ -358,6 +409,14 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
               doc: userRef.collection("albums").doc(newAlbum.id),
             };
           });
+
+          // If we are not creating new album AND that album doesn't currently have an album cover
+          // AND this *does* have artwork then set the artwork of the album 🎵
+          if (album && !album.artworkHash && artworkHash) {
+            // Update our local copy *and* update the remote copy
+            album.artworkHash = artworkHash;
+            await transaction.set(userRef.collection("albums").doc(album.id), album);
+          }
 
           const artist = validateOrWrite(transaction, artistValidation, () => {
             if (!id3Tag.artist) {
@@ -371,25 +430,6 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             };
           });
 
-          if (id3Tag.image) {
-            let fileName: string;
-            if (id3Tag.image.mime === "image/png") {
-              fileName = "artwork.png";
-            } else if (id3Tag.image.mime === "image/jpeg") {
-              fileName = "artwork.jpg";
-            } else {
-              throw Error(
-                `Invalid MIME type "${id3Tag.image.mime}". Expected "image/png" or "image/jpeg".`,
-              );
-            }
-
-            const imageFilePath = path.resolve(tmpDir, fileName);
-            const destination = `${userId}/song_artwork/${songId}/${fileName}`;
-            console.info(`Uploading artwork from "${imageFilePath}" to "${destination}"!`);
-            await fs.writeFile(imageFilePath, id3Tag.image.data);
-            await bucket.upload(imageFilePath, { destination });
-          }
-
           // Now we can create the song!
           const newSong: Song = {
             originalFileName: metadata.customMetadata.originalFileName,
@@ -402,6 +442,8 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             liked: false,
             played: 0,
             lastPlayed: undefined,
+            artworkHash,
+            artworkDownloadUrl32: undefined, // also undefined initially
           };
 
           // Update the user information (ie. the # of songs)

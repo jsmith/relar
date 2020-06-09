@@ -1,4 +1,4 @@
-import { MutableRefObject, useEffect } from "react";
+import { MutableRefObject, useEffect, useRef } from "react";
 import * as Sentry from "@sentry/browser";
 
 /**
@@ -207,4 +207,23 @@ export const preventAndCall = <E extends { preventDefault: () => void }>(f: (e: 
 ) => {
   e.preventDefault();
   f(e);
+};
+
+export const useDocumentTitle = (title?: string, retainOnUnmount = false) => {
+  const defaultTitle = useRef(document.title);
+
+  useEffect(() => {
+    if (title) {
+      document.title = title;
+    }
+  }, [title]);
+
+  useEffect(() => {
+    return () => {
+      if (!retainOnUnmount) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        document.title = defaultTitle.current;
+      }
+    };
+  }, [retainOnUnmount]);
 };

@@ -10,11 +10,11 @@ const test = functions(
     storageBucket: "toga-4e3f5.appspot.com",
     projectId: "toga-4e3f5",
   },
-  path.join(__dirname, "serviceAccountKey.json"),
+  path.resolve(__dirname, "..", "serviceAccountKey.json"),
 );
 
 // This must go *after* the `functions` init call
-import { createSong } from "./index";
+import { createSong, parseID3Tags, md5Hash } from "./index";
 
 const storage = admin.storage();
 const firestore = admin.firestore();
@@ -98,10 +98,57 @@ const getUserData = () => {
     .then((o) => o.data());
 };
 
+export const createTestSong = (song: Partial<Song>): Song => {
+  return {
+    id: "",
+    title: "",
+    format: "mp3",
+    liked: false,
+    originalFileName: "",
+    played: 0,
+    year: "",
+    artist: undefined,
+    album: undefined,
+    lastPlayed: undefined,
+    artworkHash: undefined,
+    artworkDownloadUrl32: undefined,
+    ...song,
+  };
+};
+
 const deleteCollection = async (collection: ReturnType<typeof firestore.collection>) => {
   const docs = await collection.listDocuments();
   await Promise.all(docs.map((doc) => doc.delete()));
 };
+
+describe("utils", () => {
+  describe("parseID3Tags", () => {
+    it("can parse the tags of an mp3 file", async () => {
+      const result = await parseID3Tags({
+        tmpFilePath: path.resolve(__dirname, "..", "assets", "file_with_artist_album.mp3"),
+      });
+
+      if (result.isErr()) {
+        throw Error("" + result.error);
+      }
+
+      const tags = result.value.id3Tag;
+      expect(tags.title).toEqual("WalloonLilliShort");
+      expect(tags.band).toEqual("Web Samples");
+      expect(tags.artist).toEqual("Hendrik Broekman");
+      expect(tags.album).toEqual("Web Samples");
+    });
+  });
+
+  describe("md5Hash", () => {
+    it("can hash image", async () => {
+      const filePath = path.resolve(__dirname, "..", "assets", "file_with_artist_album.mp3");
+      const result = await md5Hash(filePath);
+      const hash = result._unsafeUnwrap();
+      expect(hash).toEqual("91316d766920ee089779d22d12428c1a");
+    });
+  });
+});
 
 describe("functions", () => {
   describe("createSong", () => {
@@ -130,21 +177,13 @@ describe("functions", () => {
       const user = await getUserData();
 
       expect(user).toEqual({ songCount: 1 });
-
-      const expectedSong: Song = {
-        id: songId,
-        title: "WalloonLilliShort",
-        format: "mp3",
-        liked: false,
-        originalFileName: "file_just_title.mp3",
-        played: 0,
-        year: "",
-        artist: undefined,
-        album: undefined,
-        lastPlayed: undefined,
-      };
-
-      expect(song).toEqual(expectedSong);
+      expect(song).toEqual(
+        createTestSong({
+          id: songId,
+          title: "WalloonLilliShort",
+          originalFileName: "file_just_title.mp3",
+        }),
+      );
     });
 
     it("works when uploading a valid song with a title, artist and album", async () => {
@@ -157,22 +196,21 @@ describe("functions", () => {
 
       expect(user).toEqual({ songCount: 1 });
 
-      const expectedSong: Song = {
-        id: songId,
-        title: "WalloonLilliShort",
-        format: "mp3",
-        liked: false,
-        originalFileName: "file_with_artist_album.mp3",
-        played: 0,
-        year: "",
-        artist: song?.artist,
-        album: song?.album,
-        lastPlayed: undefined,
-      };
-
-      expect(song).toEqual(expectedSong);
-      expect(song?.album?.name).toEqual("Web Samples");
-      expect(song?.artist?.name).toEqual("Hendrik Broekman");
+      expect(song).toEqual(
+        createTestSong({
+          id: songId,
+          title: "WalloonLilliShort",
+          originalFileName: "file_with_artist_album.mp3",
+          album: {
+            name: "Web Samples",
+            id: song?.album.id,
+          },
+          artist: {
+            name: "Hendrik Broekman",
+            id: song?.artist.id,
+          },
+        }),
+      );
 
       const artist = await getArtist(song?.artist.id);
       const album = await getAlbum(song?.album.id);
@@ -186,6 +224,7 @@ describe("functions", () => {
         id: song?.album.id,
         name: "Web Samples",
         albumArtist: "Web Samples",
+        artworkHash: undefined,
       };
 
       expect(artist).toEqual(expectedArtist);
@@ -218,8 +257,8 @@ describe("functions", () => {
       const wrapped = test.wrap(createSong);
       const { objectMetadata, songId } = await upload("file_with_artwork.mp3");
       await wrapped(objectMetadata);
-
-      const file = storage.bucket().file(`testUser/song_artwork/${songId}/artwork.jpg`);
+      const song = await getSong(songId);
+      const file = storage.bucket().file(`testUser/song_artwork/${song?.artworkHash}/artwork.jpg`);
       const [exists] = await file.exists();
       expect(exists).toEqual(true);
     });

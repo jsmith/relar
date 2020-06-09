@@ -14,7 +14,6 @@ export const UserProvider = (props: React.Props<{}>) => {
 
   const checkUser = useCallback(
     (user: firebase.User | null) => {
-      console.log("user", user, loading);
       setUser(user ?? undefined);
 
       if (loading) {

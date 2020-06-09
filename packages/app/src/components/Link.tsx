@@ -9,6 +9,9 @@ export interface LinkProps {
   label?: string;
 }
 
+// TODO only outline on tab
+// https://stackoverflow.com/questions/31402576/enable-focus-only-on-keyboard-use-or-tab-press
+
 export const Link = ({ route, label, className }: LinkProps) => {
   const { goTo } = useRouter();
 

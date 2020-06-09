@@ -88,6 +88,9 @@ export const Player = () => {
       // TODO pause
       return;
     }
+
+    // TODO Update play count and set last played time
+
     const ref = storage.child("songs").child(`${song.id}.${song.format}`);
     try {
       const url = await ref.getDownloadURL();

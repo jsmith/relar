@@ -1,8 +1,0 @@
-{
-  "extends": "@snowpack/app-scripts-react",
-  "devOptions": {},
-  "installOptions": {},
-  "scripts": {
-    "build:css": "postcss"
-  }
-}
