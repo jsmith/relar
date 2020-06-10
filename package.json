@@ -6,6 +6,11 @@
     "prettier": "^2.0.5"
   },
   "scripts": {
-    "bootstrap": "lerna bootstrap --hoist"
+    "bootstrap": "lerna bootstrap --hoist",
+    "publish": "lerna run pub",
+    "build": "lerna run build",
+    "version": "npx lerna version --force-publish",
+    "lint": "lerna run lint",
+    "style-check": "lerna run style-check"
   }
 }

@@ -1,0 +1,47 @@
+name: Deploy
+
+on:
+  push:
+    tags:
+      - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: softprops/action-gh-release@v1
+        with:
+          # TODO changelog
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - uses: actions/setup-node@v1
+
+      # NPM_TOKEN generated on GitHub > Settings > Developer Settings > Personal Access Tokens
+      # Actually I might be able to get rid of this
+      - run: echo "registry=https://npm.pkg.github.com/jsmith\n//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/packages/function/.npmrc
+      - run: echo "registry=https://npm.pkg.github.com/jsmith\n//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/packages/app/.npmrc
+      - run: echo "registry=https://npm.pkg.github.com/jsmith\n//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/packages/types/.npmrc
+
+      - run: npm run bootstrap
+      - run: npm run publish # we are only publishing `types` atm
+      - run: npm run build # build all of the packages that need built
+
+      - uses: w9jds/firebase-action@master
+        with:
+          args: deploy
+        env:
+          PROJECT_PATH: ./packages
+          # FIREBASE_TOKEN generated using firebase login:ci
+          # See https://firebase.google.com/docs/cli#cli-ci-systems
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
