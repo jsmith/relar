@@ -5,7 +5,7 @@ import * as path from "path";
 import * as sharp from "sharp";
 import * as fs from "fs-extra";
 import * as crypto from "crypto";
-import { Result, ok, err, ResultAsync, Err } from "neverthrow";
+import { Result, ok, err, ResultAsync } from "neverthrow";
 import { version } from "../package.json";
 import * as id3 from "id3-parser";
 import { ObjectMetadata } from "firebase-functions/lib/providers/storage";
@@ -157,7 +157,6 @@ const downloadObject = (tmpDir: string) => <O extends { bucket: Bucket; filePath
 const createTmpDir = async () => {
   const token = crypto.randomBytes(32).toString("hex");
   const tmpDir = path.join(os.tmpdir(), "functions", token);
-  // const tmpFilePath = path.join(tmpDir, path.basename(o.filePath));
 
   // Ensure tmp dir exists
   await fs.ensureDir(tmpDir);
@@ -170,6 +169,10 @@ const createTmpDir = async () => {
     },
   };
 };
+
+export const health = functions.https.onRequest((_, res) => {
+  res.send(`Running v${version}`);
+});
 
 export const generateThumbs = functions.storage.object().onFinalize(async (object) => {
   const { dispose, tmpDir } = await createTmpDir();

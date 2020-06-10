@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "declaration": true,
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "module": "ES6"
+  },
+  "exclude": ["**/*.spec.ts", "**/dist"]
+}
