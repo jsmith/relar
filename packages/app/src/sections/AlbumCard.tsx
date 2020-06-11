@@ -1,5 +1,5 @@
 import React from "react";
-import { Album } from "types";
+import { Album } from "/@/shared/types";
 import { useThumbnail } from "/@/queries/thumbnail";
 import { useArtist } from "/@/queries/artist";
 import { ThumbnailCard } from "/@/components/ThumbnailCard";

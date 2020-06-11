@@ -1,6 +1,6 @@
 import * as functions from "firebase-functions-test";
 import * as admin from "firebase-admin";
-import { Song, SongMetadata, Artist, Album } from "types";
+import { Song, SongMetadata, Artist, Album } from "./shared/types";
 import * as uuid from "uuid";
 import * as path from "path";
 
@@ -112,6 +112,7 @@ export const createTestSong = (song: Partial<Song>): Song => {
     lastPlayed: undefined,
     artworkHash: undefined,
     artworkDownloadUrl32: undefined,
+    createdAt: 0,
     ...song,
   };
 };
@@ -177,11 +178,13 @@ describe("functions", () => {
       const user = await getUserData();
 
       expect(user).toEqual({ songCount: 1 });
+      expect(typeof song?.createdAt).toEqual("number");
       expect(song).toEqual(
         createTestSong({
           id: songId,
           title: "WalloonLilliShort",
           originalFileName: "file_just_title.mp3",
+          createdAt: song?.createdAt,
         }),
       );
     });
@@ -209,6 +212,7 @@ describe("functions", () => {
             name: "Hendrik Broekman",
             id: song?.artist.id,
           },
+          createdAt: song?.createdAt,
         }),
       );
 

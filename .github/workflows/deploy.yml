@@ -27,14 +27,7 @@ jobs:
 
       - uses: actions/setup-node@v1
 
-      # NPM_TOKEN generated on GitHub > Settings > Developer Settings > Personal Access Tokens
-      # Actually I might be able to get rid of this
-      - run: echo "registry=https://npm.pkg.github.com/jsmith\n//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/packages/function/.npmrc
-      - run: echo "registry=https://npm.pkg.github.com/jsmith\n//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/packages/app/.npmrc
-      - run: echo "registry=https://npm.pkg.github.com/jsmith\n//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/packages/types/.npmrc
-
       - run: npm run bootstrap
-      - run: npm run publish # we are only publishing `types` atm
       - run: npm run build # build all of the packages that need built
 
       - uses: w9jds/firebase-action@master

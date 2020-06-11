@@ -27,8 +27,7 @@
     "react-sidebar": "^3.0.2",
     "react-tiniest-router": "^0.1.2",
     "runtypes": "4.2.0",
-    "tinycolor2": "^1.4.1",
-    "types": "^0.1.0"
+    "tinycolor2": "^1.4.1"
   },
   "devDependencies": {
     "@snowpack/app-scripts-react": "^0.8.0",
