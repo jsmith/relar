@@ -1,5 +1,5 @@
 import { createQueryCache } from "/@/queries/cache";
-import { Song, Album } from "types";
+import { Song, Album } from "/@/shared/types";
 import { useUserData, get } from "/@/firestore";
 import { useDefinedUser } from "/@/auth";
 import * as Sentry from "@sentry/browser";

@@ -4,7 +4,7 @@ import { useUser } from "/@/auth";
 import { useUserData } from "/@/firestore";
 // import Skeleton from "react-loading-skeleton";
 import { useUserStorage } from "/@/storage";
-import { Song } from "types";
+import { Song } from "/@/shared/types";
 import { usePlayer } from "/@/player";
 
 const headerNames = ["Title", "Artist", "Album"];

@@ -19,7 +19,7 @@ import {
   Album,
   ArtistType,
   Artist,
-} from "types";
+} from "./shared/types";
 import { Record, Result as RuntypeResult, Static } from "runtypes";
 import * as uuid from "uuid";
 import { Transaction, Query, DocumentReference } from "@google-cloud/firestore";
@@ -447,6 +447,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             lastPlayed: undefined,
             artworkHash,
             artworkDownloadUrl32: undefined, // also undefined initially
+            createdAt: (admin.firestore.FieldValue.serverTimestamp() as unknown) as number,
           };
 
           // Update the user information (ie. the # of songs)

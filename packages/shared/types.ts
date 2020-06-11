@@ -81,6 +81,11 @@ export const SongType = Record({
   lastPlayed: Number.Or(Undefined),
 
   /**
+   * When the song was uploaded
+   */
+  createdAt: Number.Or(Undefined),
+
+  /**
    * The hash of the song artwork.
    */
   artworkHash: String.Or(Undefined),
