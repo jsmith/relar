@@ -178,7 +178,7 @@ describe("functions", () => {
       const user = await getUserData();
 
       expect(user).toEqual({ songCount: 1 });
-      console.log(song?.createdAt)
+      console.log(song?.createdAt);
       expect(song && typeof song.createdAt.toMillis()).toEqual("number");
       expect(song).toEqual(
         createTestSong({

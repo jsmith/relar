@@ -22,16 +22,14 @@ jobs:
         with:
           node-version: 10.x
       
-      - run: echo $GITHUB_WORKSPACE
-      - run: echo ${{ env.workspace }}
-      - run: echo $(pwd)
-      
-      - uses: DamianReeves/write-file-action@v1
-        with:
-          path: ${{ env.workspace }}/packages/functions/serviceAccountKey.json
-          contents: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      - run: ./.github/scripts/decrypt.sh
+        env:
+          GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
+          GOOGLE_KEY_GPG_PASS: ${{ secrets.GOOGLE_KEY_GPG_PASS }}
 
+      - run: npm install --no-package-lock
       - run: npm run bootstrap
+      - run: npx patch-package
       - run: npm run check:formatting
       - run: npm run check:lint
       # Not type checking because testing actually type checks
