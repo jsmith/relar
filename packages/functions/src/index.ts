@@ -447,7 +447,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             lastPlayed: undefined,
             artworkHash,
             artworkDownloadUrl32: undefined, // also undefined initially
-            createdAt: (admin.firestore.FieldValue.serverTimestamp() as unknown) as number,
+            createdAt: (admin.firestore.FieldValue.serverTimestamp() as unknown) as admin.firestore.Timestamp,
           };
 
           // Update the user information (ie. the # of songs)

@@ -36,6 +36,7 @@ The Relar app.
 - Switch to Blaze but add budget alert information.
 - Add "Recently Added" playlist that watches for new songs.
 - Method to contact! A dedicated email?
+- Ensure sentry is correctly configured.
 
 ## Before Release
 - Limit sign ups to "x" amount of people based on usage info from beta to stay within your price range (ideally the free). Or maybe just budget alerts.
