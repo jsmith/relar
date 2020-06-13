@@ -4,7 +4,9 @@
   "scripts": {
     "build": "tsc && rm lib/package.json && mv lib/src/* lib && rm -r lib/src",
     "test": "jest",
-    "lint": "eslint \"**/*.{ts,tsx}\""
+    "check:lint": "eslint \"**/*.{ts,tsx}\"",
+    "check:formatting": "prettier --list-different \"**/*.{ts,tsx,js}\"",
+    "check:types": "tsc --noEmit"
   },
   "engines": {
     "node": "10"

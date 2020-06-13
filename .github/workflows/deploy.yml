@@ -28,7 +28,7 @@ jobs:
       - uses: actions/setup-node@v1
 
       - run: npm run bootstrap
-      - run: npm run build # build all of the packages that need built
+      - run: npm run build
 
       - uses: w9jds/firebase-action@master
         with:

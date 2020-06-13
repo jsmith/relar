@@ -4,9 +4,9 @@
     "dev": "vite serve src",
     "build": "vite build src --outDir dist",
     "test": "jest",
-    "check-style": "prettier --list-different \"**/*.{ts,tsx,js}\"",
-    "lint": "eslint \"**/*.{ts,tsx}\"",
-    "compile": "tsc --noEmit",
+    "check:formatting": "prettier --list-different \"**/*.{ts,tsx,js}\"",
+    "check:lint": "eslint \"**/*.{ts,tsx}\"",
+    "check:types": "tsc --noEmit",
     "deps": "depcheck --ignore-dirs node_modules --ignores \"@types/*\""
   },
   "dependencies": {

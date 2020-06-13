@@ -1,1 +1,29 @@
-# TODO test, link, style check
+name: Tests
+
+on: [pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    # Typically it takes less than 2 minutes to run all of the checks :)
+    timeout-minutes: 3
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+
+      - run: npm ci --no-optional
+      - run: npm run check:formatting
+      - run: npm run check:lint
+      - run: npm run check:types
+      - run: npm run test

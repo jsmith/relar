@@ -7,10 +7,11 @@
   },
   "scripts": {
     "bootstrap": "lerna bootstrap --hoist",
-    "publish": "lerna run pub",
     "build": "lerna run build",
-    "version": "npx lerna version --force-publish",
-    "lint": "lerna run lint",
-    "style-check": "lerna run style-check"
+    "version": "lerna version --force-publish",
+    "check:types": "lerna run check:types",
+    "check:lint": "lerna run check:lint",
+    "check:formatting": "lerna run check:formatting",
+    "test": "lerna run test"
   }
 }
