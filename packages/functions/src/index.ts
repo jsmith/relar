@@ -119,9 +119,9 @@ const matchContentType = (pattern: string) => <O extends CustomObject>(
   return object.contentType.includes(pattern)
     ? ok(object)
     : err({
-        type: "warn",
-        message: `"${object.filePath}" does not have the correct Content-Type: ${object.contentType}`,
-      });
+      type: "warn",
+      message: `"${object.filePath}" does not have the correct Content-Type: ${object.contentType}`,
+    });
 };
 
 const unwrap = (r: Result<unknown, IError | Warning | Info>) => {
@@ -170,6 +170,7 @@ const createTmpDir = async () => {
   };
 };
 
+// For reference -> https://us-central1-toga-4e3f5.cloudfunctions.net/health
 export const health = functions.https.onRequest((_, res) => {
   res.send(`Running v${version}`);
 });
@@ -299,6 +300,10 @@ const validateOrWrite = <A>(
   }
 };
 
+const andPromise = <O1, O2, E>(f: (o: O1) => Promise<Result<O2, E>>) => (o: O1): ResultAsync<O2, E> => {
+  return new ResultAsync<O2, E>(f(o));
+}
+
 export const createSong = functions.storage.object().onFinalize(async (object) => {
   const { dispose, tmpDir } = await createTmpDir();
   return ok<ObjectMetadata, Warning | IError | Info>(object)
@@ -311,7 +316,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
     .andThenAsync(downloadObject(tmpDir))
     .andThen(parseID3Tags)
     .andThen(parseSongMetadata(object))
-    .andPromise(async ({ bucket, filePath, match, metadata, id3Tag }) => {
+    .andThen(andPromise(async ({ bucket, filePath, match, metadata, id3Tag }) => {
       try {
         const userId = match[1];
         const songId = match[2];
@@ -375,22 +380,22 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
           // reads must come before writes in a snapshot so the following reads are grouped together
           const albumValidation = id3Tag.album
             ? await findOne(
-                transaction,
-                userRef
-                  .collection("albums")
-                  .where("name", "==", id3Tag.album)
-                  // `band` is TPE2 aka the album artist
-                  .where("albumArtist", "==", id3Tag.band ?? ""),
-                AlbumType,
-              )
+              transaction,
+              userRef
+                .collection("albums")
+                .where("name", "==", id3Tag.album)
+                // `band` is TPE2 aka the album artist
+                .where("albumArtist", "==", id3Tag.band ?? ""),
+              AlbumType,
+            )
             : undefined;
 
           const artistValidation = id3Tag.album
             ? await findOne(
-                transaction,
-                userRef.collection("artists").where("name", "==", id3Tag.artist),
-                ArtistType,
-              )
+              transaction,
+              userRef.collection("artists").where("name", "==", id3Tag.artist),
+              ArtistType,
+            )
             : undefined;
 
           const album = validateOrWrite(transaction, albumValidation, () => {
@@ -473,7 +478,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
       }
 
       return ok({});
-    })
+    }))
     .then(dispose)
     .then(unwrap);
 });
