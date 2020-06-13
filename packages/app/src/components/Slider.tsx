@@ -22,7 +22,7 @@ export const Slider = ({ value, maxValue, className, onChange }: SliderProps) =>
     }, [hide]),
   );
 
-  const left = useMemo(() => `${(value / maxValue) * 100}%`, [value]);
+  const left = useMemo(() => `${(value / maxValue) * 100}%`, [value, maxValue]);
 
   return (
     <div ref={ref} className={classNames("flex items-center justify-center group", className)}>

@@ -20,7 +20,6 @@ import { DragCapture } from "/@/components/DragCapture";
 import { Signup } from "/@/pages/Signup";
 import { ForgotPassword } from "/@/pages/ForgotPassword";
 import { ForgotPasswordSuccess } from "/@/pages/ForgotPasswordSuccess";
-import { RouteType } from "react-tiniest-router/dist/types";
 import { AccountDropdown } from "/@/components/AccountDropdown";
 import { auth } from "/@/firebase";
 import { useDocumentTitle } from "/@/utils";
@@ -175,9 +174,7 @@ export const App = (_: React.Props<AppProps>) => {
               <div className="flex-grow" />
               <AccountDropdown
                 className="mt-2"
-                onAccountClick={() => {
-                  // TODO
-                }}
+                onAccountClick={() => goTo(routes.profile)}
                 onLogoutClick={logout}
               />
             </div>

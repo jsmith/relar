@@ -112,7 +112,7 @@ export const createTestSong = (song: Partial<Song>): Song => {
     lastPlayed: undefined,
     artworkHash: undefined,
     artworkDownloadUrl32: undefined,
-    createdAt: 0,
+    createdAt: admin.firestore.Timestamp.fromDate(new Date()),
     ...song,
   };
 };
@@ -178,7 +178,8 @@ describe("functions", () => {
       const user = await getUserData();
 
       expect(user).toEqual({ songCount: 1 });
-      expect(typeof song?.createdAt).toEqual("number");
+      console.log(song?.createdAt);
+      expect(song && typeof song.createdAt.toMillis()).toEqual("number");
       expect(song).toEqual(
         createTestSong({
           id: songId,
