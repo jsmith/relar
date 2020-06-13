@@ -2,7 +2,7 @@
   "name": "functions",
   "version": "0.1.0",
   "scripts": {
-    "build": "tsc && rm lib/package.json && mv lib/src/* lib && rm -r lib/src",
+    "build": "rm -rf lib && tsc && rm lib/package.json && mv lib/src/* lib && rm -r lib/src",
     "test": "jest",
     "check:lint": "eslint \"**/*.{ts,tsx}\"",
     "check:formatting": "prettier --list-different \"**/*.{ts,tsx,js}\"",
@@ -19,6 +19,7 @@
     "fs-extra": "^9.0.1",
     "id3-parser": "^2.0.0",
     "neverthrow": "^2.3.4",
+    "runtypes": "4.2.0",
     "sharp": "^0.25.3",
     "uuid": "^8.1.0"
   },

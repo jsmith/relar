@@ -27,9 +27,12 @@ jobs:
 
       - uses: actions/setup-node@v1
 
+      - run: npm install --no-package-lock
       - run: npm run bootstrap
-      - run: npm run build
-
+      - run: npx patch-package
+      
+      # We don't build ourselves since firebase
+      # automatically does this :)
       - uses: w9jds/firebase-action@master
         with:
           args: deploy
