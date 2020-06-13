@@ -4,7 +4,7 @@ import { Song } from "/@/shared/types";
 
 export const PlayerContext = createContext<[Song | undefined, (song: Song) => void]>([
   undefined,
-  () => { },
+  () => {},
 ]);
 
 export const PlayerProvider = (props: React.Props<{}>) => {

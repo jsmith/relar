@@ -1,12 +1,4 @@
-import {
-  Record,
-  Number,
-  String,
-  Undefined,
-  Literal,
-  Static,
-  Boolean,
-} from "runtypes";
+import { Record, Number, String, Undefined, Literal, Static, Boolean } from "runtypes";
 
 /**
  * Before getting into this file make sure you understand ID3 metadata.
