@@ -1,5 +1,5 @@
 import { Record, Number, String, Undefined, Literal, Static, Boolean, Unknown } from "runtypes";
-import * as firebase from 'firebase'
+import * as firebase from "firebase";
 
 /**
  * Before getting into this file make sure you understand ID3 metadata.
