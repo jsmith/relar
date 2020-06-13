@@ -1,3 +1,5 @@
 module.exports = {
-  ...require("@snowpack/app-scripts-react/jest.config.js")(),
+  preset: "ts-jest",
+  testEnvironment: "node",
+  testMatch: ["<rootDir>/src/**/*.spec.ts"],
 };

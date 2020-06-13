@@ -5,7 +5,7 @@ if (process.env.NODE_ENV === "production") {
   Sentry.init({
     environment: process.env.NODE_ENV,
     // See https://docs.sentry.io/workflow/releases/?platform=javascript
-    release: 'app@' + process.env.npm_package_version,
+    release: "app@" + process.env.npm_package_version,
     dsn: "https://ae6c432b2c074f17b223ddd11df69461@o400394.ingest.sentry.io/5258806",
   });
 }
