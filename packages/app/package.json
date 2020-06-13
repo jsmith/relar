@@ -35,8 +35,8 @@
     "@testing-library/react": "^10.0.3",
     "@types/classnames": "^2.2.10",
     "@types/react": "^16.8.24",
-    "@types/react-dom": "^16.9.8",
     "@types/react-aria-modal": "^4.0.2",
+    "@types/react-dom": "^16.9.8",
     "@types/react-sidebar": "^3.0.0",
     "@types/react-slider": "^1.0.0",
     "@types/tinycolor2": "^1.4.2",
@@ -49,9 +49,19 @@
     "eslint-plugin-react-hooks": "^3.0.0",
     "jest": "^26.0.1",
     "prettier": "^2.0.5",
+    "react": "^16.13.1",
     "tailwindcss": "^1.4.6",
     "typescript": "^3.8.0",
     "vite": "0.20.1",
     "vite-plugin-react": "^2.0.3"
+  },
+  "comments": {
+    "devDependencies": {
+      "react": [
+        "This is *only* for jest because everything is a mess. vite uses @pika/react which is",
+        "an ESM version which jest doesn't support of course. So... I use the real react for testing",
+        "but the ESM react for development."
+      ]
+    }
   }
 }

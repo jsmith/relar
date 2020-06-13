@@ -119,9 +119,9 @@ const matchContentType = (pattern: string) => <O extends CustomObject>(
   return object.contentType.includes(pattern)
     ? ok(object)
     : err({
-        type: "warn",
-        message: `"${object.filePath}" does not have the correct Content-Type: ${object.contentType}`,
-      });
+      type: "warn",
+      message: `"${object.filePath}" does not have the correct Content-Type: ${object.contentType}`,
+    });
 };
 
 const unwrap = (r: Result<unknown, IError | Warning | Info>) => {
@@ -375,22 +375,22 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
           // reads must come before writes in a snapshot so the following reads are grouped together
           const albumValidation = id3Tag.album
             ? await findOne(
-                transaction,
-                userRef
-                  .collection("albums")
-                  .where("name", "==", id3Tag.album)
-                  // `band` is TPE2 aka the album artist
-                  .where("albumArtist", "==", id3Tag.band ?? ""),
-                AlbumType,
-              )
+              transaction,
+              userRef
+                .collection("albums")
+                .where("name", "==", id3Tag.album)
+                // `band` is TPE2 aka the album artist
+                .where("albumArtist", "==", id3Tag.band ?? ""),
+              AlbumType,
+            )
             : undefined;
 
           const artistValidation = id3Tag.album
             ? await findOne(
-                transaction,
-                userRef.collection("artists").where("name", "==", id3Tag.artist),
-                ArtistType,
-              )
+              transaction,
+              userRef.collection("artists").where("name", "==", id3Tag.artist),
+              ArtistType,
+            )
             : undefined;
 
           const album = validateOrWrite(transaction, albumValidation, () => {
@@ -447,7 +447,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             lastPlayed: undefined,
             artworkHash,
             artworkDownloadUrl32: undefined, // also undefined initially
-            createdAt: (admin.firestore.FieldValue.serverTimestamp() as unknown) as number,
+            createdAt: (admin.firestore.FieldValue.serverTimestamp() as unknown) as admin.firestore.Timestamp,
           };
 
           // Update the user information (ie. the # of songs)

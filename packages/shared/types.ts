@@ -1,4 +1,5 @@
-import { Record, Number, String, Undefined, Literal, Static, Boolean } from "runtypes";
+import { Record, Number, String, Undefined, Literal, Static, Boolean, Unknown } from "runtypes";
+import * as firebase from 'firebase'
 
 /**
  * Before getting into this file make sure you understand ID3 metadata.
@@ -75,7 +76,7 @@ export const SongType = Record({
   /**
    * When the song was uploaded
    */
-  createdAt: Number.Or(Undefined),
+  createdAt: Unknown.withGuard((x): x is firebase.firestore.Timestamp => true),
 
   /**
    * The hash of the song artwork.

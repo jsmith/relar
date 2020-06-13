@@ -21,9 +21,19 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 10.x
+      
+      - run: echo $GITHUB_WORKSPACE
+      - run: echo ${{ env.workspace }}
+      - run: echo $(pwd)
+      
+      - uses: DamianReeves/write-file-action@v1
+        with:
+          path: ${{ env.workspace }}/packages/functions/serviceAccountKey.json
+          contents: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
       - run: npm run bootstrap
       - run: npm run check:formatting
       - run: npm run check:lint
-      - run: npm run check:types
+      # Not type checking because testing actually type checks
+      # - run: npm run check:types
       - run: npm run test
