@@ -33,6 +33,7 @@
     "firebase-functions-test": "^0.1.7",
     "jest": "^26.0.1",
     "patch-package": "^6.2.2",
+    "prettier": "^2.0.5",
     "ts-jest": "^26.1.0",
     "typescript": "^3.8.0"
   },

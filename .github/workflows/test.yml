@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: 10.x
 
-      - run: npm ci --no-optional
+      - run: npm ci
       - run: npm run check:formatting
       - run: npm run check:lint
       - run: npm run check:types
