@@ -23,3 +23,9 @@ export const button = ({ color = "purple", invert }: { color?: "purple"; invert?
     "h-10",
   );
 };
+
+export const link = ({ color = "text-blue-500" } = {}) => {
+  return classNames(color, "cursor-pointer hover:underline focus:underline focus:outline-none");
+};
+
+// TODO icons

@@ -1,34 +1,31 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { routes, CustomRoute } from "/@/routes";
 import { useRouter } from "react-tiniest-router";
-import { Login } from "/@/pages/Login";
 import { useUser } from "/@/auth";
 import { Sidebar } from "/@/components/Sidebar";
-import { Songs } from "/@/pages/Songs";
 import { FaMusic } from "react-icons/fa";
 import { GiSwordSpin } from "react-icons/gi";
 import classNames from "classnames";
 import { Player } from "/@/components/Player";
-import { MdLibraryMusic, MdSearch, MdAddCircle } from "react-icons/md";
-import { Artists } from "/@/pages/Artists";
-import { Albums } from "/@/pages/Albums";
-import { Home } from "/@/pages/Home";
-import { Search } from "/@/pages/Search";
-import { AlbumOverview } from "/@/pages/AlbumOverview";
+import { MdLibraryMusic, MdSearch, MdAddCircle, MdMusicNote } from "react-icons/md";
+const Login = React.lazy(() => import("/@/pages/Login"));
+const Songs = React.lazy(() => import("/@/pages/Songs"));
+const Artists = React.lazy(() => import("/@/pages/Artists"));
+const Albums = React.lazy(() => import("/@/pages/Albums"));
+const Home = React.lazy(() => import("/@/pages/Home"));
+const Search = React.lazy(() => import("/@/pages/Search"));
+const Signup = React.lazy(() => import("/@/pages/Signup"));
+const ForgotPassword = React.lazy(() => import("/@/pages/ForgotPassword"));
+const AlbumOverview = React.lazy(() => import("/@/pages/AlbumOverview"));
+const ForgotPasswordSuccess = React.lazy(() => import("/@/pages/ForgotPasswordSuccess"));
+const Hero = React.lazy(() => import("/@/pages/Hero"));
 import { ReactQueryDevtools } from "react-query-devtools";
 import { DragCapture } from "/@/components/DragCapture";
-import { Signup } from "/@/pages/Signup";
-import { ForgotPassword } from "/@/pages/ForgotPassword";
-import { ForgotPasswordSuccess } from "/@/pages/ForgotPasswordSuccess";
 import { AccountDropdown } from "/@/components/AccountDropdown";
 import { auth } from "/@/firebase";
 import { useDocumentTitle } from "/@/utils";
-import { Button } from "/@/components/Button";
 import { Link } from "/@/components/Link";
-import { Hero } from "/@/pages/Hero";
-import { button } from "/@/classes";
-
-interface AppProps {}
+import { button, link } from "/@/classes";
 
 export interface SideBarItem {
   label: string;
@@ -69,7 +66,7 @@ const libraryLinks = [
   },
 ];
 
-export const App = (_: React.Props<AppProps>) => {
+export const App = (_: React.Props<{}>) => {
   const { isRoute, goTo, routeId } = useRouter();
   const { user, loading } = useUser();
   const [display, setDisplay] = useState(false);
@@ -123,7 +120,6 @@ export const App = (_: React.Props<AppProps>) => {
           className="flex-grow"
           sidebar={
             <div className="h-full bg-primary-700 w-56">
-              {/* TODO accessible */}
               <nav>
                 <ul>
                   {sideLinks.map(({ icon: Icon, route, label }) => (
@@ -210,8 +206,8 @@ export const App = (_: React.Props<AppProps>) => {
   );
 
   return (
-    <div className="h-screen text-white flex flex-col">
-      <div className="flex bg-gray-900 items-center h-16 px-5 flex-shrink-0">
+    <div className="h-screen text-white flex flex-col bg-purple-100">
+      <div className="flex bg-gray-900 items-center h-16 px-5 flex-shrink-0 space-x-2">
         <Link
           route={routes.hero}
           className="flex items-center space-x-2"
@@ -223,6 +219,20 @@ export const App = (_: React.Props<AppProps>) => {
           }
           disableStyle
         />
+        {user && <div className="text-purple-500 text-2xl">|</div>}
+        {user && (
+          <Link
+            route={routes.home}
+            disableStyle
+            className={link({ color: "text-white hover:text-purple-400" })}
+            label={
+              <div className="space-x-1">
+                <span>App</span>
+                <MdMusicNote className="inline text-purple-500" />
+              </div>
+            }
+          />
+        )}
         <div className="flex-grow" />
         {user ? (
           <AccountDropdown

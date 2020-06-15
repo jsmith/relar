@@ -55,3 +55,5 @@ export const ForgotPasswordSuccess = () => {
     </CardPage>
   );
 };
+
+export default ForgotPasswordSuccess;

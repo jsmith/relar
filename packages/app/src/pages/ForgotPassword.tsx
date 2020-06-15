@@ -71,3 +71,5 @@ export const ForgotPassword = () => {
     </CardPage>
   );
 };
+
+export default ForgotPassword;

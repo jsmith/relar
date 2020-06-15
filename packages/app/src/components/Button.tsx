@@ -1,5 +1,6 @@
 import * as React from "react";
 import classNames from "classnames";
+// import { Ellipsis } from "react-spinners-css";
 
 export interface ButtonProps
   extends React.DetailedHTMLProps<
@@ -7,8 +8,10 @@ export interface ButtonProps
     HTMLButtonElement
   > {
   label?: string;
+  // TODO remove
   theme?: "purple";
   invert?: boolean;
+  loading?: boolean;
 }
 
 // TODO only outline on tab
@@ -22,7 +25,7 @@ const classes = {
   },
 };
 
-export const Button = ({ invert, theme = "purple", ...props }: ButtonProps) => {
+export const Button = ({ invert, theme = "purple", loading, ...props }: ButtonProps) => {
   const className = invert
     ? classNames("bg-transparent", classes[theme].invert)
     : classNames(
@@ -41,7 +44,13 @@ export const Button = ({ invert, theme = "purple", ...props }: ButtonProps) => {
         props.className,
       )}
     >
-      {props.label}
+      {loading ? (
+        // This positioning is kinda a hack but it works for now
+        // <Ellipsis className="text-white transform -translate-y-6 -mt-1" color="currentColor" />
+        <div></div> // TODO
+      ) : (
+        props.label
+      )}
     </button>
   );
 };

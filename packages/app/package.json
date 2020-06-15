@@ -27,6 +27,7 @@
     "react-query": "^1.5.3",
     "react-query-devtools": "^1.1.17",
     "react-sidebar": "^3.0.2",
+    "react-spinners-css": "^1.1.9",
     "react-tiniest-router": "^0.1.2",
     "runtypes": "4.2.0",
     "tinycolor2": "^1.4.1"

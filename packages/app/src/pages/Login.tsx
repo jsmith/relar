@@ -17,6 +17,7 @@ export const Login = () => {
   const [error, setError] = useState<string>();
   const { goTo } = useRouter();
   const { user } = useUser();
+  const [loading, setLoading] = useState(false);
 
   // TODO react hook keyboard shortcut
 
@@ -28,10 +29,12 @@ export const Login = () => {
   }, []);
 
   const login = useCallback(async () => {
+    setLoading(true);
     try {
       await auth.signInWithEmailAndPassword(email, password);
       goTo(routes.home);
     } catch (e) {
+      setLoading(false);
       const code: "auth/invalid-email" | "auth/wrong-password" | "auth/network-request-failed" =
         e.code;
       switch (code) {
@@ -80,8 +83,15 @@ export const Login = () => {
         <div>
           <Link route={routes.forgotPassword} label="Forgot password?" />
         </div>
-        <Button label="Login" className="w-full" onClick={preventAndCall(login)} />
+        <Button
+          loading={loading}
+          label="Login"
+          className="w-full"
+          onClick={preventAndCall(login)}
+        />
       </form>
     </CardPage>
   );
 };
+
+export default Login;

@@ -26,7 +26,9 @@ ReactDOM.render(
       <Router routes={routes}>
         {/* <SkeletonTheme color="rgb(255, 255, 255, 0.05)" highlightColor="rgb(255, 255, 255, 0.15)"> */}
         <PlayerProvider>
-          <App />
+          <React.Suspense fallback={<div>Lading...</div>}>
+            <App />
+          </React.Suspense>
         </PlayerProvider>
         {/* </SkeletonTheme> */}
       </Router>

@@ -23,3 +23,5 @@ export const Albums = () => {
     </div>
   );
 };
+
+export default Albums;

@@ -37,6 +37,8 @@ The Relar app.
 - Add "Recently Added" playlist that watches for new songs.
 - Method to contact! A dedicated email?
 - Ensure sentry is correctly configured.
+- Read through https://twitter.com/LareneLg/status/1262197938685530113.
+- Skip to main content link.
 
 ## Before Release
 - Limit sign ups to "x" amount of people based on usage info from beta to stay within your price range (ideally the free). Or maybe just budget alerts.
