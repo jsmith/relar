@@ -7,22 +7,34 @@ export interface ButtonProps
     HTMLButtonElement
   > {
   label?: string;
+  theme?: "purple";
   invert?: boolean;
 }
 
 // TODO only outline on tab
 // https://stackoverflow.com/questions/31402576/enable-focus-only-on-keyboard-use-or-tab-press
 
-export const Button = ({ invert, ...props }: ButtonProps) => {
+const classes = {
+  purple: {
+    default:
+      "bg-purple-600 text-white focus:bg-purple-500 hover:bg-purple-500 focus:border-purple-700",
+    invert: "text-white border-purple-500",
+  },
+};
+
+export const Button = ({ invert, theme = "purple", ...props }: ButtonProps) => {
   const className = invert
-    ? "bg-transparent text-primary border-primary"
-    : "bg-primary-600 border-transparent focus:bg-primary-500 hover:bg-primary-500 focus:outline-none focus:border-primary-700";
+    ? classNames("bg-transparent", classes[theme].invert)
+    : classNames(
+        "border-transparent focus:outline-none focus:border-purple-700",
+        classes[theme].default,
+      );
 
   return (
     <button
       {...props}
       className={classNames(
-        "flex justify-center py-2 px-4 border uppercase leading-5 font-medium rounded-md text-white",
+        "flex justify-center py-2 px-4 border uppercase font-medium rounded-md",
         className,
         "transition duration-150 ease-in-out",
         "h-10",

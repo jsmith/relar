@@ -227,3 +227,7 @@ export const useDocumentTitle = (title?: string, retainOnUnmount = false) => {
     };
   }, [retainOnUnmount]);
 };
+
+export const wrap = (f: () => Promise<any>) => () => {
+  f();
+};

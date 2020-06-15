@@ -19,6 +19,8 @@ export const Signup = () => {
   const { goTo } = useRouter();
   const { user } = useUser();
 
+  // TODO enter to signup
+
   useEffect(() => {
     if (user) {
       goTo(routes.songs);
@@ -27,6 +29,8 @@ export const Signup = () => {
   }, []);
 
   const login = async () => {
+    // 1. Check beta list first
+    // 2. Show error if they are already there
     setError("NOT SUPPORTED");
   };
 
