@@ -103,3 +103,5 @@ export const AlbumOverview = () => {
     </div>
   );
 };
+
+export default AlbumOverview;

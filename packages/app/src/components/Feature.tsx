@@ -16,7 +16,7 @@ export const Feature = ({
     <div
       className={classNames(
         "flex items-center flex-col pb-10",
-        last ? "" : "border-b mb-10 border-gray-200",
+        last ? "" : "border-b mb-10 border-gray-300",
         reverse ? "sm:flex-row-reverse" : "sm:flex-row",
       )}
     >

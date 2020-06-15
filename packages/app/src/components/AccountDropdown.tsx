@@ -19,39 +19,42 @@ export const AccountDropdown = ({
   onAccountClick,
   onLogoutClick,
 }: AccountDropdownProps) => {
-  const { isOpen, getToggleButtonProps, getMenuProps, getItemProps } = useSelect({
+  const { isOpen, getToggleButtonProps, highlightedIndex, getMenuProps, getItemProps } = useSelect({
     items: ITEMS,
+    selectedItem: null,
+    onSelectedItemChange: (j) => {
+      switch (j.selectedItem) {
+        case "Account":
+          onAccountClick();
+          break;
+        case "Log Out":
+          onLogoutClick();
+          break;
+      }
+    },
   });
 
   return (
     <div className={classNames("relative", className)}>
       {/* <label {...getLabelProps()}>Choose an element:</label> */}
       <button {...getToggleButtonProps()} className="flex items-center text-xs space-x-2">
-        <AiOutlineUser className="w-6 h-6" />
+        <AiOutlineUser className="w-6 h-6 text-purple-500" />
         <span className="hidden sm:block">{email}</span>
         <FaCaretDown className="w-2" />
       </button>
       <ul
         {...getMenuProps()}
-        className="absolute right-0 min-w-full bg-primary-600 rounded text-gray-300 divide-gray-400 divide-y mt-1"
+        className="absolute right-0 min-w-full bg-gray-800 rounded text-gray-300 divide-gray-400 divide-y mt-1"
       >
         {isOpen &&
           ITEMS.map((item, index) => (
             <li
-              // style={highlightedIndex === index ? { backgroundColor: "#bde4ff" } : {}}
-              className="py-2 hover:bg-primary-500 px-4 cursor-pointer"
+              className={classNames(
+                "py-2 hover:bg-gray-700 px-4 cursor-pointer",
+                highlightedIndex === index && "bg-gray-700",
+              )}
               key={`${item}${index}`}
               {...getItemProps({ item, index })}
-              onClick={() => {
-                switch (item) {
-                  case "Account":
-                    onAccountClick();
-                    break;
-                  case "Log Out":
-                    onLogoutClick();
-                    break;
-                }
-              }}
             >
               {item}
             </li>

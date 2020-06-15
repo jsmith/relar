@@ -5,7 +5,7 @@ import { routes } from "/@/routes";
 
 export const Footer = () => {
   return (
-    <footer className="text-gray-700 bg-gray-200">
+    <footer className="text-gray-700 bg-gray-300">
       <div className="container px-5 py-6 mx-auto flex items-center sm:flex-row flex-col">
         <div className="flex items-center space-x-4">
           <GiSwordSpin className="w-6 h-6" />

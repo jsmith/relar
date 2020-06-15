@@ -18,6 +18,7 @@ export const Signup = () => {
   const [error, setError] = useState<string>();
   const { goTo } = useRouter();
   const { user } = useUser();
+  const [loading, setLoading] = useState(false);
 
   // TODO enter to signup
 
@@ -29,9 +30,14 @@ export const Signup = () => {
   }, []);
 
   const login = async () => {
-    // 1. Check beta list first
-    // 2. Show error if they are already there
-    setError("NOT SUPPORTED");
+    setLoading(true);
+    setError("");
+    setTimeout(() => {
+      // 1. Check beta list first
+      // 2. Show error if they are already there
+      setError("NOT SUPPORTED");
+      setLoading(false);
+    }, 2000);
   };
 
   return (
@@ -59,6 +65,7 @@ export const Signup = () => {
         <Button
           label="Sign Up"
           className="w-full"
+          loading={loading}
           onClick={(e) => {
             e.preventDefault();
             login();
@@ -68,3 +75,5 @@ export const Signup = () => {
     </CardPage>
   );
 };
+
+export default Signup;
