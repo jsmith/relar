@@ -11,6 +11,15 @@ export interface CustomRoute extends RouteType {
 // TODO better names for className and containerClassname
 // Also all of these don't *need* these attributes
 export const routes = {
+  hero: {
+    id: "hero",
+    path: "/",
+    protected: false,
+    sidebar: false,
+    className: "py-2",
+    containerClassName: "px-5",
+    title: "RELAR",
+  },
   profile: {
     id: "profile",
     path: "/profile",
@@ -58,7 +67,7 @@ export const routes = {
   },
   home: {
     id: "home",
-    path: "/",
+    path: "/home",
     protected: true,
     sidebar: true,
     className: "py-2",

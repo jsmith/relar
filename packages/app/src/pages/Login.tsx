@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "/@/components/Button";
 import { auth } from "/@/firebase";
 import { useRouter } from "react-tiniest-router";
@@ -8,7 +8,8 @@ import * as Sentry from "@sentry/browser";
 import { CardPage } from "/@/components/CardPage";
 import { Input } from "/@/components/Input";
 import { Link } from "/@/components/Link";
-import { preventAndCall } from "/@/utils";
+import { preventAndCall, wrap } from "/@/utils";
+import { useHotkeys } from "react-hotkeys-hook";
 
 export const Login = () => {
   const [email, setEmail] = useState("");
@@ -26,7 +27,7 @@ export const Login = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const login = async () => {
+  const login = useCallback(async () => {
     try {
       await auth.signInWithEmailAndPassword(email, password);
       goTo(routes.home);
@@ -50,7 +51,10 @@ export const Login = () => {
           break;
       }
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [email, password]);
+
+  useHotkeys("return", wrap(login), [login]);
 
   return (
     <CardPage

@@ -4,6 +4,7 @@
     "source": "functions"
   },
   "hosting": {
+    "predeploy": "npm --prefix \"$RESOURCE_DIR\" run build",
     "public": "app/dist",
     "ignore": [
       "firebase.json",

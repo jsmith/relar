@@ -23,6 +23,10 @@ import { ForgotPasswordSuccess } from "/@/pages/ForgotPasswordSuccess";
 import { AccountDropdown } from "/@/components/AccountDropdown";
 import { auth } from "/@/firebase";
 import { useDocumentTitle } from "/@/utils";
+import { Button } from "/@/components/Button";
+import { Link } from "/@/components/Link";
+import { Hero } from "/@/pages/Hero";
+import { button } from "/@/classes";
 
 interface AppProps {}
 
@@ -114,14 +118,11 @@ export const App = (_: React.Props<AppProps>) => {
       display={display}
       setDisplay={setDisplay}
     >
-      <div className="relative flex-grow">
+      <div className="relative flex-grow flex flex-col">
         <Sidebar
+          className="flex-grow"
           sidebar={
             <div className="h-full bg-primary-700 w-56">
-              <div className="flex items-center">
-                <h1 className="pl-5 pr-3 py-3 text-2xl tracking-wider">RELAR</h1>
-                <GiSwordSpin className="w-6 h-6" />
-              </div>
               {/* TODO accessible */}
               <nav>
                 <ul>
@@ -171,12 +172,6 @@ export const App = (_: React.Props<AppProps>) => {
                   ))}
                 </ul>
               )}
-              <div className="flex-grow" />
-              <AccountDropdown
-                className="mt-2"
-                onAccountClick={() => goTo(routes.profile)}
-                onLogoutClick={logout}
-              />
             </div>
             <div className={route.className}>
               {isRoute(routes.songs) ? (
@@ -198,6 +193,8 @@ export const App = (_: React.Props<AppProps>) => {
       </div>
       <Player />
     </DragCapture>
+  ) : route?.id === "hero" ? (
+    <Hero />
   ) : route?.id === "login" ? (
     <Login />
   ) : route?.id === "signup" ? (
@@ -213,7 +210,44 @@ export const App = (_: React.Props<AppProps>) => {
   );
 
   return (
-    <div className="h-screen text-white">
+    <div className="h-screen text-white flex flex-col">
+      <div className="flex bg-gray-900 items-center h-16 px-5 flex-shrink-0">
+        <Link
+          route={routes.hero}
+          className="flex items-center space-x-2"
+          label={
+            <>
+              <h1 className="text-2xl tracking-wider">RELAR</h1>
+              <GiSwordSpin className="w-6 h-6 text-purple-500" />
+            </>
+          }
+          disableStyle
+        />
+        <div className="flex-grow" />
+        {user ? (
+          <AccountDropdown
+            email={user.email ?? ""}
+            className="z-10"
+            onAccountClick={() => goTo(routes.profile)}
+            onLogoutClick={logout}
+          />
+        ) : (
+          <div className="flex space-x-2">
+            <Link
+              className={button({ color: "purple", invert: true })}
+              label="Login"
+              disableStyle
+              route={routes.login}
+            />
+            <Link
+              className={button({ color: "purple" })}
+              label="Sign Up"
+              disableStyle
+              route={routes.login}
+            />
+          </div>
+        )}
+      </div>
       {content}
       <ReactQueryDevtools initialIsOpen={false} />
     </div>
