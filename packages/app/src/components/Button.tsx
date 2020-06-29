@@ -9,7 +9,7 @@ export interface ButtonProps
   > {
   label?: string;
   // TODO remove
-  theme?: "purple";
+  theme?: "purple" | "red" | "none";
   invert?: boolean;
   loading?: boolean;
 }
@@ -20,18 +20,25 @@ export interface ButtonProps
 const classes = {
   purple: {
     default:
-      "bg-purple-600 text-white focus:bg-purple-500 hover:bg-purple-500 focus:border-purple-700",
+      "border-transparent bg-purple-600 text-white focus:bg-purple-500 hover:bg-purple-500 focus:border-purple-700",
     invert: "text-white border-purple-500",
+  },
+  red: {
+    default:
+      "border-transparent bg-red-600 text-white focus:bg-red-500 hover:bg-red-500 focus:border-red-700",
+    invert: "text-white border-red-500",
+  },
+  none: {
+    default:
+      "border-gray-300 bg-white text-gray-700 focus:bg-gray-100 hover:bg-gray-100 focus:border-gray-500",
+    invert: "text-white border-gray-100",
   },
 };
 
 export const Button = ({ invert, theme = "purple", loading, ...props }: ButtonProps) => {
   const className = invert
     ? classNames("bg-transparent", classes[theme].invert)
-    : classNames(
-        "border-transparent focus:outline-none focus:border-purple-700",
-        classes[theme].default,
-      );
+    : classNames("focus:outline-none", classes[theme].default);
 
   return (
     <button

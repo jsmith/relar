@@ -231,3 +231,13 @@ export const useDocumentTitle = (title?: string, retainOnUnmount = false) => {
 export const wrap = (f: () => Promise<any>) => () => {
   f();
 };
+
+export const captureAndLog = (e: unknown) => {
+  Sentry.captureException(e);
+  console.error(e);
+};
+
+export const captureAndLogError = (e: string) => {
+  Sentry.captureMessage(e, Sentry.Severity.Error);
+  console.error(e);
+};

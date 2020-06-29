@@ -39,6 +39,10 @@ The Relar app.
 - Ensure sentry is correctly configured.
 - Read through https://twitter.com/LareneLg/status/1262197938685530113.
 - Skip to main content link.
+- Add action email handler: https://firebase.google.com/docs/auth/custom-email-handler
+- What if the user signs out? Do we automatically catch that?
+- Some kind of forum for bug/feature upvoting!
+- Set up testing project since we don't want to run tests in production :/
 
 ## Before Release
 - Limit sign ups to "x" amount of people based on usage info from beta to stay within your price range (ideally the free). Or maybe just budget alerts.

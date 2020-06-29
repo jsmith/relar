@@ -1,17 +1,10 @@
-import * as functions from "firebase-functions-test";
 import * as admin from "firebase-admin";
 import { Song, SongMetadata, Artist, Album } from "./shared/types";
 import * as uuid from "uuid";
 import * as path from "path";
+import { deleteCollection, initTest } from "./utils";
 
-const test = functions(
-  {
-    databaseURL: "https://toga-4e3f5.firebaseio.com",
-    storageBucket: "toga-4e3f5.appspot.com",
-    projectId: "toga-4e3f5",
-  },
-  path.resolve(__dirname, "..", "serviceAccountKey.json"),
-);
+const test = initTest();
 
 // This must go *after* the `functions` init call
 import { createSong, parseID3Tags, md5Hash } from "./index";
@@ -115,11 +108,6 @@ export const createTestSong = (song: Partial<Song>): Song => {
     createdAt: admin.firestore.Timestamp.fromDate(new Date()),
     ...song,
   };
-};
-
-const deleteCollection = async (collection: ReturnType<typeof firestore.collection>) => {
-  const docs = await collection.listDocuments();
-  await Promise.all(docs.map((doc) => doc.delete()));
 };
 
 describe("utils", () => {

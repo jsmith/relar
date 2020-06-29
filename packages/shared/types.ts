@@ -119,6 +119,12 @@ export const AlbumType = Record({
 
 export type Album = Static<typeof AlbumType>;
 
+export const BetaSignupType = Record({
+  email: String,
+});
+
+export type BetaSignup = Static<typeof BetaSignupType>;
+
 export const ArtistType = Record({
   /** The ID. */
   id: String,
@@ -130,3 +136,27 @@ export const ArtistType = Record({
 });
 
 export type Artist = Static<typeof ArtistType>;
+
+export type SuccessWithData<Data> = {
+  type: "success";
+  data: Data;
+};
+
+export type Success = {
+  type: "success";
+};
+
+export type KnownError<Code extends string> = { type: "error"; code: Code };
+
+export type UnknownError = { type: "error"; code: "unknown" };
+
+export type BetaAPI = {
+  "/beta-signup": {
+    POST: {
+      body: {
+        email: string;
+      };
+      response: Success | KnownError<"already-on-list" | "invalid-email"> | UnknownError;
+    };
+  };
+};
