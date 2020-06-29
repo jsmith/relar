@@ -27,7 +27,7 @@ import { Transaction, Query, DocumentReference } from "@google-cloud/firestore";
 // This is where the max songs limit is set
 // To update this in production just update this value and
 // then deploy
-const MAX_SONGS = 10;
+const MAX_SONGS = 500;
 
 export const md5Hash = (localFilePath: string): Promise<Result<string, Error>> => {
   return new Promise<Result<string, Error>>((resolve) => {
@@ -119,9 +119,9 @@ const matchContentType = (pattern: string) => <O extends CustomObject>(
   return object.contentType.includes(pattern)
     ? ok(object)
     : err({
-      type: "warn",
-      message: `"${object.filePath}" does not have the correct Content-Type: ${object.contentType}`,
-    });
+        type: "warn",
+        message: `"${object.filePath}" does not have the correct Content-Type: ${object.contentType}`,
+      });
 };
 
 const unwrap = (r: Result<unknown, IError | Warning | Info>) => {
@@ -184,7 +184,7 @@ export const generateThumbs = functions.storage.object().onFinalize(async (objec
     .andThen(getPaths)
     .andThen(matchRegex(/^([a-z0-9A-Z]+)\/song_artwork\/([a-z0-9A-Z]+)\/(artwork\.(?:png|jpg))$/))
     .andThen(matchContentType("image"))
-    .andThenAsync(downloadObject(tmpDir))
+    .asyncAndThen(downloadObject(tmpDir))
     .andThen(({ tmpFilePath, filePath, fileName, fileDir, bucket }) => {
       // Resize the images and define an array of upload promises
       const sizes = [32, 64, 128, 256];
@@ -300,12 +300,15 @@ const validateOrWrite = <A>(
   }
 };
 
-const andPromise = <O1, O2, E>(f: (o: O1) => Promise<Result<O2, E>>) => (o: O1): ResultAsync<O2, E> => {
+const andPromise = <O1, O2, E>(f: (o: O1) => Promise<Result<O2, E>>) => (
+  o: O1,
+): ResultAsync<O2, E> => {
   return new ResultAsync<O2, E>(f(o));
-}
+};
 
 export const createSong = functions.storage.object().onFinalize(async (object) => {
   const { dispose, tmpDir } = await createTmpDir();
+  // prettier-ignore
   return ok<ObjectMetadata, Warning | IError | Info>(object)
     .map(logVersion)
     .andThen(checkObjectName)
@@ -313,7 +316,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
     .andThen(getPaths)
     .andThen(matchRegex(/^([-a-z0-9A-Z]+)\/songs\/([-a-z0-9A-Z]+)\/original\.mp3$/))
     .andThen(matchContentType("audio/mpeg"))
-    .andThenAsync(downloadObject(tmpDir))
+    .asyncAndThen(downloadObject(tmpDir))
     .andThen(parseID3Tags)
     .andThen(parseSongMetadata(object))
     .andThen(andPromise(async ({ bucket, filePath, match, metadata, id3Tag }) => {

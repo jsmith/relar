@@ -19,6 +19,7 @@ const ForgotPassword = React.lazy(() => import("/@/pages/ForgotPassword"));
 const AlbumOverview = React.lazy(() => import("/@/pages/AlbumOverview"));
 const ForgotPasswordSuccess = React.lazy(() => import("/@/pages/ForgotPasswordSuccess"));
 const Hero = React.lazy(() => import("/@/pages/Hero"));
+const Account = React.lazy(() => import("/@/pages/Account"));
 import { ReactQueryDevtools } from "react-query-devtools";
 import { DragCapture } from "/@/components/DragCapture";
 import { AccountDropdown } from "/@/components/AccountDropdown";
@@ -26,6 +27,9 @@ import { auth } from "/@/firebase";
 import { useDocumentTitle } from "/@/utils";
 import { Link } from "/@/components/Link";
 import { button, link } from "/@/classes";
+import { SkipNavLink, SkipNavContent } from "@reach/skip-nav";
+import "@reach/skip-nav/styles.css";
+import "/@/index.css";
 
 export interface SideBarItem {
   label: string;
@@ -77,31 +81,19 @@ export const App = (_: React.Props<{}>) => {
     return lookup;
   }, []);
 
-  useEffect(() => {
-    if (loading) {
-      return;
-    }
-
-    const route = routeIdLookup[routeId as keyof typeof routes];
-    if (!route) {
-      console.warn(`No route for "${routeId}"`);
-      return;
-    }
-
-    if (route.protected && !user) {
-      goTo(routes.login);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [routeId, loading]);
-
   const route = useMemo(() => Object.values(routes).find((route) => route.id === routeId), [
     routeId,
   ]);
 
   useDocumentTitle(route?.title);
 
-  if (loading || (route?.protected && !user)) {
+  console.log(loading, route?.protected, user);
+  if (loading) {
     return <div>Loading...</div>;
+  }
+
+  if (route?.protected && !user) {
+    goTo(routes.login);
   }
 
   const logout = async () => {
@@ -199,14 +191,15 @@ export const App = (_: React.Props<{}>) => {
     <ForgotPassword />
   ) : route?.id === "forgot-password-success" ? (
     <ForgotPasswordSuccess />
-  ) : route?.id === "profile" ? (
-    <div>Profile</div>
+  ) : route?.id === "account" ? (
+    <Account />
   ) : (
     <div className="text-black">404</div>
   );
 
   return (
     <div className="h-screen text-white flex flex-col bg-purple-100">
+      <SkipNavLink className="text-gray-800" />
       <div className="flex bg-gray-900 items-center h-16 px-5 flex-shrink-0 space-x-2">
         <Link
           route={routes.hero}
@@ -238,7 +231,7 @@ export const App = (_: React.Props<{}>) => {
           <AccountDropdown
             email={user.email ?? ""}
             className="z-10"
-            onAccountClick={() => goTo(routes.profile)}
+            onAccountClick={() => goTo(routes.account)}
             onLogoutClick={logout}
           />
         ) : (
@@ -258,7 +251,8 @@ export const App = (_: React.Props<{}>) => {
           </div>
         )}
       </div>
-      {content}
+      <SkipNavContent />
+      <React.Suspense fallback={<div>Lading...</div>}>{content}</React.Suspense>
       <ReactQueryDevtools initialIsOpen={false} />
     </div>
   );

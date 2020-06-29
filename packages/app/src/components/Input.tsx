@@ -10,6 +10,8 @@ export interface InputProps {
   inputClassName?: string;
   placeholder?: string;
   type?: "email" | "password" | "number";
+  inputId?: string;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 export const Input = (props: InputProps) => {
@@ -18,9 +20,11 @@ export const Input = (props: InputProps) => {
       <span className={props.spanClassName}>{props.label}</span>
       <input
         type={props.type}
+        id={props.inputId}
         className={classNames("form-input w-full", props.inputClassName)}
         placeholder={props.placeholder}
         onChange={(e) => props.onChange(e.target.value)}
+        onKeyDown={props.onKeyDown}
       />
     </label>
   );

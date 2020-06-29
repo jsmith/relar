@@ -1,6 +1,5 @@
 import React from "react";
 import { Footer } from "/@/sections/Footer";
-import { GiSwordSpin } from "react-icons/gi";
 import { PersonMusic } from "/@/illustrations/PersonMusic";
 import { Link } from "/@/components/Link";
 import { button } from "/@/classes";
@@ -9,7 +8,7 @@ import { Feature } from "/@/components/Feature";
 
 export const Hero = () => {
   return (
-    <div className="flex flex-col flex-grow overflow-y-auto">
+    <div className="flex flex-col flex-grow overflow-y-auto bg-white">
       <div className="py-16 px-20 md:w-4/5 mx-auto flex-grow space-y-24">
         <div className="flex">
           <div className="space-y-5 sm:max-w-md">

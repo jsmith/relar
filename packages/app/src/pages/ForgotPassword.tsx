@@ -27,21 +27,11 @@ export const ForgotPassword = () => {
   }, []);
 
   const resetPassword = async () => {
-    goTo(routes.forgotPasswordSuccess, {}, { email });
-    // try {
-    //   const result = await sendPasswordResetEmail(email);
-    //   result.match(
-    //     () => goTo(routes.forgotPasswordSuccess, { email }),
-    //     (code) => {
-    //       switch (code) {
-    //         case "auth/invalid-email":
-    //           setError("Please provide a valid email.");
-    //       }
-    //     },
-    //   );
-    // } catch (e) {
-    //   setError("Unable to send password reset email.");
-    // }
+    const result = await sendPasswordResetEmail(email);
+    result.match(
+      () => goTo(routes.forgotPasswordSuccess, { email }),
+      ({ message }) => setError(message),
+    );
   };
 
   return (

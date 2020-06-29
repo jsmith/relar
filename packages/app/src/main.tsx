@@ -13,7 +13,6 @@ if (process.env.NODE_ENV === "production") {
 import { App } from "/@/App"; // this must be first for hot reloading
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import "/@/index.css";
 import { Router } from "react-tiniest-router";
 import { routes } from "/@/routes";
 import { UserProvider } from "/@/auth";
@@ -26,9 +25,7 @@ ReactDOM.render(
       <Router routes={routes}>
         {/* <SkeletonTheme color="rgb(255, 255, 255, 0.05)" highlightColor="rgb(255, 255, 255, 0.15)"> */}
         <PlayerProvider>
-          <React.Suspense fallback={<div>Lading...</div>}>
-            <App />
-          </React.Suspense>
+          <App />
         </PlayerProvider>
         {/* </SkeletonTheme> */}
       </Router>

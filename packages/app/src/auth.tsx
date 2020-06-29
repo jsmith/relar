@@ -2,6 +2,7 @@ import React, { createContext, useEffect, useState, useContext, useCallback } fr
 import { auth } from "/@/firebase";
 import { Result, err, ok } from "neverthrow";
 import * as Sentry from "@sentry/browser";
+import { captureAndLog } from "/@/utils";
 
 export const UserContext = createContext<{
   user: firebase.User | undefined;
@@ -52,7 +53,7 @@ export type PasswordResetErrorCode = "auth/invalid-email";
  */
 export const sendPasswordResetEmail = async (
   email: string,
-): Promise<Result<unknown, PasswordResetErrorCode>> => {
+): Promise<Result<unknown, { code: PasswordResetErrorCode | "unknown"; message: string }>> => {
   try {
     await auth.sendPasswordResetEmail(email);
     return ok({});
@@ -60,11 +61,56 @@ export const sendPasswordResetEmail = async (
     const code: "auth/invalid-email" = e.code;
     switch (code) {
       case "auth/invalid-email":
-        return err(code);
+        return err({
+          code,
+          message: "I don't know how to tell you this but your email is invalid.",
+        });
       default:
-        console.error(e);
-        Sentry.captureException(e);
-        throw e;
+        captureAndLog(e);
+        return err({
+          code: "unknown",
+          message: "Houston, we have a problem. If this persists, please contact support.",
+        });
+    }
+  }
+};
+
+export type LoginErrorCode =
+  | "auth/invalid-email"
+  | "auth/wrong-password"
+  | "auth/network-request-failed";
+
+export const signInWithEmailAndPassword = async (
+  email: string,
+  password: string,
+): Promise<Result<unknown, { code: LoginErrorCode | "unknown"; message: string }>> => {
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+    return ok({});
+  } catch (e) {
+    const code: LoginErrorCode = e.code;
+    switch (code) {
+      case "auth/invalid-email":
+        return err({
+          code: "auth/invalid-email",
+          message: "Please provide a valid email address.",
+        });
+      case "auth/wrong-password":
+        return err({
+          code: "auth/wrong-password",
+          message: "Invalid credentials. Please try again!",
+        });
+      case "auth/network-request-failed":
+        return err({
+          code: "auth/network-request-failed",
+          message: "Network error.",
+        });
+      default:
+        captureAndLog(e);
+        return err({
+          code: "unknown",
+          message: "Something went wrong. Please try again!",
+        });
     }
   }
 };

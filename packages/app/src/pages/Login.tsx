@@ -3,7 +3,7 @@ import { Button } from "/@/components/Button";
 import { auth } from "/@/firebase";
 import { useRouter } from "react-tiniest-router";
 import { routes } from "/@/routes";
-import { useUser } from "/@/auth";
+import { useUser, signInWithEmailAndPassword } from "/@/auth";
 import * as Sentry from "@sentry/browser";
 import { CardPage } from "/@/components/CardPage";
 import { Input } from "/@/components/Input";
@@ -30,29 +30,12 @@ export const Login = () => {
 
   const login = useCallback(async () => {
     setLoading(true);
-    try {
-      await auth.signInWithEmailAndPassword(email, password);
+    const result = await signInWithEmailAndPassword(email, password);
+    setLoading(false);
+    if (result.isOk()) {
       goTo(routes.home);
-    } catch (e) {
-      setLoading(false);
-      const code: "auth/invalid-email" | "auth/wrong-password" | "auth/network-request-failed" =
-        e.code;
-      switch (code) {
-        case "auth/invalid-email":
-          setError("Please provide a valid email address.");
-          break;
-        case "auth/wrong-password":
-          setError("Please provide a valid password.");
-          break;
-        case "auth/network-request-failed":
-          setError("Network error.");
-          break;
-        default:
-          console.error(e);
-          Sentry.captureException(e);
-          setError("Invalid credentials. Please try again!");
-          break;
-      }
+    } else {
+      setError(result.error.message);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [email, password]);

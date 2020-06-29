@@ -7,28 +7,14 @@
   src: url("https://code.cdn.mozilla.net/fonts/ttf/FiraMono-Regular.ttf") format("truetype");
 }
 
+@font-face {
+  font-family: "FiraMono";
+  src: url("https://code.cdn.mozilla.net/fonts/ttf/FiraMono-Bold.ttf") format("truetype");
+  font-weight: bold;
+}
+
 body {
   font-family: "FiraMono", monospace;
-}
-
-h1 {
-  @apply text-5xl;
-}
-
-h2 {
-  @apply text-4xl;
-}
-
-h3 {
-  @apply text-3xl;
-}
-
-h4 {
-  @apply text-2xl;
-}
-
-h5 {
-  @apply text-xl;
 }
 
 /* .my-link is used in Link and LinkButton */

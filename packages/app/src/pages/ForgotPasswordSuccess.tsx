@@ -30,11 +30,7 @@ export const ForgotPasswordSuccess = () => {
       message: "User is resending their password reset email.",
     });
 
-    try {
-      await sendPasswordResetEmail(email);
-    } catch {
-      // Ignore any errors there isn't much that we can do
-    }
+    await sendPasswordResetEmail(email);
   };
 
   return (

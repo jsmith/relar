@@ -20,9 +20,9 @@ export const routes = {
     containerClassName: "px-5",
     title: "RELAR",
   },
-  profile: {
-    id: "profile",
-    path: "/profile",
+  account: {
+    id: "account",
+    path: "/account",
     protected: true,
     sidebar: false,
     className: "py-2",
