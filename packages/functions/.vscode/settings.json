@@ -5,6 +5,7 @@
     "firestore",
     "relar",
     "runtype",
+    "sendgrid",
     "signup",
     "signups"
   ]

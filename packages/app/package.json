@@ -11,10 +11,12 @@
     "deps": "depcheck --ignore-dirs node_modules --ignores \"@types/*\""
   },
   "dependencies": {
+    "@graywolfai/rest-ts-axios": "^0.2.4",
     "@pika/react": "^16.13.1",
     "@pika/react-dom": "^16.13.1",
     "@reach/skip-nav": "^0.10.4",
     "@sentry/browser": "^5.15.5",
+    "axios": "^0.19.2",
     "classnames": "^2.2.6",
     "downshift": "^5.4.2",
     "fast-average-color": "^6.0.2",

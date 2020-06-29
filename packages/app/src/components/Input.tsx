@@ -1,5 +1,6 @@
 import React from "react";
 import classNames from "classnames";
+import { Keys } from "/@/utils";
 
 export interface InputProps {
   value: string;
@@ -11,7 +12,7 @@ export interface InputProps {
   placeholder?: string;
   type?: "email" | "password" | "number";
   inputId?: string;
-  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+  onEnter?: () => void;
 }
 
 export const Input = (props: InputProps) => {
@@ -24,7 +25,7 @@ export const Input = (props: InputProps) => {
         className={classNames("form-input w-full", props.inputClassName)}
         placeholder={props.placeholder}
         onChange={(e) => props.onChange(e.target.value)}
-        onKeyDown={props.onKeyDown}
+        onKeyDown={(e) => e.keyCode === Keys.Return && props.onEnter && props.onEnter()}
       />
     </label>
   );
