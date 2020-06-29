@@ -1,10 +1,15 @@
 import * as express from "express";
+import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as cors from "cors";
 import { TypedAsyncRouter } from "@graywolfai/rest-ts-express";
 import { BetaAPI, BetaSignup } from "./shared/types";
 import * as bodyParser from "body-parser";
-import * as Sentry from "@sentry/node";
+// import * as Sentry from "@sentry/node";
+import * as sgMail from "@sendgrid/mail";
+import { env } from "./env";
+
+sgMail.setApiKey(env.mail.sendgrid_api_key);
 
 admin.initializeApp();
 
@@ -13,7 +18,7 @@ function validateEmail(email: string) {
   return re.test(String(email).toLowerCase());
 }
 
-Sentry.init({ dsn: "https://c1f6b53d686d47fc8d2f8fcf31651304@o400394.ingest.sentry.io/5295615" });
+// Sentry.init({ dsn: "https://c1f6b53d686d47fc8d2f8fcf31651304@o400394.ingest.sentry.io/5295615" });
 
 export const app = express();
 app.use(bodyParser.json());
@@ -31,7 +36,6 @@ db.settings({ ignoreUndefinedProperties: true });
 
 router.post("/beta-signup", async (req) => {
   if (!req.body.email) {
-    Sentry.captureMessage("A user tried to sign up to beta with a missing email.");
     return {
       type: "error",
       code: "invalid-email",
@@ -63,3 +67,17 @@ router.post("/beta-signup", async (req) => {
     };
   });
 });
+
+export const onBetaSignup = functions.firestore
+  .document("beta_signups")
+  .onCreate(async (object) => {
+    // FIXME validation
+    const { email } = object.data() as BetaSignup;
+    await sgMail.send({
+      from: "contact@relar.app",
+      to: email,
+      subject: "RELAR Beta Signup",
+      text:
+        "You have successfully signed up for RELAR beta! We will contact you soon with your account information :)",
+    });
+  });

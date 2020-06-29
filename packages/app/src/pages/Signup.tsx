@@ -9,6 +9,8 @@ import * as Sentry from "@sentry/browser";
 import { CardPage } from "/@/components/CardPage";
 import { Input } from "/@/components/Input";
 import { Link } from "/@/components/Link";
+import { backend } from "/@/backend";
+import { BlockAlert } from "/@/components/BlockAlert";
 
 const BETA_TEXT =
   "Want to be apart of the beta? Sign up now and we'll add you to our testers list.";
@@ -19,8 +21,7 @@ export const Signup = () => {
   const { goTo } = useRouter();
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
-
-  // TODO enter to signup
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -32,12 +33,25 @@ export const Signup = () => {
   const login = async () => {
     setLoading(true);
     setError("");
-    setTimeout(() => {
-      // 1. Check beta list first
-      // 2. Show error if they are already there
-      setError("NOT SUPPORTED");
-      setLoading(false);
-    }, 2000);
+    const result = await backend.post("/beta-signup", { email }).then((r) => r.data);
+    setLoading(false);
+    if (result.type === "success") {
+      setSuccess(true);
+      return;
+    } else {
+      switch (result.code) {
+        case "already-on-list":
+          setError("Ok I know you really want on try the app but you're already on the list 💗");
+          break;
+        case "invalid-email":
+          setError("Your email is invalid. Could you try again?");
+          break;
+        case "unknown":
+          setError("Somewheres something went wrong. Do you mind trying again?");
+          break;
+      }
+      // FIXME compile time error if not all handled
+    }
   };
 
   return (
@@ -51,27 +65,30 @@ export const Signup = () => {
     >
       <h3>Beta Sign Up</h3>
       <p className="text-gray-600">{BETA_TEXT}</p>
-      <form className="space-y-3">
-        <Input
-          value={email}
-          onChange={setEmail}
-          label="Email"
-          type="email"
-          placeholder="john@example.com"
-        />
-        {error && (
-          <div className="bg-red-200 text-red-700 rounded text-center p-4 my-2">{error}</div>
-        )}
-        <Button
-          label="Sign Up"
-          className="w-full"
-          loading={loading}
-          onClick={(e) => {
-            e.preventDefault();
-            login();
-          }}
-        />
-      </form>
+      {success ? (
+        <BlockAlert type="success">Success!! Thank you so much for signing up :)</BlockAlert>
+      ) : (
+        <form className="space-y-3">
+          <Input
+            value={email}
+            onChange={setEmail}
+            label="Email"
+            type="email"
+            placeholder="john@example.com"
+            onEnter={login}
+          />
+          {error && <BlockAlert type="error">{error}</BlockAlert>}
+          <Button
+            label="Sign Up"
+            className="w-full"
+            loading={loading}
+            onClick={(e) => {
+              e.preventDefault();
+              login();
+            }}
+          />
+        </form>
+      )}
     </CardPage>
   );
 };
