@@ -6,7 +6,8 @@
     "test": "jest",
     "check:lint": "eslint \"**/*.{ts,tsx}\"",
     "check:formatting": "prettier --list-different \"**/*.{ts,tsx,js}\"",
-    "check:types": "tsc --noEmit"
+    "check:types": "tsc --noEmit",
+    "postinstall": "firebase functions:config:get > .runtimeconfig.json"
   },
   "engines": {
     "node": "10"
