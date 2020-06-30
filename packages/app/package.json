@@ -21,7 +21,7 @@
     "downshift": "^5.4.2",
     "fast-average-color": "^6.0.2",
     "firebase": "^7.14.5",
-    "neverthrow": "^2.5.0-beta",
+    "neverthrow": "^2.5.0",
     "react-aria-modal": "^4.0.0",
     "react-hot-loader": "^4.12.21",
     "react-hotkeys-hook": "^2.1.3",
