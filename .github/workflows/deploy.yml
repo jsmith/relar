@@ -11,13 +11,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - uses: softprops/action-gh-release@v1
-        with:
-          # TODO changelog
-          draft: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - uses: actions/cache@v1
         with:
           path: ~/.npm
@@ -30,7 +23,7 @@ jobs:
       - run: npm install --no-package-lock
       - run: npm run bootstrap
       - run: npx patch-package
-      
+
       # We don't build ourselves since firebase
       # automatically does this :)
       - uses: w9jds/firebase-action@master
@@ -41,3 +34,10 @@ jobs:
           # FIREBASE_TOKEN generated using firebase login:ci
           # See https://firebase.google.com/docs/cli#cli-ci-systems
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - uses: softprops/action-gh-release@v1
+        with:
+          # TODO changelog
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
