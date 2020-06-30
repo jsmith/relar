@@ -10,6 +10,7 @@ import { Input } from "/@/components/Input";
 import { Link } from "/@/components/Link";
 import { preventAndCall, wrap } from "/@/utils";
 import { useHotkeys } from "react-hotkeys-hook";
+import { BlockAlert } from "/@/components/BlockAlert";
 
 export const Login = () => {
   const [email, setEmail] = useState("");
@@ -60,9 +61,7 @@ export const Login = () => {
           placeholder="john@example.com"
         />
         <Input value={password} onChange={setPassword} label="Password" type="password" />
-        {error && (
-          <div className="bg-red-200 text-red-700 rounded text-center p-4 my-2">{error}</div>
-        )}
+        {error && <BlockAlert type="error">{error}</BlockAlert>}
         <div>
           <Link route={routes.forgotPassword} label="Forgot password?" />
         </div>

@@ -2,12 +2,12 @@ import * as admin from "firebase-admin";
 import { Song, SongMetadata, Artist, Album } from "./shared/types";
 import * as uuid from "uuid";
 import * as path from "path";
-import { deleteCollection, initTest } from "./utils";
+import { deleteCollection, initTest, deleteAllUserData } from "./utils";
 
 const test = initTest();
 
 // This must go *after* the `functions` init call
-import { createSong, parseID3Tags, md5Hash } from "./index";
+import { createSong, parseID3Tags, md5Hash } from "./uploader";
 
 const storage = admin.storage();
 const firestore = admin.firestore();
@@ -142,19 +142,7 @@ describe("utils", () => {
 describe("functions", () => {
   describe("createSong", () => {
     afterEach(async () => {
-      await firestore.doc("userData/testUser").delete();
-      deleteCollection(await firestore.collection("userData/testUser/songs"));
-      deleteCollection(await firestore.collection("userData/testUser/albums"));
-      deleteCollection(await firestore.collection("userData/testUser/artists"));
-      const [files] = await storage.bucket().getFiles({
-        prefix: "testUser/",
-      });
-
-      const promises = files.map((file) => {
-        return file.delete();
-      });
-
-      await Promise.all(promises);
+      await deleteAllUserData(firestore, storage, "testUser");
     });
 
     it("works when uploading a valid song with just a title", async () => {

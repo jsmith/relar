@@ -2,9 +2,7 @@ import React, { useState, useCallback } from "react";
 import { Modal } from "/@/components/Modal";
 import { Input } from "/@/components/Input";
 import { useDefinedUser, signInWithEmailAndPassword } from "/@/auth";
-import { captureAndLogError, Keys } from "/@/utils";
-import { auth } from "/@/firebase";
-import { Button } from "/@/components/Button";
+import { captureAndLogError } from "/@/utils";
 import { BlockAlert } from "/@/components/BlockAlert";
 
 export interface ConfirmPasswordProps {
@@ -58,11 +56,7 @@ export const ConfirmPassword = ({ onClose, display, onConfirm }: ConfirmPassword
         value={value}
         onChange={(value) => setValue(value)}
         inputId="password-confirm-box"
-        onKeyDown={(e) => {
-          if (e.keyCode === Keys.Return) {
-            tryAndConfirm();
-          }
-        }}
+        onEnter={tryAndConfirm}
       />
       {error && <BlockAlert type="error">{error}</BlockAlert>}
     </Modal>

@@ -25,7 +25,7 @@ export const Signup = () => {
 
   useEffect(() => {
     if (user) {
-      goTo(routes.songs);
+      goTo(routes.home);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

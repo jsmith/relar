@@ -25,7 +25,7 @@ app.use(bodyParser.json());
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://toga-4e3f5.web.app"],
+    origin: ["http://localhost:3000", "https://toga-4e3f5.web.app", "https://relar.app"],
   }),
 );
 
