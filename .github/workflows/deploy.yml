@@ -34,6 +34,7 @@ jobs:
           # FIREBASE_TOKEN generated using firebase login:ci
           # See https://firebase.google.com/docs/cli#cli-ci-systems
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          PROJECT_ID: default
 
       - uses: softprops/action-gh-release@v1
         with:
