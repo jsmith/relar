@@ -1,7 +1,7 @@
 import React from "react";
 import AriaModal from "react-aria-modal";
 import classNames from "classnames";
-import { Button } from "/@/components/Button";
+import { Button, ButtonProps } from "/@/components/Button";
 
 export interface ModalProps {
   display: boolean;
@@ -10,8 +10,13 @@ export interface ModalProps {
   okText?: string;
   children: React.ReactNode;
   titleText: string;
-  initialFocus: string;
+
+  /**
+   * What should be focused. Initially the cancel button.
+   */
+  initialFocus?: string;
   wrapperClassName?: string;
+  okTheme?: ButtonProps["theme"];
 }
 
 export const Modal = ({
@@ -20,9 +25,10 @@ export const Modal = ({
   children,
   onOk,
   okText = "Ok",
-  initialFocus,
+  initialFocus = "#modal-cancel-button",
   titleText,
   wrapperClassName,
+  okTheme,
 }: ModalProps) => {
   if (!display) {
     return null;
@@ -49,10 +55,10 @@ export const Modal = ({
         </div>
         <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
           <span className="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
-            <Button label={okText} onClick={onOk} />
+            <Button id="modal-confirm-button" theme={okTheme} label={okText} onClick={onOk} />
           </span>
           <span className="mt-3 flex w-full rounded-md shadow-sm sm:mt-0 sm:w-auto">
-            <Button label="Cancel" theme="none" onClick={onClose} />
+            <Button id="modal-cancel-button" label="Cancel" theme="none" onClick={onClose} />
           </span>
         </div>
       </div>

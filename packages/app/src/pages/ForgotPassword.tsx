@@ -9,6 +9,7 @@ import { CardPage } from "/@/components/CardPage";
 import { Input } from "/@/components/Input";
 import { Link } from "/@/components/Link";
 import { preventAndCall } from "/@/utils";
+import { BlockAlert } from "/@/components/BlockAlert";
 
 const RESET_INSTRUCTIONS =
   "Enter your email address and we will send you instructions to reset your password.";
@@ -53,9 +54,7 @@ export const ForgotPassword = () => {
           type="email"
           placeholder="john@example.com"
         />
-        {error && (
-          <div className="bg-red-200 text-red-700 rounded text-center p-4 my-2">{error}</div>
-        )}
+        {error && <BlockAlert type="error">{error}</BlockAlert>}
         <Button label="Continue" className="w-full" onClick={preventAndCall(resetPassword)} />
       </form>
     </CardPage>

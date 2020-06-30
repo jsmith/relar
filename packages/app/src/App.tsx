@@ -198,7 +198,7 @@ export const App = (_: React.Props<{}>) => {
   );
 
   return (
-    <div className="h-screen text-white flex flex-col bg-purple-100">
+    <div className="h-screen text-white flex flex-col" style={{ backgroundColor: "#f2f2f3" }}>
       <SkipNavLink className="text-gray-800" />
       <div className="flex bg-gray-900 items-center h-16 px-5 flex-shrink-0 space-x-2">
         <Link
@@ -246,7 +246,7 @@ export const App = (_: React.Props<{}>) => {
               className={button({ color: "purple" })}
               label="Sign Up"
               disableStyle
-              route={routes.login}
+              route={routes.signup}
             />
           </div>
         )}

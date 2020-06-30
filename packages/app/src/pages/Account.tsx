@@ -12,6 +12,7 @@ import { Result, err, ok } from "neverthrow";
 import { auth } from "/@/firebase";
 import { captureAndLog } from "/@/utils";
 import { ConfirmPassword } from "/@/components/ConfirmPassword";
+import { ConfirmationModal } from "/@/components/ConfirmationModal";
 
 export const OverviewSection = ({
   title,
@@ -61,6 +62,7 @@ export const Account = () => {
   const userData = useUserDataDoc();
   const [email, setEmail] = useState("");
   const [displayConfirmPassword, setConfirmDisplayPassword] = useState(false);
+  const [displayConfirmDeletion, setDisplayConfirmDeletion] = useState(false);
 
   const deleteUser = useCallback(() => {
     // As I explain below, the user is automatically logged out which is handled elsewhere
@@ -77,6 +79,32 @@ export const Account = () => {
         display={displayConfirmPassword}
         onClose={() => setConfirmDisplayPassword(false)}
         onConfirm={deleteUser}
+      />
+      <ConfirmationModal
+        title="Delete Account"
+        subtitle="Are you sure you want to deactivate your account? All of your data (including your music) will be permanently removed. This action cannot be undone."
+        confirmText="Delete"
+        confirmEmail
+        onConfirm={async () => {
+          try {
+            await user.delete();
+            // At this point, the user will be logged out which we watch in the auth logic
+            // Once logged out, we will automatically redirect to the login page
+            // So... we do nothing here :)
+            return ok(undefined);
+          } catch (e) {
+            const code: "auth/requires-recent-login" = e.code;
+            switch (code) {
+              case "auth/requires-recent-login":
+                setConfirmDisplayPassword(true);
+                return ok(undefined);
+              default:
+                return err("Unable to delete your account. Please contact support 🙁");
+            }
+          }
+        }}
+        display={displayConfirmDeletion}
+        onClose={() => setDisplayConfirmDeletion(false)}
       />
       <Tabs className="max-w-2xl m-auto my-5 sm:my-10 p-4 rounded bg-white shadow-lg flex">
         <TabList className="divide-y flex-shrink-0">
@@ -156,22 +184,8 @@ export const Account = () => {
             actionText="Delete Account"
             theme="red"
             action={async () => {
-              try {
-                await user.delete();
-                // At this point, the user will be logged out which we watch in the auth logic
-                // Once logged out, we will automatically redirect to the login page
-                // So... we do nothing here :)
-                return ok(undefined);
-              } catch (e) {
-                const code: "auth/requires-recent-login" = e.code;
-                switch (code) {
-                  case "auth/requires-recent-login":
-                    setConfirmDisplayPassword(true);
-                    return ok(undefined);
-                  default:
-                    return err("Unable to delete your account. Please contact support 🙁");
-                }
-              }
+              setDisplayConfirmDeletion(true);
+              return ok(undefined);
             }}
           />
         </TabPanel>
