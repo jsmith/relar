@@ -43,6 +43,7 @@ The Relar app.
 - What if the user signs out? Do we automatically catch that?
 - Some kind of forum for bug/feature upvoting!
 - Set up testing project since we don't want to run tests in production :/
+- Sync security rules with testing.
 
 ## Before Release
 - Limit sign ups to "x" amount of people based on usage info from beta to stay within your price range (ideally the free). Or maybe just budget alerts.
