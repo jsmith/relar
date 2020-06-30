@@ -2,8 +2,11 @@ import * as functions from "firebase-functions";
 
 const config = functions.config();
 
-export function getOsEnv(o: { [key: string]: string | undefined }, key: string): string {
-  if (o[key] === undefined) {
+export function getOsEnv(
+  o: { [key: string]: string | undefined } | undefined,
+  key: string,
+): string {
+  if (!o || o[key] === undefined) {
     throw new Error(`Config variable ${key} is not set.`);
   }
 

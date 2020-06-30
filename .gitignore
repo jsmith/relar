@@ -1,3 +1,8 @@
 node_modules
+
+# For our service accounts
 serviceAccountKey.json
+
+# See https://firebase.google.com/docs/functions/local-emulator
+.runtimeconfig.json
 .DS_Store

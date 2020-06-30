@@ -8,12 +8,15 @@ export const deleteCollection = async (collection: firebase.firestore.Collection
 };
 
 export const initTest = () => {
+  // This config is *super* important and should rarely be changed
+  // If it's changed to the default config and we try to run tests, we could delete production data
+  // Please don't do this!
   return functions(
     {
-      databaseURL: "https://toga-4e3f5.firebaseio.com",
-      storageBucket: "toga-4e3f5.appspot.com",
-      projectId: "toga-4e3f5",
+      databaseURL: "https://relar-test.firebaseio.com",
+      storageBucket: "relar-test.appspot.com",
+      projectId: "relar-test",
     },
-    path.resolve(__dirname, "..", "serviceAccountKey.json"),
+    path.resolve(__dirname, "..", "..", "serviceAccountKey.json"),
   );
 };

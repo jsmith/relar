@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "toga-4e3f5"
+    "default": "toga-4e3f5",
+    "testing": "relar-test"
   }
 }
