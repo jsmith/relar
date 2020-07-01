@@ -1,6 +1,6 @@
 {
   "name": "functions",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "scripts": {
     "build": "rm -rf lib && tsc && rm lib/package.json && mv lib/src/* lib && rm -r lib/src",
     "test": "jest",
