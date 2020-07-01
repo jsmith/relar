@@ -5,7 +5,6 @@ import * as cors from "cors";
 import { TypedAsyncRouter } from "@graywolfai/rest-ts-express";
 import { BetaAPI, BetaSignup } from "./shared/types";
 import * as bodyParser from "body-parser";
-// import * as Sentry from "@sentry/node";
 import * as sgMail from "@sendgrid/mail";
 import { env } from "./env";
 
@@ -18,8 +17,6 @@ function validateEmail(email: string) {
   return re.test(String(email).toLowerCase());
 }
 
-// Sentry.init({ dsn: "https://c1f6b53d686d47fc8d2f8fcf31651304@o400394.ingest.sentry.io/5295615" });
-
 export const app = express();
 app.use(bodyParser.json());
 
@@ -31,6 +28,7 @@ app.use(
 
 const router = TypedAsyncRouter<BetaAPI>(app);
 
+const auth = admin.auth();
 const db = admin.firestore();
 db.settings({ ignoreUndefinedProperties: true });
 
@@ -47,6 +45,28 @@ router.post("/beta-signup", async (req) => {
       type: "error",
       code: "invalid-email",
     };
+  }
+
+  try {
+    await auth.getUserByEmail(req.body.email);
+
+    // If this succeeds then the user already exists
+    return {
+      type: "error",
+      code: "already-have-account",
+    };
+  } catch (e) {
+    const code: "auth/user-not-found" = e.code;
+    switch (code) {
+      case "auth/user-not-found":
+        break;
+      default:
+        // Sentry.captureException(e);
+        return {
+          type: "error",
+          code: "unknown",
+        };
+    }
   }
 
   return await db.runTransaction(async (transaction) => {

@@ -87,13 +87,16 @@ export const App = (_: React.Props<{}>) => {
 
   useDocumentTitle(route?.title);
 
-  console.log(loading, route?.protected, user);
   if (loading) {
     return <div>Loading...</div>;
   }
 
+  console.log(route?.protected, user);
   if (route?.protected && !user) {
     goTo(routes.login);
+    // This is important
+    // If we don't do this we will still try to load components which will break things
+    return <div>Loading...</div>;
   }
 
   const logout = async () => {

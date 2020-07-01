@@ -16,13 +16,13 @@ export const Feature = ({
     <div
       className={classNames(
         "flex items-center flex-col pb-10",
-        last ? "" : "border-b mb-10 border-gray-300",
+        last ? "" : "border-b mb-10 border-gray-400",
         reverse ? "sm:flex-row-reverse" : "sm:flex-row",
       )}
     >
       <div
         className={classNames(
-          "sm:w-32 sm:h-32 h-20 w-20 inline-flex items-center justify-center rounded-full bg-indigo-100 text-indigo-500 flex-shrink-0",
+          "sm:w-32 sm:h-32 h-20 w-20 inline-flex items-center justify-center rounded-full bg-purple-200 text-purple-500 flex-shrink-0",
           reverse ? "sm:ml-10" : "sm:mr-10",
         )}
       >

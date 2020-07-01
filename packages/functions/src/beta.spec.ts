@@ -2,16 +2,22 @@ import * as supertest from "supertest";
 import { deleteCollection, initTest } from "./utils";
 import * as admin from "firebase-admin";
 
-// TODO really make this use the test firebase project
 initTest();
 
 import { app } from "./beta";
 
 const firestore = admin.firestore();
+const auth = admin.auth();
 
 describe("beta signup", () => {
   beforeEach(async () => {
     await deleteCollection(await firestore.collection("beta_signups"));
+    try {
+      const user = await auth.getUserByEmail("test@user.com");
+      await auth.deleteUser(user.uid);
+    } catch (e) {
+      // An error likely means that the user doesn't exist
+    }
   });
 
   it("can successfully sign up a user by email", (done) => {
@@ -58,5 +64,27 @@ describe("beta signup", () => {
       },
       done,
     );
+  });
+
+  it("prevents a user with an account from signing up", (done) => {
+    auth
+      .createUser({
+        email: "test@user.com",
+        password: "123456",
+        emailVerified: true,
+      })
+      .then(() => {
+        supertest(app)
+          .post("/beta-signup")
+          .send({ email: "test@user.com" })
+          .expect(200, { type: "error", code: "already-have-account" }, done);
+      });
+  });
+
+  afterAll(async () => {
+    // Turns out we need to do this when running the SDK locally
+    // Who knew ¯\_(ツ)_/¯
+    // See https://stackoverflow.com/questions/41630485/how-to-properly-exit-firebase-admin-nodejs-script-when-all-transaction-is-comple
+    await admin.app().delete();
   });
 });
