@@ -5,7 +5,7 @@ import { Button, ButtonProps } from "/@/components/Button";
 
 export interface ModalProps {
   display: boolean;
-  onClose: () => void;
+  onCancel: () => void;
   onOk: () => void;
   okText?: string;
   children: React.ReactNode;
@@ -20,7 +20,7 @@ export interface ModalProps {
 }
 
 export const Modal = ({
-  onClose,
+  onCancel,
   display,
   children,
   onOk,
@@ -37,7 +37,7 @@ export const Modal = ({
   return (
     <AriaModal
       titleText={titleText}
-      onExit={onClose}
+      onExit={onCancel}
       initialFocus={initialFocus}
       getApplicationNode={() => document.getElementById("root")!}
       underlayStyle={{ paddingTop: "2em" }}
@@ -58,7 +58,7 @@ export const Modal = ({
             <Button id="modal-confirm-button" theme={okTheme} label={okText} onClick={onOk} />
           </span>
           <span className="mt-3 flex w-full rounded-md shadow-sm sm:mt-0 sm:w-auto">
-            <Button id="modal-cancel-button" label="Cancel" theme="none" onClick={onClose} />
+            <Button id="modal-cancel-button" label="Cancel" theme="none" onClick={onCancel} />
           </span>
         </div>
       </div>

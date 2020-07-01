@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import * as Sentry from "@sentry/browser";
 import { useDefinedUser, sendPasswordResetEmail } from "/@/auth";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
@@ -10,9 +10,11 @@ import { Button, ButtonProps } from "/@/components/Button";
 import { BlockAlert } from "/@/components/BlockAlert";
 import { Result, err, ok } from "neverthrow";
 import { auth } from "/@/firebase";
-import { captureAndLog } from "/@/utils";
+import { captureAndLog, changeEmail, resetPassword, deleteAccount } from "/@/utils";
 import { ConfirmPassword } from "/@/components/ConfirmPassword";
 import { ConfirmationModal } from "/@/components/ConfirmationModal";
+import { useConfirmPassword } from "/@/confirm-password";
+import { useConfirmAction } from "/@/confirm-actions";
 
 export const OverviewSection = ({
   title,
@@ -47,6 +49,8 @@ export const OverviewSection = ({
         label={`${actionText} →`}
         onClick={async () => {
           const result = await action();
+          setError("");
+          setInfo("");
           result.match(
             (infoString) => infoString && setInfo(infoString),
             (errorString) => setError(errorString),
@@ -61,51 +65,15 @@ export const Account = () => {
   const user = useDefinedUser();
   const userData = useUserDataDoc();
   const [email, setEmail] = useState("");
-  const [displayConfirmPassword, setConfirmDisplayPassword] = useState(false);
-  const [displayConfirmDeletion, setDisplayConfirmDeletion] = useState(false);
+  const { confirmPassword } = useConfirmPassword();
+  const { confirmAction } = useConfirmAction();
 
   const deleteUser = useCallback(() => {
-    // As I explain below, the user is automatically logged out which is handled elsewhere
-    // Therefore, once we call delete, we do nothing else
-    // Also note that I do not do any error handling here. If something happens, Sentry will
-    // catch the error and report it back to us.
-    // Since the user just logged in, there shouldn't be any issues though.
     user.delete();
   }, [user]);
 
   return (
     <div className="mx-6">
-      <ConfirmPassword
-        display={displayConfirmPassword}
-        onClose={() => setConfirmDisplayPassword(false)}
-        onConfirm={deleteUser}
-      />
-      <ConfirmationModal
-        title="Delete Account"
-        subtitle="Are you sure you want to deactivate your account? All of your data (including your music) will be permanently removed. This action cannot be undone."
-        confirmText="Delete"
-        confirmEmail
-        onConfirm={async () => {
-          try {
-            await user.delete();
-            // At this point, the user will be logged out which we watch in the auth logic
-            // Once logged out, we will automatically redirect to the login page
-            // So... we do nothing here :)
-            return ok(undefined);
-          } catch (e) {
-            const code: "auth/requires-recent-login" = e.code;
-            switch (code) {
-              case "auth/requires-recent-login":
-                setConfirmDisplayPassword(true);
-                return ok(undefined);
-              default:
-                return err("Unable to delete your account. Please contact support 🙁");
-            }
-          }
-        }}
-        display={displayConfirmDeletion}
-        onClose={() => setDisplayConfirmDeletion(false)}
-      />
       <Tabs className="max-w-2xl m-auto my-5 sm:my-10 p-4 rounded bg-white shadow-lg flex">
         <TabList className="divide-y flex-shrink-0">
           <Tab selectedClassName="bg-purple-100" className="cursor-pointer py-2 px-2 text-gray-800">
@@ -128,25 +96,7 @@ export const Account = () => {
             title="Change Email"
             subtitle="We'll send you a confirmation email after submission to make sure you didn't make a mistake!"
             actionText="Change Email"
-            action={async () => {
-              if (email === "") {
-                return err("Uhhh could you give us something to work with? Thanks.");
-              }
-
-              try {
-                await user.verifyBeforeUpdateEmail(email);
-                return ok("Success! Check your email for a verification link.");
-              } catch (e) {
-                const code: "auth/internal-error" = e.code;
-                switch (code) {
-                  case "auth/internal-error":
-                    return err("Please check your email and try again.");
-                  default:
-                    captureAndLog(e);
-                    return err("An unknown error occurred while resetting your email.");
-                }
-              }
-            }}
+            action={() => changeEmail(user, email, confirmPassword)}
           >
             <div className="flex items-baseline mt-3 flex-col space-y-1">
               <input
@@ -160,23 +110,7 @@ export const Account = () => {
             title="Reset Your Password"
             subtitle={`After clicking "Reset Password" we'll send you a link by email to reset your password.`}
             actionText="Change Password"
-            action={async () => {
-              if (!user.email) {
-                Sentry.captureMessage(
-                  "A user tried to reset their password but they don't have an email.",
-                  Sentry.Severity.Error,
-                );
-
-                return err("An unknown error has occurred. Please contact support.");
-              }
-
-              const result = await sendPasswordResetEmail(user.email);
-              if (result.isErr()) {
-                return err(result.error.message);
-              }
-
-              return ok("Liftoff! Expect a confirmation email in your inbox soon =)");
-            }}
+            action={() => resetPassword(user)}
           />
           <OverviewSection
             title="Delete Your Account"
@@ -184,8 +118,19 @@ export const Account = () => {
             actionText="Delete Account"
             theme="red"
             action={async () => {
-              setDisplayConfirmDeletion(true);
-              return ok(undefined);
+              const confirmedAction = await confirmAction({
+                title: "Delete Account",
+                confirmText: "Delete",
+                subtitle:
+                  "Are you sure you want to deactivate your account? All of your data (including your music) will be permanently removed. This action cannot be undone.",
+                confirmEmail: true,
+              });
+
+              if (!confirmedAction) {
+                return ok(undefined);
+              }
+
+              return await deleteAccount(user, confirmPassword);
             }}
           />
         </TabPanel>

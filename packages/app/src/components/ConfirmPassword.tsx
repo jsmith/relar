@@ -1,22 +1,27 @@
 import React, { useState, useCallback } from "react";
 import { Modal } from "/@/components/Modal";
 import { Input } from "/@/components/Input";
-import { useDefinedUser, signInWithEmailAndPassword } from "/@/auth";
+import { useDefinedUser, signInWithEmailAndPassword, useUser } from "/@/auth";
 import { captureAndLogError } from "/@/utils";
 import { BlockAlert } from "/@/components/BlockAlert";
 
 export interface ConfirmPasswordProps {
   display: boolean;
-  onClose: () => void;
+  onCancel: () => void;
   onConfirm: () => void;
 }
 
-export const ConfirmPassword = ({ onClose, display, onConfirm }: ConfirmPasswordProps) => {
-  const user = useDefinedUser();
+export const ConfirmPassword = ({ onCancel, display, onConfirm }: ConfirmPasswordProps) => {
+  const { user } = useUser();
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
 
   const tryAndConfirm = useCallback(async () => {
+    if (!user) {
+      setError("You are not logged in and cannot confirm your password.");
+      return;
+    }
+
     if (!user.email) {
       captureAndLogError(
         "The users email was undefined when trying to confirm password. Something isn't right.",
@@ -31,12 +36,12 @@ export const ConfirmPassword = ({ onClose, display, onConfirm }: ConfirmPassword
     } else {
       setError(result.error.message);
     }
-  }, [onConfirm, user.email, value]);
+  }, [onConfirm, user, value]);
 
   return (
     <Modal
       display={display}
-      onClose={onClose}
+      onCancel={onCancel}
       onOk={tryAndConfirm}
       initialFocus="#password-confirm-box"
       titleText="Confirm Password"

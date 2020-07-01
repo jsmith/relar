@@ -156,7 +156,10 @@ export type BetaAPI = {
       body: {
         email: string;
       };
-      response: Success | KnownError<"already-on-list" | "invalid-email"> | UnknownError;
+      response:
+        | Success
+        | KnownError<"already-on-list" | "invalid-email" | "already-have-account">
+        | UnknownError;
     };
   };
 };

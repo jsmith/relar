@@ -4,7 +4,7 @@ import { Keys } from "/@/utils";
 
 export interface InputProps {
   value: string;
-  label: string;
+  label?: string;
   onChange: (value: string) => void;
   labelClassName?: string;
   spanClassName?: string;

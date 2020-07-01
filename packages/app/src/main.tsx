@@ -18,6 +18,8 @@ import { routes } from "/@/routes";
 import { UserProvider } from "/@/auth";
 // import { SkeletonTheme } from "react-loading-skeleton";
 import { PlayerProvider } from "/@/player";
+import { ConfirmActionProvider } from "/@/confirm-actions";
+import { ConfirmPasswordProvider } from "/@/confirm-password";
 
 ReactDOM.render(
   <React.StrictMode>
@@ -25,7 +27,11 @@ ReactDOM.render(
       <Router routes={routes}>
         {/* <SkeletonTheme color="rgb(255, 255, 255, 0.05)" highlightColor="rgb(255, 255, 255, 0.15)"> */}
         <PlayerProvider>
-          <App />
+          <ConfirmActionProvider>
+            <ConfirmPasswordProvider>
+              <App />
+            </ConfirmPasswordProvider>
+          </ConfirmActionProvider>
         </PlayerProvider>
         {/* </SkeletonTheme> */}
       </Router>
