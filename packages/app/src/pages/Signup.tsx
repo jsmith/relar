@@ -43,6 +43,9 @@ export const Signup = () => {
         case "already-on-list":
           setError("Ok I know you really want on try the app but you're already on the list 💗");
           break;
+        case "already-have-account":
+          setError("Sooo you actually already have an account? I hope you are enjoying it 💕");
+          break;
         case "invalid-email":
           setError("Your email is invalid. Could you try again?");
           break;
