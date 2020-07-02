@@ -11,6 +11,7 @@ import { Input } from "/@/components/Input";
 import { Link } from "/@/components/Link";
 import { backend } from "/@/backend";
 import { BlockAlert } from "/@/components/BlockAlert";
+import { BetaAPI } from "/@/shared/types";
 
 const BETA_TEXT =
   "Want to be apart of the beta? Sign up now and we'll add you to our testers list.";
@@ -33,7 +34,14 @@ export const Signup = () => {
   const login = async () => {
     setLoading(true);
     setError("");
-    const result = await backend.post("/beta-signup", { email }).then((r) => r.data);
+    let result: BetaAPI["/signup"]["POST"]["response"];
+    try {
+      result = await backend.post("/signup", { email }).then((r) => r.data);
+    } catch (e) {
+      Sentry.captureException(e);
+      result = { type: "error", code: "unknown" };
+    }
+
     setLoading(false);
     if (result.type === "success") {
       setSuccess(true);

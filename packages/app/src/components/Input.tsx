@@ -13,6 +13,7 @@ export interface InputProps {
   type?: "email" | "password" | "number";
   inputId?: string;
   onEnter?: () => void;
+  autoFocus?: boolean;
 }
 
 export const Input = (props: InputProps) => {
@@ -26,6 +27,7 @@ export const Input = (props: InputProps) => {
         placeholder={props.placeholder}
         onChange={(e) => props.onChange(e.target.value)}
         onKeyDown={(e) => e.keyCode === Keys.Return && props.onEnter && props.onEnter()}
+        autoFocus={props.autoFocus}
       />
     </label>
   );

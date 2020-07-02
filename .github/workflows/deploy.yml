@@ -1,9 +1,10 @@
 name: Deploy
 
-on:
-  push:
-    tags:
-      - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
+on: [push]
+# on:
+#   push:
+#     tags:
+#       - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
 
 jobs:
   deploy:
@@ -25,15 +26,17 @@ jobs:
       - run: npx patch-package
       - run: npm run build
 
-      - uses: w9jds/firebase-action@master
-        with:
-          args: deploy
+      - run: npm install -g firebase-tools
+      - run: firebase use default
         env:
-          PROJECT_PATH: ./packages
           # FIREBASE_TOKEN generated using firebase login:ci
           # See https://firebase.google.com/docs/cli#cli-ci-systems
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-          PROJECT_ID: default
+        working-directory: packages
+      - run: firebase deploy
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        working-directory: packages
 
       - uses: softprops/action-gh-release@v1
         with:

@@ -5,6 +5,7 @@
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "jsx": "react",
+    "module": "esnext",
     "baseUrl": "./",
     "paths": {
       "/@/*": ["src/*"],

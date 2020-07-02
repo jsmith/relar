@@ -1,0 +1,16 @@
+{
+  "name": "scripts",
+  "version": "0.0.0",
+  "description": "Helper scripts for managing... things",
+  "dependencies": {
+    "@sendgrid/mail": "^7.2.1",
+    "@types/uuid": "^8.0.0",
+    "dotenv": "^8.2.0",
+    "firebase": "^7.15.5",
+    "firebase-admin": "^8.13.0",
+    "runtypes": "^4.3.0",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.6",
+    "uuid": "^8.2.0"
+  }
+}

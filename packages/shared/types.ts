@@ -1,4 +1,14 @@
-import { Record, Number, String, Undefined, Literal, Static, Boolean, Unknown } from "runtypes";
+import {
+  Record,
+  Number,
+  String,
+  Undefined,
+  Literal,
+  Static,
+  Boolean,
+  Unknown,
+  Partial,
+} from "runtypes";
 import * as firebase from "firebase";
 
 /**
@@ -121,7 +131,11 @@ export type Album = Static<typeof AlbumType>;
 
 export const BetaSignupType = Record({
   email: String,
-});
+}).And(
+  Partial({
+    token: String,
+  }),
+);
 
 export type BetaSignup = Static<typeof BetaSignupType>;
 
@@ -160,6 +174,15 @@ export type BetaAPI = {
         | Success
         | KnownError<"already-on-list" | "invalid-email" | "already-have-account">
         | UnknownError;
+    };
+  };
+  "/create-account": {
+    POST: {
+      body: {
+        token: string;
+        password: string;
+      };
+      response: Success | KnownError<"invalid-token" | "password-too-short"> | UnknownError;
     };
   };
 };

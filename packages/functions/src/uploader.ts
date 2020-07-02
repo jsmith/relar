@@ -1,5 +1,4 @@
 import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
 import * as os from "os";
 import * as path from "path";
 import * as sharp from "sharp";
@@ -23,6 +22,7 @@ import {
 import { Record, Result as RuntypeResult, Static } from "runtypes";
 import * as uuid from "uuid";
 import { Transaction, Query, DocumentReference } from "@google-cloud/firestore";
+import { admin } from "./admin";
 
 // This is where the max songs limit is set
 // To update this in production just update this value and
@@ -39,10 +39,7 @@ export const md5Hash = (localFilePath: string): Promise<Result<string, Error>> =
   });
 };
 
-admin.initializeApp();
-
 const db = admin.firestore();
-db.settings({ ignoreUndefinedProperties: true });
 
 const gcs = admin.storage();
 

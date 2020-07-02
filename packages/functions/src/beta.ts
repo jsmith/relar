@@ -1,16 +1,14 @@
 import * as express from "express";
 import * as functions from "firebase-functions";
-import * as admin from "firebase-admin";
 import * as cors from "cors";
 import { TypedAsyncRouter } from "@graywolfai/rest-ts-express";
 import { BetaAPI, BetaSignup } from "./shared/types";
 import * as bodyParser from "body-parser";
 import * as sgMail from "@sendgrid/mail";
 import { env } from "./env";
+import { admin } from "./admin";
 
 sgMail.setApiKey(env.mail.sendgrid_api_key);
-
-admin.initializeApp();
 
 function validateEmail(email: string) {
   const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -30,9 +28,8 @@ const router = TypedAsyncRouter<BetaAPI>(app);
 
 const auth = admin.auth();
 const db = admin.firestore();
-db.settings({ ignoreUndefinedProperties: true });
 
-router.post("/beta-signup", async (req) => {
+router.post("/signup", async (req) => {
   if (!req.body.email) {
     return {
       type: "error",
@@ -88,8 +85,10 @@ router.post("/beta-signup", async (req) => {
   });
 });
 
+export const beta = functions.https.onRequest(app);
+
 export const onBetaSignup = functions.firestore
-  .document("beta_signups")
+  .document("beta_signups/{email}")
   .onCreate(async (object) => {
     // FIXME validation
     const { email } = object.data() as BetaSignup;

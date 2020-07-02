@@ -20,7 +20,7 @@ const AlbumOverview = React.lazy(() => import("/@/pages/AlbumOverview"));
 const ForgotPasswordSuccess = React.lazy(() => import("/@/pages/ForgotPasswordSuccess"));
 const Hero = React.lazy(() => import("/@/pages/Hero"));
 const Account = React.lazy(() => import("/@/pages/Account"));
-import { ReactQueryDevtools } from "react-query-devtools";
+import ReactQueryDevtools from "react-query-devtools";
 import { DragCapture } from "/@/components/DragCapture";
 import { AccountDropdown } from "/@/components/AccountDropdown";
 import { auth } from "/@/firebase";
@@ -30,6 +30,7 @@ import { button, link } from "/@/classes";
 import { SkipNavLink, SkipNavContent } from "@reach/skip-nav";
 import "@reach/skip-nav/styles.css";
 import "/@/index.css";
+import { Invite } from "/@/pages/Invite";
 
 export interface SideBarItem {
   label: string;
@@ -75,12 +76,6 @@ export const App = (_: React.Props<{}>) => {
   const { user, loading } = useUser();
   const [display, setDisplay] = useState(false);
 
-  const routeIdLookup = useMemo(() => {
-    const lookup: { [id: string]: CustomRoute } = {};
-    Object.values(routes).forEach((route) => (lookup[route.id] = route));
-    return lookup;
-  }, []);
-
   const route = useMemo(() => Object.values(routes).find((route) => route.id === routeId), [
     routeId,
   ]);
@@ -91,7 +86,6 @@ export const App = (_: React.Props<{}>) => {
     return <div>Loading...</div>;
   }
 
-  console.log(route?.protected, user);
   if (route?.protected && !user) {
     goTo(routes.login);
     // This is important
@@ -196,6 +190,8 @@ export const App = (_: React.Props<{}>) => {
     <ForgotPasswordSuccess />
   ) : route?.id === "account" ? (
     <Account />
+  ) : route?.id === "invite" ? (
+    <Invite />
   ) : (
     <div className="text-black">404</div>
   );
@@ -256,7 +252,7 @@ export const App = (_: React.Props<{}>) => {
       </div>
       <SkipNavContent />
       <React.Suspense fallback={<div>Lading...</div>}>{content}</React.Suspense>
-      <ReactQueryDevtools initialIsOpen={false} />
+      <ReactQueryDevtools.ReactQueryDevtools initialIsOpen={false} />
     </div>
   );
 };
