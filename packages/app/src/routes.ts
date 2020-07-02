@@ -119,6 +119,15 @@ export const routes = {
     containerClassName: "px-5",
     title: "Artists | RELAR",
   },
+  invite: {
+    id: "invite",
+    path: "/invite/:invite",
+    protected: true,
+    sidebar: false,
+    className: "",
+    containerClassName: "px-5",
+    title: "Invite | RELAR",
+  },
   // gallery: {
   //   id: 'gallery',
   //   path: '/gallery/:imageId',

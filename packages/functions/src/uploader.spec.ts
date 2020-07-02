@@ -2,7 +2,8 @@ import * as admin from "firebase-admin";
 import { Song, SongMetadata, Artist, Album } from "./shared/types";
 import * as uuid from "uuid";
 import * as path from "path";
-import { deleteCollection, initTest, deleteAllUserData } from "./utils";
+import { deleteAllUserData } from "./utils";
+import { initTest } from "./test-utils";
 
 const test = initTest();
 

@@ -1,6 +1,9 @@
 import * as React from "react";
 import classNames from "classnames";
-// import { Ellipsis } from "react-spinners-css";
+import SVGLoadersReact from "svg-loaders-react";
+// import { Circle } from "react-spinners-css";
+
+const { ThreeDots } = SVGLoadersReact;
 
 export interface ButtonProps
   extends React.DetailedHTMLProps<
@@ -44,7 +47,7 @@ export const Button = ({ invert, theme = "purple", loading, ...props }: ButtonPr
     <button
       {...props}
       className={classNames(
-        "flex justify-center py-2 px-4 border uppercase font-medium rounded-md",
+        "flex justify-center items-center py-2 px-4 border uppercase font-medium rounded-md",
         className,
         "transition duration-150 ease-in-out",
         "h-10",
@@ -53,9 +56,12 @@ export const Button = ({ invert, theme = "purple", loading, ...props }: ButtonPr
     >
       {loading ? (
         // This positioning is kinda a hack but it works for now
-        // <Ellipsis className="text-white transform -translate-y-6 -mt-1" color="currentColor" />
-        <div></div> // TODO
+        // <Circle className="text-white transform -translate-y-6 -mt-1 h-2" color="currentColor" />
+        // <Circle color="currentColor" className="text-red-100" />
+        // <div className="loader"></div>
+        <ThreeDots className="w-16 h-4" />
       ) : (
+        // <div></div> // TODO
         props.label
       )}
     </button>

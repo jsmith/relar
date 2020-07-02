@@ -19,6 +19,7 @@ export const Link = ({ route, label, className, disableStyle }: LinkProps) => {
   return (
     <a
       href={route.path}
+      // TODO remove my-link
       className={classNames(disableStyle ? "" : "my-link", className)}
       onClick={(e) => {
         e.preventDefault();

@@ -1,7 +1,7 @@
 node_modules
 
 # For our service accounts
-serviceAccountKey.json
+serviceAccountKey*
 
 # See https://firebase.google.com/docs/functions/local-emulator
 .runtimeconfig.json

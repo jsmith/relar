@@ -1,5 +1,6 @@
 import * as supertest from "supertest";
-import { deleteCollection, initTest } from "./utils";
+import { deleteCollection } from "./utils";
+import { initTest } from "./test-utils";
 import * as admin from "firebase-admin";
 
 initTest();
@@ -21,7 +22,7 @@ describe("beta signup", () => {
   });
 
   it("can successfully sign up a user by email", (done) => {
-    supertest(app).post("/beta-signup").send({ email: "test@user.com" }).expect(
+    supertest(app).post("/signup").send({ email: "test@user.com" }).expect(
       200,
       {
         type: "success",
@@ -32,10 +33,10 @@ describe("beta signup", () => {
 
   it("prevents two signups", (done) => {
     supertest(app)
-      .post("/beta-signup")
+      .post("/signup")
       .send({ email: "test@user.com" })
       .end(() => {
-        supertest(app).post("/beta-signup").send({ email: "test@user.com" }).expect(
+        supertest(app).post("/signup").send({ email: "test@user.com" }).expect(
           200,
           {
             type: "error",
@@ -47,7 +48,7 @@ describe("beta signup", () => {
   });
 
   it("prevents bad emails", (done) => {
-    supertest(app).post("/beta-signup").send({ email: "@user.com" }).expect(
+    supertest(app).post("/signup").send({ email: "@user.com" }).expect(
       200,
       {
         type: "error",
@@ -56,7 +57,7 @@ describe("beta signup", () => {
       done,
     );
 
-    supertest(app).post("/beta-signup").expect(
+    supertest(app).post("/signup").expect(
       200,
       {
         type: "error",
@@ -75,7 +76,7 @@ describe("beta signup", () => {
       })
       .then(() => {
         supertest(app)
-          .post("/beta-signup")
+          .post("/signup")
           .send({ email: "test@user.com" })
           .expect(200, { type: "error", code: "already-have-account" }, done);
       });
