@@ -6,11 +6,13 @@ import * as admin from "firebase-admin";
 initTest();
 
 import { app } from "./auth";
+import { betaSignups } from "./shared/utils";
+import { BetaSignup } from "./shared/types";
 
 const firestore = admin.firestore();
 const auth = admin.auth();
 
-describe("beta signup", () => {
+describe.only("auth", () => {
   beforeEach(async () => {
     await deleteCollection(await firestore.collection("beta_signups"));
     try {
@@ -22,7 +24,7 @@ describe("beta signup", () => {
   });
 
   it("can successfully sign up a user by email", (done) => {
-    supertest(app).post("/signup").send({ email: "test@user.com" }).expect(
+    supertest(app).post("/beta-signup").send({ email: "test@user.com" }).expect(
       200,
       {
         type: "success",
@@ -33,10 +35,10 @@ describe("beta signup", () => {
 
   it("prevents two signups", (done) => {
     supertest(app)
-      .post("/signup")
+      .post("/beta-signup")
       .send({ email: "test@user.com" })
       .end(() => {
-        supertest(app).post("/signup").send({ email: "test@user.com" }).expect(
+        supertest(app).post("/beta-signup").send({ email: "test@user.com" }).expect(
           200,
           {
             type: "error",
@@ -48,7 +50,7 @@ describe("beta signup", () => {
   });
 
   it("prevents bad emails", (done) => {
-    supertest(app).post("/signup").send({ email: "@user.com" }).expect(
+    supertest(app).post("/beta-signup").send({ email: "@user.com" }).expect(
       200,
       {
         type: "error",
@@ -57,7 +59,7 @@ describe("beta signup", () => {
       done,
     );
 
-    supertest(app).post("/signup").expect(
+    supertest(app).post("/beta-signup").expect(
       200,
       {
         type: "error",
@@ -76,11 +78,83 @@ describe("beta signup", () => {
       })
       .then(() => {
         supertest(app)
-          .post("/signup")
+          .post("/beta-signup")
           .send({ email: "test@user.com" })
           .expect(200, { type: "error", code: "already-have-account" }, done);
       });
   });
+
+  it("can create an account", (done) => {
+    const data: BetaSignup = { email: "test@user.com", token: "1234" };
+    betaSignups(firestore)
+      .doc("test@user.com")
+      .set(data)
+      .then(() => {
+        supertest(app)
+          .post("/create-account")
+          .send({ password: "123456aA", token: "1234" })
+          .expect(200, { type: "success" }, () => {
+            betaSignups(firestore)
+              .doc("test@user.com")
+              .get()
+              .then((data) => {
+                expect(data.exists).toBe(false);
+                done();
+              });
+          });
+      });
+  });
+
+  it("disallows two short passwords", (done) => {
+    supertest(app)
+      .post("/create-account")
+      .send({ password: "12345aA", token: "1234" })
+      .expect(200, { type: "error", code: "invalid-password" }, done);
+  });
+
+  it("disallows passwords with no lowercase", (done) => {
+    supertest(app)
+      .post("/create-account")
+      .send({ password: "123456AA", token: "1234" })
+      .expect(200, { type: "error", code: "invalid-password" }, done);
+  });
+
+  it("disallows passwords with no uppercase", (done) => {
+    supertest(app)
+      .post("/create-account")
+      .send({ password: "123456aa", token: "1234" })
+      .expect(200, { type: "error", code: "invalid-password" }, done);
+  });
+
+  it("disallows tokens that don't exist", (done) => {
+    supertest(app)
+      .post("/create-account")
+      .send({ password: "123456aA", token: "1234" })
+      .expect(200, { type: "error", code: "invalid-token" }, done);
+  });
+
+  it("disallows users who already have accounts", (done) => {
+    const data: BetaSignup = { email: "test@user.com", token: "1234" };
+    betaSignups(firestore)
+      .doc("test@user.com")
+      .set(data)
+      .then(() => {
+        auth
+          .createUser({
+            email: "test@user.com",
+            password: "123456",
+            emailVerified: true,
+          })
+          .then(() => {
+            supertest(app)
+              .post("/create-account")
+              .send({ password: "123456aA", token: "1234" })
+              .expect(200, { type: "error", code: "already-have-account" }, done);
+          });
+      });
+  });
+
+  // TODO test bad passwords
 
   afterAll(async () => {
     // Turns out we need to do this when running the SDK locally

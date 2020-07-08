@@ -9,7 +9,7 @@ export interface ProgressBarProps {
 }
 
 export const ProgressBar = (props: ProgressBarProps) => {
-  const style = useMemo(() => ({ width: `${Math.floor((props.value / props.maxValue) * 100)}` }), [
+  const style = useMemo(() => ({ width: `${Math.floor((props.value / props.maxValue) * 100)}%` }), [
     props.value,
     props.maxValue,
   ]);
@@ -17,11 +17,11 @@ export const ProgressBar = (props: ProgressBarProps) => {
   return (
     <div
       className={classNames(
-        "w-full h-1 bg-gray-200 rounded overflow-none",
+        "w-full h-1 bg-gray-200 rounded overflow-hidden",
         props.backgroundClassName,
       )}
     >
-      <div className={props.foregroundClassName} style={style}></div>
+      <div className={classNames("h-full", props.foregroundClassName)} style={style}></div>
     </div>
   );
 };

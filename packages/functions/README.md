@@ -1,3 +1,3 @@
 ```
-firebase functions:config:get > .runtimeconfig.js
+firebase functions:config:get > .runtimeconfig.json
 ```

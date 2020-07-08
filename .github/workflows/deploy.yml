@@ -1,26 +1,18 @@
 name: Deploy
 
-on: [push]
-# on:
-#   push:
-#     tags:
-#       - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
+# on: [push]
+on:
+  push:
+    tags:
+      - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-
-      - uses: actions/cache@v1
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
+      - uses: c-hive/gha-npm-cache@v1
       - uses: actions/setup-node@v1
-
       - run: npm install --no-package-lock
       - run: npm run bootstrap
       - run: npx patch-package
@@ -33,6 +25,7 @@ jobs:
           # See https://firebase.google.com/docs/cli#cli-ci-systems
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         working-directory: packages
+
       - run: firebase deploy
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

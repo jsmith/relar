@@ -13,10 +13,6 @@ export function getOsEnv(
   return o[key] as string;
 }
 
-export function getOsEnvOptional(key: string): string | undefined {
-  return process.env[key];
-}
-
 export const env = {
   mail: {
     sendgrid_api_key: getOsEnv(config.mail, "sendgrid_api_key"),

@@ -13,12 +13,44 @@ export const Invite = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { invite } = params;
+  const [success, setSuccess] = useState(false);
+  const { invite } = params as { invite: string };
 
   const createAccount = async () => {
     setLoading(true);
-    const response = await getOrUnknownError(() => backend.post("/create-account"));
+    const response = await getOrUnknownError(() =>
+      backend.post("/create-account", {
+        token: invite,
+        password: password,
+      }),
+    );
+
     setLoading(false);
+
+    const data = response.data;
+    if (data.type === "success") {
+      setSuccess(true);
+      return;
+    }
+
+    switch (data.code) {
+      case "already-have-account":
+        setError("It looks like you already have an account =)");
+        break;
+      case "invalid-password":
+        setError(
+          "Your password is invalid. Make sure that it is at least 8 characters, has one lowercase and one uppercase character.",
+        );
+        break;
+      case "invalid-token":
+        setError("Your token is invalid =(");
+        break;
+      case "unknown":
+        setError("An unknown error occurred. Do you mind trying again?");
+        break;
+    }
+
+    // FIXME error if not all cases handled
   };
 
   return (
@@ -35,16 +67,25 @@ export const Invite = () => {
         The time has come to create your account :) Thank you so much for signing up and waiting for
         an invite.
       </p>
-      <Input
-        value={password}
-        onChange={setPassword}
-        label="Password"
-        type="password"
-        autoFocus
-        onEnter={createAccount}
-      />
-      {error && <BlockAlert type="error">{error}</BlockAlert>}
-      <Button label="Sign Up" className="w-full" loading={loading} onClick={createAccount} />
+      {success ? (
+        <BlockAlert type="success">
+          Your account has successfully been created :) Want to{" "}
+          <Link label="login" route={routes.login} />?
+        </BlockAlert>
+      ) : (
+        <>
+          <Input
+            value={password}
+            onChange={setPassword}
+            label="Password"
+            type="password"
+            autoFocus
+            onEnter={createAccount}
+          />
+          {error && <BlockAlert type="error">{error}</BlockAlert>}
+          <Button label="Sign Up" className="w-full" loading={loading} onClick={createAccount} />
+        </>
+      )}
     </CardPage>
   );
 };

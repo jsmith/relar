@@ -12,6 +12,6 @@ export const initTest = () => {
       storageBucket: "relar-test.appspot.com",
       projectId: "relar-test",
     },
-    path.resolve(__dirname, "..", "..", "serviceAccountKey.json"),
+    path.resolve(__dirname, "..", "..", "serviceAccountKey.relar-test.json"),
   );
 };

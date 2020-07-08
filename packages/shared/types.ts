@@ -182,7 +182,10 @@ export type BetaAPI = {
         token: string;
         password: string;
       };
-      response: Success | KnownError<"invalid-token" | "password-too-short"> | UnknownError;
+      response:
+        | Success
+        | KnownError<"invalid-token" | "invalid-password" | "already-have-account">
+        | UnknownError;
     };
   };
 };
