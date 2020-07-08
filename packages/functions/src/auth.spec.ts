@@ -5,7 +5,7 @@ import * as admin from "firebase-admin";
 
 initTest();
 
-import { app } from "./beta";
+import { app } from "./auth";
 
 const firestore = admin.firestore();
 const auth = admin.auth();

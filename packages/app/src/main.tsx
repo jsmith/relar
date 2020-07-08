@@ -1,5 +1,8 @@
 import * as Sentry from "@sentry/browser";
 
+// Issues that we are tracking
+// Tracking https://github.com/vitejs/vite/issues/503
+
 if (process.env.NODE_ENV === "production") {
   // Only enable sentry in production
   Sentry.init({
