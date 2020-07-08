@@ -11,6 +11,7 @@ import { admin } from "./admin";
 sgMail.setApiKey(env.mail.sendgrid_api_key);
 
 function validateEmail(email: string) {
+  // eslint-disable-next-line no-useless-escape
   const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(String(email).toLowerCase());
 }
@@ -29,7 +30,7 @@ const router = TypedAsyncRouter<BetaAPI>(app);
 const auth = admin.auth();
 const db = admin.firestore();
 
-router.post("/signup", async (req) => {
+router.post("/beta-signup", async (req) => {
   if (!req.body.email) {
     return {
       type: "error",
@@ -85,7 +86,7 @@ router.post("/signup", async (req) => {
   });
 });
 
-export const beta = functions.https.onRequest(app);
+export const authApp = functions.https.onRequest(app);
 
 export const onBetaSignup = functions.firestore
   .document("beta_signups/{email}")

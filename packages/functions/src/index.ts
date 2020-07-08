@@ -1,3 +1,3 @@
 export * from "./uploader";
-export { beta, onBetaSignup } from "./beta";
+export { authApp as auth, onBetaSignup } from "./auth";
 export * from "./delete";

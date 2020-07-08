@@ -34,9 +34,9 @@ export const Signup = () => {
   const login = async () => {
     setLoading(true);
     setError("");
-    let result: BetaAPI["/signup"]["POST"]["response"];
+    let result: BetaAPI["/beta-signup"]["POST"]["response"];
     try {
-      result = await backend.post("/signup", { email }).then((r) => r.data);
+      result = await backend.post("/beta-signup", { email }).then((r) => r.data);
     } catch (e) {
       Sentry.captureException(e);
       result = { type: "error", code: "unknown" };
