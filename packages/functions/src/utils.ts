@@ -1,4 +1,5 @@
 import * as firebase from "firebase-admin";
+import { userDataPath } from "./shared/utils";
 
 export const deleteCollection = async (collection: firebase.firestore.CollectionReference) => {
   const docs = await collection.listDocuments();
@@ -6,14 +7,14 @@ export const deleteCollection = async (collection: firebase.firestore.Collection
 };
 
 export const deleteAllUserData = async (
-  firestore: FirebaseFirestore.Firestore,
+  db: FirebaseFirestore.Firestore,
   storage: firebase.storage.Storage,
   userId: string,
 ) => {
-  await firestore.doc(`userData/${userId}`).delete();
-  deleteCollection(await firestore.collection(`userData/${userId}/songs`));
-  deleteCollection(await firestore.collection(`userData/${userId}/albums`));
-  deleteCollection(await firestore.collection(`userData/${userId}/artists`));
+  await userDataPath(db, userId).doc().delete();
+  deleteCollection(await userDataPath(db, userId).songs().collection());
+  deleteCollection(await userDataPath(db, userId).artists().collection());
+  deleteCollection(await userDataPath(db, userId).albums().collection());
 
   const [files] = await storage.bucket().getFiles({
     prefix: `${userId}/`,

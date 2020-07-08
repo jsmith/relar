@@ -9,6 +9,7 @@ const test = initTest();
 
 // This must go *after* the `functions` init call
 import { createSong, parseID3Tags, md5Hash } from "./uploader";
+import { userDataPath } from "./shared/utils";
 
 const storage = admin.storage();
 const firestore = admin.firestore();
@@ -36,58 +37,59 @@ const upload = async (fileName: string) => {
   };
 };
 
+const db = admin.firestore();
+
 const getAlbum = (albumId: string) => {
-  return admin
-    .firestore()
-    .doc(`/userData/testUser/albums/${albumId}`)
+  return userDataPath(db, "testUser")
+    .albums()
+    .album(albumId)
     .get()
     .then((o) => o.data());
 };
 
 const getArtist = (artistId: string) => {
-  return admin
-    .firestore()
-    .doc(`/userData/testUser/artists/${artistId}`)
+  return userDataPath(db, "testUser")
+    .artists()
+    .artist(artistId)
     .get()
     .then((o) => o.data());
 };
 
 const getSong = (songId: string) => {
-  return admin
-    .firestore()
-    .doc(`/userData/testUser/songs/${songId}`)
+  return userDataPath(db, "testUser")
+    .songs()
+    .song(songId)
     .get()
     .then((o) => o.data());
 };
 
 const getSongs = () => {
-  return admin
-    .firestore()
-    .collection(`/userData/testUser/songs`)
+  return userDataPath(db, "testUser")
+    .songs()
+    .collection()
     .get()
     .then((o) => o.docs.map((doc) => doc.data()));
 };
 
 const getAlbums = () => {
-  return admin
-    .firestore()
-    .collection(`/userData/testUser/albums`)
+  return userDataPath(db, "testUser")
+    .albums()
+    .collection()
     .get()
     .then((o) => o.docs.map((doc) => doc.data()));
 };
 
 const getArtists = () => {
-  return admin
-    .firestore()
-    .collection(`/userData/testUser/artists`)
+  return userDataPath(db, "testUser")
+    .artists()
+    .collection()
     .get()
     .then((o) => o.docs.map((doc) => doc.data()));
 };
 
 const getUserData = () => {
-  return admin
-    .firestore()
-    .doc(`/userData/testUser`)
+  return userDataPath(db, "testUser")
+    .doc()
     .get()
     .then((o) => o.data());
 };

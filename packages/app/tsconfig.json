@@ -4,6 +4,7 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "strict": true,
+    "moduleResolution": "node",
     "jsx": "react",
     "module": "esnext",
     "baseUrl": "./",

@@ -3,10 +3,13 @@ import * as functions from "firebase-functions";
 import * as cors from "cors";
 import { TypedAsyncRouter } from "@graywolfai/rest-ts-express";
 import { BetaAPI, BetaSignup } from "./shared/types";
+import { isPasswordValid, betaSignups } from "./shared/utils";
 import * as bodyParser from "body-parser";
 import * as sgMail from "@sendgrid/mail";
 import { env } from "./env";
 import { admin } from "./admin";
+import { Sentry } from "./sentry";
+import { Result, ok, err } from "neverthrow";
 
 sgMail.setApiKey(env.mail.sendgrid_api_key);
 
@@ -30,6 +33,26 @@ const router = TypedAsyncRouter<BetaAPI>(app);
 const auth = admin.auth();
 const db = admin.firestore();
 
+const checkUserExists = async (
+  email: string,
+): Promise<Result<"exists" | "does-not-exist", unknown>> => {
+  try {
+    await auth.getUserByEmail(email);
+
+    // If this succeeds then the user already exists
+    return ok("exists");
+  } catch (e) {
+    const code: "auth/user-not-found" = e.code;
+    switch (code) {
+      case "auth/user-not-found":
+        return ok("does-not-exist");
+      default:
+        Sentry.captureException(e);
+        return err(e);
+    }
+  }
+};
+
 router.post("/beta-signup", async (req) => {
   if (!req.body.email) {
     return {
@@ -45,30 +68,22 @@ router.post("/beta-signup", async (req) => {
     };
   }
 
-  try {
-    await auth.getUserByEmail(req.body.email);
-
-    // If this succeeds then the user already exists
+  const result = await checkUserExists(req.body.email);
+  if (result.isErr()) {
+    return {
+      type: "error",
+      code: "unknown",
+    };
+  } else if (result.value === "exists") {
     return {
       type: "error",
       code: "already-have-account",
     };
-  } catch (e) {
-    const code: "auth/user-not-found" = e.code;
-    switch (code) {
-      case "auth/user-not-found":
-        break;
-      default:
-        // Sentry.captureException(e);
-        return {
-          type: "error",
-          code: "unknown",
-        };
-    }
   }
 
   return await db.runTransaction(async (transaction) => {
-    const result = await transaction.get(db.collection("beta_signups").doc(req.body.email));
+    const betaSignupRef = betaSignups(db).doc(req.body.email);
+    const result = await transaction.get(betaSignupRef);
     if (result.exists) {
       return {
         type: "error",
@@ -76,7 +91,6 @@ router.post("/beta-signup", async (req) => {
       };
     }
 
-    const betaSignupRef = db.collection("beta_signups").doc(req.body.email);
     const betaSignUp: BetaSignup = { email: req.body.email };
     await transaction.set(betaSignupRef, betaSignUp);
 
@@ -84,6 +98,77 @@ router.post("/beta-signup", async (req) => {
       type: "success",
     };
   });
+});
+
+router.post("/create-account", async (req) => {
+  if (!req.body.password) {
+    return {
+      type: "error",
+      code: "invalid-password",
+    };
+  }
+
+  if (!isPasswordValid(req.body.password)) {
+    return {
+      type: "error",
+      code: "invalid-password",
+    };
+  }
+
+  return await db.runTransaction(
+    async (transaction): Promise<BetaAPI["/create-account"]["POST"]["response"]> => {
+      const result = await transaction.get(
+        betaSignups(db).collection().where("token", "==", req.body.token),
+      );
+      if (result.docs.length > 1) {
+        Sentry.captureMessage(
+          `Found two documents with the same token: "${req.body.token}"`,
+          Sentry.Severity.Error,
+        );
+
+        return {
+          type: "error",
+          code: "unknown",
+        };
+      }
+
+      if (result.docs.length === 0) {
+        return {
+          type: "error",
+          code: "invalid-token",
+        };
+      }
+
+      const doc = result.docs[0];
+      const data = doc.data() as BetaSignup;
+
+      const exists = await checkUserExists(data.email);
+      if (exists.isErr()) {
+        return {
+          type: "error",
+          code: "unknown",
+        };
+      } else if (exists.value === "exists") {
+        return {
+          type: "error",
+          code: "already-have-account",
+        };
+      }
+
+      await auth.createUser({
+        email: data.email,
+        password: req.body.password,
+        emailVerified: true,
+      });
+
+      const betaSignupRef = betaSignups(db).doc(doc.id);
+      await transaction.delete(betaSignupRef);
+
+      return {
+        type: "success",
+      };
+    },
+  );
 });
 
 export const authApp = functions.https.onRequest(app);

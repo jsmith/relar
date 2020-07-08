@@ -76,6 +76,7 @@ export const sendPasswordResetEmail = async (
 };
 
 export type LoginErrorCode =
+  | "auth/user-not-found"
   | "auth/invalid-email"
   | "auth/wrong-password"
   | "auth/network-request-failed";
@@ -95,6 +96,7 @@ export const signInWithEmailAndPassword = async (
           code: "auth/invalid-email",
           message: "Please provide a valid email address.",
         });
+      case "auth/user-not-found":
       case "auth/wrong-password":
         return err({
           code: "auth/wrong-password",

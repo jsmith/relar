@@ -122,7 +122,7 @@ export const routes = {
   invite: {
     id: "invite",
     path: "/invite/:invite",
-    protected: true,
+    protected: false,
     sidebar: false,
     className: "",
     containerClassName: "px-5",

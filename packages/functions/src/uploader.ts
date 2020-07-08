@@ -217,19 +217,16 @@ const readFile = (filePath: string): ResultAsync<Buffer, IError> => {
 
 export const parseID3Tags = <O extends { tmpFilePath: string }>(
   o: O,
-): ResultAsync<O & { id3Tag: IID3Tag }, IError> => {
+): ResultAsync<O & { id3Tag?: IID3Tag }, IError> => {
   return readFile(o.tmpFilePath).andThen((buffer) => {
     const id3Tag = id3.parse(buffer);
     if (!id3Tag) {
-      return err({
-        type: "error",
-        message: `Unable to parse ID3 tags "${o.tmpFilePath}"`,
-      });
+      console.warn(`Unable to parse ID3 tags "${o.tmpFilePath}"`);
     }
 
     return ok({
       ...o,
-      id3Tag,
+      id3Tag: id3Tag ? id3Tag : undefined,
     });
   });
 };
@@ -321,7 +318,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
         const userId = match[1];
         const songId = match[2];
 
-        const userRef = db.collection("userData").doc(userId);
+        const userRef = db.collection("user_data").doc(userId);
         const newSongRef = userRef.collection("songs").doc(songId);
 
         // In a transaction, add the new rating and update the aggregate totals
@@ -343,7 +340,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
           // FIXME remove the uploaded file if we fail after this point
           // I don't see this happening that often but it's very possible
           // that we will throw an error after this if blocks finishes
-          if (id3Tag.image) {
+          if (id3Tag?.image) {
             let fileName: string;
             if (id3Tag.image.mime === "image/png") {
               fileName = "artwork.png";
@@ -378,7 +375,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
           }
 
           // reads must come before writes in a snapshot so the following reads are grouped together
-          const albumValidation = id3Tag.album
+          const albumValidation = id3Tag?.album
             ? await findOne(
               transaction,
               userRef
@@ -390,7 +387,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             )
             : undefined;
 
-          const artistValidation = id3Tag.album
+          const artistValidation = id3Tag?.artist
             ? await findOne(
               transaction,
               userRef.collection("artists").where("name", "==", id3Tag.artist),
@@ -399,7 +396,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             : undefined;
 
           const album = validateOrWrite(transaction, albumValidation, () => {
-            if (!id3Tag.album) {
+            if (!id3Tag?.album) {
               return;
             }
 
@@ -427,7 +424,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
           }
 
           const artist = validateOrWrite(transaction, artistValidation, () => {
-            if (!id3Tag.artist) {
+            if (!id3Tag?.artist) {
               return;
             }
 
@@ -443,10 +440,10 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             originalFileName: metadata.customMetadata.originalFileName,
             id: songId,
             format: "mp3",
-            title: id3Tag.title ?? "",
+            title: id3Tag?.title ?? "",
             artist: artist ? { name: artist.name, id: artist.id } : undefined,
             album: album ? { name: album.name, id: album.id } : undefined,
-            year: id3Tag.year,
+            year: id3Tag?.year,
             liked: false,
             played: 0,
             lastPlayed: undefined,

@@ -239,8 +239,16 @@ export const captureAndLog = (e: unknown) => {
   console.error(e);
 };
 
-export const captureAndLogError = (e: string) => {
-  Sentry.captureMessage(e, Sentry.Severity.Error);
+export const captureAndLogError = (
+  e: string,
+  extra?: {
+    [key: string]: any;
+  },
+) => {
+  Sentry.captureMessage(e, {
+    level: Sentry.Severity.Error,
+    extra,
+  });
   console.error(e);
 };
 
