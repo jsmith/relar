@@ -32,8 +32,8 @@ export const UploadRow = ({ file, task, onRemove }: UploadRowProps) => {
   const handleSnapshot = (snapshot: firebase.storage.UploadTaskSnapshot) => {
     const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
     setProgress(progress);
-    console.log(progress, snapshot.state, snapshot);
     switch (snapshot.state) {
+      // TODO more states maybe?
       case firebase.storage.TaskState.PAUSED:
         break;
       case firebase.storage.TaskState.RUNNING:
@@ -68,7 +68,6 @@ export const UploadRow = ({ file, task, onRemove }: UploadRowProps) => {
     }
   };
 
-  console.log(progress);
   useEffect(() => {
     if (task) {
       return task.on("state_changed", handleSnapshot) as undefined | (() => void);
@@ -76,7 +75,6 @@ export const UploadRow = ({ file, task, onRemove }: UploadRowProps) => {
       // This assumes that tasks are undefined *only* when the file format is not mp3
       setError("Invalid File Format. Only Mp3 files are accepted.");
     }
-    // toString() returns the gs:// path which is unique
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [task?.location_.path]);
 
@@ -87,9 +85,9 @@ export const UploadRow = ({ file, task, onRemove }: UploadRowProps) => {
       ) : error ? (
         <MdErrorOutline title={error} className="text-red-600" />
       ) : progress === 100 ? (
-        <MdCheck className="text-purple-700 w-5 h-5" />
+        <MdCheck title="Upload Complete" className="text-purple-700 w-5 h-5" />
       ) : (
-        <Bars className="text-purple-700 w-6 h-4" color="currentColor" />
+        <Bars title="Uploading" className="text-purple-700 w-6 h-4" color="currentColor" />
       )}
       <div className="flex-shrink-0">{file.name}</div>
 
@@ -100,15 +98,6 @@ export const UploadRow = ({ file, task, onRemove }: UploadRowProps) => {
           <ProgressBar value={progress} maxValue={100} foregroundClassName="bg-purple-700" />
         </div>
       </div>
-
-      {/* <button
-        title={`Remove ${file.name}`}
-        // TODO what if it is currently upload??
-        onClick={() => onRemove()}
-        className="opacity-0 group-hover:opacity-100 focus:opacity-100"
-      >
-        <MdClose />
-      </button> */}
     </div>
   );
 };

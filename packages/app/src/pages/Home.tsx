@@ -2,22 +2,24 @@ import React from "react";
 import { HomeTopic } from "/@/components/HomeTopic";
 import { useAlbums } from "/@/queries/album";
 import { AlbumCard } from "/@/sections/AlbumCard";
+import { useRecentlyAddedSongs } from "/@/queries/songs";
 
 export const Home = () => {
-  const albums = useAlbums();
+  // const albums = useAlbums();
+  const songs = useRecentlyAddedSongs();
 
-  if (albums.status === "loading") {
+  if (songs.status === "loading") {
     return <div>LOADING</div>;
   }
 
-  if (albums.status === "error") {
+  if (songs.status === "error") {
     return <div>ERROR</div>;
   }
 
   return (
     <div>
       <HomeTopic title="Recently Played">
-        {albums.data.map((album) => (
+        {songs.data.map((song) => (
           <AlbumCard key={album.id} album={album} />
         ))}
       </HomeTopic>

@@ -161,7 +161,7 @@ export const Player = () => {
   }, [song]);
 
   return (
-    <div className="h-20 bg-primary-600 flex items-center px-4">
+    <div className="h-20 bg-gray-800 flex items-center px-4">
       <audio
         ref={audioRef}
         preload="metadata"
@@ -202,8 +202,7 @@ export const Player = () => {
                 : "Repeat Current Song"
             }
             className={classNames(
-              "focus:outline-none ",
-              repeat === "none" ? "text-gray-300 hover:text-gray-100" : "text-secondary-400",
+              repeat === "none" ? "text-gray-300 hover:text-gray-100" : "text-purple-400",
             )}
             onClick={() =>
               setRepeat(repeat === "none" ? "repeat" : repeat === "repeat" ? "repeat-one" : "none")

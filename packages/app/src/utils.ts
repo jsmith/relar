@@ -1,7 +1,9 @@
-import { MutableRefObject, useEffect, useRef, useContext, createContext } from "react";
+import { MutableRefObject, useEffect, useRef, useContext, createContext, useState } from "react";
 import * as Sentry from "@sentry/browser";
 import { Result, err, ok } from "neverthrow";
 import { sendPasswordResetEmail } from "/@/auth";
+import { QueryResult } from "react-query";
+import { DocumentSnapshot } from "./shared/utils";
 
 /**
  * Hook that alerts clicks outside of the passed ref.
@@ -331,4 +333,15 @@ export const deleteAccount = async (
         return err("Unable to delete your account. Please contact support 🙁");
     }
   }
+};
+
+export const useDataFromQueryNSnapshot = <T>(
+  query: QueryResult<DocumentSnapshot<T>>,
+): T | undefined => {
+  const [data, setData] = useState<T>();
+  useEffect(() => {
+    setData(query.data?.data());
+  }, [query.data]);
+
+  return data;
 };

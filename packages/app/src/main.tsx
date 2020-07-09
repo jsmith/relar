@@ -19,10 +19,16 @@ import * as ReactDOM from "react-dom";
 import { Router } from "react-tiniest-router";
 import { routes } from "/@/routes";
 import { UserProvider } from "/@/auth";
-// import { SkeletonTheme } from "react-loading-skeleton";
 import { PlayerProvider } from "/@/player";
 import { ConfirmActionProvider } from "/@/confirm-actions";
 import { ConfirmPasswordProvider } from "/@/confirm-password";
+import { ReactQueryConfigProvider, ReactQueryProviderConfig } from "react-query";
+
+const config: ReactQueryProviderConfig<Error> = {
+  // 5 minutes
+  staleTime: 5 * 60 * 1000,
+  retry: false,
+};
 
 ReactDOM.render(
   <React.StrictMode>
@@ -32,7 +38,9 @@ ReactDOM.render(
         <PlayerProvider>
           <ConfirmActionProvider>
             <ConfirmPasswordProvider>
-              <App />
+              <ReactQueryConfigProvider config={config}>
+                <App />
+              </ReactQueryConfigProvider>
             </ConfirmPasswordProvider>
           </ConfirmActionProvider>
         </PlayerProvider>

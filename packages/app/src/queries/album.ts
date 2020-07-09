@@ -1,8 +1,9 @@
 import { createQueryCache } from "/@/queries/cache";
 import { Song, Album } from "/@/shared/types";
-import { useUserData, get } from "/@/firestore";
+import { useUserData } from "/@/firestore";
 import { useDefinedUser } from "/@/auth";
-import * as Sentry from "@sentry/browser";
+import { userDataPath, DocumentSnapshot } from "/@/shared/utils";
+import { firestore } from "/@/firebase";
 
 const {
   useQuery: useAlbumsQuery,
@@ -33,43 +34,20 @@ export const useAlbums = () => {
           });
       });
     },
-    {
-      staleTime: 60 * 1000 * 5,
-    },
+    // TODO save these in the albumQueryCache
   );
 };
 
 const {
   useQuery: useAlbumQuery,
-  // queryCache: albumsQueryCache,
-} = createQueryCache<["albums", { uid: string; id: string }], Album>();
+  // queryCache: albumQueryCache,
+} = createQueryCache<["albums", { uid: string; id: string }], DocumentSnapshot<Album>>();
 
 export const useAlbum = (albumId: string) => {
-  const userData = useUserData();
   const user = useDefinedUser();
 
-  return useAlbumQuery(
-    ["albums", { uid: user.uid, id: albumId }],
-    () => {
-      return new Promise<Album>((resolve, reject) => {
-        get(userData.collection("albums").doc(albumId)).match(
-          (doc) => {
-            console.info(`Found album (${albumId}): ` + doc.data());
-            // TODO validation
-            const album = { ...doc.data(), id: doc.id } as Album;
-            resolve(album);
-          },
-          (e) => {
-            console.warn("Unable to find album: " + albumId);
-            Sentry.captureException(e);
-            reject(e);
-          },
-        );
-      });
-    },
-    {
-      staleTime: 60 * 1000 * 5,
-    },
+  return useAlbumQuery(["albums", { uid: user.uid, id: albumId }], () =>
+    userDataPath(firestore, user.uid).albums().album(albumId).get(),
   );
 };
 

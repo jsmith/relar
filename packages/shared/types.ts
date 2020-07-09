@@ -8,6 +8,7 @@ import {
   Boolean,
   Unknown,
   Partial,
+  Null,
 } from "runtypes";
 import * as firebase from "firebase";
 
@@ -28,6 +29,34 @@ export const UserDataType = Record({
 });
 
 export type UserData = Static<typeof UserDataType>;
+
+export const ArtworkType = Record({
+  /**
+   * The hash of the album artwork. This is initially derived from the songs but then ownership
+   * belongs to the album after the initial artwork is inferred. This means that if the song
+   * artwork is deleted that we *don't* delete the album artwork as well. This model is less
+   * confusing than trying to sync the song and album artwork and is easier to implement :)
+   */
+  hash: String,
+
+  /**
+   * The type of the file. This will be necessary for generating the storage paths on the client.
+   */
+  type: Literal("png").Or(Literal("jpg")),
+}).And(
+  Partial({
+    // For the following download URLs: If `artworkHash` is ever removed, these download URLs should
+    // *also* be removed.
+
+    /**
+     * 32x32 download URL. undefined means it hasn't been calculated whereas null means it doesn't
+     * exist.
+     */
+    artworkDownloadUrl32: String.Or(Undefined).Or(Null),
+  }),
+);
+
+export type Artwork = Static<typeof ArtworkType>;
 
 export const SongType = Record({
   /**
@@ -91,15 +120,7 @@ export const SongType = Record({
   /**
    * The hash of the song artwork.
    */
-  artworkHash: String.Or(Undefined),
-
-  // For the following download URLs: If `artworkHash` is ever removed, these download URLs should
-  // *also* be removed.
-
-  /**
-   * 32x32 download URL.
-   */
-  artworkDownloadUrl32: String.Or(Undefined),
+  artwork: ArtworkType.Or(Undefined),
 });
 
 export type Song = Static<typeof SongType>;
@@ -118,13 +139,7 @@ export const AlbumType = Record({
    */
   albumArtist: String,
 
-  /**
-   * The hash of the album artwork. This is initially derived from the songs but then ownership
-   * belongs to the album after the initial artwork is inferred. This means that if the song
-   * artwork is deleted that we *don't* delete the album artwork as well. This model is less
-   * confusing than trying to sync the song and album artwork and is easier to implement :)
-   */
-  artworkHash: String.Or(Undefined),
+  artwork: ArtworkType.Or(Undefined),
 });
 
 export type Album = Static<typeof AlbumType>;

@@ -21,7 +21,6 @@ const ForgotPasswordSuccess = React.lazy(() => import("/@/pages/ForgotPasswordSu
 const Hero = React.lazy(() => import("/@/pages/Hero"));
 const Account = React.lazy(() => import("/@/pages/Account"));
 import ReactQueryDevtools from "react-query-devtools";
-import { DragCapture } from "/@/components/DragCapture";
 import { AccountDropdown } from "/@/components/AccountDropdown";
 import { auth } from "/@/firebase";
 import { useDocumentTitle } from "/@/utils";
@@ -31,6 +30,11 @@ import { SkipNavLink, SkipNavContent } from "@reach/skip-nav";
 import "@reach/skip-nav/styles.css";
 import "/@/index.css";
 import { Invite } from "/@/pages/Invite";
+import { UploadModal } from "/@/sections/UploadModal";
+import SVGLoadersReact from "svg-loaders-react";
+import { LoadingSpinner } from "/@/components/LoadingSpinner";
+
+const { Bars } = SVGLoadersReact;
 
 export interface SideBarItem {
   label: string;
@@ -99,16 +103,16 @@ export const App = (_: React.Props<{}>) => {
   };
 
   const content = route?.sidebar ? (
-    <DragCapture
-      className="flex flex-col h-full overflow-hidden"
+    <UploadModal
       display={display}
       setDisplay={setDisplay}
+      className="flex flex-col h-full overflow-hidden"
     >
       <div className="relative flex-grow flex flex-col">
         <Sidebar
           className="flex-grow"
           sidebar={
-            <div className="h-full bg-primary-700 w-56">
+            <div className="h-full bg-gray-900 w-56">
               <nav>
                 <ul>
                   {sideLinks.map(({ icon: Icon, route, label }) => (
@@ -138,46 +142,48 @@ export const App = (_: React.Props<{}>) => {
             </div>
           }
         >
-          <div className={classNames("h-full bg-primary-800", route.containerClassName)}>
-            <div className="flex">
-              {(isRoute(routes.songs) || isRoute(routes.artists) || isRoute(routes.albums)) && (
-                <ul className="flex space-x-4 text-xl">
-                  {/* TODO accessible */}
-                  {libraryLinks.map(({ label, route }) => (
-                    <li
-                      key={label}
-                      className={classNames(
-                        "my-2 border-gray-300 cursor-pointer hover:text-gray-200",
-                        isRoute(route) ? "border-b text-gray-200" : " text-gray-400",
-                      )}
-                      onClick={() => goTo(route)}
-                    >
-                      {label}
-                    </li>
-                  ))}
-                </ul>
-              )}
+          <React.Suspense fallback={<LoadingSpinner />}>
+            <div className={classNames("h-full", route.containerClassName)}>
+              <div className="flex">
+                {(isRoute(routes.songs) || isRoute(routes.artists) || isRoute(routes.albums)) && (
+                  <ul className="flex space-x-4 text-xl">
+                    {/* TODO accessible */}
+                    {libraryLinks.map(({ label, route }) => (
+                      <li
+                        key={label}
+                        className={classNames(
+                          "my-2 border-gray-300 cursor-pointer hover:text-gray-200",
+                          isRoute(route) ? "border-b text-gray-200" : " text-gray-400",
+                        )}
+                        onClick={() => goTo(route)}
+                      >
+                        {label}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <div className={route.className}>
+                {isRoute(routes.songs) ? (
+                  <Songs />
+                ) : isRoute(routes.artists) ? (
+                  <Artists />
+                ) : isRoute(routes.albums) ? (
+                  <Albums />
+                ) : isRoute(routes.home) ? (
+                  <Home />
+                ) : isRoute(routes.search) ? (
+                  <Search />
+                ) : isRoute(routes.album) ? (
+                  <AlbumOverview />
+                ) : null}
+              </div>
             </div>
-            <div className={route.className}>
-              {isRoute(routes.songs) ? (
-                <Songs />
-              ) : isRoute(routes.artists) ? (
-                <Artists />
-              ) : isRoute(routes.albums) ? (
-                <Albums />
-              ) : isRoute(routes.home) ? (
-                <Home />
-              ) : isRoute(routes.search) ? (
-                <Search />
-              ) : isRoute(routes.album) ? (
-                <AlbumOverview />
-              ) : null}
-            </div>
-          </div>
+          </React.Suspense>
         </Sidebar>
       </div>
       <Player />
-    </DragCapture>
+    </UploadModal>
   ) : route?.id === "hero" ? (
     <Hero />
   ) : route?.id === "login" ? (

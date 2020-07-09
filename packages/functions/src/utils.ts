@@ -1,8 +1,8 @@
 import * as firebase from "firebase-admin";
-import { userDataPath } from "./shared/utils";
+import { userDataPath, CollectionReference } from "./shared/utils";
 
-export const deleteCollection = async (collection: firebase.firestore.CollectionReference) => {
-  const docs = await collection.listDocuments();
+export const deleteCollection = async (collection: CollectionReference<unknown>) => {
+  const docs = await collection.get().then((r) => r.docs.map((doc) => doc.ref));
   await Promise.all(docs.map((doc) => doc.delete()));
 };
 

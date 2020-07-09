@@ -7,7 +7,7 @@ import { SongMetadata } from "/@/shared/types";
 import { UploadRow, StorageLocation } from "/@/components/UploadRow";
 import { link } from "/@/classes";
 
-export interface DragCaptureProps {
+export interface UploadModalProps {
   children?: React.ReactNode;
   className?: string;
   display: boolean;
@@ -20,7 +20,7 @@ const toFileArray = (fileList: FileList) => {
   return files;
 };
 
-export const DragCapture = ({ children, className, display, setDisplay }: DragCaptureProps) => {
+export const UploadModal = ({ children, className, display, setDisplay }: UploadModalProps) => {
   const [files, setFiles] = useState<
     Array<{ file: File; task: firebase.storage.UploadTask | undefined }>
   >([]);
@@ -64,32 +64,16 @@ export const DragCapture = ({ children, className, display, setDisplay }: DragCa
       className={className}
       onDragOver={(e) => {
         e.preventDefault();
-        // console.log(
-        //   "onDragOver",
-        //   e.dataTransfer.files.length,
-        //   e.dataTransfer.files[0],
-        // );
       }}
       onDrop={(e) => {
         e.preventDefault();
         addFiles(e.dataTransfer.files);
         setCount(Math.max(count - 1, 0));
-        // setDisplay(false);
-        // console.log(
-        //   "onDrop",
-        //   e.dataTransfer.files.length,
-        //   e.dataTransfer.files[0].type,
-        // );
       }}
       onDragEnter={(e) => {
         e.preventDefault();
         setDisplay(true);
         setCount(count + 1);
-        // console.log(
-        //   "onDragEnter",
-        //   e.dataTransfer.files.length,
-        //   // e.dataTransfer.files[0].type,
-        // );
       }}
       onDragLeave={() => setCount(Math.max(count - 1, 0))}
     >
@@ -160,35 +144,7 @@ export const DragCapture = ({ children, className, display, setDisplay }: DragCa
               </div>
             )}
           </div>
-          {/* <div id="demo-one-modal" className="modal">
-            <div className="modal-body">
-              <p>
-                Here is a modal
-                {' '}
-                <a href="#">with</a>
-                {' '}
-                <a href="#">some</a>
-                {' '}
-                <a href="#">focusable</a>
-                {' '}
-                parts.
-              </p>
-            </div>
-            <footer className="modal-footer">
-              <button id="demo-one-deactivate" onClick={this.deactivateModal}>
-                deactivate modal
-              </button>
-            </footer>
-          </div> */}
         </AriaModal>
-        // <div
-        //   className="absolute inset-0 m-5 rounded-lg bg-purple-100 z-10 p-5"
-        //   role="dialog"
-        //   aria-modal="true"
-        //   aria-labelledby="modal-headline"
-        // >
-
-        // </div>
       )}
     </div>
   );

@@ -34,7 +34,7 @@ export const Slider = ({ value, maxValue, className, onChange }: SliderProps) =>
             // We use opacity since using display none or visibility hidden removes the ability
             // to tab to this element :) See https://stackoverflow.com/a/51408521
             className={classNames(
-              "absolute h-3 w-3 flex items-center justify-center rounded-full bg-secondary-400 shadow border border-secondary-600 -ml-2 top-0 cursor-pointer group-hover:opacity-100",
+              "absolute h-3 w-3 flex items-center justify-center rounded-full bg-purple-400 shadow border border-purple-600 -ml-2 top-0 cursor-pointer group-hover:opacity-100",
               hide ? "opacity-0" : "opacity-100",
             )}
             // Whether the user clicks or tabs to this, show it!!

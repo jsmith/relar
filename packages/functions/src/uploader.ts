@@ -18,6 +18,7 @@ import {
   Album,
   ArtistType,
   Artist,
+  Artwork,
 } from "./shared/types";
 import { Record, Result as RuntypeResult, Static } from "runtypes";
 import * as uuid from "uuid";
@@ -322,7 +323,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
         const newSongRef = userRef.collection("songs").doc(songId);
 
         // In a transaction, add the new rating and update the aggregate totals
-        let artworkHash: string | undefined;
+        let artwork: Artwork | undefined;
         await db.runTransaction(async (transaction) => {
           const res = await transaction.get(userRef);
 
@@ -342,10 +343,13 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
           // that we will throw an error after this if blocks finishes
           if (id3Tag?.image) {
             let fileName: string;
+            let type: "jpg" | "png"
             if (id3Tag.image.mime === "image/png") {
               fileName = "artwork.png";
+              type = "png"
             } else if (id3Tag.image.mime === "image/jpeg") {
               fileName = "artwork.jpg";
+              type = "jpg"
             } else {
               throw Error(
                 `Invalid MIME type "${id3Tag.image.mime}". Expected "image/png" or "image/jpeg".`,
@@ -363,8 +367,8 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
               throw Error(`Unable to hash song artwork for "${filePath}": ` + hashResult.error);
             }
 
-            artworkHash = hashResult.value;
-            const destination = `${userId}/song_artwork/${artworkHash}/${fileName}`;
+            artwork = { hash: hashResult.value, type };
+            const destination = `${userId}/song_artwork/${artwork.hash}/${fileName}`;
             const [artworkExists] = await bucket.file(destination).exists();
             if (artworkExists) {
               console.log(`Artwork for song already exists: "${destination}"`);
@@ -406,7 +410,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
               albumArtist: id3Tag.band ?? "",
               // If this is a new album, initialize the artwork hash the the hash
               // of the artwork for this song. Note that this value may be undefined.
-              artworkHash,
+              artwork,
             };
 
             return {
@@ -417,9 +421,9 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
 
           // If we are not creating new album AND that album doesn't currently have an album cover
           // AND this *does* have artwork then set the artwork of the album 🎵
-          if (album && !album.artworkHash && artworkHash) {
+          if (album && !album.artwork && artwork) {
             // Update our local copy *and* update the remote copy
-            album.artworkHash = artworkHash;
+            album.artwork = artwork;
             await transaction.set(userRef.collection("albums").doc(album.id), album);
           }
 
@@ -447,8 +451,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             liked: false,
             played: 0,
             lastPlayed: undefined,
-            artworkHash,
-            artworkDownloadUrl32: undefined, // also undefined initially
+            artwork,
             createdAt: (admin.firestore.FieldValue.serverTimestamp() as unknown) as admin.firestore.Timestamp,
           };
 
