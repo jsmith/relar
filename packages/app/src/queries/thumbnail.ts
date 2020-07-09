@@ -1,59 +1,82 @@
-import { useUserStorage, getDownloadURL } from "/@/storage";
+import { getDownloadURL } from "/@/storage";
 import { useDefinedUser } from "/@/auth";
-import { Album } from "/@/shared/types";
-import { createQueryCache } from "/@/queries/cache";
+import { Artwork } from "/@/shared/types";
+import { userStorage, DocumentSnapshot } from "/@/shared/utils";
 import * as Sentry from "@sentry/browser";
+import { useEffect, useState } from "react";
+import { storage } from "/@/firebase";
 
-const {
-  useQuery: useThumbnailQuery,
-  // queryCache: albumsQueryCache,
-} = createQueryCache<
-  ["thumbnails", { uid: string; albumId: string | undefined }],
-  string | undefined
->();
-
-export const useThumbnail = (album?: Album) => {
+export const useThumbnail = (
+  snapshot?: DocumentSnapshot<{ id: string; artwork: Artwork | undefined }>,
+) => {
   const user = useDefinedUser();
-  const userStorage = useUserStorage();
+  const [thumbnailUrl, setThumbnailUrl] = useState<string>();
 
-  return useThumbnailQuery(
-    ["thumbnails", { uid: user.uid, albumId: album?.id }],
-    async (): Promise<string | undefined> => {
-      console.log("thumbnails", user.uid, album?.id);
-      if (!album) {
-        return;
-      }
-      // Right now we always check for a thumbnail and will actually get a 404 if it's not found
-      // Instead, we *could* keep some kind of boolean value indicating whether the file exists?
-      // This works for now though
-      // TODO FIX we need a songAlbumID attribute or something
-      // TODO also we need to know jpg or png
-      const result = await getDownloadURL(
-        userStorage.child("song_artwork").child(album.id).child("original.jpg"),
-      );
-      if (result.isOk()) {
-        return result.value;
-      }
+  useEffect(() => {
+    if (!snapshot) {
+      return;
+    }
 
-      console.log(result.error);
-      switch (result.error) {
-        case "storage/object-not-found":
-          break;
-        default:
-          Sentry.captureMessage(
-            `Unknown error when getting thumbnail (${album.id}): ${result.error}`,
-          );
-          throw new Error(result.error);
-      }
-    },
-    {
-      staleTime: 60 * 1000 * 5,
-      // OK IDK WHY but if this isn't set to Infinity
-      // This query isn't cached
-      // Someday I'll understand react-query enough to debug this issue
-      // But today is not that day
-      cacheTime: Infinity,
-      retry: false,
-    },
+    tryToGetDownloadUrlOrLog(user, snapshot, "32").then(setThumbnailUrl);
+  }, [user, snapshot]);
+
+  return thumbnailUrl;
+};
+
+const keyLookup = {
+  "32": "artworkDownloadUrl32",
+} as const;
+
+/**
+ *
+ * @param user
+ * @param artwork
+ * @param size The size. Only one for now but there will be more.
+ */
+export const tryToGetDownloadUrlOrLog = async (
+  user: firebase.User,
+  snapshot: DocumentSnapshot<{ artwork: Artwork | undefined }>,
+  size: "32",
+): Promise<string | undefined> => {
+  const ref = snapshot.ref;
+  const data = snapshot.data();
+  if (!data || !data.artwork) {
+    return;
+  }
+
+  const { artwork } = data;
+  const key = keyLookup[size];
+  const value = artwork[key];
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (artwork[key] === null) {
+    return;
+  }
+
+  const result = await getDownloadURL(
+    userStorage(storage, user).artworks(artwork.hash, artwork.type)[size](),
+    // userStorage.child("song_artwork").child(album.id).child("original.jpg"),
+  );
+
+  if (result.isOk()) {
+    artwork[key] = result.value;
+    // we are explicitly not awaiting this since we don't care when it finishes
+    ref.update({ artwork });
+    return result.value;
+  }
+
+  if (result.error === "storage/object-not-found") {
+    // This means that there isn't any artwork
+    artwork[key] = null;
+    // again, we are not awaiting
+    ref.update({ artwork });
+    return;
+  }
+
+  Sentry.captureMessage(
+    `Unknown error when getting thumbnail (${artwork.hash}): ${result.error}`,
+    Sentry.Severity.Error,
   );
 };

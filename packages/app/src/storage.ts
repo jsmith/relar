@@ -2,6 +2,7 @@ import { storage } from "/@/firebase";
 import { useUser, useDefinedUser } from "/@/auth";
 import { useMemo } from "react";
 import { ResultAsync, Result, ok, err } from "neverthrow";
+import { Reference } from "/@/shared/utils";
 
 export type StorageErrorCode =
   | "storage/unknown" // An unknown error occurred.
@@ -32,9 +33,7 @@ export const useUserStorage = () => {
 /**
  * Typesafe getDownloadURL implementation.
  */
-export const getDownloadURL = async (
-  ref: firebase.storage.Reference,
-): Promise<Result<string, StorageErrorCode>> => {
+export const getDownloadURL = async (ref: Reference): Promise<Result<string, StorageErrorCode>> => {
   try {
     return ok(await ref.getDownloadURL());
   } catch (e) {

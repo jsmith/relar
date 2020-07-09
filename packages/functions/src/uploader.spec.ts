@@ -60,7 +60,7 @@ const getSong = (songId: string) => {
     .songs()
     .song(songId)
     .get()
-    .then((o) => o.data());
+    .then((o): Song => o.data());
 };
 
 const getSongs = () => {
@@ -106,8 +106,7 @@ export const createTestSong = (song: Partial<Song>): Song => {
     artist: undefined,
     album: undefined,
     lastPlayed: undefined,
-    artworkHash: undefined,
-    artworkDownloadUrl32: undefined,
+    artwork: undefined,
     createdAt: admin.firestore.Timestamp.fromDate(new Date()),
     ...song,
   };
@@ -208,7 +207,7 @@ describe("functions", () => {
         id: song?.album.id,
         name: "Web Samples",
         albumArtist: "Web Samples",
-        artworkHash: undefined,
+        artwork: undefined,
       };
 
       expect(artist).toEqual(expectedArtist);
@@ -242,7 +241,7 @@ describe("functions", () => {
       const { objectMetadata, songId } = await upload("file_with_artwork.mp3");
       await wrapped(objectMetadata);
       const song = await getSong(songId);
-      const file = storage.bucket().file(`testUser/song_artwork/${song?.artworkHash}/artwork.jpg`);
+      const file = storage.bucket().file(`testUser/song_artwork/${song?.artwork.hash}/artwork.jpg`);
       const [exists] = await file.exists();
       expect(exists).toEqual(true);
     });

@@ -1,22 +1,22 @@
 import React from "react";
-import { Album } from "/@/shared/types";
+import { Song } from "/@/shared/types";
 import { useThumbnail } from "/@/queries/thumbnail";
 import { ThumbnailCard } from "/@/components/ThumbnailCard";
 import { useRouter } from "react-tiniest-router";
 import { routes } from "/@/routes";
 import { QueryDocumentSnapshot } from "/@/shared/utils";
 
-export const AlbumCard = ({ album }: { album: QueryDocumentSnapshot<Album> }) => {
-  const data = album.data();
-  const thumbnail = useThumbnail(album);
+export const SongCard = ({ song }: { song: QueryDocumentSnapshot<Song> }) => {
+  const data = song.data();
+  const thumbnail = useThumbnail(song);
   const { goTo } = useRouter();
 
   return (
     <ThumbnailCard
       thumbnail={thumbnail}
-      title={data.name}
-      subtitle={data.albumArtist}
-      onClick={() => goTo(routes.album, { albumId: album.id })}
+      title={data.title}
+      subtitle={data.artist?.name}
+      onClick={() => goTo(routes.album, { albumId: data.id })}
     />
   );
 };
