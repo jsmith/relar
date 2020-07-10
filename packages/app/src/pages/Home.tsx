@@ -1,8 +1,7 @@
 import React from "react";
 import { HomeTopic } from "/@/components/HomeTopic";
-import { useAlbums } from "/@/queries/album";
-import { AlbumCard } from "/@/sections/AlbumCard";
 import { useRecentlyAddedSongs } from "/@/queries/songs";
+import { SongCard } from "/@/sections/SongCard";
 
 export const Home = () => {
   // const albums = useAlbums();
@@ -20,7 +19,7 @@ export const Home = () => {
     <div>
       <HomeTopic title="Recently Played">
         {songs.data.map((song) => (
-          <AlbumCard key={album.id} album={album} />
+          <SongCard key={song.id} song={song} />
         ))}
       </HomeTopic>
     </div>

@@ -23,11 +23,13 @@ import { PlayerProvider } from "/@/player";
 import { ConfirmActionProvider } from "/@/confirm-actions";
 import { ConfirmPasswordProvider } from "/@/confirm-password";
 import { ReactQueryConfigProvider, ReactQueryProviderConfig } from "react-query";
+import { captureAndLog } from "./utils";
 
 const config: ReactQueryProviderConfig<Error> = {
   // 5 minutes
   staleTime: 5 * 60 * 1000,
   retry: false,
+  onError: (e) => captureAndLog(e),
 };
 
 ReactDOM.render(
