@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-imports */
 // at least one number, one lowercase and one uppercase letter
 
-import { Song, Album, Artist, UserData } from "./types";
+import { Song, Album, Artist, UserData, BetaSignup } from "./types";
 
 // at least six characters
 export const isPasswordValid = (password: string) => {
@@ -43,6 +43,7 @@ export interface CollectionReference<T> extends Query<T> {
 }
 
 export interface DocumentSnapshot<T> {
+  readonly exists: boolean;
   readonly id: string;
   readonly ref: DocumentReference<T>;
   data(): T | undefined;
@@ -50,13 +51,26 @@ export interface DocumentSnapshot<T> {
 
 export interface DocumentReference<T> {
   get(): Promise<DocumentSnapshot<T>>;
+  set(value: T): Promise<unknown>;
   update(value: Partial<T>): Promise<unknown>; // Returns WriteResult
   delete(): Promise<unknown>;
+}
+
+export interface Transaction {
+  get<T>(query: Query<T>): Promise<QuerySnapshot<T>>;
+  get<T>(documentRef: DocumentReference<T>): Promise<DocumentSnapshot<T>>;
+  set<T>(documentRef: DocumentReference<T>, data: T): Transaction;
+  update<T>(documentRef: DocumentReference<T>, data: T): Transaction;
+  delete(documentRef: DocumentReference<any>): Transaction;
 }
 
 export interface Firestore {
   doc(path: string): DocumentReference<unknown>;
   collection(path: string): CollectionReference<unknown>;
+  runTransaction<T>(
+    updateFunction: (transaction: Transaction) => Promise<T>,
+    transactionOptions?: { maxAttempts?: number },
+  ): Promise<T>;
 }
 
 export interface UploadTaskSnapshot {
@@ -122,7 +136,7 @@ export const userDataPath = (db: Firestore, userId: string) => {
 export const betaSignups = (db: Firestore) => {
   return {
     doc: (email: string) => db.doc(`beta_signups/${email}`),
-    collection: () => db.collection("beta_signups"),
+    collection: () => db.collection("beta_signups") as CollectionReference<BetaSignup>,
   };
 };
 
