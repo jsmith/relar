@@ -443,6 +443,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
           const newSong: Song = {
             originalFileName: metadata.customMetadata.originalFileName,
             id: songId,
+            downloadUrl: undefined,
             format: "mp3",
             title: id3Tag?.title ?? "",
             artist: artist ? { name: artist.name, id: artist.id } : undefined,
@@ -465,6 +466,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
         // TODO does this only run once?
         // It's important that we delete this file from storage when
         // we detect an error
+        // I think we can actually do a return state. Maybe it should return a Result?
         console.warn(`Deleting "${filePath}" due to failure.`);
         await bucket.file(filePath).delete();
 

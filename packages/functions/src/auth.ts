@@ -3,7 +3,7 @@ import * as functions from "firebase-functions";
 import * as cors from "cors";
 import { TypedAsyncRouter } from "@graywolfai/rest-ts-express";
 import { BetaAPI, BetaSignup } from "./shared/types";
-import { isPasswordValid, betaSignups } from "./shared/utils";
+import { isPasswordValid, betaSignups, Firestore } from "./shared/utils";
 import * as bodyParser from "body-parser";
 import * as sgMail from "@sendgrid/mail";
 import { env } from "./env";
@@ -31,7 +31,7 @@ app.use(
 const router = TypedAsyncRouter<BetaAPI>(app);
 
 const auth = admin.auth();
-const db = admin.firestore();
+const db: Firestore = admin.firestore();
 
 const checkUserExists = async (
   email: string,
@@ -140,7 +140,7 @@ router.post("/create-account", async (req) => {
       }
 
       const doc = result.docs[0];
-      const data = doc.data() as BetaSignup;
+      const data = doc.data();
 
       const exists = await checkUserExists(data.email);
       if (exists.isErr()) {

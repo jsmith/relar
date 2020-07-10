@@ -10,3 +10,8 @@ firebase deploy --only functions
 ```
 firebase deploy --only hosting
 ```
+
+### Rules
+```
+firebase deploy --only firestore:rules
+```
