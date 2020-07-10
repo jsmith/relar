@@ -38,6 +38,7 @@ export interface CollectionReference<T> extends Query<T> {
   readonly id: string;
   readonly path: string;
   orderBy(key: keyof T & string): Query<T>;
+  where(key: string, operator: "==", value: string | number): Query<T>;
   // listDocuments(): Promise<Array<DocumentReference<T>>>;
 }
 
@@ -115,5 +116,7 @@ export const userStorage = (storage: Storage, user: firebase.User) => {
         "32": () => storage.ref(artworksPath.append(`thumb@32_artwork.${type}`).build()),
       };
     },
+    song: (songId: string, format: Song["format"]) =>
+      storage.ref(path.append(songId).append(`original.${format}`).build()),
   };
 };

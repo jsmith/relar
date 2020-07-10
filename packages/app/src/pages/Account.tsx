@@ -1,20 +1,14 @@
-import React, { useState, useCallback, useRef } from "react";
-import * as Sentry from "@sentry/browser";
-import { useDefinedUser, sendPasswordResetEmail } from "/@/auth";
+import React, { useState, useCallback } from "react";
+import { useDefinedUser } from "/@/auth";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { ProgressBar } from "/@/components/ProgressBar";
-import { useUserData } from "/@/firestore";
 import { useUserDataDoc } from "/@/queries/user";
-import { FaRegCheckCircle } from "react-icons/fa";
 import { Button, ButtonProps } from "/@/components/Button";
 import { BlockAlert } from "/@/components/BlockAlert";
-import { Result, err, ok } from "neverthrow";
-import { auth } from "/@/firebase";
-import { captureAndLog, changeEmail, resetPassword, deleteAccount } from "/@/utils";
-import { ConfirmPassword } from "/@/components/ConfirmPassword";
-import { ConfirmationModal } from "/@/components/ConfirmationModal";
+import { Result, ok } from "neverthrow";
 import { useConfirmPassword } from "/@/confirm-password";
 import { useConfirmAction } from "/@/confirm-actions";
+import { resetPassword, changeEmail, deleteAccount } from "/@/utils";
 
 export const OverviewSection = ({
   title,
@@ -149,11 +143,11 @@ export const Account = () => {
                 <div className="flex-grow" />
                 {/* TODO show error if error */}
                 <div className="text-xs">{`${
-                  userData.data?.songCount ?? 0
+                  userData.data?.data()?.songCount ?? 0
                 } / ${500} Uploaded`}</div>
               </div>
               <ProgressBar
-                value={userData.data?.songCount ?? 0}
+                value={userData.data?.data()?.songCount ?? 0}
                 maxValue={500}
                 foregroundClassName="bg-purple-700"
               />

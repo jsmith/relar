@@ -71,6 +71,9 @@ export const SongType = Record({
   /** Eventually, we might be able to support different file formats. */
   format: Literal("mp3"),
 
+  /** The storage download url */
+  downloadUrl: String.Or(Undefined),
+
   /** The song title. */
   title: String,
 

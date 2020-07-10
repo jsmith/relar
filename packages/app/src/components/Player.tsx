@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { usePlayer } from "/@/player";
-import { useUserStorage, StorageErrorCode } from "/@/storage";
 import { FaRegHeart, FaHeart, FaVolumeMute, FaVolumeDown, FaVolumeUp } from "react-icons/fa";
 import {
   MdQueueMusic,
@@ -12,13 +11,15 @@ import {
   MdShuffle,
   MdPauseCircleOutline,
 } from "react-icons/md";
-import { FiDisc } from "react-icons/fi";
-import { useUserData } from "/@/firestore";
-import { ResultAsync } from "neverthrow";
 import * as Sentry from "@sentry/browser";
 import { Slider } from "/@/components/Slider";
 import classNames from "classnames";
 import { Thumbnail } from "/@/components/Thumbnail";
+import { userStorage } from "/@/shared/utils";
+import { storage } from "/@/firebase";
+import { useDefinedUser } from "/@/auth";
+import { tryToGetSongDownloadUrlOrLog } from "/@/queries/songs";
+import { useThumbnail } from "/@/queries/thumbnail";
 
 /**
  *
@@ -43,8 +44,8 @@ function fmtMSS(s: number) {
 export const Player = () => {
   const [repeat, setRepeat] = useState<"none" | "repeat-one" | "repeat">("none");
   const [song, setSong] = usePlayer();
-  const storage = useUserStorage();
-  const userData = useUserData();
+  const songData = song?.data();
+  const user = useDefinedUser();
   const [volume, setVolume] = useState(80);
   // TODO save when click volume
   // const [savedVolume, setSavedVolume] = useState(volume);
@@ -53,35 +54,24 @@ export const Player = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [src, setSrc] = useState<string>();
   const [playing, setPlaying] = useState(false);
-  const [thumbnail, setThumbnail] = useState<string>();
+  const thumbnail = useThumbnail(song);
 
   const likedOrUnlikeSong = (liked: boolean) => {
-    // TODO don't call more than once
     if (!song) {
       setSrc(undefined);
       return;
     }
 
-    ResultAsync.fromPromise(
-      userData.collection("songs").doc(song.id).update({
+    // TODO error handling
+    song.ref
+      .update({
         liked,
-      }),
-      (e) => e as any,
-    ).match(
-      () => {
-        console.log("SUCCESS");
-        setSong({ ...song, liked });
-      },
-      (e) => {
-        // TODO notif
-        console.error("Error updating liked: " + e);
-        Sentry.captureException(e);
-      },
-    );
+      })
+      .then(() => song.ref.get())
+      .then(setSong);
   };
 
   // TODO thumbnail
-  // I need to get the album first
 
   const playSong = async () => {
     if (!song) {
@@ -89,16 +79,10 @@ export const Player = () => {
       return;
     }
 
-    // TODO Update play count and set last played time
-
-    const ref = storage.child("songs").child(`${song.id}.${song.format}`);
-    try {
-      const url = await ref.getDownloadURL();
-      console.info(`Get download URL from firebase storage: "${url}"`);
-      setSrc(url);
-      // TODO neverthrow and runtypes
-    } catch (e) {
-      console.log(e);
+    const downloadUrl = await tryToGetSongDownloadUrlOrLog(user, song);
+    if (downloadUrl) {
+      // TODO Update play count and set last played time
+      setSrc(downloadUrl);
     }
   };
 
@@ -174,20 +158,20 @@ export const Player = () => {
       </audio>
 
       <div className="flex items-center" style={{ width: "30%" }}>
-        {song && <Thumbnail className="w-12 h-12" thumbnail={thumbnail} />}
-        {song && (
+        {songData && <Thumbnail className="w-12 h-12" thumbnail={thumbnail} />}
+        {songData && (
           <div className="ml-3">
-            <div className="text-gray-100 text-sm">{song.title}</div>
-            <div className="text-gray-300 text-xs">{song.artist}</div>
+            <div className="text-gray-100 text-sm">{songData.title}</div>
+            <div className="text-gray-300 text-xs">{songData.artist}</div>
           </div>
         )}
-        {song && (
+        {songData && (
           <button
-            onClick={() => likedOrUnlikeSong(!song.liked)}
+            onClick={() => likedOrUnlikeSong(!songData.liked)}
             className="ml-6 text-gray-300 hover:text-gray-100"
             title="Saved to Liked"
           >
-            {song.liked ? <FaHeart /> : <FaRegHeart />}
+            {songData.liked ? <FaHeart /> : <FaRegHeart />}
           </button>
         )}
       </div>

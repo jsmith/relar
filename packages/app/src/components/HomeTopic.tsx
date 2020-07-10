@@ -4,7 +4,7 @@ import { ThumbnailCard, ThumbnailCardProps } from "/@/components/ThumbnailCard";
 export interface HomeTopicProps {
   title: string;
   subTitle?: string;
-  children?: React.ReactNode;
+  children: JSX.Element[];
 }
 
 export const HomeTopic = ({ title, subTitle, children }: HomeTopicProps) => {
@@ -12,15 +12,7 @@ export const HomeTopic = ({ title, subTitle, children }: HomeTopicProps) => {
     <div>
       <div className="text-gray-800 text-2xl">{title}</div>
       <div className="text-gray-600 text-xs">{subTitle}</div>
-      <div
-        className="overflow-hidden grid grid-rows-1 gap-4"
-        style={{
-          gridAutoRows: 0,
-          gridTemplateColumns: `repeat(auto-fill,minmax(164px,1fr))`,
-        }}
-      >
-        {children}
-      </div>
+      <div className="flex space-x-3">{children.length === 0 ? <div>NOTHING</div> : children}</div>
     </div>
   );
 };

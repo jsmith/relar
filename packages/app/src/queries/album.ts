@@ -1,47 +1,40 @@
 import { createQueryCache } from "/@/queries/cache";
 import { Song, Album } from "/@/shared/types";
-import { useUserData } from "/@/firestore";
 import { useDefinedUser } from "/@/auth";
-import { userDataPath, DocumentSnapshot } from "/@/shared/utils";
+import { userDataPath, DocumentSnapshot, QueryDocumentSnapshot } from "/@/shared/utils";
 import { firestore } from "/@/firebase";
 
 const {
   useQuery: useAlbumsQuery,
   // queryCache: albumsQueryCache,
-} = createQueryCache<["albums", { uid: string }], Album[]>();
+} = createQueryCache<["albums", { uid: string }], Array<QueryDocumentSnapshot<Album>>>();
 
 export const useAlbums = () => {
   const user = useDefinedUser();
-  const userData = useUserData();
 
   return useAlbumsQuery(
     ["albums", { uid: user.uid }],
-    () => {
-      return new Promise<Album[]>((resolve) => {
-        userData
-          .collection("albums")
-          .limit(25)
-          .get()
-          .then((result) => {
-            // TODO validation
-            const loaded = result.docs.map((doc) => ({
-              ...doc.data(),
-              id: doc.id,
-            })) as Album[];
-            console.log("Loaded albums -> ", loaded);
-
-            resolve(loaded);
-          });
-      });
+    () =>
+      userDataPath(firestore, user.uid)
+        .albums()
+        .collection()
+        .limit(25)
+        .get()
+        .then((result) => result.docs),
+    {
+      onSuccess: (docs) => {
+        docs.forEach((doc) => {
+          albumQueryCache.setQueryData(["albums", { uid: user.uid, id: doc.data().id }], doc);
+        });
+      },
     },
-    // TODO save these in the albumQueryCache
   );
 };
 
-const {
-  useQuery: useAlbumQuery,
-  // queryCache: albumQueryCache,
-} = createQueryCache<["albums", { uid: string; id: string }], DocumentSnapshot<Album>>();
+const { useQuery: useAlbumQuery, queryCache: albumQueryCache } = createQueryCache<
+  ["albums", { uid: string; id: string }],
+  DocumentSnapshot<Album>
+>();
 
 export const useAlbum = (albumId: string) => {
   const user = useDefinedUser();
@@ -54,35 +47,22 @@ export const useAlbum = (albumId: string) => {
 const {
   useQuery: useAlbumSongsQuery,
   // queryCache: albumSongsQueryCache,
-} = createQueryCache<["album-songs", { uid: string; albumId: string }], Song[]>();
+} = createQueryCache<
+  ["album-songs", { uid: string; albumId: string }],
+  Array<QueryDocumentSnapshot<Song>>
+>();
 
 export const useAlbumSongs = (albumId: string) => {
   const user = useDefinedUser();
-  const userData = useUserData();
 
-  return useAlbumSongsQuery(
-    ["album-songs", { uid: user.uid, albumId }],
-    () => {
-      return new Promise<Song[]>((resolve) => {
-        userData
-          .collection("songs")
-          .where("album", "==", albumId)
-          // .startAfter(lastVisible.current)
-          .limit(25)
-          .get()
-          .then((result) => {
-            // TODO validation
-            const loaded = result.docs.map((doc) => ({
-              ...doc.data(),
-              id: doc.id,
-            })) as Song[];
-            console.log("Loaded songs from album -> ", loaded);
-            resolve(loaded);
-          });
-      });
-    },
-    {
-      staleTime: 60 * 1000 * 5,
-    },
+  return useAlbumSongsQuery(["album-songs", { uid: user.uid, albumId }], () =>
+    userDataPath(firestore, user.uid)
+      .songs()
+      .collection()
+      .where("album.id", "==", albumId)
+      // .startAfter(lastVisible.current)
+      .limit(25)
+      .get()
+      .then((result) => result.docs),
   );
 };

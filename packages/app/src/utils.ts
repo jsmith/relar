@@ -3,7 +3,7 @@ import * as Sentry from "@sentry/browser";
 import { Result, err, ok } from "neverthrow";
 import { sendPasswordResetEmail } from "/@/auth";
 import { QueryResult } from "react-query";
-import { DocumentSnapshot } from "./shared/utils";
+import { DocumentSnapshot } from "/@/shared/utils";
 
 /**
  * Hook that alerts clicks outside of the passed ref.

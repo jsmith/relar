@@ -4,6 +4,7 @@ import { MdMusicNote, MdPlayArrow } from "react-icons/md";
 import { LoadingCell, TextCell, Cell } from "/@/components/Cell";
 import { usePlayer } from "/@/player";
 import classNames from "classnames";
+import { QueryDocumentSnapshot } from "/@/shared/utils";
 
 type Attrs = "play" | "title" | "artist" | "count" | "length" | "favorite";
 
@@ -11,7 +12,7 @@ export interface SongsTableProps {
   /**
    * The songs. Passing in `undefined` indicates that the songs are still loading.
    */
-  songs?: Song[];
+  songs?: Array<QueryDocumentSnapshot<Song>>;
   attrs: Array<Attrs>;
   loadingRows?: number;
 }
@@ -46,7 +47,8 @@ const attrToHeader: {
   },
 };
 
-export const SongsTable = ({ songs, attrs, loadingRows = 20 }: SongsTableProps) => {
+export const SongsTable = ({ songs: docs, attrs, loadingRows = 20 }: SongsTableProps) => {
+  const songs = useMemo(() => docs?.map((doc) => doc.data()), [docs]);
   const [_, setSong] = usePlayer();
 
   const headers = useMemo(() => {
