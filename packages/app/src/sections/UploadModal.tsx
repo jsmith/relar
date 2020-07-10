@@ -1,11 +1,12 @@
 import React, { useState, useRef } from "react";
 import { FiMusic } from "react-icons/fi";
 import AriaModal from "react-aria-modal";
-import { useUserStorage } from "/@/storage";
 import * as uuid from "uuid";
 import { SongMetadata } from "/@/shared/types";
-import { UploadRow, StorageLocation } from "/@/components/UploadRow";
+import { UploadRow } from "/@/components/UploadRow";
 import { link } from "/@/classes";
+import { useUserStorage } from "../storage";
+import { UploadTask } from "../shared/utils";
 
 export interface UploadModalProps {
   children?: React.ReactNode;
@@ -21,9 +22,7 @@ const toFileArray = (fileList: FileList) => {
 };
 
 export const UploadModal = ({ children, className, display, setDisplay }: UploadModalProps) => {
-  const [files, setFiles] = useState<
-    Array<{ file: File; task: firebase.storage.UploadTask | undefined }>
-  >([]);
+  const [files, setFiles] = useState<Array<{ file: File; task: UploadTask | undefined }>>([]);
   const fileUpload = useRef<HTMLInputElement | null>(null);
   const [count, setCount] = useState(0);
   const storage = useUserStorage();
@@ -38,7 +37,7 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
         // This assumes that uuid.v4() will always return a unique ID
         // Users also only have the ability to create but not overwrite files
         const id = uuid.v4();
-        const ref = storage.child(`songs/-${id}/original.mp3`);
+        const ref = storage.song(id, "mp3");
         const meta: SongMetadata = { customMetadata: { originalFileName: file.name } };
         return {
           task: ref.put(file, meta),
@@ -104,7 +103,7 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
                     <UploadRow
                       key={i}
                       file={file}
-                      task={task as firebase.storage.UploadTask & { location_: StorageLocation }}
+                      task={task}
                       onRemove={() =>
                         setFiles([...files.slice(0, i), ...files.slice(i + 1, files.length)])
                       }

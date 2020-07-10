@@ -57,7 +57,6 @@ export const tryToGetDownloadUrlOrLog = async (
 
   const result = await getDownloadURL(
     userStorage(storage, user).artworks(artwork.hash, artwork.type)[size](),
-    // userStorage.child("song_artwork").child(album.id).child("original.jpg"),
   );
 
   if (result.isOk()) {
