@@ -1,8 +1,7 @@
 import { createQueryCache } from "/@/queries/cache";
 import { Song, Album } from "/@/shared/types";
-import { useDefinedUser } from "/@/auth";
-import { userDataPath, DocumentSnapshot, QueryDocumentSnapshot } from "/@/shared/utils";
-import { firestore } from "/@/firebase";
+import { DocumentSnapshot, QueryDocumentSnapshot } from "/@/shared/utils";
+import { useUserData } from "/@/firestore";
 
 const {
   useQuery: useAlbumsQuery,
@@ -10,12 +9,12 @@ const {
 } = createQueryCache<["albums", { uid: string }], Array<QueryDocumentSnapshot<Album>>>();
 
 export const useAlbums = () => {
-  const user = useDefinedUser();
+  const userData = useUserData();
 
   return useAlbumsQuery(
-    ["albums", { uid: user.uid }],
+    ["albums", { uid: userData.userId }],
     () =>
-      userDataPath(firestore, user.uid)
+      userData
         .albums()
         .collection()
         .limit(25)
@@ -24,7 +23,10 @@ export const useAlbums = () => {
     {
       onSuccess: (docs) => {
         docs.forEach((doc) => {
-          albumQueryCache.setQueryData(["albums", { uid: user.uid, id: doc.data().id }], doc);
+          albumQueryCache.setQueryData(
+            ["albums", { uid: userData.userId, id: doc.data().id }],
+            doc,
+          );
         });
       },
     },
@@ -37,10 +39,10 @@ const { useQuery: useAlbumQuery, queryCache: albumQueryCache } = createQueryCach
 >();
 
 export const useAlbum = (albumId: string) => {
-  const user = useDefinedUser();
+  const userData = useUserData();
 
-  return useAlbumQuery(["albums", { uid: user.uid, id: albumId }], () =>
-    userDataPath(firestore, user.uid).albums().album(albumId).get(),
+  return useAlbumQuery(["albums", { uid: userData.userId, id: albumId }], () =>
+    userData.albums().album(albumId).get(),
   );
 };
 
@@ -53,10 +55,10 @@ const {
 >();
 
 export const useAlbumSongs = (albumId: string) => {
-  const user = useDefinedUser();
+  const userData = useUserData();
 
-  return useAlbumSongsQuery(["album-songs", { uid: user.uid, albumId }], () =>
-    userDataPath(firestore, user.uid)
+  return useAlbumSongsQuery(["album-songs", { uid: userData.userId, albumId }], () =>
+    userData
       .songs()
       .collection()
       .where("album.id", "==", albumId)

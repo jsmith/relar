@@ -59,8 +59,28 @@ export interface Firestore {
   collection(path: string): CollectionReference<unknown>;
 }
 
+export interface UploadTaskSnapshot {
+  bytesTransferred: number;
+  state: firebase.storage.TaskState;
+  task: UploadTask;
+  totalBytes: number;
+}
+
+export interface UploadTask {
+  on(
+    event: "state_changed",
+    nextOrObserver: (a: UploadTaskSnapshot) => any,
+    // error?: ((a: Error) => any) | null,
+    // complete?: firebase.Unsubscribe | null,
+  ): Function;
+}
+
 export interface Reference {
   getDownloadURL(): Promise<string>;
+  put(
+    data: Blob | Uint8Array | ArrayBuffer,
+    metadata?: firebase.storage.UploadMetadata,
+  ): UploadTask;
 }
 
 export interface Storage {
@@ -71,6 +91,7 @@ export const userDataPath = (db: Firestore, userId: string) => {
   const path = createPath().append("user_data").append(userId);
 
   return {
+    userId,
     songs: () => {
       const songs = path.append("songs");
       return {

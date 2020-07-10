@@ -1,8 +1,7 @@
 import { createQueryCache } from "/@/queries/cache";
 import { Artist } from "/@/shared/types";
-import { useDefinedUser } from "/@/auth";
-import { userDataPath, DocumentSnapshot } from "/@/shared/utils";
-import { firestore } from "/@/firebase";
+import { DocumentSnapshot } from "/@/shared/utils";
+import { useUserData } from "/@/firestore";
 
 const {
   useQuery: useArtistQuery,
@@ -10,9 +9,10 @@ const {
 } = createQueryCache<["artists", { uid: string; id: string }], DocumentSnapshot<Artist>>();
 
 export const useArtist = (artistId?: string) => {
-  const user = useDefinedUser();
+  const userData = useUserData();
 
-  return useArtistQuery(artistId ? ["artists", { uid: user.uid, id: artistId }] : undefined, () =>
-    userDataPath(firestore, user.uid).artists().artist(artistId!).get(),
+  return useArtistQuery(
+    artistId ? ["artists", { uid: userData.userId, id: artistId }] : undefined,
+    () => userData.artists().artist(artistId!).get(),
   );
 };

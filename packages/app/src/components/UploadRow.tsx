@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import firebase from "firebase/app";
-import { MdErrorOutline, MdClose, MdWarning, MdCheck } from "react-icons/md";
-import { captureMessage, Severity } from "@sentry/browser";
+import { MdErrorOutline, MdCheck } from "react-icons/md";
 import { captureAndLog, captureAndLogError } from "/@/utils";
-import { AiOutlineStock, AiOutlineStop } from "react-icons/ai";
+import { AiOutlineStop } from "react-icons/ai";
 import SVGLoadersReact from "svg-loaders-react";
 import { ProgressBar } from "/@/components/ProgressBar";
+import { UploadTask, UploadTaskSnapshot } from "../shared/utils";
 
 const { Bars } = SVGLoadersReact;
 
@@ -15,7 +15,7 @@ export interface StorageLocation {
 
 export interface UploadRowProps {
   file: File;
-  task: (firebase.storage.UploadTask & { location_: StorageLocation }) | undefined;
+  task: UploadTask | undefined;
   onRemove: () => void;
 }
 
@@ -24,12 +24,12 @@ type TaskState =
   | { status: "error"; error: string }
   | { status: "cancelled" };
 
-export const UploadRow = ({ file, task, onRemove }: UploadRowProps) => {
+export const UploadRow = ({ file, task }: UploadRowProps) => {
   const [error, setError] = useState("");
   const [cancelled, setCancelled] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const handleSnapshot = (snapshot: firebase.storage.UploadTaskSnapshot) => {
+  const handleSnapshot = (snapshot: UploadTaskSnapshot) => {
     const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
     setProgress(progress);
     switch (snapshot.state) {
@@ -76,7 +76,7 @@ export const UploadRow = ({ file, task, onRemove }: UploadRowProps) => {
       setError("Invalid File Format. Only Mp3 files are accepted.");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [task?.location_.path]);
+  }, [task]);
 
   return (
     <div key={file.name} className="py-2 space-x-2 flex items-center group">

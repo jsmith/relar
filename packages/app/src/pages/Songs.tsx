@@ -1,6 +1,5 @@
 import React from "react";
 // import Skeleton from "react-loading-skeleton";
-import { Song } from "/@/shared/types";
 import { usePlayer } from "/@/player";
 import { useSongs } from "/@/queries/songs";
 
@@ -43,10 +42,6 @@ export const Songs = () => {
     </th>
   ));
 
-  const playSong = async (song: Song) => {
-    setSong(song);
-  };
-
   let rows;
   // TODO show error
   if (songs.status === "loading" || songs.status === "error") {
@@ -63,7 +58,7 @@ export const Songs = () => {
     rows = songs.data.map((song) => {
       const data = song.data();
       return (
-        <tr key={song.id} onClick={() => playSong(data)}>
+        <tr key={song.id} onClick={() => setSong(song)}>
           <TextRow text={data.title} />
           <TextRow text={data.artist?.name} />
           <TextRow text={data.album?.name} />

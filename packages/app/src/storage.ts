@@ -2,7 +2,7 @@ import { storage } from "/@/firebase";
 import { useUser, useDefinedUser } from "/@/auth";
 import { useMemo } from "react";
 import { ResultAsync, Result, ok, err } from "neverthrow";
-import { Reference } from "/@/shared/utils";
+import { Reference, userStorage } from "/@/shared/utils";
 
 export type StorageErrorCode =
   | "storage/unknown" // An unknown error occurred.
@@ -25,9 +25,7 @@ export type StorageErrorCode =
 export const useUserStorage = () => {
   const user = useDefinedUser();
 
-  // TODO what if one user logs out and another logs in??
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => storage.ref().child(user.uid), []);
+  return useMemo(() => userStorage(storage, user), [user]);
 };
 
 /**

@@ -15,8 +15,6 @@ import * as Sentry from "@sentry/browser";
 import { Slider } from "/@/components/Slider";
 import classNames from "classnames";
 import { Thumbnail } from "/@/components/Thumbnail";
-import { userStorage } from "/@/shared/utils";
-import { storage } from "/@/firebase";
 import { useDefinedUser } from "/@/auth";
 import { tryToGetSongDownloadUrlOrLog } from "/@/queries/songs";
 import { useThumbnail } from "/@/queries/thumbnail";

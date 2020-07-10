@@ -1,15 +1,10 @@
-import {
-  userDataPath,
-  QueryDocumentSnapshot,
-  DocumentSnapshot,
-  userStorage,
-} from "/@/shared/utils";
+import { QueryDocumentSnapshot, DocumentSnapshot, userStorage } from "/@/shared/utils";
 import { createQueryCache } from "/@/queries/cache";
 import { Song } from "/@/shared/types";
-import { useDefinedUser } from "/@/auth";
-import { firestore, storage } from "/@/firebase";
+import { storage } from "/@/firebase";
 import { getDownloadURL } from "../storage";
 import { captureAndLogError } from "../utils";
+import { useUserData } from "/@/firestore";
 
 const {
   useQuery: useRecentlyAddedSongsQuery,
@@ -17,11 +12,11 @@ const {
 } = createQueryCache<["recent-songs", { uid: string }], Array<QueryDocumentSnapshot<Song>>>();
 
 export const useRecentlyAddedSongs = () => {
-  const user = useDefinedUser();
+  const userData = useUserData();
 
-  return useRecentlyAddedSongsQuery(["recent-songs", { uid: user.uid }], () => {
+  return useRecentlyAddedSongsQuery(["recent-songs", { uid: userData.userId }], () => {
     return (
-      userDataPath(firestore, user.uid)
+      userData
         .songs()
         .collection()
         .orderBy("createdAt")
@@ -39,10 +34,10 @@ const {
 } = createQueryCache<["songs", { uid: string }], Array<QueryDocumentSnapshot<Song>>>();
 
 export const useSongs = () => {
-  const user = useDefinedUser();
+  const userData = useUserData();
 
-  return useSongsQuery(["songs", { uid: user.uid }], () =>
-    userDataPath(firestore, user.uid)
+  return useSongsQuery(["songs", { uid: userData.userId }], () =>
+    userData
       .songs()
       .collection()
       .limit(25)
