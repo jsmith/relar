@@ -11,7 +11,6 @@ import {
   MdShuffle,
   MdPauseCircleOutline,
 } from "react-icons/md";
-import * as Sentry from "@sentry/browser";
 import { Slider } from "/@/components/Slider";
 import classNames from "classnames";
 import { Thumbnail } from "/@/components/Thumbnail";
@@ -144,6 +143,8 @@ export const Player = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [song]);
 
+  // TODO titles for all button
+
   return (
     <div className="h-20 bg-gray-800 flex items-center px-4">
       <audio
@@ -169,7 +170,7 @@ export const Player = () => {
           <button
             onClick={() => likedOrUnlikeSong(!songData.liked)}
             className="ml-6 text-gray-300 hover:text-gray-100"
-            title="Saved to Liked"
+            title="Save to Likes"
           >
             {songData.liked ? <FaHeart /> : <FaRegHeart />}
           </button>

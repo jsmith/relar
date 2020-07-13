@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Modal } from "/@/components/Modal";
-import { useDefinedUser, useUser } from "/@/auth";
+import { Modal } from "../components/Modal";
+import { useDefinedUser, useUser } from "../auth";
 import { BsExclamationTriangle } from "react-icons/bs";
-import { Input } from "/@/components/Input";
-import { ErrorTemplate } from "/@/components/ErrorTemplate";
-import { BlockAlert } from "/@/components/BlockAlert";
+import { Input } from "../components/Input";
+import { ErrorTemplate } from "../components/ErrorTemplate";
+import { BlockAlert } from "../components/BlockAlert";
 
 export interface ConfirmationModalProps {
   display: boolean;
