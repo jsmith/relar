@@ -5,7 +5,7 @@
     "dev": "vite serve src",
     "build": "vite build src --outDir dist",
     "build-staging": "vite build src --mode staging --outDir dist",
-    "test": "jest",
+    "test": "esbuild --format=cjs --bundle --platform=node src/utils.spec.ts | node",
     "check:formatting": "prettier --list-different \"**/*.{ts,tsx,js}\"",
     "check:lint": "eslint \"**/*.{ts,tsx}\"",
     "check:types": "tsc --noEmit",
@@ -54,6 +54,7 @@
     "@typescript-eslint/eslint-plugin": "^3.2.0",
     "@typescript-eslint/parser": "^3.2.0",
     "babel-core": "^6.26.3",
+    "esbuild": "^0.5.24",
     "eslint": "^7.2.0",
     "eslint-config-restricted-globals": "^0.1.0",
     "eslint-plugin-react": "^7.19.0",
@@ -63,7 +64,8 @@
     "react": "^16.13.1",
     "tailwindcss": "^1.4.6",
     "typescript": "^3.8.0",
-    "vite": "1.0.0-beta.8",
+    "uvu": "^0.2.1",
+    "vite": "1.0.0-beta.11",
     "vite-plugin-react": "3.0.1"
   },
   "comments": {

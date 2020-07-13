@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "/@/components/Button";
-import { auth } from "/@/firebase";
+import { Button } from "../components/Button";
+import { auth } from "../firebase";
 import { useRouter } from "react-tiniest-router";
-import { routes } from "/@/routes";
-import { useUser, sendPasswordResetEmail } from "/@/auth";
+import { routes } from "../routes";
+import { useUser, sendPasswordResetEmail } from "../auth";
 import * as Sentry from "@sentry/browser";
-import { CardPage } from "/@/components/CardPage";
-import { Input } from "/@/components/Input";
-import { Link } from "/@/components/Link";
-import { preventAndCall } from "/@/utils";
-import { BlockAlert } from "/@/components/BlockAlert";
+import { CardPage } from "../components/CardPage";
+import { Input } from "../components/Input";
+import { Link } from "../components/Link";
+import { preventAndCall } from "../utils";
+import { BlockAlert } from "../components/BlockAlert";
 
 const RESET_INSTRUCTIONS =
   "Enter your email address and we will send you instructions to reset your password.";

@@ -1,6 +1,6 @@
 import React, { useContext, useState } from "react";
 import { createContext } from "react";
-import { Song } from "/@/shared/types";
+import { Song } from "./shared/types";
 import { DocumentSnapshot } from "./shared/utils";
 
 export const PlayerContext = createContext<

@@ -1,6 +1,6 @@
 import React from "react";
-import { AlbumCard } from "/@/sections/AlbumCard";
-import { useAlbums } from "/@/queries/album";
+import { AlbumCard } from "../sections/AlbumCard";
+import { useAlbums } from "../queries/album";
 
 export const Albums = () => {
   const albums = useAlbums();

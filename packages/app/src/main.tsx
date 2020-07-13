@@ -13,17 +13,17 @@ if (process.env.NODE_ENV !== "development") {
   });
 }
 
-import { App } from "/@/App"; // this must be first for hot reloading
+import { App } from "./App"; // this must be first for hot reloading
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Router } from "react-tiniest-router";
-import { routes } from "/@/routes";
-import { UserProvider } from "/@/auth";
-import { PlayerProvider } from "/@/player";
-import { ConfirmActionProvider } from "/@/confirm-actions";
-import { ConfirmPasswordProvider } from "/@/confirm-password";
+import { routes } from "./routes";
+import { UserProvider } from "./auth";
+import { PlayerProvider } from "./player";
+import { ConfirmActionProvider } from "./confirm-actions";
+import { ConfirmPasswordProvider } from "./confirm-password";
 import { ReactQueryConfigProvider, ReactQueryProviderConfig } from "react-query";
-import { captureAndLog } from "/@/utils";
+import { captureAndLog } from "./utils";
 
 const config: ReactQueryProviderConfig<Error> = {
   // 5 minutes

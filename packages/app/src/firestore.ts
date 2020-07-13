@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { firestore } from "/@/firebase";
-import { useDefinedUser } from "/@/auth";
+import { firestore } from "./firebase";
+import { useDefinedUser } from "./auth";
 import { userDataPath } from "./shared/utils";
 
 export const useUserData = () => {

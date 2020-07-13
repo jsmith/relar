@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { usePlayer } from "/@/player";
+import { usePlayer } from "../player";
 import { FaRegHeart, FaHeart, FaVolumeMute, FaVolumeDown, FaVolumeUp } from "react-icons/fa";
 import {
   MdQueueMusic,
@@ -11,13 +11,13 @@ import {
   MdShuffle,
   MdPauseCircleOutline,
 } from "react-icons/md";
-import { Slider } from "/@/components/Slider";
+import { Slider } from "../components/Slider";
 import classNames from "classnames";
-import { Thumbnail } from "/@/components/Thumbnail";
-import { useDefinedUser } from "/@/auth";
-import { tryToGetSongDownloadUrlOrLog } from "/@/queries/songs";
-import { useThumbnail } from "/@/queries/thumbnail";
-import { captureAndLog } from "/@/utils";
+import { Thumbnail } from "../components/Thumbnail";
+import { useDefinedUser } from "../auth";
+import { tryToGetSongDownloadUrlOrLog } from "../queries/songs";
+import { useThumbnail } from "../queries/thumbnail";
+import { captureAndLog } from "../utils";
 
 /**
  *

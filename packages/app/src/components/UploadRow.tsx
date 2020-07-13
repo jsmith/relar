@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import firebase from "firebase/app";
 import { MdErrorOutline, MdCheck } from "react-icons/md";
-import { captureAndLog, captureAndLogError } from "/@/utils";
+import { captureAndLog, captureAndLogError } from "../utils";
 import { AiOutlineStop } from "react-icons/ai";
 import SVGLoadersReact from "svg-loaders-react";
-import { ProgressBar } from "/@/components/ProgressBar";
-import { UploadTask, UploadTaskSnapshot } from "/@/shared/utils";
+import { ProgressBar } from "../components/ProgressBar";
+import { UploadTask, UploadTaskSnapshot } from "../shared/utils";
 
 const { Bars } = SVGLoadersReact;
 

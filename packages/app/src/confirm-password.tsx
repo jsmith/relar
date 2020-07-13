@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useReducer, useRef } from "react";
-import { ConfirmPassword } from "/@/components/ConfirmPassword";
+import { ConfirmPassword } from "./components/ConfirmPassword";
 
 export const ConfirmPasswordContext = createContext<{
   /**

@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "/@/components/Button";
-import { auth } from "/@/firebase";
+import { Button } from "../components/Button";
+import { auth } from "../firebase";
 import { useRouter } from "react-tiniest-router";
-import { routes } from "/@/routes";
-import { useUser } from "/@/auth";
+import { routes } from "../routes";
+import { useUser } from "../auth";
 import { GiSwordSpin } from "react-icons/gi";
 import * as Sentry from "@sentry/browser";
-import { CardPage } from "/@/components/CardPage";
-import { Input } from "/@/components/Input";
-import { Link } from "/@/components/Link";
-import { backend } from "/@/backend";
-import { BlockAlert } from "/@/components/BlockAlert";
-import { BetaAPI } from "/@/shared/types";
+import { CardPage } from "../components/CardPage";
+import { Input } from "../components/Input";
+import { Link } from "../components/Link";
+import { backend } from "../backend";
+import { BlockAlert } from "../components/BlockAlert";
+import { BetaAPI } from "../shared/types";
 
 const BETA_TEXT =
   "Want to be apart of the beta? Sign up now and we'll add you to our testers list.";

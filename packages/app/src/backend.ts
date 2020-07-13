@@ -1,6 +1,6 @@
 import axios from "@graywolfai/rest-ts-axios";
-import { BetaAPI, UnknownError } from "/@/shared/types";
-import { env } from "/@/env";
+import { BetaAPI, UnknownError } from "./shared/types";
+import { env } from "./env";
 import * as Sentry from "@sentry/browser";
 
 export const backend = axios.create<BetaAPI>({ baseURL: env.betaBaseUrl });

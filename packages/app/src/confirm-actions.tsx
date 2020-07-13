@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useRef } from "react";
-import { ConfirmPassword } from "/@/components/ConfirmPassword";
-import { ConfirmationModal } from "/@/components/ConfirmationModal";
+import { ConfirmPassword } from "./components/ConfirmPassword";
+import { ConfirmationModal } from "./components/ConfirmationModal";
 
 export interface ConfirmActionProps {
   title: string;

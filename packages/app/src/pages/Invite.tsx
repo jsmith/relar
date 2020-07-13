@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { CardPage } from "/@/components/CardPage";
-import { Link } from "/@/components/Link";
-import { routes } from "/@/routes";
-import { Input } from "/@/components/Input";
+import { CardPage } from "../components/CardPage";
+import { Link } from "../components/Link";
+import { routes } from "../routes";
+import { Input } from "../components/Input";
 import { useRouter } from "react-tiniest-router";
-import { BlockAlert } from "/@/components/BlockAlert";
-import { Button } from "/@/components/Button";
-import { backend, getOrUnknownError } from "/@/backend";
+import { BlockAlert } from "../components/BlockAlert";
+import { Button } from "../components/Button";
+import { backend, getOrUnknownError } from "../backend";
 
 export const Invite = () => {
   const { params, goTo } = useRouter();
