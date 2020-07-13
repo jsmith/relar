@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "vite serve src",
     "build": "vite build src --outDir dist",
+    "build-staging": "vite build src --mode staging --outDir dist",
     "test": "jest",
     "check:formatting": "prettier --list-different \"**/*.{ts,tsx,js}\"",
     "check:lint": "eslint \"**/*.{ts,tsx}\"",
