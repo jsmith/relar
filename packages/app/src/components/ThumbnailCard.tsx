@@ -15,7 +15,7 @@ export const ThumbnailCard = ({ thumbnail, title, subtitle, onClick }: Thumbnail
 
   return (
     <div
-      className="bg-primary-600 flex flex-col px-3 py-4 rounded-md cursor-pointer relative group"
+      className="bg-gray-800 border border-purple-500 flex flex-col px-3 py-4 rounded-md cursor-pointer relative group"
       onClick={onClick}
     >
       <Thumbnail className="w-32 h-32" thumbnail={thumbnail} />

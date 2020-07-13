@@ -41,7 +41,6 @@ export const Modal = ({
       initialFocus={initialFocus}
       getApplicationNode={() => document.getElementById("root")!}
       underlayStyle={{ paddingTop: "2em" }}
-      // dialogClass="absolute inset-0 m-8 rounded-lg bg-primary-100 z-10 p-5"
     >
       <div
         className="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full"

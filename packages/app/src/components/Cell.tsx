@@ -32,7 +32,7 @@ export const LoadingCell = ({ width }: { width?: number }) => {
 export const TextCell = ({ text }: { text?: string }) => {
   return (
     <Cell className="px-6 py-4">
-      <div className="text-sm leading-5">{text}</div>
+      <div className="text-sm text-gray-800 leading-5">{text}</div>
     </Cell>
   );
 };

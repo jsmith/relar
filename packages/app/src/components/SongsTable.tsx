@@ -48,7 +48,6 @@ const attrToHeader: {
 };
 
 export const SongsTable = ({ songs: docs, attrs, loadingRows = 20 }: SongsTableProps) => {
-  const songs = useMemo(() => docs?.map((doc) => doc.data()), [docs]);
   const [_, setSong] = usePlayer();
 
   const headers = useMemo(() => {
@@ -59,7 +58,7 @@ export const SongsTable = ({ songs: docs, attrs, loadingRows = 20 }: SongsTableP
         <th
           key={attr}
           className={classNames(
-            "border-b border-gray-200 border-opacity-25 text-left text-xs font-medium uppercase tracking-wider",
+            "border-b border-gray-200 border-opacity-25 text-left text-gray-800 text-xs font-medium uppercase tracking-wider",
             className,
           )}
         >
@@ -71,10 +70,8 @@ export const SongsTable = ({ songs: docs, attrs, loadingRows = 20 }: SongsTableP
     return headers;
   }, [attrs]);
 
-  // console.log(songs);
-
   const rows = useMemo(() => {
-    if (!songs) {
+    if (!docs) {
       return Array(loadingRows)
         .fill(0)
         .map((_, i) => (
@@ -85,23 +82,26 @@ export const SongsTable = ({ songs: docs, attrs, loadingRows = 20 }: SongsTableP
           </tr>
         ));
     } else {
-      return songs.map((song) => (
-        <tr className="group hover:bg-primary-700" key={song.id} onClick={() => setSong(song)}>
-          <Cell>
-            <MdMusicNote className="w-5 h-5 group-hover:opacity-0 absolute" />
-            <MdPlayArrow className="w-5 h-5 group-hover:opacity-100 opacity-0" />
-          </Cell>
-          <TextCell text={song.title} />
-          <TextCell text={song.artist?.name} />
-          <TextCell text={song.album?.name} />
-        </tr>
-      ));
+      return docs.map((doc) => {
+        const song = doc.data();
+        return (
+          <tr className="group hover:bg-gray-300" key={song.id} onClick={() => setSong(doc)}>
+            <Cell>
+              <MdMusicNote className="w-5 h-5 group-hover:opacity-0 absolute" />
+              <MdPlayArrow className="w-5 h-5 group-hover:opacity-100 opacity-0" />
+            </Cell>
+            <TextCell text={song.title} />
+            <TextCell text={song.artist?.name} />
+            <TextCell text={song.album?.name} />
+          </tr>
+        );
+      });
     }
-  }, [loadingRows, setSong, songs]);
+  }, [loadingRows, setSong, docs]);
 
   // TODO Songs.tsx should use this
   return (
-    <table className="min-w-full">
+    <table className="min-w-full text-gray-800">
       <thead>
         <tr>{headers}</tr>
       </thead>
