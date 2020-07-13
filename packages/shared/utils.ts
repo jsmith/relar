@@ -84,9 +84,10 @@ export interface UploadTask {
   on(
     event: "state_changed",
     nextOrObserver: (a: UploadTaskSnapshot) => any,
-    // error?: ((a: Error) => any) | null,
-    // complete?: firebase.Unsubscribe | null,
+    error?: ((a: Error) => any) | null,
+    complete?: (() => void) | null,
   ): Function;
+  snapshot: UploadTaskSnapshot;
 }
 
 export interface Reference {
@@ -141,7 +142,7 @@ export const betaSignups = (db: Firestore) => {
 };
 
 export const userStorage = (storage: Storage, user: firebase.User) => {
-  const path = createPath().append("user_data").append(user.uid);
+  const path = createPath().append(user.uid);
 
   return {
     artworks: (hash: string, type: "jpg" | "png") => {
@@ -151,7 +152,7 @@ export const userStorage = (storage: Storage, user: firebase.User) => {
         "32": () => storage.ref(artworksPath.append(`thumb@32_artwork.${type}`).build()),
       };
     },
-    song: (songId: string, format: Song["format"]) =>
-      storage.ref(path.append(songId).append(`original.${format}`).build()),
+    song: (songId: string, fileName: string) =>
+      storage.ref(path.append("songs").append(songId).append(fileName).build()),
   };
 };

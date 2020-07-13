@@ -1,5 +1,5 @@
 import * as admin from "firebase-admin";
-import { Song, SongMetadata, Artist, Album } from "./shared/types";
+import { Song, Artist, Album } from "./shared/types";
 import * as uuid from "uuid";
 import * as path from "path";
 import { deleteAllUserData } from "./utils";
@@ -17,17 +17,14 @@ const firestore = admin.firestore();
 const upload = async (fileName: string) => {
   const songId = uuid.v4();
 
-  const destination = `testUser/songs/${songId}/original.mp3`;
-  const metadata: SongMetadata = { customMetadata: { originalFileName: fileName } };
+  const destination = `testUser/songs/${songId}/${fileName}`;
   await storage.bucket().upload(path.resolve(__dirname, "../assets", fileName), {
     destination,
-    metadata,
   });
 
   const objectMetadata = test.storage.makeObjectMetadata({
     name: destination,
     contentType: "audio/mpeg",
-    metadata: (metadata as unknown) as string,
     bucket: storage.bucket().name,
   });
 
@@ -60,7 +57,7 @@ const getSong = (songId: string) => {
     .songs()
     .song(songId)
     .get()
-    .then((o): Song => o.data());
+    .then((o) => o.data());
 };
 
 const getSongs = () => {
@@ -98,9 +95,8 @@ export const createTestSong = (song: Partial<Song>): Song => {
   return {
     id: "",
     title: "",
-    format: "mp3",
     liked: false,
-    originalFileName: "",
+    fileName: "",
     played: 0,
     downloadUrl: undefined,
     year: "",
@@ -125,10 +121,10 @@ describe("utils", () => {
       }
 
       const tags = result.value.id3Tag;
-      expect(tags.title).toEqual("WalloonLilliShort");
-      expect(tags.band).toEqual("Web Samples");
-      expect(tags.artist).toEqual("Hendrik Broekman");
-      expect(tags.album).toEqual("Web Samples");
+      expect(tags?.title).toEqual("WalloonLilliShort");
+      expect(tags?.band).toEqual("Web Samples");
+      expect(tags?.artist).toEqual("Hendrik Broekman");
+      expect(tags?.album).toEqual("Web Samples");
     });
   });
 
@@ -163,7 +159,7 @@ describe("functions", () => {
         createTestSong({
           id: songId,
           title: "WalloonLilliShort",
-          originalFileName: "file_just_title.mp3",
+          fileName: "file_just_title.mp3",
           createdAt: song?.createdAt,
         }),
       );
@@ -174,7 +170,7 @@ describe("functions", () => {
       const { objectMetadata, songId } = await upload("file_with_artist_album.mp3");
       await wrapped(objectMetadata);
 
-      const song = await getSong(songId);
+      const song = (await getSong(songId)) as Song;
       const user = await getUserData();
 
       expect(user).toEqual({ songCount: 1 });
@@ -183,29 +179,29 @@ describe("functions", () => {
         createTestSong({
           id: songId,
           title: "WalloonLilliShort",
-          originalFileName: "file_with_artist_album.mp3",
+          fileName: "file_with_artist_album.mp3",
           album: {
             name: "Web Samples",
-            id: song?.album.id,
+            id: song.album!.id,
           },
           artist: {
             name: "Hendrik Broekman",
-            id: song?.artist.id,
+            id: song.artist!.id,
           },
-          createdAt: song?.createdAt,
+          createdAt: song.createdAt,
         }),
       );
 
-      const artist = await getArtist(song?.artist.id);
-      const album = await getAlbum(song?.album.id);
+      const artist = await getArtist(song.artist!.id);
+      const album = await getAlbum(song.album!.id);
 
       const expectedArtist: Artist = {
-        id: song?.artist.id,
+        id: song.artist!.id,
         name: "Hendrik Broekman",
       };
 
       const expectedAlbum: Album = {
-        id: song?.album.id,
+        id: song.album!.id,
         name: "Web Samples",
         albumArtist: "Web Samples",
         artwork: undefined,
@@ -242,7 +238,9 @@ describe("functions", () => {
       const { objectMetadata, songId } = await upload("file_with_artwork.mp3");
       await wrapped(objectMetadata);
       const song = await getSong(songId);
-      const file = storage.bucket().file(`testUser/song_artwork/${song?.artwork.hash}/artwork.jpg`);
+      const file = storage
+        .bucket()
+        .file(`testUser/song_artwork/${song?.artwork?.hash}/artwork.jpg`);
       const [exists] = await file.exists();
       expect(exists).toEqual(true);
     });
