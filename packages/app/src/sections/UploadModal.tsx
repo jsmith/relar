@@ -2,10 +2,10 @@ import React, { useState, useRef } from "react";
 import { FiMusic } from "react-icons/fi";
 import AriaModal from "react-aria-modal";
 import * as uuid from "uuid";
-import { UploadRow } from "/@/components/UploadRow";
-import { link } from "/@/classes";
-import { useUserStorage } from "/@/storage";
-import { UploadTask } from "/@/shared/utils";
+import { UploadRow } from "../components/UploadRow";
+import { link } from "../classes";
+import { useUserStorage } from "../storage";
+import { UploadTask } from "../shared/utils";
 
 export interface UploadModalProps {
   children?: React.ReactNode;

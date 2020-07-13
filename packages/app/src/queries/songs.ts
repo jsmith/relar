@@ -1,10 +1,10 @@
-import { QueryDocumentSnapshot, DocumentSnapshot, userStorage } from "/@/shared/utils";
-import { createQueryCache } from "/@/queries/cache";
-import { Song } from "/@/shared/types";
-import { storage } from "/@/firebase";
-import { getDownloadURL } from "/@/storage";
-import { captureAndLogError } from "/@/utils";
-import { useUserData } from "/@/firestore";
+import { QueryDocumentSnapshot, DocumentSnapshot, userStorage } from "../shared/utils";
+import { createQueryCache } from "../queries/cache";
+import { Song } from "../shared/types";
+import { storage } from "../firebase";
+import { getDownloadURL } from "../storage";
+import { captureAndLogError } from "../utils";
+import { useUserData } from "../firestore";
 
 const {
   useQuery: useRecentlyAddedSongsQuery,

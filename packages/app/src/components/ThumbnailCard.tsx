@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Thumbnail } from "/@/components/Thumbnail";
+import { Thumbnail } from "../components/Thumbnail";
 import { MdPlayCircleFilled } from "react-icons/md";
 import classNames from "classnames";
 

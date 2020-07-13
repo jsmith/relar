@@ -9,7 +9,6 @@
     "module": "esnext",
     "baseUrl": "./",
     "paths": {
-      "/@/*": ["src/*"],
       "react": ["@pika/react"],
       "react-dom": ["@pika/react-dom"]
     }

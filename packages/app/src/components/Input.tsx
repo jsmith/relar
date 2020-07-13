@@ -1,6 +1,6 @@
 import React from "react";
 import classNames from "classnames";
-import { Keys } from "/@/utils";
+import { Keys } from "../utils";
 
 export interface InputProps {
   value: string;

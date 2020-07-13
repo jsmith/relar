@@ -1,10 +1,10 @@
 import React from "react";
-import { Footer } from "/@/sections/Footer";
-import { PersonMusic } from "/@/illustrations/PersonMusic";
-import { Link } from "/@/components/Link";
-import { button } from "/@/classes";
-import { routes } from "/@/routes";
-import { Feature } from "/@/components/Feature";
+import { Footer } from "../sections/Footer";
+import { PersonMusic } from "../illustrations/PersonMusic";
+import { Link } from "../components/Link";
+import { button } from "../classes";
+import { routes } from "../routes";
+import { Feature } from "../components/Feature";
 
 export const Hero = () => {
   return (

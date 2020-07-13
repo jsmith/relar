@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from "react";
-import { Modal } from "/@/components/Modal";
-import { Input } from "/@/components/Input";
-import { useDefinedUser, signInWithEmailAndPassword, useUser } from "/@/auth";
-import { captureAndLogError } from "/@/utils";
-import { BlockAlert } from "/@/components/BlockAlert";
+import { Modal } from "../components/Modal";
+import { Input } from "../components/Input";
+import { useDefinedUser, signInWithEmailAndPassword, useUser } from "../auth";
+import { captureAndLogError } from "../utils";
+import { BlockAlert } from "../components/BlockAlert";
 
 export interface ConfirmPasswordProps {
   display: boolean;

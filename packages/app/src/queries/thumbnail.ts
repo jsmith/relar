@@ -1,10 +1,10 @@
-import { getDownloadURL } from "/@/storage";
-import { useDefinedUser } from "/@/auth";
-import { Artwork } from "/@/shared/types";
-import { userStorage, DocumentSnapshot } from "/@/shared/utils";
+import { getDownloadURL } from "../storage";
+import { useDefinedUser } from "../auth";
+import { Artwork } from "../shared/types";
+import { userStorage, DocumentSnapshot } from "../shared/utils";
 import * as Sentry from "@sentry/browser";
 import { useEffect, useState } from "react";
-import { storage } from "/@/firebase";
+import { storage } from "../firebase";
 
 export const useThumbnail = (
   snapshot?: DocumentSnapshot<{ id: string; artwork: Artwork | undefined }>,

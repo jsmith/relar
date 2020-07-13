@@ -1,7 +1,7 @@
 import React from "react";
 import AriaModal from "react-aria-modal";
 import classNames from "classnames";
-import { Button, ButtonProps } from "/@/components/Button";
+import { Button, ButtonProps } from "../components/Button";
 
 export interface ModalProps {
   display: boolean;

@@ -1,7 +1,7 @@
-import { createQueryCache } from "/@/queries/cache";
-import { Song, Album } from "/@/shared/types";
-import { DocumentSnapshot, QueryDocumentSnapshot } from "/@/shared/utils";
-import { useUserData } from "/@/firestore";
+import { createQueryCache } from "../queries/cache";
+import { Song, Album } from "../shared/types";
+import { DocumentSnapshot, QueryDocumentSnapshot } from "../shared/utils";
+import { useUserData } from "../firestore";
 
 const {
   useQuery: useAlbumsQuery,

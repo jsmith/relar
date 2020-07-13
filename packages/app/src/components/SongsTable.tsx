@@ -1,10 +1,10 @@
 import React, { useMemo } from "react";
-import { Song } from "/@/shared/types";
+import { Song } from "../shared/types";
 import { MdMusicNote, MdPlayArrow } from "react-icons/md";
-import { LoadingCell, TextCell, Cell } from "/@/components/Cell";
-import { usePlayer } from "/@/player";
+import { LoadingCell, TextCell, Cell } from "../components/Cell";
+import { usePlayer } from "../player";
 import classNames from "classnames";
-import { QueryDocumentSnapshot } from "/@/shared/utils";
+import { QueryDocumentSnapshot } from "../shared/utils";
 
 type Attrs = "play" | "title" | "artist" | "count" | "length" | "favorite";
 

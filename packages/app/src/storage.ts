@@ -1,8 +1,8 @@
-import { storage } from "/@/firebase";
-import { useUser, useDefinedUser } from "/@/auth";
+import { storage } from "./firebase";
+import { useUser, useDefinedUser } from "./auth";
 import { useMemo } from "react";
 import { ResultAsync, Result, ok, err } from "neverthrow";
-import { Reference, userStorage } from "/@/shared/utils";
+import { Reference, userStorage } from "./shared/utils";
 
 export type StorageErrorCode =
   | "storage/unknown" // An unknown error occurred.
