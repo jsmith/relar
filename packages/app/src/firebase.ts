@@ -3,15 +3,17 @@ import "firebase/auth";
 import "firebase/storage";
 import "firebase/firestore";
 
+console.log(import.meta.env);
+
 firebase.initializeApp({
-  apiKey: "AIzaSyCIG3E0mb_5hTGqf8ktEYSu_3AeUmXmbTM",
-  authDomain: "toga-4e3f5.firebaseapp.com",
-  databaseURL: "https://toga-4e3f5.firebaseio.com",
-  projectId: "toga-4e3f5",
-  storageBucket: "toga-4e3f5.appspot.com",
-  messagingSenderId: "39664165734",
-  appId: "1:39664165734:web:55126f1975b61372ef9ea7",
-  measurementId: "G-WQ9G94QR0M",
+  apiKey: import.meta.env.VITE_API_KEY,
+  authDomain: import.meta.env.VITE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_DATABASE_URL,
+  projectId: import.meta.env.VITE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_APP_ID,
+  measurementId: import.meta.env.VITE_MEASUREMENT_ID,
 });
 
 export const firestore = firebase.firestore();

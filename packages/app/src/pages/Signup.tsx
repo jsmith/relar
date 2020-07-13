@@ -19,17 +19,8 @@ const BETA_TEXT =
 export const Signup = () => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string>();
-  const { goTo } = useRouter();
-  const { user } = useUser();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      goTo(routes.home);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const login = async () => {
     setLoading(true);
