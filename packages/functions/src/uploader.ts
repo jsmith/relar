@@ -9,21 +9,15 @@ import { version } from "../package.json";
 import * as id3 from "id3-parser";
 import { ObjectMetadata } from "firebase-functions/lib/providers/storage";
 import { IID3Tag } from "id3-parser/lib/interface";
-import {
-  Song,
-  UserDataType,
-  SongMetadata,
-  SongMetadataType,
-  AlbumType,
-  Album,
-  ArtistType,
-  Artist,
-  Artwork,
-} from "./shared/types";
+import { Song, UserDataType, AlbumType, Album, ArtistType, Artist, Artwork } from "./shared/types";
 import { Record, Result as RuntypeResult, Static } from "runtypes";
 import * as uuid from "uuid";
 import { Transaction, Query, DocumentReference } from "@google-cloud/firestore";
 import { admin } from "./admin";
+import * as sgMail from "@sendgrid/mail";
+import { env } from "./env";
+
+sgMail.setApiKey(env.mail.sendgrid_api_key);
 
 // This is where the max songs limit is set
 // To update this in production just update this value and
@@ -47,15 +41,25 @@ const gcs = admin.storage();
 type Bucket = ReturnType<typeof gcs.bucket>;
 
 interface CustomObject {
+  /** The path in gcs */
   filePath: string;
+
+  /** The dir in gcs */
   fileDir: string;
+
+  /** The file name in gcs */
   fileName: string;
+
+  /** The gcs bucket */
   bucket: Bucket;
+
+  /** The file content type */
   contentType: string;
 }
 
 interface IError {
   type: "error";
+  delete?: boolean;
   message: string;
 }
 
@@ -113,11 +117,12 @@ const matchRegex = (matcher: RegExp) => <O extends CustomObject>(
 
 const matchContentType = (pattern: string) => <O extends CustomObject>(
   object: O,
-): Result<O, Warning> => {
+): Result<O, IError> => {
   return object.contentType.includes(pattern)
     ? ok(object)
     : err({
-        type: "warn",
+        type: "error",
+        delete: true,
         message: `"${object.filePath}" does not have the correct Content-Type: ${object.contentType}`,
       });
 };
@@ -147,6 +152,7 @@ const downloadObject = (tmpDir: string) => <O extends { bucket: Bucket; filePath
     }),
     (e): IError => ({
       type: "error",
+      delete: true,
       message: `Unknown error while downloading "${o.filePath}": ` + e,
     }),
   ).map(() => ({ ...o, tmpDir, tmpFilePath }));
@@ -232,30 +238,6 @@ export const parseID3Tags = <O extends { tmpFilePath: string }>(
   });
 };
 
-const parseSongMetadata = (object: ObjectMetadata) => <O extends CustomObject>(
-  o: O,
-): Result<O & { metadata: SongMetadata }, IError> => {
-  if (!object.metadata) {
-    return err({
-      type: "error",
-      message: `Metadata of "${object.name}" is undefined`,
-    });
-  }
-
-  const result = SongMetadataType.validate(object.metadata);
-  if (!result.success) {
-    return err({
-      type: "error",
-      message: `Metadata of "${object.name}" is invalid: ${result.message}`,
-    });
-  }
-
-  return ok({
-    ...o,
-    metadata: result.value,
-  });
-};
-
 /**
  * Find the first document in the collection and start validation.
  */
@@ -303,18 +285,20 @@ const andPromise = <O1, O2, E>(f: (o: O1) => Promise<Result<O2, E>>) => (
 
 export const createSong = functions.storage.object().onFinalize(async (object) => {
   const { dispose, tmpDir } = await createTmpDir();
+  // This is kinda a hack but we need this for later
+  const userId = object.name?.split("/")[1];
+
   // prettier-ignore
   return ok<ObjectMetadata, Warning | IError | Info>(object)
     .map(logVersion)
     .andThen(checkObjectName)
     .andThen(checkContentType)
     .andThen(getPaths)
-    .andThen(matchRegex(/^([-a-z0-9A-Z]+)\/songs\/([-a-z0-9A-Z]+)\/original\.mp3$/))
+    .andThen(matchRegex(/^([-a-z0-9A-Z]+)\/songs\/([-a-z0-9A-Z]+)\/[^/]+$/))
     .andThen(matchContentType("audio/mpeg"))
     .asyncAndThen(downloadObject(tmpDir))
     .andThen(parseID3Tags)
-    .andThen(parseSongMetadata(object))
-    .andThen(andPromise(async ({ bucket, filePath, match, metadata, id3Tag }) => {
+    .andThen(andPromise(async ({ bucket, filePath, fileName, match, id3Tag }) => {
       try {
         const userId = match[1];
         const songId = match[2];
@@ -324,18 +308,26 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
 
         // In a transaction, add the new rating and update the aggregate totals
         let artwork: Artwork | undefined;
-        await db.runTransaction(async (transaction) => {
+        return await db.runTransaction(async (transaction) => {
           const res = await transaction.get(userRef);
 
           const result = UserDataType.validate(res.data() ?? {});
           if (!result.success) {
-            throw Error(`Invalid UserData[${result.key}]: ${result.message}`);
+            return err({
+              type: "error",
+              message: `Invalid UserData[${result.key}]: ${result.message}`,
+              delete: true,
+            })
           }
 
           // Compute new number # of songs
           result.value.songCount = (result.value.songCount ?? 0) + 1;
           if (result.value.songCount > MAX_SONGS) {
-            throw Error(`User exceeded maximum song count (${MAX_SONGS}).`);
+            return err({
+              type: "error",
+              message: `User exceeded maximum song count (${MAX_SONGS}).`,
+              delete: true,
+            })
           }
 
           // FIXME remove the uploaded file if we fail after this point
@@ -351,9 +343,11 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
               fileName = "artwork.jpg";
               type = "jpg"
             } else {
-              throw Error(
-                `Invalid MIME type "${id3Tag.image.mime}". Expected "image/png" or "image/jpeg".`,
-              );
+              return err({
+                type: "error",
+                message:`Invalid MIME type "${id3Tag.image.mime}". Expected "image/png" or "image/jpeg".`,
+                delete: true,
+              })
             }
 
             const imageFilePath = path.resolve(tmpDir, fileName);
@@ -364,7 +358,11 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             await fs.writeFile(imageFilePath, id3Tag.image.data);
             const hashResult = await md5Hash(imageFilePath);
             if (hashResult.isErr()) {
-              throw Error(`Unable to hash song artwork for "${filePath}": ` + hashResult.error);
+              return err({
+                type: "error",
+                message:`Unable to hash song artwork for "${filePath}": ` + hashResult.error,
+                delete: true,
+              })
             }
 
             artwork = { hash: hashResult.value, type };
@@ -441,10 +439,9 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
 
           // Now we can create the song!
           const newSong: Song = {
-            originalFileName: metadata.customMetadata.originalFileName,
+            fileName,
             id: songId,
             downloadUrl: undefined,
-            format: "mp3",
             title: id3Tag?.title ?? "",
             artist: artist ? { name: artist.name, id: artist.id } : undefined,
             album: album ? { name: album.name, id: album.id } : undefined,
@@ -461,26 +458,52 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
 
           // Finally create the new song
           transaction.set(newSongRef, newSong);
+
+          return ok({});
         });
       } catch (e) {
-        // TODO does this only run once?
-        // It's important that we delete this file from storage when
-        // we detect an error
-        // I think we can actually do a return state. Maybe it should return a Result?
-        console.warn(`Deleting "${filePath}" due to failure.`);
-        await bucket.file(filePath).delete();
-
         // TODO how can we send info the the user??
         // Maybe create a custom error with properties?
         // It would be type unsafe but the easiest way
         return err({
           type: "error",
+          delete: true,
           message: e.message,
         });
       }
 
-      return ok({});
     }))
     .then(dispose)
+    .then(async (result) => {
+      if (
+        !userId || 
+        !object.name || 
+        result.isOk() || 
+        result.error.type !== "error" || 
+        !result.error.delete
+      ) {
+        return result;
+      }
+
+      try {
+        // It's important that we delete this file from storage when
+        // we detect an error
+        console.warn(`Deleting "${object.name}" due to failure.`);
+        await gcs.bucket(object.bucket).file(object.name).delete();
+        const user = await admin.auth().getUser(userId);
+
+        await sgMail.send({
+          from: "contact@relar.app",
+          to: user.email,
+          subject: "RELAR Upload Error",
+          text:
+            "There was an error processing your song. Please try again or contact support (ie. respond to this email)!",
+        });
+      } catch (e) {
+        console.warn(`Unable to send an email to ${userId}`);
+      }
+
+      return result;
+    })
     .then(unwrap);
 });

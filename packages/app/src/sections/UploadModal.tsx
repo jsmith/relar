@@ -2,11 +2,10 @@ import React, { useState, useRef } from "react";
 import { FiMusic } from "react-icons/fi";
 import AriaModal from "react-aria-modal";
 import * as uuid from "uuid";
-import { SongMetadata } from "/@/shared/types";
 import { UploadRow } from "/@/components/UploadRow";
 import { link } from "/@/classes";
-import { useUserStorage } from "../storage";
-import { UploadTask } from "../shared/utils";
+import { useUserStorage } from "/@/storage";
+import { UploadTask } from "/@/shared/utils";
 
 export interface UploadModalProps {
   children?: React.ReactNode;
@@ -37,10 +36,9 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
         // This assumes that uuid.v4() will always return a unique ID
         // Users also only have the ability to create but not overwrite files
         const id = uuid.v4();
-        const ref = storage.song(id, "mp3");
-        const meta: SongMetadata = { customMetadata: { originalFileName: file.name } };
+        const ref = storage.song(id, file.name);
         return {
-          task: ref.put(file, meta),
+          task: ref.put(file),
           file,
         };
       } else {

@@ -12,18 +12,6 @@ import {
 } from "runtypes";
 import * as firebase from "firebase";
 
-/**
- * Before getting into this file make sure you understand ID3 metadata.
- */
-
-export const SongMetadataType = Record({
-  customMetadata: Record({
-    originalFileName: String,
-  }),
-});
-
-export type SongMetadata = Static<typeof SongMetadataType>;
-
 export const UserDataType = Record({
   songCount: Number.Or(Undefined),
 });
@@ -59,17 +47,14 @@ export const ArtworkType = Record({
 export type Artwork = Static<typeof ArtworkType>;
 
 export const SongType = Record({
-  /**
-   * The original filename. This will be important for backups. A user probably expects the same
-   * filename as when they uploaded. Maybe not though??
-   */
-  originalFileName: String,
-
   /** The ID. */
   id: String,
 
-  /** Eventually, we might be able to support different file formats. */
-  format: Literal("mp3"),
+  /**
+   * The filename. We need this to actually identify the song in storage and for when we are
+   * backing up their libraries this information will be used.
+   */
+  fileName: String,
 
   /** The storage download url */
   downloadUrl: String.Or(Undefined),
