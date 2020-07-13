@@ -18,6 +18,7 @@ import { Thumbnail } from "/@/components/Thumbnail";
 import { useDefinedUser } from "/@/auth";
 import { tryToGetSongDownloadUrlOrLog } from "/@/queries/songs";
 import { useThumbnail } from "/@/queries/thumbnail";
+import { captureAndLog } from "/@/utils";
 
 /**
  *
@@ -60,13 +61,13 @@ export const Player = () => {
       return;
     }
 
-    // TODO error handling
     song.ref
       .update({
         liked,
       })
       .then(() => song.ref.get())
-      .then(setSong);
+      .then(setSong)
+      .catch(captureAndLog);
   };
 
   // TODO thumbnail
@@ -80,8 +81,12 @@ export const Player = () => {
     const downloadUrl = await tryToGetSongDownloadUrlOrLog(user, song);
     if (downloadUrl) {
       // TODO Update play count and set last played time
+      // TODO permission issues updating this
       setSrc(downloadUrl);
     }
+
+    audioRef.current?.play();
+    setPlaying(true);
   };
 
   const togglePlayPause = () => {
@@ -96,8 +101,6 @@ export const Player = () => {
     }
     setPlaying(!playing);
   };
-
-  // TODO seek
 
   const onLoadedMetadata = () => {
     if (!audioRef.current) {
@@ -116,7 +119,6 @@ export const Player = () => {
       return;
     }
 
-    console.log(audioRef.current.currentTime);
     setCurrentTime(audioRef.current.currentTime);
   };
 
@@ -156,7 +158,7 @@ export const Player = () => {
       </audio>
 
       <div className="flex items-center" style={{ width: "30%" }}>
-        {songData && <Thumbnail className="w-12 h-12" thumbnail={thumbnail} />}
+        {songData && <Thumbnail className="w-12 h-12 flex-shrink-0" thumbnail={thumbnail} />}
         {songData && (
           <div className="ml-3">
             <div className="text-gray-100 text-sm">{songData.title}</div>

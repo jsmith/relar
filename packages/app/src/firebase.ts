@@ -3,8 +3,6 @@ import "firebase/auth";
 import "firebase/storage";
 import "firebase/firestore";
 
-console.log(import.meta.env);
-
 firebase.initializeApp({
   apiKey: import.meta.env.VITE_API_KEY,
   authDomain: import.meta.env.VITE_AUTH_DOMAIN,

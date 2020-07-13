@@ -2,8 +2,8 @@ import { QueryDocumentSnapshot, DocumentSnapshot, userStorage } from "/@/shared/
 import { createQueryCache } from "/@/queries/cache";
 import { Song } from "/@/shared/types";
 import { storage } from "/@/firebase";
-import { getDownloadURL } from "../storage";
-import { captureAndLogError } from "../utils";
+import { getDownloadURL } from "/@/storage";
+import { captureAndLogError } from "/@/utils";
 import { useUserData } from "/@/firestore";
 
 const {
@@ -60,7 +60,7 @@ export const tryToGetSongDownloadUrlOrLog = async (
     return data.downloadUrl;
   }
 
-  const result = await getDownloadURL(userStorage(storage, user).song(data.id, data.format));
+  const result = await getDownloadURL(userStorage(storage, user).song(data.id, data.fileName));
 
   if (result.isOk()) {
     // TODO does this actually update the data?? Log snapshot and check.

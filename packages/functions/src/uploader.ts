@@ -437,12 +437,14 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             };
           });
 
+          const defaultTitle = fileName.slice(0, fileName.lastIndexOf("."));
+
           // Now we can create the song!
           const newSong: Song = {
             fileName,
             id: songId,
             downloadUrl: undefined,
-            title: id3Tag?.title ?? "",
+            title: id3Tag?.title ?? defaultTitle,
             artist: artist ? { name: artist.name, id: artist.id } : undefined,
             album: album ? { name: album.name, id: album.id } : undefined,
             year: id3Tag?.year,

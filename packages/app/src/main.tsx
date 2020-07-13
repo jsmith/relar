@@ -3,7 +3,7 @@ import * as Sentry from "@sentry/browser";
 // Issues that we are tracking
 // Tracking https://github.com/vitejs/vite/issues/503
 
-if (process.env.NODE_ENV === "production") {
+if (process.env.NODE_ENV !== "development") {
   // Only enable sentry in production
   Sentry.init({
     environment: process.env.NODE_ENV,
@@ -23,7 +23,7 @@ import { PlayerProvider } from "/@/player";
 import { ConfirmActionProvider } from "/@/confirm-actions";
 import { ConfirmPasswordProvider } from "/@/confirm-password";
 import { ReactQueryConfigProvider, ReactQueryProviderConfig } from "react-query";
-import { captureAndLog } from "./utils";
+import { captureAndLog } from "/@/utils";
 
 const config: ReactQueryProviderConfig<Error> = {
   // 5 minutes

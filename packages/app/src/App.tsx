@@ -119,8 +119,8 @@ export const App = (_: React.Props<{}>) => {
                     <li
                       tabIndex={0}
                       className={classNames(
-                        "flex py-2 px-5 items-center hover:bg-primary-600 cursor-pointer",
-                        isRoute(route) ? "bg-primary-600" : undefined,
+                        "flex py-2 px-5 items-center hover:bg-gray-800 cursor-pointer",
+                        isRoute(route) ? "bg-gray-800" : undefined,
                       )}
                       onClick={() => goTo(route)}
                       key={label}
@@ -131,9 +131,9 @@ export const App = (_: React.Props<{}>) => {
                   ))}
                 </ul>
               </nav>
-              <div className="border-b border-gray-600 my-3 mx-3" />
+              <div className="border-b border-gray-800 my-3 mx-3" />
               <button
-                className="flex py-2 px-5 items-center hover:bg-primary-600 w-full"
+                className="flex py-2 px-5 items-center hover:bg-gray-800 w-full"
                 onClick={() => setDisplay(true)}
               >
                 <MdAddCircle className="w-6 h-6" />
@@ -152,8 +152,8 @@ export const App = (_: React.Props<{}>) => {
                       <li
                         key={label}
                         className={classNames(
-                          "my-2 border-gray-300 cursor-pointer hover:text-gray-200",
-                          isRoute(route) ? "border-b text-gray-200" : " text-gray-400",
+                          "my-2 border-gray-300 cursor-pointer hover:text-gray-800",
+                          isRoute(route) ? "border-b text-gray-800" : " text-gray-600",
                         )}
                         onClick={() => goTo(route)}
                       >
