@@ -65,9 +65,7 @@ export const tryToGetSongDownloadUrlOrLog = async (
   if (result.isOk()) {
     // TODO does this actually update the data?? Log snapshot and check.
     data.downloadUrl = result.value;
-    // we are explicitly not awaiting this since we don't care when it finishes
-    // FIXME this could fail I guess we don't care?
-    ref.update({ downloadUrl: result.value });
+    await ref.update({ downloadUrl: result.value });
     return result.value;
   }
 

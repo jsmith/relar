@@ -24,6 +24,7 @@ import { ConfirmActionProvider } from "./confirm-actions";
 import { ConfirmPasswordProvider } from "./confirm-password";
 import { ReactQueryConfigProvider, ReactQueryProviderConfig } from "react-query";
 import { captureAndLog } from "./utils";
+import { ModalProvider } from "react-modal-hook";
 
 const config: ReactQueryProviderConfig<Error> = {
   // 5 minutes
@@ -41,7 +42,9 @@ ReactDOM.render(
           <ConfirmActionProvider>
             <ConfirmPasswordProvider>
               <ReactQueryConfigProvider config={config}>
-                <App />
+                <ModalProvider>
+                  <App />
+                </ModalProvider>
               </ReactQueryConfigProvider>
             </ConfirmPasswordProvider>
           </ConfirmActionProvider>

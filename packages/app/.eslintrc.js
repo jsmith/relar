@@ -36,6 +36,5 @@ module.exports = {
     "react/prop-types": ["off"],
     "react-hooks/rules-of-hooks": "error", // Checks rules of Hooks
     "react-hooks/exhaustive-deps": "error", // Checks effect dependencies
-    // "no-restricted-imports": ["error", { patterns: ["../*", "./*"] }],
   },
 };

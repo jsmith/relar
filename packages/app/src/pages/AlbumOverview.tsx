@@ -8,7 +8,7 @@ import { captureException, useDataFromQueryNSnapshot } from "../utils";
 import tiny from "tinycolor2";
 import classNames from "classnames";
 import { useAlbumSongs, useAlbum } from "../queries/album";
-import { SongsTable } from "../components/SongsTable";
+import { SongTable } from "../components/SongTable";
 import { ErrorTemplate } from "../components/ErrorTemplate";
 import { MdPlayCircleOutline } from "react-icons/md";
 
@@ -89,10 +89,7 @@ export const AlbumOverview = () => {
           {songs.status === "error" ? (
             <ErrorTemplate />
           ) : (
-            <SongsTable
-              songs={songs.status === "loading" ? undefined : songs.data}
-              attrs={["play", "title", "artist", "length"]}
-            />
+            <SongTable songs={songs.status === "loading" ? undefined : songs.data} />
           )}
         </div>
       </div>

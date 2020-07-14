@@ -18,6 +18,7 @@ import { useDefinedUser } from "../auth";
 import { tryToGetSongDownloadUrlOrLog } from "../queries/songs";
 import { useThumbnail } from "../queries/thumbnail";
 import { captureAndLog } from "../utils";
+import { LikedIcon } from "./LikedIcon";
 
 /**
  *
@@ -41,7 +42,7 @@ function fmtMSS(s: number) {
 
 export const Player = () => {
   const [repeat, setRepeat] = useState<"none" | "repeat-one" | "repeat">("none");
-  const [song, setSong] = usePlayer();
+  const [song] = usePlayer();
   const songData = song?.data();
   const user = useDefinedUser();
   const [volume, setVolume] = useState(80);
@@ -53,21 +54,6 @@ export const Player = () => {
   const [src, setSrc] = useState<string>();
   const [playing, setPlaying] = useState(false);
   const thumbnail = useThumbnail(song);
-
-  const likedOrUnlikeSong = (liked: boolean) => {
-    if (!song) {
-      setSrc(undefined);
-      return;
-    }
-
-    song.ref
-      .update({
-        liked,
-      })
-      .then(() => song.ref.get())
-      .then(setSong)
-      .catch(captureAndLog);
-  };
 
   // TODO thumbnail
 
@@ -167,13 +153,14 @@ export const Player = () => {
           </div>
         )}
         {songData && (
-          <button
-            onClick={() => likedOrUnlikeSong(!songData.liked)}
-            className="ml-6 text-gray-300 hover:text-gray-100"
-            title="Save to Likes"
-          >
-            {songData.liked ? <FaHeart /> : <FaRegHeart />}
-          </button>
+          <LikedIcon className="ml-6 text-gray-300 hover:text-gray-100" song={song} />
+          // <button
+          //   onClick={() => likedOrUnlikeSong(!songData.liked)}
+          //   className="ml-6 text-gray-300 hover:text-gray-100"
+          //   title="Save to Likes"
+          // >
+          //   {songData.liked ? <FaHeart /> : <FaRegHeart />}
+          // </button>
         )}
       </div>
       <div className="w-2/5 flex flex-col items-center">

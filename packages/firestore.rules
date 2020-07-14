@@ -5,6 +5,10 @@ service cloud.firestore {
       function isUser() {
       	return userId == request.auth.uid
       }
+      
+      function affectedKeys() {
+        return request.resource.data.diff(resource.data).affectedKeys();
+      }
 
     	match /{data=**} {
         // restricted this so that users can't just write willy nilly
@@ -12,9 +16,9 @@ service cloud.firestore {
       }
       
       match /songs/{songId} {
-        function validUpdate() {
+				function validUpdate() {
           // artwork is slightly insecure since we really only want to allow updates to "artwork.artworkDownloadUrl32"
-          return request.resource.data.keys().hasOnly(['lastPlayed', 'played', 'liked', 'downloadUrl', 'artwork'])
+          return affectedKeys().hasOnly(['lastPlayed', 'played', 'liked', 'downloadUrl', 'artwork'])
         }
         
       	allow update: if isUser() && validUpdate()
