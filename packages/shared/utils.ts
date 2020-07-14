@@ -1,4 +1,3 @@
-/* eslint-disable no-restricted-imports */
 // at least one number, one lowercase and one uppercase letter
 
 import { Song, Album, Artist, UserData, BetaSignup } from "./types";
@@ -19,6 +18,12 @@ const createPath = (parts: string[] = []) => {
 // https://github.com/googleapis/nodejs-firestore/issues/801
 // https://github.com/Kesin11/Firestore-simple/issues/26
 // so I created simpler, more typed, interfaces for firebase
+
+export const isDefinedSnapshot = <T>(
+  snapshot: DocumentSnapshot<T>,
+): snapshot is QueryDocumentSnapshot<T> => {
+  return snapshot.exists;
+};
 
 export interface QueryDocumentSnapshot<T> extends DocumentSnapshot<T> {
   /** Override makes it defined */
@@ -57,7 +62,7 @@ export interface DocumentReference<T> {
 }
 
 export interface Transaction {
-  get<T>(query: Query<T>): Promise<QuerySnapshot<T>>;
+  // get<T>(query: Query<T>): Promise<QuerySnapshot<T>>;
   get<T>(documentRef: DocumentReference<T>): Promise<DocumentSnapshot<T>>;
   set<T>(documentRef: DocumentReference<T>, data: T): Transaction;
   update<T>(documentRef: DocumentReference<T>, data: T): Transaction;

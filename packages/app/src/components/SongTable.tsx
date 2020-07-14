@@ -1,25 +1,20 @@
 import React, { useMemo } from "react";
 import { Song } from "../shared/types";
-import { MdMusicNote, MdPlayArrow } from "react-icons/md";
-import { LoadingCell, TextCell, Cell } from "../components/Cell";
+import { MdMusicNote } from "react-icons/md";
 import { usePlayer } from "../player";
 import classNames from "classnames";
 import { QueryDocumentSnapshot } from "../shared/utils";
-
-type Attrs = "play" | "title" | "artist" | "count" | "length" | "favorite";
+import { SongTableRow } from "./SongTableRow";
 
 export interface SongsTableProps {
   /**
    * The songs. Passing in `undefined` indicates that the songs are still loading.
    */
   songs?: Array<QueryDocumentSnapshot<Song>>;
-  attrs: Array<Attrs>;
   loadingRows?: number;
 }
 
-const attrToHeader: {
-  [Attr in Attrs]: { element: string | (() => JSX.Element); className: string };
-} = {
+const headersAttributes = {
   play: {
     element: "",
     className: "",
@@ -30,6 +25,10 @@ const attrToHeader: {
   },
   artist: {
     element: "Artist",
+    className: "px-6 py-3",
+  },
+  album: {
+    element: "Album",
     className: "px-6 py-3",
   },
   count: {
@@ -47,16 +46,16 @@ const attrToHeader: {
   },
 };
 
-export const SongsTable = ({ songs: docs, attrs, loadingRows = 20 }: SongsTableProps) => {
+export const SongTable = ({ songs: docs, loadingRows = 20 }: SongsTableProps) => {
   const [_, setSong] = usePlayer();
 
   const headers = useMemo(() => {
-    const headers = attrs.map((attr) => {
-      const { element, className } = attrToHeader[attr];
+    const headers = Object.entries(headersAttributes).map(([key, attributes]) => {
+      const { element, className } = attributes;
       const header = typeof element === "string" ? element : element();
       return (
         <th
-          key={attr}
+          key={key}
           className={classNames(
             "border-b border-gray-200 border-opacity-25 text-left text-gray-800 text-xs font-medium uppercase tracking-wider",
             className,
@@ -68,38 +67,20 @@ export const SongsTable = ({ songs: docs, attrs, loadingRows = 20 }: SongsTableP
     });
 
     return headers;
-  }, [attrs]);
+  }, []);
 
   const rows = useMemo(() => {
-    if (!docs) {
-      return Array(loadingRows)
-        .fill(0)
-        .map((_, i) => (
-          <tr key={i}>
-            <LoadingCell />
-            <LoadingCell />
-            <LoadingCell />
-          </tr>
-        ));
-    } else {
-      return docs.map((doc) => {
-        const song = doc.data();
-        return (
-          <tr className="group hover:bg-gray-300" key={song.id} onClick={() => setSong(doc)}>
-            <Cell>
-              <MdMusicNote className="w-5 h-5 group-hover:opacity-0 absolute" />
-              <MdPlayArrow className="w-5 h-5 group-hover:opacity-100 opacity-0" />
-            </Cell>
-            <TextCell text={song.title} />
-            <TextCell text={song.artist?.name} />
-            <TextCell text={song.album?.name} />
-          </tr>
-        );
-      });
-    }
+    const snapshots: Array<QueryDocumentSnapshot<Song> | undefined> = docs
+      ? docs
+      : Array(loadingRows)
+          .fill(undefined)
+          .map(() => undefined);
+
+    return snapshots.map((song, i) => (
+      <SongTableRow song={song} setSong={setSong} key={song?.id ?? i} />
+    ));
   }, [loadingRows, setSong, docs]);
 
-  // TODO Songs.tsx should use this
   return (
     <table className="min-w-full text-gray-800">
       <thead>

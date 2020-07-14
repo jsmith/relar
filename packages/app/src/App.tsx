@@ -152,7 +152,7 @@ export const App = (_: React.Props<{}>) => {
                       <li
                         key={label}
                         className={classNames(
-                          "my-2 border-gray-300 cursor-pointer hover:text-gray-800",
+                          "my-2 border-gray-800 cursor-pointer hover:text-gray-800",
                           isRoute(route) ? "border-b text-gray-800" : " text-gray-600",
                         )}
                         onClick={() => goTo(route)}
