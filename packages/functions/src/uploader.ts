@@ -14,7 +14,7 @@ import { Record, Result as RuntypeResult, Static } from "runtypes";
 import * as uuid from "uuid";
 import { Transaction, Query, DocumentReference } from "@google-cloud/firestore";
 import { admin } from "./admin";
-import * as sgMail from "@sendgrid/mail";
+import sgMail from "@sendgrid/mail";
 import { env } from "./env";
 
 sgMail.setApiKey(env.mail.sendgrid_api_key);
