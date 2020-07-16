@@ -120,6 +120,8 @@ router.post("/create-account", async (req) => {
       const result = await transaction.get(
         betaSignups(db).collection().where("token", "==", req.body.token),
       );
+
+      admin.firestore().collection("").where("toek", "==", "").limit(1);
       if (result.docs.length > 1) {
         Sentry.captureMessage(
           `Found two documents with the same token: "${req.body.token}"`,
