@@ -26,3 +26,14 @@ export const deleteAllUserData = async (
 
   await Promise.all(promises);
 };
+
+export const fromEntries = <T extends string, V>(iterable: Array<[T, V]>): Record<T, V> => {
+  return [...iterable].reduce((obj, [key, val]) => {
+    (obj as any)[key] = val;
+    return obj;
+  }, {}) as Record<T, V>;
+};
+
+export const removeUndefined = <T>(o: T): T => {
+  return fromEntries(Object.entries(o).filter(([_, val]) => val !== undefined)) as T;
+};

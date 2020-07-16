@@ -47,7 +47,6 @@ const checkUserExists = async (
       case "auth/user-not-found":
         return ok("does-not-exist");
       default:
-        console.log(e);
         Sentry.captureException(e);
         return err(e);
     }
@@ -122,7 +121,6 @@ router.post("/create-account", async (req) => {
         betaSignups(db).collection().where("token", "==", req.body.token),
       );
 
-      admin.firestore().collection("").where("toek", "==", "").limit(1);
       if (result.docs.length > 1) {
         Sentry.captureMessage(
           `Found two documents with the same token: "${req.body.token}"`,
