@@ -62,7 +62,8 @@ export interface DocumentReference<T> {
 }
 
 export interface Transaction {
-  // get<T>(query: Query<T>): Promise<QuerySnapshot<T>>;
+  /** ONLY for functions and not the app */
+  get<T>(query: Query<T>): Promise<QuerySnapshot<T>>;
   get<T>(documentRef: DocumentReference<T>): Promise<DocumentSnapshot<T>>;
   set<T>(documentRef: DocumentReference<T>, data: T): Transaction;
   update<T>(documentRef: DocumentReference<T>, data: T): Transaction;
