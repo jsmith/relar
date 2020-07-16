@@ -20,10 +20,8 @@ const createPath = (parts: string[] = []) => {
 // so I created simpler, more typed, interfaces for firebase
 
 export const isDefinedSnapshot = <T>(
-  snapshot: DocumentSnapshot<T>,
-): snapshot is QueryDocumentSnapshot<T> => {
-  return snapshot.exists;
-};
+  snapshot: DocumentSnapshot<T>
+): snapshot is QueryDocumentSnapshot<T> => snapshot.exists;
 
 export interface QueryDocumentSnapshot<T> extends DocumentSnapshot<T> {
   /** Override makes it defined */
@@ -75,7 +73,7 @@ export interface Firestore {
   collection(path: string): CollectionReference<unknown>;
   runTransaction<T>(
     updateFunction: (transaction: Transaction) => Promise<T>,
-    transactionOptions?: { maxAttempts?: number },
+    transactionOptions?: { maxAttempts?: number }
   ): Promise<T>;
 }
 
@@ -91,7 +89,7 @@ export interface UploadTask {
     event: "state_changed",
     nextOrObserver: (a: UploadTaskSnapshot) => any,
     error?: ((a: Error) => any) | null,
-    complete?: (() => void) | null,
+    complete?: (() => void) | null
   ): Function;
   snapshot: UploadTaskSnapshot;
 }
@@ -100,7 +98,7 @@ export interface Reference {
   getDownloadURL(): Promise<string>;
   put(
     data: Blob | Uint8Array | ArrayBuffer,
-    metadata?: firebase.storage.UploadMetadata,
+    metadata?: firebase.storage.UploadMetadata
   ): UploadTask;
 }
 
@@ -116,8 +114,10 @@ export const userDataPath = (db: Firestore, userId: string) => {
     songs: () => {
       const songs = path.append("songs");
       return {
-        song: (songId: string) => db.doc(songs.append(songId).build()) as DocumentReference<Song>,
-        collection: () => db.collection(songs.build()) as CollectionReference<Song>,
+        song: (songId: string) =>
+          db.doc(songs.append(songId).build()) as DocumentReference<Song>,
+        collection: () =>
+          db.collection(songs.build()) as CollectionReference<Song>,
       };
     },
     albums: () => {
@@ -125,7 +125,8 @@ export const userDataPath = (db: Firestore, userId: string) => {
       return {
         album: (albumId: string) =>
           db.doc(albums.append(albumId).build()) as DocumentReference<Album>,
-        collection: () => db.collection(albums.build()) as CollectionReference<Album>,
+        collection: () =>
+          db.collection(albums.build()) as CollectionReference<Album>,
       };
     },
     artists: () => {
@@ -133,7 +134,8 @@ export const userDataPath = (db: Firestore, userId: string) => {
       return {
         artist: (artistId: string) =>
           db.doc(artists.append(artistId).build()) as DocumentReference<Artist>,
-        collection: () => db.collection(artists.build()) as CollectionReference<Artist>,
+        collection: () =>
+          db.collection(artists.build()) as CollectionReference<Artist>,
       };
     },
     doc: () => db.doc(path.build()) as DocumentReference<UserData>,
@@ -143,7 +145,8 @@ export const userDataPath = (db: Firestore, userId: string) => {
 export const betaSignups = (db: Firestore) => {
   return {
     doc: (email: string) => db.doc(`beta_signups/${email}`),
-    collection: () => db.collection("beta_signups") as CollectionReference<BetaSignup>,
+    collection: () =>
+      db.collection("beta_signups") as CollectionReference<BetaSignup>,
   };
 };
 
@@ -154,8 +157,10 @@ export const userStorage = (storage: Storage, user: firebase.User) => {
     artworks: (hash: string, type: "jpg" | "png") => {
       const artworksPath = path.append("song_artwork").append(hash);
       return {
-        original: () => storage.ref(artworksPath.append(`artwork.${type}`).build()),
-        "32": () => storage.ref(artworksPath.append(`thumb@32_artwork.${type}`).build()),
+        original: () =>
+          storage.ref(artworksPath.append(`artwork.${type}`).build()),
+        "32": () =>
+          storage.ref(artworksPath.append(`thumb@32_artwork.${type}`).build()),
       };
     },
     song: (songId: string, fileName: string) =>
