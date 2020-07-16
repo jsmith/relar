@@ -3,7 +3,7 @@
   "version": "0.2.4",
   "scripts": {
     "build": "rm -rf lib && tsc && rm lib/package.json && mv lib/src/* lib && rm -r lib/src",
-    "test": "jest",
+    "test": "GOOGLE_APPLICATION_CREDENTIALS=../serviceAccountKey.relar-test.json node -r esm -r esbuild-register src/auth.spec.ts",
     "check:lint": "eslint \"**/*.{ts,tsx}\"",
     "check:formatting": "prettier --list-different \"**/*.{ts,tsx,js}\"",
     "check:types": "tsc --noEmit"
@@ -31,19 +31,20 @@
     "uuid": "^8.1.0"
   },
   "devDependencies": {
-    "@types/jest": "^22.2.3",
     "@types/sharp": "^0.25.0",
     "@types/supertest": "^2.0.9",
     "@types/uuid": "^8.0.0",
     "@typescript-eslint/eslint-plugin": "^3.2.0",
     "@typescript-eslint/parser": "^3.2.0",
+    "esbuild": "^0.6.3",
+    "esbuild-register": "^1.0.2",
     "eslint": "^7.2.0",
     "eslint-config-restricted-globals": "^0.1.0",
+    "esm": "^3.2.25",
     "firebase-functions-test": "^0.1.7",
-    "jest": "^26.0.1",
     "prettier": "^2.0.5",
     "supertest": "^4.0.2",
-    "ts-jest": "^26.1.0",
-    "typescript": "^3.8.0"
+    "typescript": "^3.8.0",
+    "uvu": "^0.2.3"
   }
 }
