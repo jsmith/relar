@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import admin from "firebase-admin";
 import { Song, Artist, Album } from "./shared/types";
 import * as uuid from "uuid";
 import * as path from "path";

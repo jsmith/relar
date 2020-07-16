@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import admin from "firebase-admin";
 
 // This fixed https://github.com/firebase/firebase-functions/issues/184
 admin.initializeApp();

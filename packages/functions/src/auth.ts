@@ -1,11 +1,11 @@
-import * as express from "express";
+import express from "express";
 import * as functions from "firebase-functions";
-import * as cors from "cors";
+import cors from "cors";
 import { TypedAsyncRouter } from "@graywolfai/rest-ts-express";
 import { BetaAPI, BetaSignup } from "./shared/types";
 import { isPasswordValid, betaSignups, Firestore } from "./shared/utils";
 import * as bodyParser from "body-parser";
-import * as sgMail from "@sendgrid/mail";
+import sgMail from "@sendgrid/mail";
 import { env } from "./env";
 import { admin } from "./admin";
 import { Sentry } from "./sentry";
@@ -47,6 +47,7 @@ const checkUserExists = async (
       case "auth/user-not-found":
         return ok("does-not-exist");
       default:
+        console.log(e);
         Sentry.captureException(e);
         return err(e);
     }
