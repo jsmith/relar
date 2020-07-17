@@ -25,7 +25,7 @@ import { AccountDropdown } from "./components/AccountDropdown";
 import { auth } from "./firebase";
 import { useDocumentTitle } from "./utils";
 import { Link } from "./components/Link";
-import { button, link } from "./classes";
+import { button, link, bgApp } from "./classes";
 import { SkipNavLink, SkipNavContent } from "@reach/skip-nav";
 import "@reach/skip-nav/styles.css";
 import "./index.css";
@@ -203,7 +203,7 @@ export const App = (_: React.Props<{}>) => {
   );
 
   return (
-    <div className="h-screen text-white flex flex-col" style={{ backgroundColor: "#f2f2f3" }}>
+    <div className="h-screen text-white flex flex-col" style={{ backgroundColor: bgApp }}>
       <SkipNavLink className="text-gray-800" />
       <div className="flex bg-gray-900 items-center h-16 px-5 flex-shrink-0 space-x-2">
         <Link

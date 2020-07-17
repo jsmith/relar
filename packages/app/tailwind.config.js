@@ -1,7 +1,7 @@
 module.exports = {
   variants: {
     height: ["responsive", "hover", "focus"],
-    width: ["responsive", "hover", "focus"],
+    width: ["responsive", "hover", "focus", "group-hover"],
     display: ["responsive", "group-hover", "group-focus"],
     opacity: ["responsive", "hover", "focus", "group-hover", "group-focus"],
   },

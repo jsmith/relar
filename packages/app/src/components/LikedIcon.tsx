@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
-import { DocumentSnapshot, QueryDocumentSnapshot } from "../shared/utils";
+import { QueryDocumentSnapshot } from "../shared/utils";
 import { Song } from "../shared/types";
 import { captureAndLog } from "../utils";
 
@@ -25,7 +25,14 @@ export const LikedIcon = ({ className, song }: FavoriteIconProps) => {
   };
 
   return (
-    <button onClick={() => likedOrUnlikeSong(!liked)} title="Save to Likes" className={className}>
+    <button
+      onClick={(e) => {
+        e.stopPropagation();
+        likedOrUnlikeSong(!liked);
+      }}
+      title="Save to Likes"
+      className={className}
+    >
       {liked ? <FaHeart /> : <FaRegHeart />}
     </button>
   );
