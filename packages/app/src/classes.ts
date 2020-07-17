@@ -8,6 +8,8 @@ const classes = {
   },
 };
 
+export const bgApp = "#f2f2f3";
+
 export const button = ({ color = "purple", invert }: { color?: "purple"; invert?: boolean }) => {
   const className = invert
     ? classNames("bg-transparent", classes[color].invert)
