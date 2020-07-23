@@ -3,7 +3,7 @@ import * as functions from "firebase-functions";
 import cors from "cors";
 import { TypedAsyncRouter } from "@graywolfai/rest-ts-express";
 import { BetaAPI, BetaSignup } from "./shared/types";
-import { isPasswordValid, betaSignups, Firestore } from "./shared/utils";
+import { isPasswordValid, betaSignups } from "./shared/utils";
 import * as bodyParser from "body-parser";
 import sgMail from "@sendgrid/mail";
 import { env } from "./env";
@@ -31,7 +31,7 @@ app.use(
 const router = TypedAsyncRouter<BetaAPI>(app);
 
 const auth = admin.auth();
-const db: Firestore = admin.firestore();
+const db = admin.firestore();
 
 const checkUserExists = async (
   email: string,

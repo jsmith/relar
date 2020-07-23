@@ -152,6 +152,7 @@ export const App = (_: React.Props<{}>) => {
                       <li
                         key={label}
                         className={classNames(
+                          // TODO bold
                           "my-2 border-gray-800 cursor-pointer hover:text-gray-800",
                           isRoute(route) ? "border-b text-gray-800" : " text-gray-600",
                         )}

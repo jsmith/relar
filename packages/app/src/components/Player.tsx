@@ -147,8 +147,10 @@ export const Player = () => {
       <div className="flex items-center" style={{ width: "30%" }}>
         {songData && <Thumbnail className="w-12 h-12 flex-shrink-0" thumbnail={thumbnail} />}
         {songData && (
-          <div className="ml-3">
-            <div className="text-gray-100 text-sm">{songData.title}</div>
+          <div className="ml-3 flex-grow min-w-0">
+            <div className="text-gray-100 text-sm" title={songData.title}>
+              {songData.title}
+            </div>
             <div className="text-gray-300 text-xs">{songData.artist}</div>
           </div>
         )}
