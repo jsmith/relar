@@ -62,6 +62,7 @@ export const SongType = Record({
   /** The song title. */
   title: String,
 
+  // TODO do you need an ID??? Same thing with album
   /**
    * The artist.
    */
@@ -189,6 +190,32 @@ export type BetaAPI = {
         | Success
         | KnownError<"invalid-token" | "invalid-password" | "already-have-account">
         | UnknownError;
+    };
+  };
+};
+
+export type MetadataAPI = {
+  "/edit": {
+    POST: {
+      body: {
+        idToken: string;
+        songId: string;
+        update: {
+          title?: string;
+          artist?: string;
+          albumArtist?: string;
+          album?: string;
+          genre?: string;
+          year?: number;
+          // TODO
+          // track?: number;
+          // totalTracks?: number;
+          // disc?: number;
+          // totalDiscs?: number;
+          // explicit?: boolean;
+        };
+      };
+      response: Success | KnownError<"unauthorized"> | UnknownError;
     };
   };
 };

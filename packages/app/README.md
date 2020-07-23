@@ -13,6 +13,7 @@ The Relar app.
 - Move fonts to public dir
 - Think about limiting firestore data that you download
 - Error boundary
+- docracy. com
 
 ## Docs
 - Document how album thumbnails are stored

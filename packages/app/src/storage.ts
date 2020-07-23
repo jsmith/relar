@@ -24,7 +24,6 @@ export type StorageErrorCode =
 
 export const useUserStorage = () => {
   const user = useDefinedUser();
-
   return useMemo(() => userStorage(storage, user), [user]);
 };
 

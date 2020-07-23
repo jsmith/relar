@@ -1,5 +1,6 @@
 import functions from "firebase-functions-test";
 import * as path from "path";
+import { admin } from "./admin";
 
 export const testFunctions = functions(
   {

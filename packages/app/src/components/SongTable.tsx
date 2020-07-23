@@ -1,15 +1,17 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Song } from "../shared/types";
 import { usePlayer } from "../player";
 import classNames from "classnames";
-import { MdMusicNote, MdPlayArrow, MdMoreVert } from "react-icons/md";
+import { MdMusicNote, MdPlayArrow, MdMoreVert, MdEdit, MdDelete } from "react-icons/md";
 import { MetadataEditor } from "./MetadataEditor";
 import { useModal } from "react-modal-hook";
 import { LikedIcon } from "./LikedIcon";
-import { QueryDocumentSnapshot } from "src/shared/utils";
+import { QueryDocumentSnapshot } from "../shared/utils";
 import { IconButton } from "./IconButton";
 import * as reactAccessibleDropdown from "react-accessible-dropdown-menu-hook";
-import { bgApp } from "src/classes";
+import { bgApp } from "../classes";
+import { ContextMenu } from "./ContextMenu";
+import { useConfirmAction } from "../confirm-actions";
 
 const useDropdownMenu: typeof reactAccessibleDropdown.default = (reactAccessibleDropdown.default as any)
   .default;
@@ -43,14 +45,6 @@ export const HeaderCol = ({
     </th>
   );
 };
-
-export interface SongTableRow {
-  /**
-   * The song. `undefined` means it is loading.
-   */
-  song: QueryDocumentSnapshot<Song> | undefined;
-  setSong: (song: QueryDocumentSnapshot<Song>) => void;
-}
 
 export const Cell = ({
   children,
@@ -95,11 +89,21 @@ export const TextCell = ({
   );
 };
 
-export const SongTableRow = ({ song, setSong }: SongTableRow) => {
+export interface SongTableRowProps {
+  /**
+   * The song. `undefined` means it is loading.
+   */
+  song: QueryDocumentSnapshot<Song> | undefined;
+  setSong: (song: QueryDocumentSnapshot<Song>) => void;
+}
+
+export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
   const { buttonProps, itemProps, isOpen, setIsOpen } = useDropdownMenu(2);
-  const [showModal, hideModal] = useModal(() => (
-    <MetadataEditor display={true} setDisplay={() => hideModal()} song={defined} />
+  const [focusedPlay, setFocusedPlay] = useState(false);
+  const [showEditorModal, hideEditorModal] = useModal(() => (
+    <MetadataEditor display={true} setDisplay={() => hideEditorModal()} song={defined} />
   ));
+  const { confirmAction } = useConfirmAction();
 
   if (!song) {
     return (
@@ -121,8 +125,21 @@ export const SongTableRow = ({ song, setSong }: SongTableRow) => {
     >
       <Cell className="flex space-x-2 items-center h-12">
         <div className="w-5 h-5">
-          <MdMusicNote className="w-5 h-5 group-hover:opacity-0 absolute" />
-          <MdPlayArrow className="w-5 h-5 group-hover:opacity-100 opacity-0" />
+          <MdMusicNote
+            className={classNames(
+              "w-5 h-5 group-hover:opacity-0 absolute",
+              focusedPlay && "opacity-0",
+            )}
+          />
+          <button
+            title={`Play ${data.title}`}
+            className="focus:opacity-100 group-hover:opacity-100 opacity-0"
+            onFocus={() => setFocusedPlay(true)}
+            onBlur={() => setFocusedPlay(false)}
+            onClick={() => {}}
+          >
+            <MdPlayArrow className="w-5 h-5" />
+          </button>
         </div>
 
         <div title={data.title} className="truncate">
@@ -130,30 +147,48 @@ export const SongTableRow = ({ song, setSong }: SongTableRow) => {
         </div>
         <IconButton
           icon={MdMoreVert}
-          className="group-hover:w-16 focus:w-16 w-0 overflow-hidden py-1 pl-1"
+          className="group-hover:w-8 focus:w-8 w-0 overflow-hidden py-1 pl-1 flex-shrink-0"
           hoverClassName="hover:bg-gray-400"
           iconClassName="w-0 w-6 h-6"
           {...buttonProps}
           onClick={(e) => {
+            e.stopPropagation();
             buttonProps.onClick && buttonProps.onClick(e);
             setIsOpen(true);
           }}
         />
-        <div className="relative">
-          <div
-            className={classNames(
-              isOpen ? "display" : "display",
-              "absolute flex flex-col bg-gray-100",
-            )}
-            style={{ backgroundColor: bgApp }}
-            role="menu"
-          >
-            <a {...itemProps[0]} href="https://example.com">
-              Regular link
-            </a>
-            <a {...itemProps[1]}>With click handler</a>
-          </div>
-        </div>
+        <ContextMenu
+          items={[
+            {
+              label: "Edit Info",
+              icon: MdEdit,
+              onClick: () => {
+                showEditorModal();
+                setIsOpen(false);
+              },
+              props: itemProps[0],
+            },
+            {
+              label: "Delete",
+              icon: MdDelete,
+              onClick: async () => {
+                setIsOpen(false);
+                const confirmed = await confirmAction({
+                  title: `Delete ${data.title}`,
+                  subtitle: "Are you sure you want to delete this song?",
+                  confirmText: "Delete Song",
+                });
+
+                if (confirmed) {
+                  await song.ref.delete();
+                }
+              },
+              props: itemProps[1],
+            },
+          ]}
+          isOpen={isOpen}
+          className="transform -translate-x-4"
+        />
       </Cell>
       {/* <TextCell text={data.title} /> */}
       <TextCell title={data.artist?.name} text={data.artist?.name} className="h-12 truncate" />
