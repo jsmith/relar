@@ -62,29 +62,35 @@ export const SongType = Record({
   /** The song title. */
   title: String,
 
-  // TODO do you need an ID??? Same thing with album
   /**
-   * The artist.
+   * The artist name. This is a unique value.
    */
-  artist: Record({
-    /** The ID. */
-    id: String,
-    name: String,
-  }).Or(Undefined),
+  artist: String.Or(Undefined),
 
   /**
-   * The album.
+   * The album name.
    */
-  album: Record({
-    /** The ID. */
-    id: String,
-    name: String,
-  }).Or(Undefined),
+  albumName: String.Or(Undefined),
+
+  /**
+   * The album ID for querying purposes.
+   */
+  albumId: String.Or(Undefined),
+
+  /**
+   * The album artist.
+   */
+  albumArtist: String.Or(Undefined),
 
   /**
    * A four-digit year.
    */
   year: String.Or(Undefined),
+
+  /**
+   * The genre.
+   */
+  genre: String.Or(Undefined),
 
   /**
    * Whether this person has "liked" this song
@@ -115,19 +121,14 @@ export const SongType = Record({
 export type Song = Static<typeof SongType>;
 
 export const AlbumType = Record({
-  /** The ID. */
+  /**
+   * The ID. This is a concatenation of the album artist (or artist — this is very important) and album name.
+   * For example, if the album name was "Wow" and the album artist was "Jack", the resulting id
+   * would be "Jack<<<<<<<Wow".
+   */
   id: String,
-
-  /**
-   * The name of the album.
-   */
-  name: String,
-
-  /**
-   * The album artist.
-   */
-  albumArtist: String,
-
+  albumArtist: String.Or(Undefined),
+  album: String.Or(Undefined),
   artwork: ArtworkType.Or(Undefined),
 });
 
@@ -144,11 +145,8 @@ export const BetaSignupType = Record({
 export type BetaSignup = Static<typeof BetaSignupType>;
 
 export const ArtistType = Record({
-  /** The ID. */
-  id: String,
-
   /**
-   * The name of the artist.
+   * The name of the artist. This is also the ID since artist names must be unique.
    */
   name: String,
 });
@@ -201,12 +199,12 @@ export type MetadataAPI = {
         idToken: string;
         songId: string;
         update: {
-          title?: string;
-          artist?: string;
-          albumArtist?: string;
-          album?: string;
-          genre?: string;
-          year?: number;
+          title: string;
+          artist: string;
+          albumArtist: string;
+          albumName: string;
+          genre: string;
+          year: string;
           // TODO
           // track?: number;
           // totalTracks?: number;
@@ -215,7 +213,7 @@ export type MetadataAPI = {
           // explicit?: boolean;
         };
       };
-      response: Success | KnownError<"unauthorized"> | UnknownError;
+      response: Success | KnownError<"unauthorized" | "song-does-not-exist"> | UnknownError;
     };
   };
 };

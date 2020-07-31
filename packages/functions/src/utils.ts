@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
-import { createPath, adminDb } from "./shared/utils";
+import { createPath, createAlbumId, AlbumId } from "./shared/utils";
 import { GetFilesResponse, File } from "@google-cloud/storage";
+import { Album, UserData, Artist, Song } from "./shared/types";
 
 export const deleteCollection = async (
   collection: FirebaseFirestore.CollectionReference<unknown>,
@@ -11,13 +12,17 @@ export const deleteCollection = async (
 
 export const deleteAllUserData = async (
   db: FirebaseFirestore.Firestore,
-  storage: admin.storage.Storage,
+  storage: admin.storage.Storage | undefined,
   userId: string,
 ) => {
   await adminDb(db, userId).doc().delete();
-  deleteCollection(await adminDb(db, userId).songs().collection());
-  deleteCollection(await adminDb(db, userId).artists().collection());
-  deleteCollection(await adminDb(db, userId).albums().collection());
+  await deleteCollection(adminDb(db, userId).songs());
+  await deleteCollection(adminDb(db, userId).artists());
+  await deleteCollection(adminDb(db, userId).albums());
+
+  if (!storage) {
+    return;
+  }
 
   await storage
     .bucket()
@@ -75,4 +80,83 @@ export const adminStorage = (storage: admin.storage.Storage, userId: string): Ad
     song: (songId: string, fileName: string) =>
       bucket.file(path.append("songs").append(songId).append(fileName).build()),
   };
+};
+
+type CollectionReference<T> = FirebaseFirestore.CollectionReference<T>;
+type DocumentReference<T> = FirebaseFirestore.DocumentReference<T>;
+
+export const adminDb = (db: FirebaseFirestore.Firestore, userId: string) => {
+  const path = createPath().append("user_data").append(userId);
+
+  return {
+    userId,
+    songs: () => db.collection(path.append("songs").build()) as CollectionReference<Song>,
+    song: (songId: string) =>
+      db.doc(path.append("songs").append(songId).build()) as DocumentReference<Song>,
+    albums: () => db.collection(path.append("albums").build()) as CollectionReference<Album>,
+    album: (albumId: AlbumId | string) =>
+      db.doc(
+        path
+          .append("albums")
+          .append(typeof albumId === "string" ? albumId : createAlbumId(albumId))
+          .build(),
+      ) as DocumentReference<Album>,
+    artists: () => db.collection(path.append("artists").build()) as CollectionReference<Artist>,
+    artist: (artistName: string) =>
+      db.doc(path.append("artists").append(artistName).build()) as DocumentReference<Artist>,
+    doc: () => db.doc(path.build()) as DocumentReference<UserData>,
+    findAlbumSongs: (albumId: string) => {
+      const key: keyof Song = "albumId";
+      const value: Song["albumId"] = albumId;
+      return adminDb(db, userId).songs().where(key, "==", value);
+    },
+    findArtistSongs: (name: string) => {
+      const key: keyof Song = "artist";
+      const value: Song["artist"] = name;
+      return adminDb(db, userId).songs().where(key, "==", value);
+    },
+  };
+};
+
+export const deleteAlbumIfSingleSong = async ({
+  db,
+  albumId,
+  userId,
+  transaction,
+}: {
+  db: FirebaseFirestore.Firestore;
+  albumId: string;
+  userId: string;
+  transaction: FirebaseFirestore.Transaction;
+}) => {
+  const userData = adminDb(db, userId);
+  const songs = await transaction.get(userData.findAlbumSongs(albumId));
+
+  // This album is now EMPTY!
+  if (songs.docs.length === 1) {
+    return () => transaction.delete(userData.album(albumId));
+  }
+
+  return;
+};
+
+export const deleteArtistSingleSong = async ({
+  db,
+  artist,
+  userId,
+  transaction,
+}: {
+  db: FirebaseFirestore.Firestore;
+  artist: string;
+  userId: string;
+  transaction: FirebaseFirestore.Transaction;
+}) => {
+  const userData = adminDb(db, userId);
+  const songs = await transaction.get(userData.findArtistSongs(artist));
+
+  if (songs.docs.length === 1) {
+    return () => transaction.delete(userData.artist(artist));
+  }
+
+  return;
 };

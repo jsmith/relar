@@ -11,11 +11,12 @@ import { ObjectMetadata } from "firebase-functions/lib/providers/storage";
 import { IID3Tag } from "id3-parser/lib/interface";
 import { Song, UserDataType, AlbumType, Album, ArtistType, Artist, Artwork } from "./shared/types";
 import { Record, Result as RuntypeResult, Static } from "runtypes";
-import * as uuid from "uuid";
 import { Transaction, Query, DocumentReference } from "@google-cloud/firestore";
 import { admin } from "./admin";
 import sgMail from "@sendgrid/mail";
 import { env } from "./env";
+import { createAlbumId } from "./shared/utils";
+import { adminDb } from "./utils";
 
 sgMail.setApiKey(env.mail.sendgrid_api_key);
 
@@ -238,45 +239,6 @@ export const parseID3Tags = <O extends { tmpFilePath: string }>(
   });
 };
 
-/**
- * Find the first document in the collection and start validation.
- */
-const findOne = async <R extends Record<any, false>>(
-  transaction: Transaction,
-  query: Query<unknown>,
-  record: R,
-): Promise<RuntypeResult<Static<R>> | undefined> => {
-  const snapshot = await transaction.get(query);
-  return snapshot && !snapshot.empty ? record.validate(snapshot.docs[0].data()) : undefined;
-};
-
-/**
- * Validate the runtype result OR write a new object if the given runtype is undefined.
- * We only write if the object given to write is defined else we do nothing.
- */
-const validateOrWrite = <A>(
-  transaction: Transaction,
-  result: RuntypeResult<A> | undefined,
-  create: () => { data: A; doc: DocumentReference } | undefined,
-): A | undefined => {
-  if (result) {
-    if (result.success) {
-      return result.value;
-    } else {
-      throw Error(`Found invalid value from db: ${result.key} -> ${result.message}`);
-    }
-  } else {
-    const creationInfo = create();
-    if (!creationInfo) {
-      return;
-    }
-
-    const { doc, data } = creationInfo;
-    transaction.set(doc, data);
-    return data;
-  }
-};
-
 const andPromise = <O1, O2, E>(f: (o: O1) => Promise<Result<O2, E>>) => (
   o: O1,
 ): ResultAsync<O2, E> => {
@@ -309,6 +271,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
         // In a transaction, add the new rating and update the aggregate totals
         let artwork: Artwork | undefined;
         return await db.runTransaction(async (transaction) => {
+          const userData = adminDb(db, userId);
           const res = await transaction.get(userRef);
 
           const result = UserDataType.validate(res.data() ?? {});
@@ -376,66 +339,38 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             }
           }
 
+          const albumId = createAlbumId({ albumName: id3Tag?.album, albumArtist: id3Tag?.band, artist: id3Tag?.artist })
+
           // reads must come before writes in a snapshot so the following reads are grouped together
-          const albumValidation = id3Tag?.album
-            ? await findOne(
-              transaction,
-              userRef
-                .collection("albums")
-                .where("name", "==", id3Tag.album)
-                // `band` is TPE2 aka the album artist
-                .where("albumArtist", "==", id3Tag.band ?? ""),
-              AlbumType,
-            )
-            : undefined;
+          const albumSnap = await transaction.get(
+            userData.album(albumId)
+          );
 
-          const artistValidation = id3Tag?.artist
-            ? await findOne(
-              transaction,
-              userRef.collection("artists").where("name", "==", id3Tag.artist),
-              ArtistType,
-            )
-            : undefined;
+          const artistSnap = id3Tag?.artist ? await transaction.get(
+            userData.artist(id3Tag?.artist),
+          ) : undefined;
 
-          const album = validateOrWrite(transaction, albumValidation, () => {
-            if (!id3Tag?.album) {
-              return;
-            }
+          let album = albumSnap.data();
+          if (!album) {
 
-            const newAlbum: Album = {
-              id: uuid.v4(),
-              name: id3Tag.album,
-              albumArtist: id3Tag.band ?? "",
+            album = {
+              id: albumId,
+              album: id3Tag?.album,
+              // The band value is the album artist
+              albumArtist: id3Tag?.band,
               // If this is a new album, initialize the artwork hash the the hash
               // of the artwork for this song. Note that this value may be undefined.
               artwork,
             };
 
-            return {
-              data: newAlbum,
-              doc: userRef.collection("albums").doc(newAlbum.id),
-            };
-          });
-
-          // If we are not creating new album AND that album doesn't currently have an album cover
-          // AND this *does* have artwork then set the artwork of the album 🎵
-          if (album && !album.artwork && artwork) {
-            // Update our local copy *and* update the remote copy
-            album.artwork = artwork;
-            await transaction.set(userRef.collection("albums").doc(album.id), album);
+            transaction.set(albumSnap.ref, album);
           }
 
-          const artist = validateOrWrite(transaction, artistValidation, () => {
-            if (!id3Tag?.artist) {
-              return;
-            }
-
-            const newArtist: Artist = { id: uuid.v4(), name: id3Tag.artist };
-            return {
-              data: newArtist,
-              doc: userRef.collection("artists").doc(newArtist.id),
-            };
-          });
+          let artist = artistSnap?.data();
+          if (!artist && artistSnap && id3Tag?.artist) {
+            artist = { name: id3Tag.artist };
+            transaction.set(artistSnap.ref, artist);
+          }
 
           const defaultTitle = fileName.slice(0, fileName.lastIndexOf("."));
 
@@ -445,10 +380,12 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             id: songId,
             downloadUrl: undefined,
             title: id3Tag?.title ?? defaultTitle,
-            artist: artist ? { name: artist.name, id: artist.id } : undefined,
-            album: album ? { name: album.name, id: album.id } : undefined,
+            artist: artist?.name,
+            albumName: album?.id,
+            albumArtist: album.albumArtist,
             year: id3Tag?.year,
             liked: false,
+            genre: id3Tag?.genre,
             played: 0,
             lastPlayed: undefined,
             artwork,

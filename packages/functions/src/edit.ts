@@ -1,15 +1,12 @@
 import express from "express";
-import * as functions from "firebase-functions";
 import cors from "cors";
 import { TypedAsyncRouter } from "@graywolfai/rest-ts-express";
-import { BetaAPI, BetaSignup, MetadataAPI, Song } from "./shared/types";
-import { isPasswordValid, betaSignups, adminDb } from "./shared/utils";
+import { MetadataAPI, Song, Album } from "./shared/types";
 import * as bodyParser from "body-parser";
-import sgMail from "@sendgrid/mail";
-import { env } from "./env";
 import { admin } from "./admin";
-import { Sentry } from "./sentry";
-import { Result, ok, err } from "neverthrow";
+import { adminDb, deleteAlbumIfSingleSong, deleteArtistSingleSong } from "./utils";
+import { createAlbumId } from "./shared/utils";
+import * as functions from "firebase-functions";
 
 export const app = express();
 app.use(bodyParser.json());
@@ -25,10 +22,15 @@ const router = TypedAsyncRouter<MetadataAPI>(app);
 const auth = admin.auth();
 const db = admin.firestore();
 
+// FIXME this ignores the deletion of album art
+// Maybe this could be a batch thing??
+// It's also hard there *could* be weird race conditions
+// For now, let's ignore this!!
 router.post("/edit", async (req) => {
-  let user;
+  const { body } = req;
+  let user: admin.auth.DecodedIdToken;
   try {
-    user = await auth.verifyIdToken(req.body.idToken);
+    user = await auth.verifyIdToken(body.idToken);
   } catch (e) {
     return {
       type: "error",
@@ -36,23 +38,92 @@ router.post("/edit", async (req) => {
     };
   }
 
-  const ref = adminDb(db, user.uid).songs().song(req.body.songId);
-
-  await db.runTransaction(async () => {});
+  const userId = user.uid;
+  const userData = adminDb(db, user.uid);
+  const ref = userData.song(body.songId);
 
   // This is important so that we don't just pass in whatever was sent in the client
   const update: Partial<Song> = {
-    title: req.body.update.title,
-    artist: req.body.update.artist,
-    albumArtist: req.body.update.albumArtist,
-    album: req.body.update.album,
-    genre: req.body.update.genre,
-    year: req.body.update.year,
+    title: body.update.title,
+    genre: body.update.genre,
+    year: body.update.year,
+    albumName: body.update.albumName,
+    albumArtist: body.update.albumArtist,
+    artist: body.update.artist,
   };
 
-  ref.update(update);
+  return await db.runTransaction(async (transaction) => {
+    const writes: Array<undefined | (() => void)> = [];
+    const song = await transaction.get(ref).then((doc) => doc.data());
+    if (!song) {
+      return {
+        type: "error",
+        code: "song-does-not-exist",
+      };
+    }
 
-  return {
-    type: "success what the eh",
-  };
+    const newAlbumId = createAlbumId(body.update);
+    const oldAlbumId = createAlbumId(song);
+
+    // If either the album artist changed or the artist changed, we need to place the song in a new album
+    // This album may or may not exist
+    // Additionally, the old album may now be empty, meaning that we should probably delete it...
+    if (newAlbumId !== oldAlbumId) {
+      writes.push(
+        await deleteAlbumIfSingleSong({
+          db,
+          userId,
+          transaction,
+          albumId: oldAlbumId,
+        }),
+      );
+
+      const albumSnap = await transaction.get(userData.album(newAlbumId));
+
+      let newAlbum = albumSnap.data();
+
+      if (!newAlbum) {
+        const localCopy: Album = (newAlbum = {
+          id: newAlbumId,
+          albumArtist: body.update.albumArtist,
+          album: body.update.albumName,
+          artwork: song.artwork,
+        });
+
+        writes.push(() => transaction.create(albumSnap.ref, localCopy));
+      }
+    }
+
+    const oldArtistName = song.artist;
+    const newArtistName = body.update.artist;
+    if (oldArtistName != newArtistName) {
+      if (oldArtistName) {
+        writes.push(
+          await deleteArtistSingleSong({ db, artist: oldArtistName, userId, transaction }),
+        );
+      }
+
+      if (newArtistName) {
+        const artistSnap = await transaction.get(userData.artist(newArtistName));
+        let newArtist = artistSnap.data();
+
+        if (!newArtist) {
+          const localCopy = (newArtist = {
+            name: newArtistName,
+          });
+
+          writes.push(() => transaction.create(artistSnap.ref, localCopy));
+        }
+      }
+    }
+
+    transaction.update(ref, update);
+    writes.forEach((write) => write && write());
+
+    return {
+      type: "success",
+    };
+  });
 });
+
+export const editApp = functions.https.onRequest(app);

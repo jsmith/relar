@@ -59,42 +59,6 @@ export const clientDb = (db: firebase.firestore.Firestore, userId: string) => {
   };
 };
 
-export const adminDb = (db: FirebaseFirestore.Firestore, userId: string) => {
-  const path = createPath().append("user_data").append(userId);
-
-  return {
-    userId,
-    songs: () => {
-      const songs = path.append("songs");
-      return {
-        song: (songId: string) =>
-          db.doc(songs.append(songId).build()) as FirebaseFirestore.DocumentReference<Song>,
-        collection: () =>
-          db.collection(songs.build()) as FirebaseFirestore.CollectionReference<Song>,
-      };
-    },
-    albums: () => {
-      const albums = path.append("albums");
-      return {
-        album: (albumId: string) =>
-          db.doc(albums.append(albumId).build()) as FirebaseFirestore.DocumentReference<Album>,
-        collection: () =>
-          db.collection(albums.build()) as FirebaseFirestore.CollectionReference<Album>,
-      };
-    },
-    artists: () => {
-      const artists = path.append("artists");
-      return {
-        artist: (artistId: string) =>
-          db.doc(artists.append(artistId).build()) as FirebaseFirestore.DocumentReference<Artist>,
-        collection: () =>
-          db.collection(artists.build()) as FirebaseFirestore.CollectionReference<Artist>,
-      };
-    },
-    doc: () => db.doc(path.build()) as FirebaseFirestore.DocumentReference<UserData>,
-  };
-};
-
 export const betaSignups = (db: FirebaseFirestore.Firestore) => {
   return {
     doc: (email: string) => db.doc(`beta_signups/${email}`),
@@ -118,3 +82,29 @@ export const clientStorage = (storage: firebase.storage.Storage, userId: string)
       storage.ref(path.append("songs").append(songId).append(fileName).build()),
   };
 };
+
+/** This assumes that no one will ever use "<<<<<<<" in their album name or album artist */
+export const ALBUM_ID_DIVIDER = "<<<<<<<";
+
+/** The information required to identify an album */
+export interface AlbumId {
+  albumName: string | undefined;
+  albumArtist: string | undefined;
+  artist: string | undefined;
+}
+
+export const createAlbumId = ({ albumName, albumArtist, artist }: AlbumId) => {
+  return `${albumArtist ?? artist ?? ""}${ALBUM_ID_DIVIDER}${albumName ?? ""}`;
+};
+
+export const getAlbumAttributes = (albumId: string) => {
+  const split = albumId.split(ALBUM_ID_DIVIDER);
+  return {
+    albumArtist: split[0],
+    name: split[1],
+  };
+};
+
+export interface Query<T, V> {
+  where(key: string, opStr: "==", value: any): V;
+}
