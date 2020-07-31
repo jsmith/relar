@@ -1,15 +1,15 @@
 import { Song, Artist, Album } from "./shared/types";
 import * as uuid from "uuid";
 import * as path from "path";
-import { deleteAllUserData, removeUndefined } from "./utils";
-import { testFunctions } from "./test-utils";
+import { deleteAllUserData, removeUndefined, adminDb } from "./utils";
+import { testFunctions, createTestSong } from "./test-utils";
 import { test } from "uvu";
 import assert from "uvu/assert";
 
 // This must go *after* the `functions` init call
 import { createSong, parseID3Tags, md5Hash } from "./uploader";
-import { userDataPath } from "./shared/utils";
 import { admin } from "./admin";
+import { createAlbumId } from "./shared/utils";
 
 const storage = admin.storage();
 const firestore = admin.firestore();
@@ -37,77 +37,52 @@ const upload = async (fileName: string) => {
 const db = admin.firestore();
 
 const getAlbum = (albumId: string) => {
-  return userDataPath(db, "testUser")
-    .albums()
+  return adminDb(db, "testUser")
     .album(albumId)
     .get()
     .then((o) => o.data());
 };
 
 const getArtist = (artistId: string) => {
-  return userDataPath(db, "testUser")
-    .artists()
+  return adminDb(db, "testUser")
     .artist(artistId)
     .get()
     .then((o) => o.data());
 };
 
 const getSong = (songId: string) => {
-  return userDataPath(db, "testUser")
-    .songs()
+  return adminDb(db, "testUser")
     .song(songId)
     .get()
     .then((o) => o.data());
 };
 
 const getSongs = () => {
-  return userDataPath(db, "testUser")
+  return adminDb(db, "testUser")
     .songs()
-    .collection()
     .get()
     .then((o) => o.docs.map((doc) => doc.data()));
 };
 
 const getAlbums = () => {
-  return userDataPath(db, "testUser")
+  return adminDb(db, "testUser")
     .albums()
-    .collection()
     .get()
     .then((o) => o.docs.map((doc) => doc.data()));
 };
 
 const getArtists = () => {
-  return userDataPath(db, "testUser")
+  return adminDb(db, "testUser")
     .artists()
-    .collection()
     .get()
     .then((o) => o.docs.map((doc) => doc.data()));
 };
 
 const getUserData = () => {
-  return userDataPath(db, "testUser")
+  return adminDb(db, "testUser")
     .doc()
     .get()
     .then((o) => o.data());
-};
-
-export const createTestSong = (song: Partial<Song>): Song => {
-  // Remove undefined values for equality checks
-  return removeUndefined({
-    id: "",
-    title: "",
-    liked: false,
-    fileName: "",
-    played: 0,
-    downloadUrl: undefined,
-    year: "",
-    artist: undefined,
-    album: undefined,
-    lastPlayed: undefined,
-    artwork: undefined,
-    createdAt: admin.firestore.Timestamp.fromDate(new Date()),
-    ...song,
-  });
 };
 
 test("can parse the tags of an mp3 file", async () => {
@@ -172,35 +147,30 @@ test("works when uploading a valid song with a title, artist and album", async (
 
   assert.equal(user, { songCount: 1 });
 
-  assert.equal(
-    song,
-    createTestSong({
-      id: songId,
-      title: "WalloonLilliShort",
-      fileName: "file_with_artist_album.mp3",
-      album: {
-        name: "Web Samples",
-        id: song.album!.id,
-      },
-      artist: {
-        name: "Hendrik Broekman",
-        id: song.artist!.id,
-      },
-      createdAt: song.createdAt,
-    }),
-  );
+  const testSong = createTestSong({
+    id: songId,
+    title: "WalloonLilliShort",
+    fileName: "file_with_artist_album.mp3",
+    albumName: "Web Samples",
+    albumArtist: "",
+    artist: "Hendrik Broekman",
+    createdAt: song.createdAt,
+  });
 
-  const artist = await getArtist(song.artist!.id);
-  const album = await getAlbum(song.album!.id);
+  assert.equal(song, testSong);
+
+  const albumId = createAlbumId(testSong);
+
+  const artist = await getArtist(song.artist);
+  const album = await getAlbum(albumId);
 
   const expectedArtist: Artist = {
-    id: song.artist!.id,
     name: "Hendrik Broekman",
   };
 
   const expectedAlbum: Album = removeUndefined({
-    id: song.album!.id,
-    name: "Web Samples",
+    id: albumId,
+    album: "Web Samples",
     albumArtist: "Web Samples",
     artwork: undefined,
   });

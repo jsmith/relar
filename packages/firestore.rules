@@ -20,6 +20,11 @@ service cloud.firestore {
           // artwork is slightly insecure since we really only want to allow updates to "artwork.artworkDownloadUrl32"
           return affectedKeys().hasOnly(['lastPlayed', 'played', 'liked', 'downloadUrl', 'artwork'])
         }
+
+        function conformsToSchema() {
+          // TODO
+          request.resource.data.
+        }
         
       	allow update: if isUser() && validUpdate()
       }

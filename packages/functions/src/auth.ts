@@ -1,5 +1,4 @@
 import express from "express";
-import * as functions from "firebase-functions";
 import cors from "cors";
 import { TypedAsyncRouter } from "@graywolfai/rest-ts-express";
 import { BetaAPI, BetaSignup } from "./shared/types";
@@ -10,6 +9,7 @@ import { env } from "./env";
 import { admin } from "./admin";
 import { Sentry } from "./sentry";
 import { Result, ok, err } from "neverthrow";
+import * as functions from "firebase-functions";
 
 sgMail.setApiKey(env.mail.sendgrid_api_key);
 
