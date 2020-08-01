@@ -1,6 +1,7 @@
 import supertest from "supertest";
 import { deleteCollection } from "./utils";
-import { testFunctions, noOp } from "./test-utils";
+import { testFunctions } from "./configure-tests";
+import { noOp } from "./test-utils";
 import { admin } from "./admin";
 
 import { app } from "./auth";

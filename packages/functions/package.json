@@ -3,7 +3,7 @@
   "version": "0.2.4",
   "scripts": {
     "build": "rm -rf lib && tsc && rm lib/package.json && mv lib/src/* lib && rm -r lib/src",
-    "test": "GOOGLE_APPLICATION_CREDENTIALS=../serviceAccountKey.relar-test.json node -r esm -r esbuild-register src/auth.spec.ts",
+    "test": "./test.sh",
     "check:lint": "eslint \"**/*.{ts,tsx}\"",
     "check:formatting": "prettier --list-different \"**/*.{ts,tsx,js}\"",
     "check:types": "tsc --noEmit"
