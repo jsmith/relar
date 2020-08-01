@@ -5,7 +5,6 @@ import * as sharp from "sharp";
 import * as fs from "fs-extra";
 import * as crypto from "crypto";
 import { Result, ok, err, ResultAsync } from "neverthrow";
-import { version } from "../package.json";
 import * as id3 from "id3-parser";
 import { ObjectMetadata } from "firebase-functions/lib/providers/storage";
 import { IID3Tag } from "id3-parser/lib/interface";
@@ -102,11 +101,6 @@ const getPaths = <O extends ObjectMetadata & { name: string; contentType: string
   });
 };
 
-const logVersion = <T>(o: T): T => {
-  console.info(`Running v${version}`);
-  return o;
-};
-
 const matchRegex = (matcher: RegExp) => <O extends CustomObject>(
   object: O,
 ): Result<O & { match: RegExpMatchArray }, Info> => {
@@ -177,13 +171,12 @@ const createTmpDir = async () => {
 
 // For reference -> https://us-central1-toga-4e3f5.cloudfunctions.net/health
 export const health = functions.https.onRequest((_, res) => {
-  res.send(`Running v${version}`);
+  res.send(`Running v${process.env.npm_package_version}`);
 });
 
 export const generateThumbs = functions.storage.object().onFinalize(async (object) => {
   const { dispose, tmpDir } = await createTmpDir();
   return ok<ObjectMetadata, Warning | IError | Info>(object)
-    .map(logVersion)
     .andThen(checkObjectName)
     .andThen(checkContentType)
     .andThen(getPaths)
@@ -252,7 +245,6 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
 
   // prettier-ignore
   return ok<ObjectMetadata, Warning | IError | Info>(object)
-    .map(logVersion)
     .andThen(checkObjectName)
     .andThen(checkContentType)
     .andThen(getPaths)
@@ -381,8 +373,9 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             downloadUrl: undefined,
             title: id3Tag?.title ?? defaultTitle,
             artist: artist?.name,
-            albumName: album?.id,
+            albumName: album?.album,
             albumArtist: album.albumArtist,
+            albumId: album.id,
             year: id3Tag?.year,
             liked: false,
             genre: id3Tag?.genre,
