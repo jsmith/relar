@@ -2,6 +2,7 @@ import React from "react";
 import { useRouter } from "react-tiniest-router";
 import { RouteType } from "react-tiniest-router/dist/types";
 import classNames from "classnames";
+import { link } from "../classes";
 
 export interface LinkProps {
   className?: string;
@@ -19,8 +20,7 @@ export const Link = ({ route, label, className, disableStyle }: LinkProps) => {
   return (
     <a
       href={route.path}
-      // TODO remove my-link
-      className={classNames(disableStyle ? "" : "my-link", className)}
+      className={classNames(disableStyle ? "" : link(), className)}
       onClick={(e) => {
         e.preventDefault();
         goTo(route);

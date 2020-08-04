@@ -1,13 +1,13 @@
 import { getDownloadURL } from "../storage";
 import { useDefinedUser } from "../auth";
 import { Artwork } from "../shared/types";
-import { userStorage, DocumentSnapshot } from "../shared/utils";
+import { clientStorage } from "../shared/utils";
 import * as Sentry from "@sentry/browser";
 import { useEffect, useState } from "react";
 import { storage } from "../firebase";
 
 export const useThumbnail = (
-  snapshot?: DocumentSnapshot<{ id: string; artwork: Artwork | undefined }>,
+  snapshot?: firebase.firestore.DocumentSnapshot<{ id: string; artwork: Artwork | undefined }>,
 ) => {
   const user = useDefinedUser();
   const [thumbnailUrl, setThumbnailUrl] = useState<string>();
@@ -35,7 +35,7 @@ const keyLookup = {
  */
 export const tryToGetDownloadUrlOrLog = async (
   user: firebase.User,
-  snapshot: DocumentSnapshot<{ artwork: Artwork | undefined }>,
+  snapshot: firebase.firestore.DocumentSnapshot<{ artwork: Artwork | undefined }>,
   size: "32",
 ): Promise<string | undefined> => {
   const ref = snapshot.ref;
@@ -56,7 +56,7 @@ export const tryToGetDownloadUrlOrLog = async (
   }
 
   const result = await getDownloadURL(
-    userStorage(storage, user).artworks(artwork.hash, artwork.type)[size](),
+    clientStorage(storage, user.uid).artworks(artwork.hash, artwork.type)[size](),
   );
 
   if (result.isOk()) {

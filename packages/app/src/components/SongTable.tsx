@@ -6,21 +6,20 @@ import { MdMusicNote, MdPlayArrow, MdMoreVert, MdEdit, MdDelete } from "react-ic
 import { MetadataEditor } from "./MetadataEditor";
 import { useModal } from "react-modal-hook";
 import { LikedIcon } from "./LikedIcon";
-import { QueryDocumentSnapshot } from "../shared/utils";
 import { IconButton } from "./IconButton";
-import * as reactAccessibleDropdown from "react-accessible-dropdown-menu-hook";
-import { bgApp } from "../classes";
+import useDropdownMenu from "react-accessible-dropdown-menu-hook";
 import { ContextMenu } from "./ContextMenu";
 import { useConfirmAction } from "../confirm-actions";
 
-const useDropdownMenu: typeof reactAccessibleDropdown.default = (reactAccessibleDropdown.default as any)
-  .default;
+// console.log(reactAccessibleDropdown);
+// const useDropdownMenu: typeof reactAccessibleDropdown.default = (reactAccessibleDropdown.default as any)
+//   .default;
 
 export interface SongsTableProps {
   /**
    * The songs. Passing in `undefined` indicates that the songs are still loading.
    */
-  songs?: Array<QueryDocumentSnapshot<Song>>;
+  songs?: Array<firebase.firestore.QueryDocumentSnapshot<Song>>;
   loadingRows?: number;
 }
 
@@ -93,8 +92,8 @@ export interface SongTableRowProps {
   /**
    * The song. `undefined` means it is loading.
    */
-  song: QueryDocumentSnapshot<Song> | undefined;
-  setSong: (song: QueryDocumentSnapshot<Song>) => void;
+  song: firebase.firestore.QueryDocumentSnapshot<Song> | undefined;
+  setSong: (song: firebase.firestore.QueryDocumentSnapshot<Song>) => void;
 }
 
 export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
@@ -191,8 +190,8 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
         />
       </Cell>
       {/* <TextCell text={data.title} /> */}
-      <TextCell title={data.artist?.name} text={data.artist?.name} className="h-12 truncate" />
-      <TextCell title={data.album?.name} text={data.album?.name} className="h-12 truncate" />
+      <TextCell title={data.artist} text={data.artist} className="h-12 truncate" />
+      <TextCell title={data.albumName} text={data.albumName} className="h-12 truncate" />
       <TextCell text={`${data.played ?? ""}`} className="h-12 truncate" />
       <TextCell text={"4:10"} className="h-12 truncate" />
       <Cell className="h-12 truncate">
@@ -206,7 +205,7 @@ export const SongTable = ({ songs: docs, loadingRows = 20 }: SongsTableProps) =>
   const [_, setSong] = usePlayer();
 
   const rows = useMemo(() => {
-    const snapshots: Array<QueryDocumentSnapshot<Song> | undefined> = docs
+    const snapshots: Array<firebase.firestore.QueryDocumentSnapshot<Song> | undefined> = docs
       ? docs
       : Array(loadingRows)
           .fill(undefined)

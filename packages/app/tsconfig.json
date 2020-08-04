@@ -7,6 +7,7 @@
     "moduleResolution": "node",
     "jsx": "react",
     "module": "esnext",
+    "baseUrl": ".",
     "paths": {
       "react": ["@pika/react"],
       "react-dom": ["@pika/react-dom"]

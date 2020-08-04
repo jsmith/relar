@@ -1,15 +1,20 @@
-import { QueryDocumentSnapshot, DocumentSnapshot, userStorage } from "../shared/utils";
+import { clientStorage } from "../shared/utils";
 import { createQueryCache } from "../queries/cache";
 import { Song } from "../shared/types";
 import { storage } from "../firebase";
 import { getDownloadURL } from "../storage";
 import { captureAndLogError } from "../utils";
 import { useUserData } from "../firestore";
+import { useMutation } from "react-query";
+import { firestore } from "firebase";
 
 const {
   useQuery: useRecentlyAddedSongsQuery,
-  // queryCache: albumsQueryCache,
-} = createQueryCache<["recent-songs", { uid: string }], Array<QueryDocumentSnapshot<Song>>>();
+  // queryCache: recentlyAdedSongs,
+} = createQueryCache<
+  ["recent-songs", { uid: string }],
+  Array<firebase.firestore.QueryDocumentSnapshot<Song>>
+>();
 
 export const useRecentlyAddedSongs = () => {
   const userData = useUserData();
@@ -18,7 +23,6 @@ export const useRecentlyAddedSongs = () => {
     return (
       userData
         .songs()
-        .collection()
         .orderBy("createdAt")
         // FIXME infinite query
         .limit(10)
@@ -28,10 +32,25 @@ export const useRecentlyAddedSongs = () => {
   });
 };
 
-const {
-  useQuery: useSongsQuery,
-  // queryCache: albumsQueryCache,
-} = createQueryCache<["songs", { uid: string }], Array<QueryDocumentSnapshot<Song>>>();
+export const useDeleteSong = () => {
+  const userData = useUserData();
+
+  return useMutation(
+    async (songId: string) => {
+      await userData.song(songId).delete();
+    },
+    {
+      onSuccess: () => {
+        // songsQueryCache.
+      },
+    },
+  );
+};
+
+const { useQuery: useSongsQuery, queryCache: songsQueryCache } = createQueryCache<
+  ["songs", { uid: string }],
+  Array<firebase.firestore.QueryDocumentSnapshot<Song>>
+>();
 
 export const useSongs = () => {
   const userData = useUserData();
@@ -39,7 +58,6 @@ export const useSongs = () => {
   return useSongsQuery(["songs", { uid: userData.userId }], () =>
     userData
       .songs()
-      .collection()
       .limit(25)
       .get()
       .then((r) => r.docs),
@@ -48,7 +66,7 @@ export const useSongs = () => {
 
 export const tryToGetSongDownloadUrlOrLog = async (
   user: firebase.User,
-  snapshot: DocumentSnapshot<Song>,
+  snapshot: firebase.firestore.DocumentSnapshot<Song>,
 ): Promise<string | undefined> => {
   const ref = snapshot.ref;
   const data = snapshot.data();
@@ -60,7 +78,9 @@ export const tryToGetSongDownloadUrlOrLog = async (
     return data.downloadUrl;
   }
 
-  const result = await getDownloadURL(userStorage(storage, user).song(data.id, data.fileName));
+  const result = await getDownloadURL(
+    clientStorage(storage, user.uid).song(data.id, data.fileName),
+  );
 
   if (result.isOk()) {
     // TODO does this actually update the data?? Log snapshot and check.

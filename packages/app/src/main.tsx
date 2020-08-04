@@ -27,10 +27,15 @@ import { captureAndLog } from "./utils";
 import { ModalProvider } from "react-modal-hook";
 
 const config: ReactQueryProviderConfig<Error> = {
-  // 5 minutes
-  staleTime: 5 * 60 * 1000,
-  retry: false,
-  onError: (e) => captureAndLog(e),
+  queries: {
+    // 5 minutes
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+    onError: (e) => captureAndLog(e),
+  },
+  mutations: {
+    onError: (e) => captureAndLog(e),
+  },
 };
 
 ReactDOM.render(
