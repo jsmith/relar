@@ -1,8 +1,7 @@
-// at least one number, one lowercase and one uppercase letter
-
 import { Song, Album, Artist, UserData, BetaSignup } from "./types";
 
 // at least six characters
+// at least one number, one lowercase and one uppercase letter
 export const isPasswordValid = (password: string) => {
   return /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/.test(password);
 };
@@ -19,6 +18,9 @@ export const createPath = (parts: string[] = []) => {
 // https://github.com/Kesin11/Firestore-simple/issues/26
 // so I created simpler, more typed, interfaces for firebase
 
+type DocumentReference<T> = firebase.firestore.DocumentReference<T>;
+type CollectionReference<T> = firebase.firestore.CollectionReference<T>;
+
 export const isDefinedSnapshot = <T>(
   snapshot: firebase.firestore.DocumentSnapshot<T>,
 ): snapshot is firebase.firestore.QueryDocumentSnapshot<T> => snapshot.exists;
@@ -28,42 +30,16 @@ export const clientDb = (db: firebase.firestore.Firestore, userId: string) => {
 
   return {
     userId,
-    songs: () => {
-      const songs = path.append("songs");
-      return {
-        song: (songId: string) =>
-          db.doc(songs.append(songId).build()) as firebase.firestore.DocumentReference<Song>,
-        collection: () =>
-          db.collection(songs.build()) as firebase.firestore.CollectionReference<Song>,
-      };
-    },
-    albums: () => {
-      const albums = path.append("albums");
-      return {
-        album: (albumId: string) =>
-          db.doc(albums.append(albumId).build()) as firebase.firestore.DocumentReference<Album>,
-        collection: () =>
-          db.collection(albums.build()) as firebase.firestore.CollectionReference<Album>,
-      };
-    },
-    artists: () => {
-      const artists = path.append("artists");
-      return {
-        artist: (artistId: string) =>
-          db.doc(artists.append(artistId).build()) as firebase.firestore.DocumentReference<Artist>,
-        collection: () =>
-          db.collection(artists.build()) as firebase.firestore.CollectionReference<Artist>,
-      };
-    },
-    doc: () => db.doc(path.build()) as firebase.firestore.DocumentReference<UserData>,
-  };
-};
-
-export const betaSignups = (db: FirebaseFirestore.Firestore) => {
-  return {
-    doc: (email: string) => db.doc(`beta_signups/${email}`),
-    collection: () =>
-      db.collection("beta_signups") as FirebaseFirestore.CollectionReference<BetaSignup>,
+    song: (songId: string) =>
+      db.doc(path.append("songs").append(songId).build()) as DocumentReference<Song>,
+    songs: () => db.collection(path.append("songs").build()) as CollectionReference<Song>,
+    album: (albumId: string) =>
+      db.doc(path.append("albums").append(albumId).build()) as DocumentReference<Album>,
+    albums: () => db.collection(path.append("albums").build()) as CollectionReference<Album>,
+    artist: (artistId: string) =>
+      db.doc(path.append("artists").append(artistId).build()) as DocumentReference<Artist>,
+    artists: () => db.collection(path.append("artists").build()) as CollectionReference<Artist>,
+    doc: () => db.doc(path.build()) as DocumentReference<UserData>,
   };
 };
 

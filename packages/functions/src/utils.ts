@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import { createPath, createAlbumId, AlbumId } from "./shared/utils";
 import { GetFilesResponse, File } from "@google-cloud/storage";
-import { Album, UserData, Artist, Song } from "./shared/types";
+import { Album, UserData, Artist, Song, BetaSignup } from "./shared/types";
 
 export const deleteCollection = async (
   collection: FirebaseFirestore.CollectionReference<unknown>,
@@ -115,6 +115,14 @@ export const adminDb = (db: FirebaseFirestore.Firestore, userId: string) => {
       const value: Song["artist"] = name;
       return adminDb(db, userId).songs().where(key, "==", value);
     },
+  };
+};
+
+export const betaSignups = (db: FirebaseFirestore.Firestore) => {
+  return {
+    doc: (email: string) => db.doc(`beta_signups/${email}`),
+    collection: () =>
+      db.collection("beta_signups") as FirebaseFirestore.CollectionReference<BetaSignup>,
   };
 };
 

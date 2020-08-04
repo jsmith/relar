@@ -1,5 +1,6 @@
 import React from "react";
 import classNames from "classnames";
+import { link } from "src/classes";
 
 export interface LinkButton {
   label: string;
@@ -12,7 +13,7 @@ export interface LinkButton {
 
 export const LinkButton = ({ label, onClick, className }: LinkButton) => {
   return (
-    <button className={classNames("my-link", className)} onClick={onClick}>
+    <button className={classNames(link(), className)} onClick={onClick}>
       {label}
     </button>
   );

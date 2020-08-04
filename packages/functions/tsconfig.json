@@ -6,8 +6,9 @@
     "resolveJsonModule": true,
     "sourceMap": true,
     "target": "es2017",
-    "allowSyntheticDefaultImports": true,
-    "skipLibCheck": true
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "rootDir": "src"
   },
   "include": ["src"]
 }

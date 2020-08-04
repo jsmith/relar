@@ -33,6 +33,7 @@ import { Invite } from "./pages/Invite";
 import { UploadModal } from "./sections/UploadModal";
 import SVGLoadersReact from "svg-loaders-react";
 import { LoadingSpinner } from "./components/LoadingSpinner";
+import { firestore } from "./firebase";
 
 const { Bars } = SVGLoadersReact;
 
@@ -80,6 +81,15 @@ export const App = (_: React.Props<{}>) => {
   const { user, loading } = useUser();
   const [display, setDisplay] = useState(false);
 
+  useEffect(() => {
+    console.log(firestore);
+    firestore.onSnapshotsInSync({
+      next: (e) => {
+        console.log(e);
+      },
+    });
+  }, []);
+
   const route = useMemo(() => Object.values(routes).find((route) => route.id === routeId), [
     routeId,
   ]);
@@ -99,7 +109,6 @@ export const App = (_: React.Props<{}>) => {
 
   const logout = async () => {
     await auth.signOut();
-    goTo(routes.login);
   };
 
   const content = route?.sidebar ? (

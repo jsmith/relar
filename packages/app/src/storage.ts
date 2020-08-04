@@ -1,8 +1,8 @@
 import { storage } from "./firebase";
-import { useUser, useDefinedUser } from "./auth";
+import { useDefinedUser } from "./auth";
 import { useMemo } from "react";
-import { ResultAsync, Result, ok, err } from "neverthrow";
-import { Reference, userStorage } from "./shared/utils";
+import { Result, ok, err } from "neverthrow";
+import { clientStorage } from "./shared/utils";
 
 export type StorageErrorCode =
   | "storage/unknown" // An unknown error occurred.
@@ -24,13 +24,15 @@ export type StorageErrorCode =
 
 export const useUserStorage = () => {
   const user = useDefinedUser();
-  return useMemo(() => userStorage(storage, user), [user]);
+  return useMemo(() => clientStorage(storage, user.uid), [user]);
 };
 
 /**
  * Typesafe getDownloadURL implementation.
  */
-export const getDownloadURL = async (ref: Reference): Promise<Result<string, StorageErrorCode>> => {
+export const getDownloadURL = async (
+  ref: firebase.storage.Reference,
+): Promise<Result<string, StorageErrorCode>> => {
   try {
     return ok(await ref.getDownloadURL());
   } catch (e) {

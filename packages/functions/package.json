@@ -2,7 +2,7 @@
   "name": "functions",
   "version": "0.2.4",
   "scripts": {
-    "build": "rm -rf lib && tsc && rm lib/package.json && mv lib/src/* lib && rm -r lib/src",
+    "build": "rm -rf lib && tsc",
     "test": "./test.sh",
     "check:lint": "eslint \"**/*.{ts,tsx}\"",
     "check:formatting": "prettier --list-different \"**/*.{ts,tsx,js}\"",

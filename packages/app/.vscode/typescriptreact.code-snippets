@@ -17,5 +17,9 @@
   "Classnames": {
     "prefix": "classnames",
     "body": ["import classNames from \"classnames\";"]
+  },
+  "Sentry": {
+    "prefix": "sentry",
+    "body": ["import * as Sentry from \"@sentry/browser\";"]
   }
 }
