@@ -154,7 +154,7 @@ export const Player = () => {
             <div className="text-gray-300 text-xs">{songData.artist}</div>
           </div>
         )}
-        {songData && (
+        {song && (
           <LikedIcon className="ml-6 text-gray-300 hover:text-gray-100" song={song} />
           // <button
           //   onClick={() => likedOrUnlikeSong(!songData.liked)}
