@@ -1,6 +1,6 @@
 {
   "name": "scripts",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "Helper scripts for managing... things",
   "dependencies": {
     "@sendgrid/mail": "^7.2.1",
