@@ -1,0 +1,13 @@
+diff --git a/node_modules/@vue/shared/dist/shared.cjs.js b/node_modules/@vue/shared/dist/shared.cjs.js
+index 5d5fc60..6d98310 100644
+--- a/node_modules/@vue/shared/dist/shared.cjs.js
++++ b/node_modules/@vue/shared/dist/shared.cjs.js
+@@ -57,7 +57,7 @@ function generateCodeFrame(source, start = 0, end = source.length) {
+                 if (j < 0 || j >= lines.length)
+                     continue;
+                 const line = j + 1;
+-                res.push(`${line}${' '.repeat(3 - String(line).length)}|  ${lines[j]}`);
++                res.push(`${line}${' '.repeat(Math.max(3 - String(line).length, 0))}|  ${lines[j]}`);
+                 const lineLength = lines[j].length;
+                 if (j === i) {
+                     // push underline
