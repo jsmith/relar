@@ -55,9 +55,16 @@ export const tryToGetDownloadUrlOrLog = async (
     return;
   }
 
+  console.log(
+    artwork.hash,
+    artwork.type,
+    clientStorage(storage, user.uid).artworks(artwork.hash, artwork.type)[size](),
+  );
   const result = await getDownloadURL(
     clientStorage(storage, user.uid).artworks(artwork.hash, artwork.type)[size](),
   );
+
+  console.log(result);
 
   if (result.isOk()) {
     artwork[key] = result.value;

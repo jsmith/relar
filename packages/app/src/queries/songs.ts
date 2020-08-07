@@ -7,6 +7,8 @@ import { captureAndLogError } from "../utils";
 import { useUserData } from "../firestore";
 import { useMutation } from "react-query";
 import { firestore } from "firebase";
+import { init } from "@sentry/browser";
+import { useMemo } from "react";
 
 const {
   useQuery: useRecentlyAddedSongsQuery,
@@ -17,19 +19,15 @@ const {
 >();
 
 export const useRecentlyAddedSongs = () => {
-  const userData = useUserData();
+  const songs = useSongs();
 
-  return useRecentlyAddedSongsQuery(["recent-songs", { uid: userData.userId }], () => {
-    return (
-      userData
-        .songs()
-        .orderBy("createdAt")
-        // FIXME infinite query
-        .limit(10)
-        .get()
-        .then((r) => r.docs)
-    );
-  });
+  return useMemo(
+    () =>
+      songs.data
+        ?.slice(0, 1000)
+        .sort((a, b) => a.data().createdAt.seconds - b.data().createdAt.seconds),
+    [songs],
+  );
 };
 
 export const useDeleteSong = () => {
@@ -41,6 +39,7 @@ export const useDeleteSong = () => {
     },
     {
       onSuccess: () => {
+        // TODO delete
         // songsQueryCache.
       },
     },
@@ -55,12 +54,19 @@ const { useQuery: useSongsQuery, queryCache: songsQueryCache } = createQueryCach
 export const useSongs = () => {
   const userData = useUserData();
 
-  return useSongsQuery(["songs", { uid: userData.userId }], () =>
-    userData
-      .songs()
-      .limit(25)
-      .get()
-      .then((r) => r.docs),
+  return useSongsQuery(
+    ["songs", { uid: userData.userId }],
+    () =>
+      userData
+        .songs()
+        .get()
+        .then((r) => r.docs),
+    {
+      // Super important
+      // See https://github.com/jsmith/relar/issues/7
+      // Keep this fresh for the duration of the app
+      staleTime: Infinity,
+    },
   );
 };
 

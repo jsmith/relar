@@ -1,16 +1,14 @@
 import * as functions from "firebase-functions";
 import * as os from "os";
 import * as path from "path";
-import * as sharp from "sharp";
+import sharp from "sharp";
 import * as fs from "fs-extra";
 import * as crypto from "crypto";
 import { Result, ok, err, ResultAsync } from "neverthrow";
 import * as id3 from "id3-parser";
 import { ObjectMetadata } from "firebase-functions/lib/providers/storage";
 import { IID3Tag } from "id3-parser/lib/interface";
-import { Song, UserDataType, AlbumType, Album, ArtistType, Artist, Artwork } from "./shared/types";
-import { Record, Result as RuntypeResult, Static } from "runtypes";
-import { Transaction, Query, DocumentReference } from "@google-cloud/firestore";
+import { Song, UserDataType, Artwork } from "./shared/types";
 import { admin } from "./admin";
 import sgMail from "@sendgrid/mail";
 import { env } from "./env";
@@ -180,7 +178,7 @@ export const generateThumbs = functions.storage.object().onFinalize(async (objec
     .andThen(checkObjectName)
     .andThen(checkContentType)
     .andThen(getPaths)
-    .andThen(matchRegex(/^([a-z0-9A-Z]+)\/song_artwork\/([a-z0-9A-Z]+)\/(artwork\.(?:png|jpg))$/))
+    .andThen(matchRegex(/^([^/]+)\/song_artwork\/([^/]+)\/(artwork\.(?:png|jpg))$/))
     .andThen(matchContentType("image"))
     .asyncAndThen(downloadObject(tmpDir))
     .andThen(({ tmpFilePath, filePath, fileName, fileDir, bucket }) => {
@@ -248,7 +246,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
     .andThen(checkObjectName)
     .andThen(checkContentType)
     .andThen(getPaths)
-    .andThen(matchRegex(/^([-a-z0-9A-Z]+)\/songs\/([-a-z0-9A-Z]+)\/[^/]+$/))
+    .andThen(matchRegex(/^([^/]+)\/songs\/([^/]+)\/[^/]+$/))
     .andThen(matchContentType("audio/mpeg"))
     .asyncAndThen(downloadObject(tmpDir))
     .andThen(parseID3Tags)
