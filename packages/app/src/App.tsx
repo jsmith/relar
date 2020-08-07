@@ -189,7 +189,7 @@ export const App = (_: React.Props<{}>) => {
                 ) : isRoute(routes.search) ? (
                   <Search />
                 ) : isRoute(routes.album) ? (
-                  <AlbumOverview />
+                  <AlbumOverview container={container} />
                 ) : null}
               </div>
             </div>

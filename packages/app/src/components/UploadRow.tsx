@@ -5,7 +5,6 @@ import { captureAndLog, captureAndLogError } from "../utils";
 import { AiOutlineStop } from "react-icons/ai";
 import SVGLoadersReact from "svg-loaders-react";
 import { ProgressBar } from "../components/ProgressBar";
-import { UploadTask, UploadTaskSnapshot } from "../shared/utils";
 
 const { Bars } = SVGLoadersReact;
 
@@ -15,7 +14,7 @@ export interface StorageLocation {
 
 export interface UploadRowProps {
   file: File;
-  task: UploadTask | undefined;
+  task: firebase.storage.UploadTask | undefined;
   onRemove: () => void;
 }
 
@@ -29,7 +28,7 @@ export const UploadRow = ({ file, task }: UploadRowProps) => {
   const [cancelled, setCancelled] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const handleSnapshot = (snapshot: UploadTaskSnapshot) => {
+  const handleSnapshot = (snapshot: firebase.storage.UploadTaskSnapshot) => {
     const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
     setProgress(progress);
     switch (snapshot.state) {

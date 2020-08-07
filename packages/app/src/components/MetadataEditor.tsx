@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { DocumentSnapshot } from "src/shared/utils";
 import { Song } from "src/shared/types";
 import { Modal } from "./Modal";
 import { Input } from "./Input";
@@ -7,7 +6,7 @@ import { Input } from "./Input";
 export interface MetadataEditorProps {
   display: boolean;
   setDisplay: (display: boolean) => void;
-  song: DocumentSnapshot<Song>;
+  song: firebase.firestore.DocumentSnapshot<Song>;
 }
 
 export const MetadataEditor = ({ song, display, setDisplay }: MetadataEditorProps) => {
