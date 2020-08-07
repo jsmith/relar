@@ -1,6 +1,6 @@
 import React from "react";
 import classNames from "classnames";
-import { link } from "src/classes";
+import { link } from "../classes";
 
 export interface LinkButton {
   label: string;

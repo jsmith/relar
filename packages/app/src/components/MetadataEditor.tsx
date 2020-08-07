@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Song } from "src/shared/types";
+import { Song } from "../shared/types";
 import { Modal } from "./Modal";
 import { Input } from "./Input";
 
