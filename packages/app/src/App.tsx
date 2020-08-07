@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { routes, CustomRoute } from "./routes";
 import { useRouter } from "react-tiniest-router";
 import { useUser } from "./auth";
@@ -80,21 +80,18 @@ export const App = (_: React.Props<{}>) => {
   const { isRoute, goTo, routeId } = useRouter();
   const { user, loading } = useUser();
   const [display, setDisplay] = useState(false);
-
-  useEffect(() => {
-    console.log(firestore);
-    firestore.onSnapshotsInSync({
-      next: (e) => {
-        console.log(e);
-      },
-    });
-  }, []);
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
   const route = useMemo(() => Object.values(routes).find((route) => route.id === routeId), [
     routeId,
   ]);
 
   useDocumentTitle(route?.title);
+
+  useEffect(() => {
+    console.log(container);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [container]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -152,30 +149,37 @@ export const App = (_: React.Props<{}>) => {
           }
         >
           <React.Suspense fallback={<LoadingSpinner />}>
-            <div className={classNames("h-full", route.containerClassName)}>
-              <div className="flex">
-                {(isRoute(routes.songs) || isRoute(routes.artists) || isRoute(routes.albums)) && (
-                  <ul className="flex space-x-4 text-xl">
-                    {/* TODO accessible */}
-                    {libraryLinks.map(({ label, route }) => (
-                      <li
-                        key={label}
-                        className={classNames(
-                          // TODO bold
-                          "my-2 border-gray-800 cursor-pointer hover:text-gray-800",
-                          isRoute(route) ? "border-b text-gray-800" : " text-gray-600",
-                        )}
-                        onClick={() => goTo(route)}
-                      >
-                        {label}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+            <div
+              ref={(ref) => setContainer(ref)}
+              className={classNames(
+                "h-full absolute inset-0 overflow-y-auto",
+                route.containerClassName,
+              )}
+            >
+              {(isRoute(routes.songs) || isRoute(routes.artists) || isRoute(routes.albums)) && (
+                <ul
+                  className="flex space-x-4 text-xl sticky top-0 z-10"
+                  style={{ backgroundColor: bgApp }}
+                >
+                  {/* TODO accessible */}
+                  {libraryLinks.map(({ label, route }) => (
+                    <li
+                      key={label}
+                      className={classNames(
+                        // TODO bold
+                        "my-2 border-gray-600 cursor-pointer hover:text-gray-800",
+                        isRoute(route) ? "border-b-2 text-gray-700" : " text-gray-600",
+                      )}
+                      onClick={() => goTo(route)}
+                    >
+                      {label}
+                    </li>
+                  ))}
+                </ul>
+              )}
               <div className={route.className}>
                 {isRoute(routes.songs) ? (
-                  <Songs />
+                  <Songs container={container} />
                 ) : isRoute(routes.artists) ? (
                   <Artists />
                 ) : isRoute(routes.albums) ? (

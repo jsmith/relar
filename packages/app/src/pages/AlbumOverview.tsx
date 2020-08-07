@@ -46,18 +46,16 @@ export const AlbumOverview = () => {
           className="w-48 h-48"
           thumbnail={thumbnail}
           onLoad={(e) => {
-            ResultAsync.fromPromise(fac.getColorAsync(e.currentTarget), (e) => e as Error).match(
-              (color) => {
-                setAverageColor(color.hex);
-              },
-              captureException,
-            );
+            const img = e.target as HTMLImageElement;
+            ResultAsync.fromPromise(fac.getColorAsync(img), (e) => e as Error).match((color) => {
+              setAverageColor(color.hex);
+            }, captureException);
           }}
         />
         {album.status === "success" ? (
           <div className={classNames("ml-4", isLight ? "text-gray-700" : "text-gray-200")}>
             <div className="flex items-center">
-              <div className="font-bold text-5xl">{album.data.data()?.name}</div>
+              <div className="font-bold text-5xl">{album.data.data()?.album}</div>
               {/* TODO play album */}
               <button onClick={() => {}}>
                 <MdPlayCircleOutline className="w-10 h-10 ml-3" />

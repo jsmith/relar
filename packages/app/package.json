@@ -38,6 +38,7 @@
     "runtypes": "4.2.0",
     "svg-loaders-react": "^2.2.1",
     "tinycolor2": "^1.4.1",
+    "use-resize-observer": "^6.1.0",
     "uuid": "^8.2.0"
   },
   "devDependencies": {
@@ -66,7 +67,7 @@
     "tailwindcss": "^1.4.6",
     "typescript": "^3.8.0",
     "uvu": "^0.2.1",
-    "vite": "1.0.0-beta.11",
+    "vite": "1.0.0-rc.4",
     "vite-plugin-react": "3.0.1"
   },
   "comments": {

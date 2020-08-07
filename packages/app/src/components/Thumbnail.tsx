@@ -19,6 +19,8 @@ export const Thumbnail = ({ thumbnail, className, style, onLoad }: ThumbnailProp
       {thumbnail ? (
         <img
           onLoad={onLoad}
+          // Anonymous because https://stackoverflow.com/questions/19869150/getimagedata-cross-origin-error
+          crossOrigin="anonymous"
           src={thumbnail}
           alt="Album Cover"
           className="w-full h-full"

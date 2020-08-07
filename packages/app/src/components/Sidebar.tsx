@@ -1,18 +1,20 @@
-import React, { useState, useEffect } from "react";
-import ReactSidebar from "react-sidebar";
+import React, { useState, useEffect, Ref, MutableRefObject, LegacyRef } from "react";
 import classNames from "classnames";
 
 const mql = window.matchMedia(`(min-width: 800px)`);
 
 export const Sidebar = (
-  props: { sidebar: JSX.Element; className?: string } & React.Props<null>,
+  props: {
+    sidebar: JSX.Element;
+    className?: string;
+  } & React.Props<null>,
 ) => {
   const [docked, setDocked] = useState(mql.matches);
-  const [open, setOpen] = useState(false);
+  // const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const mediaQueryChanged = () => {
-      setOpen(false);
+      // setOpen(false);
       setDocked(mql.matches);
     };
 
@@ -20,16 +22,20 @@ export const Sidebar = (
     return () => mql.removeListener(mediaQueryChanged);
   }, []);
 
+  // TODO slide menu https://github.com/negomi/react-burger-menu
+
   return (
-    <div className={classNames("relative", props.className)}>
-      <ReactSidebar
+    <div className={classNames("flex", props.className)}>
+      <div>{props.sidebar}</div>
+      <div className="flex-grow relative">{props.children}</div>
+      {/* <ReactSidebar
         sidebar={props.sidebar}
         open={open}
         docked={docked}
         onSetOpen={() => setOpen(true)}
-      >
-        {props.children}
-      </ReactSidebar>
+        contentId={props.contentId}
+      > */}
+      {/* </ReactSidebar> */}
     </div>
   );
 };
