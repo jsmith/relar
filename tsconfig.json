@@ -2,7 +2,6 @@
   "compilerOptions": {
     "strict": true,
     "noImplicitReturns": true,
-    "declaration": true,
     "noImplicitAny": true,
     "moduleResolution": "node",
     "module": "ES6"

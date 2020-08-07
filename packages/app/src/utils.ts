@@ -1,7 +1,6 @@
 import { MutableRefObject, useEffect, useRef, useState } from "react";
 import * as Sentry from "@sentry/browser";
 import { QueryResult } from "react-query";
-import { DocumentSnapshot } from "./shared/utils";
 
 /**
  * Hook that alerts clicks outside of the passed ref.
@@ -253,7 +252,7 @@ export const captureAndLogError = (
 };
 
 export const useDataFromQueryNSnapshot = <T>(
-  query: QueryResult<DocumentSnapshot<T>>,
+  query: QueryResult<firebase.firestore.DocumentSnapshot<T>>,
 ): T | undefined => {
   const [data, setData] = useState<T>();
   useEffect(() => {

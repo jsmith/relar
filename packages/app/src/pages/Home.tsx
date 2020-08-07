@@ -7,18 +7,14 @@ export const Home = () => {
   // const albums = useAlbums();
   const songs = useRecentlyAddedSongs();
 
-  if (songs.status === "loading") {
+  if (songs === undefined) {
     return <div>LOADING</div>;
-  }
-
-  if (songs.status === "error") {
-    return <div>ERROR</div>;
   }
 
   return (
     <div>
       <HomeTopic title="Recently Played">
-        {songs.data.map((song) => (
+        {songs.map((song) => (
           <SongCard key={song.id} song={song} />
         ))}
       </HomeTopic>

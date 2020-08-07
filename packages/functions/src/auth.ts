@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import { TypedAsyncRouter } from "@graywolfai/rest-ts-express";
 import { BetaAPI, BetaSignup } from "./shared/types";
-import { isPasswordValid, betaSignups } from "./shared/utils";
+import { isPasswordValid } from "./shared/utils";
 import * as bodyParser from "body-parser";
 import sgMail from "@sendgrid/mail";
 import { env } from "./env";
@@ -10,6 +10,7 @@ import { admin } from "./admin";
 import { Sentry } from "./sentry";
 import { Result, ok, err } from "neverthrow";
 import * as functions from "firebase-functions";
+import { betaSignups } from "./utils";
 
 sgMail.setApiKey(env.mail.sendgrid_api_key);
 

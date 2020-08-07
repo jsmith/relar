@@ -1,54 +1,78 @@
-import { QueryDocumentSnapshot, DocumentSnapshot, userStorage } from "../shared/utils";
+import { clientStorage } from "../shared/utils";
 import { createQueryCache } from "../queries/cache";
 import { Song } from "../shared/types";
 import { storage } from "../firebase";
 import { getDownloadURL } from "../storage";
 import { captureAndLogError } from "../utils";
 import { useUserData } from "../firestore";
+import { useMutation } from "react-query";
+import { firestore } from "firebase";
+import { init } from "@sentry/browser";
+import { useMemo } from "react";
 
 const {
   useQuery: useRecentlyAddedSongsQuery,
-  // queryCache: albumsQueryCache,
-} = createQueryCache<["recent-songs", { uid: string }], Array<QueryDocumentSnapshot<Song>>>();
+  // queryCache: recentlyAdedSongs,
+} = createQueryCache<
+  ["recent-songs", { uid: string }],
+  Array<firebase.firestore.QueryDocumentSnapshot<Song>>
+>();
 
 export const useRecentlyAddedSongs = () => {
-  const userData = useUserData();
+  const songs = useSongs();
 
-  return useRecentlyAddedSongsQuery(["recent-songs", { uid: userData.userId }], () => {
-    return (
-      userData
-        .songs()
-        .collection()
-        .orderBy("createdAt")
-        // FIXME infinite query
-        .limit(10)
-        .get()
-        .then((r) => r.docs)
-    );
-  });
+  return useMemo(
+    () =>
+      songs.data
+        ?.slice(0, 1000)
+        .sort((a, b) => a.data().createdAt.seconds - b.data().createdAt.seconds),
+    [songs],
+  );
 };
 
-const {
-  useQuery: useSongsQuery,
-  // queryCache: albumsQueryCache,
-} = createQueryCache<["songs", { uid: string }], Array<QueryDocumentSnapshot<Song>>>();
+export const useDeleteSong = () => {
+  const userData = useUserData();
+
+  return useMutation(
+    async (songId: string) => {
+      await userData.song(songId).delete();
+    },
+    {
+      onSuccess: () => {
+        // TODO delete
+        // songsQueryCache.
+      },
+    },
+  );
+};
+
+const { useQuery: useSongsQuery, queryCache: songsQueryCache } = createQueryCache<
+  ["songs", { uid: string }],
+  Array<firebase.firestore.QueryDocumentSnapshot<Song>>
+>();
 
 export const useSongs = () => {
   const userData = useUserData();
 
-  return useSongsQuery(["songs", { uid: userData.userId }], () =>
-    userData
-      .songs()
-      .collection()
-      .limit(25)
-      .get()
-      .then((r) => r.docs),
+  return useSongsQuery(
+    ["songs", { uid: userData.userId }],
+    () =>
+      userData
+        .songs()
+        .get()
+        .then((r) => r.docs),
+    {
+      // Super important
+      // See https://github.com/jsmith/relar/issues/7
+      // Keep this fresh for the duration of the app
+      staleTime: Infinity,
+    },
   );
 };
 
 export const tryToGetSongDownloadUrlOrLog = async (
   user: firebase.User,
-  snapshot: DocumentSnapshot<Song>,
+  snapshot: firebase.firestore.DocumentSnapshot<Song>,
 ): Promise<string | undefined> => {
   const ref = snapshot.ref;
   const data = snapshot.data();
@@ -60,7 +84,9 @@ export const tryToGetSongDownloadUrlOrLog = async (
     return data.downloadUrl;
   }
 
-  const result = await getDownloadURL(userStorage(storage, user).song(data.id, data.fileName));
+  const result = await getDownloadURL(
+    clientStorage(storage, user.uid).song(data.id, data.fileName),
+  );
 
   if (result.isOk()) {
     // TODO does this actually update the data?? Log snapshot and check.

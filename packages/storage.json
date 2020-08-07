@@ -1,0 +1,11 @@
+[
+  {
+    "origin": [
+      "https://relar.app",
+      "http://localhost:3000",
+      "https://staging.relar.app"
+    ],
+    "method": ["GET"],
+    "maxAgeSeconds": 3600
+  }
+]

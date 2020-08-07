@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, MutableRefObject, useEffect, useRef, useCallback } from "react";
 import { Song } from "../shared/types";
 import { usePlayer } from "../player";
 import classNames from "classnames";
@@ -6,22 +6,23 @@ import { MdMusicNote, MdPlayArrow, MdMoreVert, MdEdit, MdDelete } from "react-ic
 import { MetadataEditor } from "./MetadataEditor";
 import { useModal } from "react-modal-hook";
 import { LikedIcon } from "./LikedIcon";
-import { QueryDocumentSnapshot } from "../shared/utils";
 import { IconButton } from "./IconButton";
-import * as reactAccessibleDropdown from "react-accessible-dropdown-menu-hook";
-import { bgApp } from "../classes";
+import useDropdownMenu from "react-accessible-dropdown-menu-hook";
 import { ContextMenu } from "./ContextMenu";
 import { useConfirmAction } from "../confirm-actions";
+import useResizeObserver from "use-resize-observer";
 
-const useDropdownMenu: typeof reactAccessibleDropdown.default = (reactAccessibleDropdown.default as any)
-  .default;
+// console.log(reactAccessibleDropdown);
+// const useDropdownMenu: typeof reactAccessibleDropdown.default = (reactAccessibleDropdown.default as any)
+//   .default;
 
 export interface SongsTableProps {
   /**
    * The songs. Passing in `undefined` indicates that the songs are still loading.
    */
-  songs?: Array<QueryDocumentSnapshot<Song>>;
+  songs?: Array<firebase.firestore.QueryDocumentSnapshot<Song>>;
   loadingRows?: number;
+  container: HTMLElement | null;
 }
 
 export const HeaderCol = ({
@@ -93,8 +94,8 @@ export interface SongTableRowProps {
   /**
    * The song. `undefined` means it is loading.
    */
-  song: QueryDocumentSnapshot<Song> | undefined;
-  setSong: (song: QueryDocumentSnapshot<Song>) => void;
+  song: firebase.firestore.QueryDocumentSnapshot<Song> | undefined;
+  setSong: (song: firebase.firestore.QueryDocumentSnapshot<Song>) => void;
 }
 
 export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
@@ -142,7 +143,7 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
           </button>
         </div>
 
-        <div title={data.title} className="truncate">
+        <div title={data.title} className="truncate flex-grow">
           {data.title}
         </div>
         <IconButton
@@ -191,8 +192,8 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
         />
       </Cell>
       {/* <TextCell text={data.title} /> */}
-      <TextCell title={data.artist?.name} text={data.artist?.name} className="h-12 truncate" />
-      <TextCell title={data.album?.name} text={data.album?.name} className="h-12 truncate" />
+      <TextCell title={data.artist} text={data.artist} className="h-12 truncate" />
+      <TextCell title={data.albumName} text={data.albumName} className="h-12 truncate" />
       <TextCell text={`${data.played ?? ""}`} className="h-12 truncate" />
       <TextCell text={"4:10"} className="h-12 truncate" />
       <Cell className="h-12 truncate">
@@ -202,23 +203,73 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
   );
 };
 
-export const SongTable = ({ songs: docs, loadingRows = 20 }: SongsTableProps) => {
+// Great tutorial on recycling DOM elements -> https://medium.com/@moshe_31114/building-our-recycle-list-solution-in-react-17a21a9605a0
+export const SongTable = ({ songs: docs, loadingRows = 20, container }: SongsTableProps) => {
+  const rowHeight = 48;
+  const headerHeight = 44;
+  const [offsetTop, setOffsetTop] = useState(0);
+  const [containerHeight, setContainerHeight] = useState(0);
+  const [scrollTop, setScrollTop] = useState(0);
   const [_, setSong] = usePlayer();
+  const t = useRef<HTMLTableElement | null>(null);
+  useResizeObserver<HTMLElement>({
+    ref: useMemo(() => ({ current: container }), [container]),
+    onResize: useCallback((e) => {
+      setContainerHeight(e.height ?? 0);
+      // console.log("Offset", t.current?.offsetTop);
+      setOffsetTop((t.current?.offsetTop ?? 0) + headerHeight);
+    }, []),
+  });
+
+  useEffect(() => {
+    if (!container) {
+      return;
+    }
+
+    container.onscroll = () => {
+      setScrollTop(container.scrollTop);
+    };
+  }, [container]);
+
+  const rowCount = useMemo(() => docs?.length ?? 0, [docs]);
+
+  const { start, end, placeholderTopHeight, placeholderBottomHeight } = useMemo(() => {
+    const offTop = scrollTop - offsetTop;
+    const height = rowHeight * rowCount;
+    const offBottom = height - offTop - containerHeight;
+    // console.log(
+    //   `Offset: ${offsetTop}, container: ${containerHeight}, scroll: ${scrollTop}, units: ${rowCount}, unit: ${rowHeight}, offTop: ${offTop}, offBottom: ${offBottom}`,
+    // );
+
+    const unitsCompletelyOffScreenTop = offTop > 0 ? Math.floor(offTop / rowHeight) : 0;
+
+    const unitsCompletelyOffScreenBottom = offBottom > 0 ? Math.floor(offBottom / rowHeight) : 0;
+
+    const result = {
+      placeholderTopHeight: unitsCompletelyOffScreenTop * rowHeight,
+      placeholderBottomHeight: unitsCompletelyOffScreenBottom * rowHeight,
+      start: unitsCompletelyOffScreenTop,
+      end: rowCount - unitsCompletelyOffScreenBottom,
+    };
+
+    // console.log(result);
+    return result;
+  }, [offsetTop, containerHeight, scrollTop, rowHeight, rowCount]);
 
   const rows = useMemo(() => {
-    const snapshots: Array<QueryDocumentSnapshot<Song> | undefined> = docs
+    const snapshots: Array<firebase.firestore.QueryDocumentSnapshot<Song> | undefined> = docs
       ? docs
-      : Array(loadingRows)
-          .fill(undefined)
-          .map(() => undefined);
+      : Array(loadingRows).fill(undefined);
 
-    return snapshots.map((song, i) => (
-      <SongTableRow song={song} setSong={setSong} key={song?.id ?? i} />
-    ));
-  }, [loadingRows, setSong, docs]);
+    // Having the key == index is very important to prevent DOM performance issues I think
+    return snapshots
+      .slice(start, end + 1)
+      .map((song, i) => <SongTableRow song={song} setSong={setSong} key={i} />);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingRows, docs, start, end]);
 
   return (
-    <table className="text-gray-800 table-fixed w-full">
+    <table className="text-gray-800 table-fixed w-full" ref={t}>
       <thead>
         <tr>
           {/* <HeaderCol label={""} className={""} /> */}
@@ -230,7 +281,11 @@ export const SongTable = ({ songs: docs, loadingRows = 20 }: SongsTableProps) =>
           <HeaderCol width="90px" label="" className="py-3" />
         </tr>
       </thead>
-      <tbody>{rows}</tbody>
+      <tbody>
+        <tr style={{ height: `${placeholderTopHeight}px` }} />
+        {rows}
+        <tr style={{ height: `${placeholderBottomHeight}px` }} />
+      </tbody>
     </table>
   );
 };

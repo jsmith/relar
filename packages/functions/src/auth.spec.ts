@@ -1,10 +1,10 @@
 import supertest from "supertest";
-import { deleteCollection } from "./utils";
-import { testFunctions, noOp } from "./test-utils";
+import { deleteCollection, betaSignups } from "./utils";
+import { testFunctions } from "./configure-tests";
+import { noOp } from "./test-utils";
 import { admin } from "./admin";
 
 import { app } from "./auth";
-import { betaSignups } from "./shared/utils";
 import { BetaSignup } from "./shared/types";
 import { test } from "uvu";
 import assert from "uvu/assert";

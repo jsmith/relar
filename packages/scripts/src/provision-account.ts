@@ -1,33 +1,10 @@
-import * as admin from "firebase-admin";
 import * as uuid from "uuid";
-import * as serviceAccount from "../../serviceAccountKey.toga-4e3f5.json";
-import * as serviceAccountStaging from "../../serviceAccountKey.relar-staging.json";
 import { BetaSignup } from "./shared/types";
 import * as sgMail from "@sendgrid/mail";
 import { env } from "./env";
+import { argv, admin } from "./admin";
 
 sgMail.setApiKey(env.mail.sendgrid_api_key);
-
-const argv = process.argv.slice(0);
-let staging = false;
-if (argv[2] === "--staging") {
-  argv.splice(2, 1);
-  staging = true;
-
-  admin.initializeApp({
-    databaseURL: "https://relar-staging.firebaseio.com",
-    storageBucket: "relar-staging.appspot.com",
-    projectId: "relar-staging",
-    credential: admin.credential.cert(serviceAccountStaging as any),
-  });
-} else {
-  admin.initializeApp({
-    databaseURL: "https://toga-4e3f5.firebaseio.com",
-    storageBucket: "toga-4e3f5.appspot.com",
-    projectId: "toga-4e3f5",
-    credential: admin.credential.cert(serviceAccount as any),
-  });
-}
 
 const auth = admin.auth();
 const firestore = admin.firestore();
