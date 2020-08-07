@@ -4,7 +4,8 @@ service firebase.storage {
   	match /{userId} {
     	match /songs/{songId}/{fileName} {
       	allow get: if request.auth.uid == userId;
-        allow create: if request.auth.uid == userId;
+        // 10MB limit
+        allow create: if request.auth.uid == userId && request.resource.size < 10 * 1024 * 1024;
       }
       
       match /song_artwork/{songId}/{artworkFileName} {

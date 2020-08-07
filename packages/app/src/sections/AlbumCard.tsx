@@ -4,9 +4,12 @@ import { useThumbnail } from "../queries/thumbnail";
 import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "react-tiniest-router";
 import { routes } from "../routes";
-import { QueryDocumentSnapshot } from "../shared/utils";
 
-export const AlbumCard = ({ album }: { album: QueryDocumentSnapshot<Album> }) => {
+export const AlbumCard = ({
+  album,
+}: {
+  album: firebase.firestore.QueryDocumentSnapshot<Album>;
+}) => {
   const data = album.data();
   const thumbnail = useThumbnail(album);
   const { goTo } = useRouter();
@@ -14,7 +17,7 @@ export const AlbumCard = ({ album }: { album: QueryDocumentSnapshot<Album> }) =>
   return (
     <ThumbnailCard
       thumbnail={thumbnail}
-      title={data.name}
+      title={data.album ?? ""}
       subtitle={data.albumArtist}
       onClick={() => goTo(routes.album, { albumId: album.id })}
     />

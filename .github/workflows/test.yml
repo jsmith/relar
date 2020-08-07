@@ -21,7 +21,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 10.x
-      
+
       - run: ./.github/scripts/decrypt.sh
         env:
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
@@ -32,6 +32,5 @@ jobs:
       - run: npx patch-package
       - run: npm run check:formatting
       - run: npm run check:lint
-      # Not type checking because testing actually type checks
-      # - run: npm run check:types
+      - run: npm run check:types
       - run: npm run test

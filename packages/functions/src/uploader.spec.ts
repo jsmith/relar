@@ -1,8 +1,9 @@
 import { Song, Artist, Album } from "./shared/types";
 import * as uuid from "uuid";
 import * as path from "path";
+import { testFunctions } from "./configure-tests";
 import { deleteAllUserData, removeUndefined, adminDb } from "./utils";
-import { testFunctions, createTestSong } from "./test-utils";
+import { createTestSong } from "./test-utils";
 import { test } from "uvu";
 import assert from "uvu/assert";
 
@@ -125,6 +126,9 @@ test("works when uploading a valid song with just a title", async () => {
       title: "WalloonLilliShort",
       fileName: "file_just_title.mp3",
       createdAt: song?.createdAt,
+      albumId: "<<<<<<<",
+      genre: "",
+      albumName: "",
     }),
   );
 });
@@ -137,7 +141,7 @@ test.after.each(async () => {
   }
 });
 
-test("works when uploading a valid song with a title, artist and album", async () => {
+test.only("works when uploading a valid song with a title, artist and album", async () => {
   const wrapped = testFunctions.wrap(createSong);
   const { objectMetadata, songId } = await upload("file_with_artist_album.mp3");
   await wrapped(objectMetadata);
@@ -152,7 +156,9 @@ test("works when uploading a valid song with a title, artist and album", async (
     title: "WalloonLilliShort",
     fileName: "file_with_artist_album.mp3",
     albumName: "Web Samples",
-    albumArtist: "",
+    albumArtist: "Web Samples",
+    albumId: "Web Samples<<<<<<<Web Samples",
+    genre: "Hubbard Demo - web sample",
     artist: "Hendrik Broekman",
     createdAt: song.createdAt,
   });

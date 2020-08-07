@@ -21,12 +21,20 @@ service cloud.firestore {
           return affectedKeys().hasOnly(['lastPlayed', 'played', 'liked', 'downloadUrl', 'artwork'])
         }
 
-        function conformsToSchema() {
-          // TODO
-          request.resource.data.
-        }
+        // function conformsToSchema() {
+        //   // TODO
+        //   request.resource.data.
+        // }
         
       	allow update: if isUser() && validUpdate()
+      }
+
+      match /albums/{albumId} {
+        function validUpdate() {
+          return affectedKeys().hasOnly(['artwork'])
+        }
+
+        allow update: if isUser() && validUpdate()
       }
     }
   }

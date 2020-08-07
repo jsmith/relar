@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
-import { QueryDocumentSnapshot } from "../shared/utils";
 import { Song } from "../shared/types";
 import { captureAndLog } from "../utils";
 
 export interface FavoriteIconProps {
   className?: string;
-  song: QueryDocumentSnapshot<Song>;
+  song: firebase.firestore.QueryDocumentSnapshot<Song>;
 }
 
 export const LikedIcon = ({ className, song }: FavoriteIconProps) => {

@@ -4,29 +4,15 @@
 
 @font-face {
   font-family: "FiraMono";
-  src: url("https://code.cdn.mozilla.net/fonts/ttf/FiraMono-Regular.ttf") format("truetype");
+  src: url("./fonts/FiraMono-Regular.ttf") format("truetype");
 }
 
 @font-face {
   font-family: "FiraMono";
-  src: url("https://code.cdn.mozilla.net/fonts/ttf/FiraMono-Bold.ttf") format("truetype");
+  src: url("./fonts/FiraMono-Bold.ttf") format("truetype");
   font-weight: bold;
 }
 
 body {
   font-family: "FiraMono", monospace;
-}
-
-/* .my-link is used in Link and LinkButton */
-/* TODO remove */
-.my-link {
-  @apply cursor-pointer text-blue-500;
-}
-
-.my-link:hover {
-  @apply underline;
-}
-
-.my-link:focus {
-  @apply underline outline-none;
 }

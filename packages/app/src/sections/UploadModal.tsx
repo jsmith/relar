@@ -5,7 +5,6 @@ import * as uuid from "uuid";
 import { UploadRow } from "../components/UploadRow";
 import { link } from "../classes";
 import { useUserStorage } from "../storage";
-import { UploadTask } from "../shared/utils";
 
 export interface UploadModalProps {
   children?: React.ReactNode;
@@ -21,7 +20,9 @@ const toFileArray = (fileList: FileList) => {
 };
 
 export const UploadModal = ({ children, className, display, setDisplay }: UploadModalProps) => {
-  const [files, setFiles] = useState<Array<{ file: File; task: UploadTask | undefined }>>([]);
+  const [files, setFiles] = useState<
+    Array<{ file: File; task: firebase.storage.UploadTask | undefined }>
+  >([]);
   const fileUpload = useRef<HTMLInputElement | null>(null);
   const [count, setCount] = useState(0);
   const storage = useUserStorage();

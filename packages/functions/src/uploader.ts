@@ -1,17 +1,14 @@
 import * as functions from "firebase-functions";
 import * as os from "os";
 import * as path from "path";
-import * as sharp from "sharp";
+import sharp from "sharp";
 import * as fs from "fs-extra";
 import * as crypto from "crypto";
 import { Result, ok, err, ResultAsync } from "neverthrow";
-import { version } from "../package.json";
 import * as id3 from "id3-parser";
 import { ObjectMetadata } from "firebase-functions/lib/providers/storage";
 import { IID3Tag } from "id3-parser/lib/interface";
-import { Song, UserDataType, AlbumType, Album, ArtistType, Artist, Artwork } from "./shared/types";
-import { Record, Result as RuntypeResult, Static } from "runtypes";
-import { Transaction, Query, DocumentReference } from "@google-cloud/firestore";
+import { Song, UserDataType, Artwork } from "./shared/types";
 import { admin } from "./admin";
 import sgMail from "@sendgrid/mail";
 import { env } from "./env";
@@ -102,11 +99,6 @@ const getPaths = <O extends ObjectMetadata & { name: string; contentType: string
   });
 };
 
-const logVersion = <T>(o: T): T => {
-  console.info(`Running v${version}`);
-  return o;
-};
-
 const matchRegex = (matcher: RegExp) => <O extends CustomObject>(
   object: O,
 ): Result<O & { match: RegExpMatchArray }, Info> => {
@@ -177,17 +169,16 @@ const createTmpDir = async () => {
 
 // For reference -> https://us-central1-toga-4e3f5.cloudfunctions.net/health
 export const health = functions.https.onRequest((_, res) => {
-  res.send(`Running v${version}`);
+  res.send(`Running v${process.env.npm_package_version}`);
 });
 
 export const generateThumbs = functions.storage.object().onFinalize(async (object) => {
   const { dispose, tmpDir } = await createTmpDir();
   return ok<ObjectMetadata, Warning | IError | Info>(object)
-    .map(logVersion)
     .andThen(checkObjectName)
     .andThen(checkContentType)
     .andThen(getPaths)
-    .andThen(matchRegex(/^([a-z0-9A-Z]+)\/song_artwork\/([a-z0-9A-Z]+)\/(artwork\.(?:png|jpg))$/))
+    .andThen(matchRegex(/^([^/]+)\/song_artwork\/([^/]+)\/(artwork\.(?:png|jpg))$/))
     .andThen(matchContentType("image"))
     .asyncAndThen(downloadObject(tmpDir))
     .andThen(({ tmpFilePath, filePath, fileName, fileDir, bucket }) => {
@@ -252,11 +243,10 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
 
   // prettier-ignore
   return ok<ObjectMetadata, Warning | IError | Info>(object)
-    .map(logVersion)
     .andThen(checkObjectName)
     .andThen(checkContentType)
     .andThen(getPaths)
-    .andThen(matchRegex(/^([-a-z0-9A-Z]+)\/songs\/([-a-z0-9A-Z]+)\/[^/]+$/))
+    .andThen(matchRegex(/^([^/]+)\/songs\/([^/]+)\/[^/]+$/))
     .andThen(matchContentType("audio/mpeg"))
     .asyncAndThen(downloadObject(tmpDir))
     .andThen(parseID3Tags)
@@ -381,8 +371,9 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             downloadUrl: undefined,
             title: id3Tag?.title ?? defaultTitle,
             artist: artist?.name,
-            albumName: album?.id,
+            albumName: album?.album,
             albumArtist: album.albumArtist,
+            albumId: album.id,
             year: id3Tag?.year,
             liked: false,
             genre: id3Tag?.genre,

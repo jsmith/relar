@@ -19,10 +19,7 @@ export interface QueryCache<TResult, TKey extends AnyQueryKey> {
     key: TKey,
     dataOrUpdater: TResult | ((oldData: TResult | undefined) => TResult),
   ): void;
-  refetchQueries(
-    queryKeyOrPredicateFn: TKey,
-    { exact, throwOnError, force }?: { exact?: boolean; throwOnError?: boolean; force?: boolean },
-  ): Promise<void>;
+  invalidateQueries(queryKeyOrPredicateFn: TKey, { exact }?: { exact?: boolean }): Promise<void>;
   removeQueries(queryKeyOrPredicateFn: TKey, { exact }?: { exact?: boolean }): void;
   getQuery(queryKey: TKey): CachedQuery<TResult> | undefined;
   getQueries(queryKey: TKey): CachedQuery<TResult>[];
