@@ -7,10 +7,18 @@ import { MetadataEditor } from "./MetadataEditor";
 import { useModal } from "react-modal-hook";
 import { LikedIcon } from "./LikedIcon";
 import { IconButton } from "./IconButton";
-import useDropdownMenu from "react-accessible-dropdown-menu-hook";
+import useDropdownMenuImport from "react-accessible-dropdown-menu-hook";
 import { ContextMenu } from "./ContextMenu";
 import { useConfirmAction } from "../confirm-actions";
 import useResizeObserver from "use-resize-observer";
+
+// I really wish I didn't have to do this but for some reason this is the only thing that works
+// Before I was getting an issue in production
+let useDropdownMenu = useDropdownMenuImport;
+
+if ((useDropdownMenu as any).default) {
+  useDropdownMenu = (useDropdownMenu as any).default;
+}
 
 // console.log(reactAccessibleDropdown);
 // const useDropdownMenu: typeof reactAccessibleDropdown.default = (reactAccessibleDropdown.default as any)
