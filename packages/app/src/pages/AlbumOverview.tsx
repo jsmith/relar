@@ -14,7 +14,7 @@ import { MdPlayCircleOutline } from "react-icons/md";
 
 const fac = new FastAverageColor();
 
-export const AlbumOverview = () => {
+export const AlbumOverview = ({ container }: { container: HTMLElement | null }) => {
   const { params } = useRouter();
   // TODO validation
   const { albumId } = params as { albumId: string };
@@ -87,7 +87,10 @@ export const AlbumOverview = () => {
           {songs.status === "error" ? (
             <ErrorTemplate />
           ) : (
-            <SongTable songs={songs.status === "loading" ? undefined : songs.data} />
+            <SongTable
+              songs={songs.status === "loading" ? undefined : songs.data}
+              container={container}
+            />
           )}
         </div>
       </div>

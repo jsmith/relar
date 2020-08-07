@@ -2,4 +2,4 @@ set -e
 ROOT=$(git rev-parse --show-toplevel)
 
 # See info here https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets
-gpg --symmetric --cipher-algo AES256 $ROOT/.github/secrets/serviceAccountKey.json
+gpg -o $ROOT/.github/secrets/serviceAccountKey.relar-test.json.gpg --symmetric --cipher-algo AES256 $ROOT/packages/serviceAccountKey.relar-test.json
