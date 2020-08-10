@@ -14,6 +14,7 @@ import sgMail from "@sendgrid/mail";
 import { env } from "./env";
 import { createAlbumId } from "./shared/utils";
 import { adminDb } from "./utils";
+import { getMp3Duration } from "./get-mp3-duration";
 
 sgMail.setApiKey(env.mail.sendgrid_api_key);
 
@@ -216,16 +217,19 @@ const readFile = (filePath: string): ResultAsync<Buffer, IError> => {
 
 export const parseID3Tags = <O extends { tmpFilePath: string }>(
   o: O,
-): ResultAsync<O & { id3Tag?: IID3Tag }, IError> => {
+): ResultAsync<O & { id3Tag?: IID3Tag; duration: number }, IError> => {
   return readFile(o.tmpFilePath).andThen((buffer) => {
     const id3Tag = id3.parse(buffer);
     if (!id3Tag) {
       console.warn(`Unable to parse ID3 tags "${o.tmpFilePath}"`);
     }
 
+    const duration = getMp3Duration(buffer);
+
     return ok({
       ...o,
       id3Tag: id3Tag ? id3Tag : undefined,
+      duration,
     });
   });
 };
@@ -250,7 +254,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
     .andThen(matchContentType("audio/mpeg"))
     .asyncAndThen(downloadObject(tmpDir))
     .andThen(parseID3Tags)
-    .andThen(andPromise(async ({ bucket, filePath, fileName, match, id3Tag }) => {
+    .andThen(andPromise(async ({ bucket, filePath, duration, fileName, match, id3Tag }) => {
       try {
         const userId = match[1];
         const songId = match[2];
@@ -380,6 +384,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             played: 0,
             lastPlayed: undefined,
             artwork,
+            duration,
             createdAt: (admin.firestore.FieldValue.serverTimestamp() as unknown) as admin.firestore.Timestamp,
           };
 
