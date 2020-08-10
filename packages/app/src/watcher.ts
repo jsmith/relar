@@ -1,15 +1,50 @@
-import { firestore } from "./firebase";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { createEmitter } from "./events";
 
-const original = firestore.doc.bind(firestore);
-firestore.doc = (path) => {
-  const ref = original(path);
+const cache: { [path: string]: unknown } = {};
+const watchers = createEmitter<Record<string, [unknown]>>();
 
-  return ref;
-};
+export function useFirebaseUpdater<T>(
+  snap: firebase.firestore.QueryDocumentSnapshot<T>,
+): [T, (value: T) => void];
+export function useFirebaseUpdater<T>(
+  snap: firebase.firestore.QueryDocumentSnapshot<T> | undefined,
+): [T | undefined, (value: T) => void];
+export function useFirebaseUpdater<T>(
+  snap: firebase.firestore.QueryDocumentSnapshot<T> | undefined,
+): [T | undefined, (value: T) => void] {
+  const [current, setCurrent] = useState<T | undefined>(
+    snap ? (cache[snap.ref.path] as T) ?? snap.data() : undefined,
+  );
 
-export const useSubscribe = <T>(ref: firebase.firestore.DocumentSnapshot<T>): T | undefined => {
-  const [current, setCurrent] = useState<T>();
+  useEffect(() => {
+    if (!current && snap) {
+      setCurrent((cache[snap.ref.path] as T) ?? snap.data());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [snap]);
 
-  return current;
-};
+  const emitAndSetCurrent = useCallback(
+    (value: T) => {
+      if (!snap) {
+        return;
+      }
+
+      cache[snap.ref.path] = value;
+      watchers.emit(snap.ref.path, value);
+    },
+    [snap],
+  );
+
+  useEffect(() => {
+    if (!snap) {
+      return;
+    }
+
+    return watchers.on(snap.ref.path, (value) => {
+      setCurrent(value as T);
+    });
+  }, [snap, current]);
+
+  return [current, emitAndSetCurrent];
+}

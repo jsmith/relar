@@ -17,6 +17,7 @@ export const createTestSong = (song: Partial<Song>): Song => {
     liked: false,
     fileName: "",
     played: 0,
+    duration: 0,
     downloadUrl: undefined,
     year: "",
     artist: undefined,

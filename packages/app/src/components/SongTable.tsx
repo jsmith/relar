@@ -11,6 +11,9 @@ import useDropdownMenuImport from "react-accessible-dropdown-menu-hook";
 import { ContextMenu } from "./ContextMenu";
 import { useConfirmAction } from "../confirm-actions";
 import useResizeObserver from "use-resize-observer";
+import { useLikeSong } from "../queries/songs";
+import { useFirebaseUpdater } from "../watcher";
+import { fmtMSS } from "../utils";
 
 // I really wish I didn't have to do this but for some reason this is the only thing that works
 // Before I was getting an issue in production
@@ -113,8 +116,14 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
     <MetadataEditor display={true} setDisplay={() => hideEditorModal()} song={defined} />
   ));
   const { confirmAction } = useConfirmAction();
+  const [setLiked] = useLikeSong(song);
+  const [data] = useFirebaseUpdater(song);
 
-  if (!song) {
+  // useEffect(() => {
+  //   console.log(song?.id);
+  // }, [data, song]);
+
+  if (!song || !data) {
     return (
       <tr>
         <LoadingCell />
@@ -125,7 +134,6 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
   }
 
   const defined = song;
-  const data = song.data();
   return (
     <tr
       className="group hover:bg-gray-300 text-gray-700 text-sm"
@@ -203,9 +211,9 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
       <TextCell title={data.artist} text={data.artist} className="h-12 truncate" />
       <TextCell title={data.albumName} text={data.albumName} className="h-12 truncate" />
       <TextCell text={`${data.played ?? ""}`} className="h-12 truncate" />
-      <TextCell text={"4:10"} className="h-12 truncate" />
+      <TextCell text={fmtMSS(data.duration / 1000)} className="h-12 truncate" />
       <Cell className="h-12 truncate">
-        <LikedIcon song={song} />
+        <LikedIcon liked={data.liked} setLiked={setLiked} />
       </Cell>
     </tr>
   );
@@ -260,19 +268,21 @@ export const SongTable = ({ songs: docs, loadingRows = 20, container }: SongsTab
       end: rowCount - unitsCompletelyOffScreenBottom,
     };
 
-    // console.log(result);
     return result;
   }, [offsetTop, containerHeight, scrollTop, rowHeight, rowCount]);
+
+  // useEffect(() => {
+  //   console.debug(`Displaying rows ${start} -> ${end}`);
+  // }, [start, end]);
 
   const rows = useMemo(() => {
     const snapshots: Array<firebase.firestore.QueryDocumentSnapshot<Song> | undefined> = docs
       ? docs
       : Array(loadingRows).fill(undefined);
 
-    // Having the key == index is very important to prevent DOM performance issues I think
     return snapshots
       .slice(start, end + 1)
-      .map((song, i) => <SongTableRow song={song} setSong={setSong} key={i} />);
+      .map((song, i) => <SongTableRow song={song} setSong={setSong} key={song?.id ?? i} />);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingRows, docs, start, end]);
 

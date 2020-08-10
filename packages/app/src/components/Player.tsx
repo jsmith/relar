@@ -15,37 +15,20 @@ import { Slider } from "../components/Slider";
 import classNames from "classnames";
 import { Thumbnail } from "../components/Thumbnail";
 import { useDefinedUser } from "../auth";
-import { tryToGetSongDownloadUrlOrLog } from "../queries/songs";
+import { tryToGetSongDownloadUrlOrLog, useLikeSong } from "../queries/songs";
 import { useThumbnail } from "../queries/thumbnail";
-import { captureAndLog } from "../utils";
+import { captureAndLog, fmtMSS } from "../utils";
 import { LikedIcon } from "./LikedIcon";
-
-/**
- *
- * accepts seconds as Number or String. Returns m:ss
- * take value s and subtract (will try to convert String to Number)
- * the new value of s, now holding the remainder of s divided by 60
- * (will also try to convert String to Number)
- * and divide the resulting Number by 60
- * (can never result in a fractional value = no need for rounding)
- * to which we concatenate a String (converts the Number to String)
- * who's reference is chosen by the conditional operator:
- * if    seconds is larger than 9
- * then  we don't need to prepend a zero
- * else  we do need to prepend a zero
- * and we add Number s to the string (converting it to String as well)
- */
-function fmtMSS(s: number) {
-  s = Math.round(s);
-  return (s - (s %= 60)) / 60 + (9 < s ? ":" : ":0") + s;
-}
+import { useFirebaseUpdater } from "../watcher";
 
 export const Player = () => {
   const [repeat, setRepeat] = useState<"none" | "repeat-one" | "repeat">("none");
   const [song] = usePlayer();
-  const songData = song?.data();
+  const [songData] = useFirebaseUpdater(song);
+  // const songData = song?.data();
   const user = useDefinedUser();
   const [volume, setVolume] = useState(80);
+  const [setLiked] = useLikeSong(song);
   // TODO save when click volume
   // const [savedVolume, setSavedVolume] = useState(volume);
   const [duration, setDuration] = useState(0);
@@ -54,8 +37,6 @@ export const Player = () => {
   const [src, setSrc] = useState<string>();
   const [playing, setPlaying] = useState(false);
   const thumbnail = useThumbnail(song);
-
-  // TODO thumbnail
 
   const playSong = async () => {
     if (!song) {
@@ -147,15 +128,19 @@ export const Player = () => {
       <div className="flex items-center" style={{ width: "30%" }}>
         {songData && <Thumbnail className="w-12 h-12 flex-shrink-0" thumbnail={thumbnail} />}
         {songData && (
-          <div className="ml-3 flex-grow min-w-0">
+          <div className="ml-3 min-w-0">
             <div className="text-gray-100 text-sm" title={songData.title}>
               {songData.title}
             </div>
             <div className="text-gray-300 text-xs">{songData.artist}</div>
           </div>
         )}
-        {song && (
-          <LikedIcon className="ml-6 text-gray-300 hover:text-gray-100" song={song} />
+        {songData && (
+          <LikedIcon
+            className="ml-6 text-gray-300 hover:text-gray-100"
+            liked={songData.liked}
+            setLiked={setLiked}
+          />
           // <button
           //   onClick={() => likedOrUnlikeSong(!songData.liked)}
           //   className="ml-6 text-gray-300 hover:text-gray-100"
@@ -164,6 +149,7 @@ export const Player = () => {
           //   {songData.liked ? <FaHeart /> : <FaRegHeart />}
           // </button>
         )}
+        {/* <div className="w-2" /> */}
       </div>
       <div className="w-2/5 flex flex-col items-center">
         <div className="space-x-2 flex items-center">

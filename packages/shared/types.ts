@@ -62,6 +62,9 @@ export const SongType = Record({
   /** The song title. */
   title: String,
 
+  /** The duration of the song in milliseconds. */
+  duration: Number,
+
   /**
    * The artist name. This is a unique value.
    */

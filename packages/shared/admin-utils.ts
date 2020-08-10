@@ -23,6 +23,15 @@ export const adminStorage = (storage: admin.storage.Storage, userId: string) => 
       bucket.upload(filePath, {
         destination: p.append("songs").append(songId).append(path.basename(filePath)).build(),
       }),
+    downloadSong: ({
+      songId,
+      filePath,
+      fileName,
+    }: {
+      songId: string;
+      filePath: string;
+      fileName: string;
+    }) => adminStorage(storage, userId).song(songId, fileName).download({ destination: filePath }),
   };
 };
 

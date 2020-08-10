@@ -13,6 +13,8 @@ if (process.env.NODE_ENV !== "development") {
   });
 }
 
+// It's super important to import this first
+import "./watcher";
 import { App } from "./App"; // this must be first for hot reloading
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -26,7 +28,7 @@ import { ReactQueryConfigProvider, ReactQueryProviderConfig } from "react-query"
 import { captureAndLog } from "./utils";
 import { ModalProvider } from "react-modal-hook";
 
-const config: ReactQueryProviderConfig<Error> = {
+const config: ReactQueryProviderConfig = {
   queries: {
     // 5 minutes
     staleTime: 5 * 60 * 1000,
