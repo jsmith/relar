@@ -13,6 +13,8 @@ if (process.env.NODE_ENV !== "development") {
   });
 }
 
+// It's super important to import this first
+import "./watcher";
 import { App } from "./App"; // this must be first for hot reloading
 import * as React from "react";
 import * as ReactDOM from "react-dom";
