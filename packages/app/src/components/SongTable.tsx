@@ -11,6 +11,8 @@ import useDropdownMenuImport from "react-accessible-dropdown-menu-hook";
 import { ContextMenu } from "./ContextMenu";
 import { useConfirmAction } from "../confirm-actions";
 import useResizeObserver from "use-resize-observer";
+import { useLikeSong } from "../queries/songs";
+import { useFirebaseUpdater } from "../watcher";
 
 // I really wish I didn't have to do this but for some reason this is the only thing that works
 // Before I was getting an issue in production
@@ -113,8 +115,10 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
     <MetadataEditor display={true} setDisplay={() => hideEditorModal()} song={defined} />
   ));
   const { confirmAction } = useConfirmAction();
+  const [setLiked] = useLikeSong(song);
+  const [data] = useFirebaseUpdater(song, "SongTable.tsx");
 
-  if (!song) {
+  if (!song || !data) {
     return (
       <tr>
         <LoadingCell />
@@ -125,7 +129,6 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
   }
 
   const defined = song;
-  const data = song.data();
   return (
     <tr
       className="group hover:bg-gray-300 text-gray-700 text-sm"
@@ -205,7 +208,7 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
       <TextCell text={`${data.played ?? ""}`} className="h-12 truncate" />
       <TextCell text={"4:10"} className="h-12 truncate" />
       <Cell className="h-12 truncate">
-        <LikedIcon song={song} />
+        <LikedIcon liked={data.liked} setLiked={setLiked} />
       </Cell>
     </tr>
   );

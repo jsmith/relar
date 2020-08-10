@@ -3,12 +3,13 @@ import { createQueryCache } from "../queries/cache";
 import { Song } from "../shared/types";
 import { storage } from "../firebase";
 import { getDownloadURL } from "../storage";
-import { captureAndLogError } from "../utils";
+import { captureAndLogError, captureAndLog } from "../utils";
 import { useUserData } from "../firestore";
-import { useMutation } from "react-query";
+import { useMutation, MutationFunction } from "react-query";
 import { firestore } from "firebase";
 import { init } from "@sentry/browser";
 import { useMemo } from "react";
+import { useFirebaseUpdater } from "../watcher";
 
 const {
   useQuery: useRecentlyAddedSongsQuery,
@@ -98,4 +99,22 @@ export const tryToGetSongDownloadUrlOrLog = async (
   captureAndLogError(
     `Unknown error when getting song url (${user.uid}, ${data.id}): ${result.error}`,
   );
+};
+
+export const useLikeSong = (song: firebase.firestore.DocumentSnapshot<Song> | undefined) => {
+  const [_, setSong] = useFirebaseUpdater(song, "songs.ts");
+
+  return useMutation(async (liked: boolean) => {
+    if (!song) {
+      return;
+    }
+
+    await song.ref
+      .update({
+        liked,
+      })
+      .then(() => song.ref.get())
+      .then((data) => setSong(data.data()))
+      .catch(captureAndLog);
+  });
 };

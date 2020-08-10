@@ -15,10 +15,11 @@ import { Slider } from "../components/Slider";
 import classNames from "classnames";
 import { Thumbnail } from "../components/Thumbnail";
 import { useDefinedUser } from "../auth";
-import { tryToGetSongDownloadUrlOrLog } from "../queries/songs";
+import { tryToGetSongDownloadUrlOrLog, useLikeSong } from "../queries/songs";
 import { useThumbnail } from "../queries/thumbnail";
 import { captureAndLog } from "../utils";
 import { LikedIcon } from "./LikedIcon";
+import { useFirebaseUpdater } from "../watcher";
 
 /**
  *
@@ -43,9 +44,11 @@ function fmtMSS(s: number) {
 export const Player = () => {
   const [repeat, setRepeat] = useState<"none" | "repeat-one" | "repeat">("none");
   const [song] = usePlayer();
-  const songData = song?.data();
+  const [songData, _] = useFirebaseUpdater(song, "Player.tsx");
+  // const songData = song?.data();
   const user = useDefinedUser();
   const [volume, setVolume] = useState(80);
+  const [setLiked] = useLikeSong(song);
   // TODO save when click volume
   // const [savedVolume, setSavedVolume] = useState(volume);
   const [duration, setDuration] = useState(0);
@@ -54,8 +57,6 @@ export const Player = () => {
   const [src, setSrc] = useState<string>();
   const [playing, setPlaying] = useState(false);
   const thumbnail = useThumbnail(song);
-
-  // TODO thumbnail
 
   const playSong = async () => {
     if (!song) {
@@ -154,8 +155,12 @@ export const Player = () => {
             <div className="text-gray-300 text-xs">{songData.artist}</div>
           </div>
         )}
-        {song && (
-          <LikedIcon className="ml-6 text-gray-300 hover:text-gray-100" song={song} />
+        {songData && (
+          <LikedIcon
+            className="ml-6 text-gray-300 hover:text-gray-100"
+            liked={songData.liked}
+            setLiked={setLiked}
+          />
           // <button
           //   onClick={() => likedOrUnlikeSong(!songData.liked)}
           //   className="ml-6 text-gray-300 hover:text-gray-100"
