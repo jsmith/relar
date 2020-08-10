@@ -5,7 +5,7 @@
     "dev": "vite serve src",
     "build": "vite build src --outDir dist",
     "build-staging": "vite build src --mode staging --outDir dist",
-    "test": "test.sh",
+    "test": "./test.sh",
     "check:formatting": "prettier --list-different \"**/*.{ts,tsx,js}\"",
     "check:lint": "eslint \"**/*.{ts,tsx}\"",
     "check:types": "tsc --noEmit",
