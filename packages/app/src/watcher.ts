@@ -1,32 +1,9 @@
 import { firestore } from "./firebase";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { createEmitter } from "./events";
 
-export interface Events {
-  [name: string]: any[];
-}
-
-export const emitter = <E extends Events>() => {
-  const listeners: Partial<{ [K in keyof E]: Array<(...args: E[K]) => void> }> = {};
-
-  return {
-    on: <K extends keyof E>(key: K, listener: (...args: E[K]) => void): (() => void) => {
-      if (!listeners[key]) {
-        listeners[key] = [];
-      }
-
-      listeners[key]!.push(listener);
-
-      return () => listeners[key]!.splice(listeners[key]!.indexOf(listener), 1);
-    },
-    emit: <K extends keyof E>(key: K, ...args: E[K]) => {
-      if (listeners[key]) {
-        listeners[key]!.forEach((listener) => listener(...args));
-      }
-    },
-  };
-};
-
-const watchers = emitter<Record<string, [firebase.firestore.DocumentSnapshot<unknown>]>>();
+const cache: { [path: string]: unknown } = {};
+const watchers = createEmitter<Record<string, [unknown]>>();
 
 const originalDoc = firestore.doc.bind(firestore);
 firestore.doc = (path) => {
@@ -36,20 +13,35 @@ firestore.doc = (path) => {
 };
 
 export const useFirebaseUpdater = <T>(
-  snap: firebase.firestore.DocumentSnapshot<T>,
-): T | undefined => {
-  const [current, setCurrent] = useState<T | undefined>();
+  snap: firebase.firestore.QueryDocumentSnapshot<T>,
+): [T, (value: T) => void] => {
+  const [current, setCurrent] = useState<T>(snap.data());
+
+  const emitAndSetCurrent = useCallback(
+    (value: T) => {
+      setCurrent(value);
+      watchers.emit(snap.ref.path, value);
+    },
+    [snap],
+  );
 
   useEffect(() => {
-    const dispose = watchers.on(snap.ref.path, (newSnap) => {
-      setCurrent(newSnap.data() as T | undefined);
+    const path = snap.ref.path;
+    const data = snap.data();
+    const dispose = watchers.on(path, (value) => {
+      setCurrent(value as T);
     });
 
-    // TODO set if not defined
-    // TODO get the most updated version somehow???
+    if (!cache[path]) {
+      cache[path] = data;
+    }
+
+    if (cache[path] !== data) {
+      setCurrent(cache[path] as T);
+    }
 
     return dispose;
-  });
+  }, [snap, emitAndSetCurrent]);
 
-  return current;
+  return [current, emitAndSetCurrent];
 };
