@@ -26,18 +26,19 @@
     "fs-extra": "^9.0.1",
     "id3-parser": "^2.0.0",
     "neverthrow": "^2.7.0",
-    "runtypes": "4.2.0",
+    "runtypes": "4.3.0",
     "sharp": "^0.25.3",
-    "uuid": "^8.1.0"
+    "uuid": "^8.3.0"
   },
   "devDependencies": {
+    "@types/fs-extra": "^9.0.1",
     "@types/sharp": "^0.25.0",
     "@types/supertest": "^2.0.9",
     "@types/uuid": "^8.0.0",
     "@typescript-eslint/eslint-plugin": "^3.2.0",
     "@typescript-eslint/parser": "^3.2.0",
     "axios": "^0.19.2",
-    "esbuild": "^0.6.3",
+    "esbuild": "^0.6.10",
     "esbuild-register": "^1.0.2",
     "eslint": "^7.2.0",
     "eslint-config-restricted-globals": "^0.1.0",
@@ -45,7 +46,7 @@
     "firebase-functions-test": "^0.1.7",
     "prettier": "^2.0.5",
     "supertest": "^4.0.2",
-    "typescript": "^3.8.0",
-    "uvu": "^0.2.3"
+    "typescript": "^3.9.6",
+    "uvu": "^0.3.2"
   }
 }

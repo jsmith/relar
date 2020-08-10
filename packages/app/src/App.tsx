@@ -88,11 +88,6 @@ export const App = (_: React.Props<{}>) => {
 
   useDocumentTitle(route?.title);
 
-  useEffect(() => {
-    console.log(container);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [container]);
-
   if (loading) {
     return <div>Loading...</div>;
   }

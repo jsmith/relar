@@ -261,3 +261,23 @@ export const useDataFromQueryNSnapshot = <T>(
 
   return data;
 };
+
+/**
+ *
+ * accepts seconds as Number or String. Returns m:ss
+ * take value s and subtract (will try to convert String to Number)
+ * the new value of s, now holding the remainder of s divided by 60
+ * (will also try to convert String to Number)
+ * and divide the resulting Number by 60
+ * (can never result in a fractional value = no need for rounding)
+ * to which we concatenate a String (converts the Number to String)
+ * who's reference is chosen by the conditional operator:
+ * if    seconds is larger than 9
+ * then  we don't need to prepend a zero
+ * else  we do need to prepend a zero
+ * and we add Number s to the string (converting it to String as well)
+ */
+export function fmtMSS(s: number) {
+  s = Math.round(s);
+  return (s - (s %= 60)) / 60 + (9 < s ? ":" : ":0") + s;
+}

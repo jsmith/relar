@@ -10,5 +10,11 @@ npx ts-node src/provision-accounts.ts <EMAIL>
 ## create-fake-song-data.ts
 Creates 30 fakes songs for the given user.
 ```
-npx ts-node create-fake-song-data.ts <USER_ID>
+npx ts-node src/create-fake-song-data.ts <USER_ID>
+```
+
+## add-song-duration.ts
+Add durations for all songs.
+```
+npx ts-node src/add-song-duration.ts <USER_ID>
 ```

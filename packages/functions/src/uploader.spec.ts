@@ -129,6 +129,7 @@ test("works when uploading a valid song with just a title", async () => {
       albumId: "<<<<<<<",
       genre: "",
       albumName: "",
+      duration: 13087,
     }),
   );
 });
@@ -141,7 +142,7 @@ test.after.each(async () => {
   }
 });
 
-test.only("works when uploading a valid song with a title, artist and album", async () => {
+test("works when uploading a valid song with a title, artist and album", async () => {
   const wrapped = testFunctions.wrap(createSong);
   const { objectMetadata, songId } = await upload("file_with_artist_album.mp3");
   await wrapped(objectMetadata);
@@ -161,6 +162,7 @@ test.only("works when uploading a valid song with a title, artist and album", as
     genre: "Hubbard Demo - web sample",
     artist: "Hendrik Broekman",
     createdAt: song.createdAt,
+    duration: 13087,
   });
 
   assert.equal(song, testSong);
