@@ -13,11 +13,25 @@ export function useFirebaseUpdater<T>(
 export function useFirebaseUpdater<T>(
   snap: firebase.firestore.QueryDocumentSnapshot<T> | undefined,
 ): [T | undefined, (value: T) => void] {
-  const [current, setCurrent] = useState<T | undefined>(snap?.data());
+  const [current, setCurrent] = useState<T | undefined>(
+    snap ? (cache[snap.ref.path] as T) ?? snap.data() : undefined,
+  );
+
+  useEffect(() => {
+    if (!current && snap) {
+      setCurrent((cache[snap.ref.path] as T) ?? snap.data());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [snap]);
 
   const emitAndSetCurrent = useCallback(
     (value: T) => {
-      snap && watchers.emit(snap.ref.path, value);
+      if (!snap) {
+        return;
+      }
+
+      cache[snap.ref.path] = value;
+      watchers.emit(snap.ref.path, value);
     },
     [snap],
   );
@@ -31,21 +45,6 @@ export function useFirebaseUpdater<T>(
       setCurrent(value as T);
     });
   }, [snap, current]);
-
-  useEffect(() => {
-    if (!snap) {
-      return;
-    }
-
-    const path = snap.ref.path;
-    const data = snap.data();
-
-    if (!cache[path]) {
-      cache[path] = data;
-    }
-
-    setCurrent(cache[path] as T);
-  }, [snap]);
 
   return [current, emitAndSetCurrent];
 }
