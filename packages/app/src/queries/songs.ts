@@ -6,18 +6,8 @@ import { getDownloadURL } from "../storage";
 import { captureAndLogError, captureAndLog } from "../utils";
 import { useUserData } from "../firestore";
 import { useMutation, MutationFunction } from "react-query";
-import { firestore } from "firebase";
-import { init } from "@sentry/browser";
 import { useMemo } from "react";
 import { useFirebaseUpdater } from "../watcher";
-
-const {
-  useQuery: useRecentlyAddedSongsQuery,
-  // queryCache: recentlyAdedSongs,
-} = createQueryCache<
-  ["recent-songs", { uid: string }],
-  Array<firebase.firestore.QueryDocumentSnapshot<Song>>
->();
 
 export const useRecentlyAddedSongs = () => {
   const songs = useSongs();
@@ -102,7 +92,7 @@ export const tryToGetSongDownloadUrlOrLog = async (
 };
 
 export const useLikeSong = (song: firebase.firestore.DocumentSnapshot<Song> | undefined) => {
-  const [_, setSong] = useFirebaseUpdater(song, "songs.ts");
+  const [_, setSong] = useFirebaseUpdater(song);
 
   return useMutation(async (liked: boolean) => {
     if (!song) {

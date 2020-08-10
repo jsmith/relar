@@ -116,7 +116,7 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
   ));
   const { confirmAction } = useConfirmAction();
   const [setLiked] = useLikeSong(song);
-  const [data] = useFirebaseUpdater(song, "SongTable.tsx");
+  const [data] = useFirebaseUpdater(song);
 
   if (!song || !data) {
     return (

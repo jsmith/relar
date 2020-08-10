@@ -44,7 +44,7 @@ function fmtMSS(s: number) {
 export const Player = () => {
   const [repeat, setRepeat] = useState<"none" | "repeat-one" | "repeat">("none");
   const [song] = usePlayer();
-  const [songData, _] = useFirebaseUpdater(song, "Player.tsx");
+  const [songData] = useFirebaseUpdater(song);
   // const songData = song?.data();
   const user = useDefinedUser();
   const [volume, setVolume] = useState(80);
@@ -148,7 +148,7 @@ export const Player = () => {
       <div className="flex items-center" style={{ width: "30%" }}>
         {songData && <Thumbnail className="w-12 h-12 flex-shrink-0" thumbnail={thumbnail} />}
         {songData && (
-          <div className="ml-3 flex-grow min-w-0">
+          <div className="ml-3 min-w-0">
             <div className="text-gray-100 text-sm" title={songData.title}>
               {songData.title}
             </div>
@@ -169,6 +169,7 @@ export const Player = () => {
           //   {songData.liked ? <FaHeart /> : <FaRegHeart />}
           // </button>
         )}
+        {/* <div className="w-2" /> */}
       </div>
       <div className="w-2/5 flex flex-col items-center">
         <div className="space-x-2 flex items-center">
