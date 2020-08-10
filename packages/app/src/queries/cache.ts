@@ -1,19 +1,14 @@
 import {
   useQuery,
   queryCache,
-  QueryOptions,
-  AnyQueryKey,
-  CachedQuery,
+  Query,
   QueryFunction,
   QueryResult,
+  QueryKey,
+  QueryConfig,
 } from "react-query";
 
-export interface QueryCache<TResult, TKey extends AnyQueryKey> {
-  prefetchQuery(
-    queryKey: TKey,
-    queryFn: QueryFunction<TResult, TKey>,
-    config?: QueryOptions<TResult, Error>,
-  ): Promise<TResult>;
+export interface QueryCache<TResult, TKey extends QueryKey> {
   getQueryData(key: TKey): TResult | undefined;
   setQueryData(
     key: TKey,
@@ -21,19 +16,18 @@ export interface QueryCache<TResult, TKey extends AnyQueryKey> {
   ): void;
   invalidateQueries(queryKeyOrPredicateFn: TKey, { exact }?: { exact?: boolean }): Promise<void>;
   removeQueries(queryKeyOrPredicateFn: TKey, { exact }?: { exact?: boolean }): void;
-  getQuery(queryKey: TKey): CachedQuery<TResult> | undefined;
-  getQueries(queryKey: TKey): CachedQuery<TResult>[];
+  getQuery(queryKey: TKey): Query<TResult, Error> | undefined;
   isFetching: number;
   clear(): void;
 }
 
-export type UseQuery<TResult, TKey extends AnyQueryKey> = (
+export type UseQuery<TResult, TKey extends QueryKey> = (
   queryKey: TKey | false | null | undefined | (() => TKey | false | null | undefined),
-  queryFn: QueryFunction<TResult, TKey>,
-  config?: QueryOptions<TResult, Error>,
+  queryFn: QueryFunction<TResult>,
+  config?: QueryConfig<TResult, Error>,
 ) => QueryResult<TResult, Error>;
 
-export const createQueryCache = <TKey extends AnyQueryKey, TResult>(): {
+export const createQueryCache = <TKey extends QueryKey, TResult>(): {
   queryCache: QueryCache<TResult, TKey>;
   useQuery: UseQuery<TResult, TKey>;
 } => {

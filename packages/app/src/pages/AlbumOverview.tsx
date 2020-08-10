@@ -53,6 +53,20 @@ export const AlbumOverview = ({ container }: { container: HTMLElement | null }) 
           }}
         />
         {album.status === "success" ? (
+          <div>
+            <div>
+              {/* TODO error */}
+              ERROR
+            </div>
+          </div>
+        ) : album.status === "loading" || !album.data ? (
+          <div>
+            <div>
+              {/* TODO loading */}
+              LOADING
+            </div>
+          </div>
+        ) : (
           <div className={classNames("ml-4", isLight ? "text-gray-700" : "text-gray-200")}>
             <div className="flex items-center">
               <div className="font-bold text-5xl">{album.data.data()?.album}</div>
@@ -65,20 +79,6 @@ export const AlbumOverview = ({ container }: { container: HTMLElement | null }) 
             {/* TODO store length in song */}
             <span> {`${songs.data?.length} ${songs.data?.length === 1 ? "song" : "songs"}`} •</span>
             <span> 4:12</span>
-          </div>
-        ) : album.status === "error" ? (
-          <div>
-            <div>
-              {/* TODO error */}
-              ERROR
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div>
-              {/* TODO loading */}
-              LOADING
-            </div>
           </div>
         )}
       </div>
