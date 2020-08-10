@@ -13,7 +13,9 @@ export const createEmitter = <E extends Events>() => {
 
       listeners[key]!.push(listener);
 
-      return () => listeners[key]!.splice(listeners[key]!.indexOf(listener), 1);
+      // Ok so I was originally using splice but for some reason that was causing unexpected bugs
+      // Soooo, I am now using delete :)
+      return () => delete listeners[key]![listeners[key]!.indexOf(listener)];
     },
     emit: <K extends keyof E>(key: K, ...args: E[K]) => {
       if (listeners[key]) {
