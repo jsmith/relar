@@ -28,7 +28,7 @@ import { ReactQueryConfigProvider, ReactQueryProviderConfig } from "react-query"
 import { captureAndLog } from "./utils";
 import { ModalProvider } from "react-modal-hook";
 
-const config: ReactQueryProviderConfig<Error> = {
+const config: ReactQueryProviderConfig = {
   queries: {
     // 5 minutes
     staleTime: 5 * 60 * 1000,
