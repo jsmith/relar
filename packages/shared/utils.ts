@@ -52,6 +52,9 @@ export const clientStorage = (storage: firebase.storage.Storage, userId: string)
       return {
         original: () => storage.ref(artworksPath.append(`artwork.${type}`).build()),
         "32": () => storage.ref(artworksPath.append(`thumb@32_artwork.${type}`).build()),
+        "64": () => storage.ref(artworksPath.append(`thumb@64_artwork.${type}`).build()),
+        "128": () => storage.ref(artworksPath.append(`thumb@128_artwork.${type}`).build()),
+        "256": () => storage.ref(artworksPath.append(`thumb@256_artwork.${type}`).build()),
       };
     },
     song: (songId: string, fileName: string) =>

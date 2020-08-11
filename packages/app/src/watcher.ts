@@ -1,8 +1,13 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createEmitter } from "./events";
 
+// TODO clear on logout????
 const cache: { [path: string]: unknown } = {};
 const watchers = createEmitter<Record<string, [unknown]>>();
+
+export const getCachedOr = <T>(snap: firebase.firestore.QueryDocumentSnapshot<T>): T => {
+  return (cache[snap.ref.path] as T) ?? snap.data();
+};
 
 export function useFirebaseUpdater<T>(
   snap: firebase.firestore.QueryDocumentSnapshot<T>,
@@ -13,13 +18,11 @@ export function useFirebaseUpdater<T>(
 export function useFirebaseUpdater<T>(
   snap: firebase.firestore.QueryDocumentSnapshot<T> | undefined,
 ): [T | undefined, (value: T) => void] {
-  const [current, setCurrent] = useState<T | undefined>(
-    snap ? (cache[snap.ref.path] as T) ?? snap.data() : undefined,
-  );
+  const [current, setCurrent] = useState<T | undefined>(snap ? getCachedOr(snap) : undefined);
 
   useEffect(() => {
     if (!current && snap) {
-      setCurrent((cache[snap.ref.path] as T) ?? snap.data());
+      setCurrent(getCachedOr(snap));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [snap]);
@@ -48,3 +51,27 @@ export function useFirebaseUpdater<T>(
 
   return [current, emitAndSetCurrent];
 }
+
+export const useFirebaseMemo = <T>(
+  f: () => firebase.firestore.QueryDocumentSnapshot<T>[],
+  dependencies: Array<any>,
+) => {
+  const [trigger, setTrigger] = useState(false);
+
+  const memorized = useMemo(() => {
+    const memorized = f();
+    return memorized;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trigger, ...dependencies]);
+
+  useEffect(() => {
+    const disposers = memorized.map((snap) => {
+      return watchers.on(snap.ref.path, () => setTrigger(!trigger));
+    });
+
+    return () => disposers.forEach((disposer) => disposer());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, dependencies);
+
+  return memorized;
+};

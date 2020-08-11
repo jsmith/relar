@@ -4,7 +4,7 @@ import { useRouter } from "react-tiniest-router";
 import FastAverageColor from "fast-average-color";
 import { Thumbnail } from "../components/Thumbnail";
 import { ResultAsync } from "neverthrow";
-import { captureException, useDataFromQueryNSnapshot } from "../utils";
+import { captureException, fmtMSS } from "../utils";
 import tiny from "tinycolor2";
 import classNames from "classnames";
 import { useAlbumSongs, useAlbum } from "../queries/album";
@@ -20,7 +20,7 @@ export const AlbumOverview = ({ container }: { container: HTMLElement | null }) 
   const { albumId } = params as { albumId: string };
   const album = useAlbum(albumId);
   // const albumData = useDataFromQueryNSnapshot(album);
-  const thumbnail = useThumbnail(album.status === "success" ? album.data : undefined);
+  const thumbnail = useThumbnail(album.status === "success" ? album.data : undefined, "256");
   const [averageColor, setAverageColor] = useState("#cbd5e0");
   const { from, to } = useMemo(
     () => ({
@@ -30,6 +30,16 @@ export const AlbumOverview = ({ container }: { container: HTMLElement | null }) 
     [averageColor],
   );
   const songs = useAlbumSongs(albumId);
+
+  const songDuration = useMemo(
+    () =>
+      songs.data
+        ? songs.data
+            .map((song) => song.data().duration)
+            .reduce((sum, duration) => sum + duration, 0)
+        : 0,
+    [songs],
+  );
 
   const isLight = useMemo(() => tiny(averageColor).isLight(), [averageColor]);
 
@@ -52,7 +62,7 @@ export const AlbumOverview = ({ container }: { container: HTMLElement | null }) 
             }, captureException);
           }}
         />
-        {album.status === "success" ? (
+        {album.status === "error" ? (
           <div>
             <div>
               {/* TODO error */}
@@ -78,7 +88,7 @@ export const AlbumOverview = ({ container }: { container: HTMLElement | null }) 
             <span>{album.data.data()?.albumArtist} •</span>
             {/* TODO store length in song */}
             <span> {`${songs.data?.length} ${songs.data?.length === 1 ? "song" : "songs"}`} •</span>
-            <span> 4:12</span>
+            <span> {fmtMSS(songDuration / 1000)}</span>
           </div>
         )}
       </div>

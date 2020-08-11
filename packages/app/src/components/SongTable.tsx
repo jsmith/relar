@@ -14,6 +14,9 @@ import useResizeObserver from "use-resize-observer";
 import { useLikeSong } from "../queries/songs";
 import { useFirebaseUpdater } from "../watcher";
 import { fmtMSS } from "../utils";
+import { Link } from "./Link";
+import { routes } from "../routes";
+import { link } from "../classes";
 
 // I really wish I didn't have to do this but for some reason this is the only thing that works
 // Before I was getting an issue in production
@@ -90,7 +93,7 @@ export const TextCell = ({
   className,
   title,
 }: {
-  text?: string;
+  text?: React.ReactNode;
   className: string;
   title?: string;
 }) => {
@@ -113,7 +116,12 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
   const { buttonProps, itemProps, isOpen, setIsOpen } = useDropdownMenu(2);
   const [focusedPlay, setFocusedPlay] = useState(false);
   const [showEditorModal, hideEditorModal] = useModal(() => (
-    <MetadataEditor display={true} setDisplay={() => hideEditorModal()} song={defined} />
+    <MetadataEditor
+      display={true}
+      setDisplay={() => hideEditorModal()}
+      song={defined}
+      onSuccess={() => {}}
+    />
   ));
   const { confirmAction } = useConfirmAction();
   const [setLiked] = useLikeSong(song);
@@ -208,8 +216,34 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
         />
       </Cell>
       {/* <TextCell text={data.title} /> */}
-      <TextCell title={data.artist} text={data.artist} className="h-12 truncate" />
-      <TextCell title={data.albumName} text={data.albumName} className="h-12 truncate" />
+      <TextCell
+        title={data.artist}
+        text={
+          data.artist && (
+            <Link
+              className={link({ color: "" })}
+              label={data.artist}
+              route={routes.artist}
+              params={{ artistName: data.artist }}
+            />
+          )
+        }
+        className="h-12 truncate"
+      />
+      <TextCell
+        title={data.albumName}
+        text={
+          data.albumName && (
+            <Link
+              className={link({ color: "" })}
+              label={data.albumName}
+              route={routes.album}
+              params={{ albumId: data.albumId }}
+            />
+          )
+        }
+        className="h-12 truncate"
+      />
       <TextCell text={`${data.played ?? ""}`} className="h-12 truncate" />
       <TextCell text={fmtMSS(data.duration / 1000)} className="h-12 truncate" />
       <Cell className="h-12 truncate">
