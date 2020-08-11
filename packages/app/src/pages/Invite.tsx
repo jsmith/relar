@@ -6,7 +6,7 @@ import { Input } from "../components/Input";
 import { useRouter } from "react-tiniest-router";
 import { BlockAlert } from "../components/BlockAlert";
 import { Button } from "../components/Button";
-import { backend, getOrUnknownError } from "../backend";
+import { betaBackend, getOrUnknownError } from "../backend";
 
 export const Invite = () => {
   const { params, goTo } = useRouter();
@@ -19,7 +19,7 @@ export const Invite = () => {
   const createAccount = async () => {
     setLoading(true);
     const response = await getOrUnknownError(() =>
-      backend.post("/create-account", {
+      betaBackend.post("/create-account", {
         token: invite,
         password: password,
       }),
