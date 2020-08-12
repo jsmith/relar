@@ -60,13 +60,17 @@ export const useFirebaseMemo = <T>(
 
   const memorized = useMemo(() => {
     const memorized = f();
+    console.debug("Recalculated firebase memo -> ", [trigger, ...dependencies]);
     return memorized;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trigger, ...dependencies]);
 
   useEffect(() => {
     const disposers = memorized.map((snap) => {
-      return watchers.on(snap.ref.path, () => setTrigger(!trigger));
+      return watchers.on(snap.ref.path, () => {
+        console.info("Firebase memo triggered!");
+        setTrigger(!trigger);
+      });
     });
 
     return () => disposers.forEach((disposer) => disposer());
