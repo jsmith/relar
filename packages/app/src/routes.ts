@@ -137,6 +137,15 @@ export const routes = {
     containerClassName: "px-5",
     title: "Invite | RELAR",
   },
+  playlists: {
+    id: "playlists",
+    path: "/library/playlists",
+    protected: true,
+    sidebar: true,
+    className: "py-2",
+    containerClassName: "px-5",
+    title: "Playlists | RELAR",
+  },
   // gallery: {
   //   id: 'gallery',
   //   path: '/gallery/:imageId',
