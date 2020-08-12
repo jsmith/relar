@@ -8,22 +8,33 @@ export interface ThumbnailCardProps {
   title: string;
   subtitle: string | undefined;
   onClick?: () => void;
+  className?: string;
 }
 
-export const ThumbnailCard = ({ thumbnail, title, subtitle, onClick }: ThumbnailCardProps) => {
+export const ThumbnailCard = ({
+  thumbnail,
+  title,
+  subtitle,
+  onClick,
+  className,
+}: ThumbnailCardProps) => {
   const [focused, setFocused] = useState(false);
 
   return (
     <div
-      className="bg-gray-800 border border-purple-500 flex flex-col px-3 py-4 rounded-md cursor-pointer relative group"
+      className={classNames(
+        "bg-gray-700 flex flex-col px-3 py-4 rounded-md cursor-pointer relative group shadow-xl",
+        className,
+      )}
       onClick={onClick}
     >
       <Thumbnail className="w-32 h-32" thumbnail={thumbnail} />
       <div
-        className="w-32 truncate mt-2"
+        className="w-32 truncate mt-2 text-sm"
         tabIndex={0}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
+        title={title}
       >
         {title}
       </div>

@@ -1,17 +1,19 @@
 import React from "react";
 import { Album } from "../shared/types";
-import { useThumbnail } from "../queries/thumbnail";
+import { useThumbnail, ThumbnailSize } from "../queries/thumbnail";
 import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "react-tiniest-router";
 import { routes } from "../routes";
 
 export const AlbumCard = ({
   album,
+  className,
 }: {
   album: firebase.firestore.QueryDocumentSnapshot<Album>;
+  className?: string;
 }) => {
   const data = album.data();
-  const thumbnail = useThumbnail(album);
+  const thumbnail = useThumbnail(album, "128");
   const { goTo } = useRouter();
 
   return (
@@ -20,6 +22,7 @@ export const AlbumCard = ({
       title={data.album ?? ""}
       subtitle={data.albumArtist}
       onClick={() => goTo(routes.album, { albumId: album.id })}
+      className={className}
     />
   );
 };

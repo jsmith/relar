@@ -2,7 +2,7 @@ import { createQueryCache } from "../queries/cache";
 import { Song, Album } from "../shared/types";
 import { useUserData } from "../firestore";
 import { useSongs } from "./songs";
-import { useFirebaseMemo } from "../watcher";
+import { useFirebaseMemo, getCachedOr } from "../watcher";
 
 const {
   useQuery: useAlbumsQuery,
@@ -20,7 +20,6 @@ export const useAlbums = () => {
     () =>
       userData
         .albums()
-        .limit(25)
         .get()
         .then((result) => result.docs),
     {
@@ -49,34 +48,16 @@ export const useAlbum = (albumId: string) => {
   );
 };
 
-const {
-  useQuery: useAlbumSongsQuery,
-  // queryCache: albumSongsQueryCache,
-} = createQueryCache<
-  ["album-songs", { uid: string; albumId: string }],
-  Array<firebase.firestore.QueryDocumentSnapshot<Song>>
->();
-
 export const useAlbumSongs = (albumId: string) => {
   const songs = useSongs();
 
   const data = useFirebaseMemo(
-    () => songs.data?.filter((song) => song.data().albumId === albumId) ?? [],
-    [songs, albumId],
+    () => songs.data?.filter((song) => getCachedOr(song).albumId === albumId) ?? [],
+    [songs.data, albumId],
   );
 
   return {
     data,
     status: songs.status,
   };
-
-  // return useAlbumSongsQuery(["album-songs", { uid: userData.userId, albumId }], () =>
-  //   userData
-  //     .songs()
-  //     .where("albumId", "==", albumId)
-  //     // .startAfter(lastVisible.current)
-  //     .limit(25)
-  //     .get()
-  //     .then((result) => result.docs),
-  // );
 };
