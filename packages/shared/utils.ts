@@ -1,4 +1,4 @@
-import { Song, Album, Artist, UserData, BetaSignup } from "./types";
+import { Song, Album, Artist, UserData, BetaSignup, Playlist } from "./types";
 
 // at least six characters
 // at least one number, one lowercase and one uppercase letter
@@ -40,6 +40,8 @@ export const clientDb = (db: firebase.firestore.Firestore, userId: string) => {
       db.doc(path.append("artists").append(artistId).build()) as DocumentReference<Artist>,
     artists: () => db.collection(path.append("artists").build()) as CollectionReference<Artist>,
     doc: () => db.doc(path.build()) as DocumentReference<UserData>,
+    playlists: () =>
+      db.collection(`user_data/${userId}/playlists`) as CollectionReference<Playlist>,
   };
 };
 

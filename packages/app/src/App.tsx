@@ -12,6 +12,7 @@ const Login = React.lazy(() => import("./pages/Login"));
 const Songs = React.lazy(() => import("./pages/Songs"));
 const Artists = React.lazy(() => import("./pages/Artists"));
 const Albums = React.lazy(() => import("./pages/Albums"));
+const Playlists = React.lazy(() => import("./pages/Playlists"));
 const Home = React.lazy(() => import("./pages/Home"));
 const Search = React.lazy(() => import("./pages/Search"));
 const Signup = React.lazy(() => import("./pages/Signup"));
@@ -66,6 +67,10 @@ const libraryLinks = [
   {
     label: "Songs",
     route: routes.songs,
+  },
+  {
+    label: "Playlists",
+    route: routes.playlists,
   },
   {
     label: "Artists",
@@ -188,6 +193,8 @@ export const App = (_: React.Props<{}>) => {
                   <AlbumOverview container={container} />
                 ) : isRoute(routes.artist) ? (
                   <ArtistOverview container={container} />
+                ) : isRoute(routes.playlists) ? (
+                  <Playlists />
                 ) : null}
               </div>
             </div>
