@@ -5,6 +5,7 @@ const get = (key: string): string => {
 
 export const env = {
   betaBaseUrl: get("VITE_AUTH_URL"),
+  metadataBaseUrl: get("VITE_METADATA_URL"),
   apiKey: get("VITE_API_KEY"),
   authDomain: get("VITE_AUTH_DOMAIN"),
   databaseURL: get("VITE_DATABASE_URL"),

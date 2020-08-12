@@ -7,6 +7,8 @@ import { admin } from "./admin";
 import { adminDb, deleteAlbumIfSingleSong, deleteArtistSingleSong } from "./utils";
 import { createAlbumId } from "./shared/utils";
 import * as functions from "firebase-functions";
+import { Sentry } from "./sentry";
+import { captureException } from "@sentry/node";
 
 export const app = express();
 app.use(bodyParser.json());
@@ -42,6 +44,13 @@ router.post("/edit", async (req) => {
   const userData = adminDb(db, user.uid);
   const ref = userData.song(body.songId);
 
+  if (!body.update.title) {
+    return {
+      type: "error",
+      code: "missing-title",
+    };
+  }
+
   // This is important so that we don't just pass in whatever was sent in the client
   const update: Partial<Song> = {
     title: body.update.title,
@@ -50,7 +59,10 @@ router.post("/edit", async (req) => {
     albumName: body.update.albumName,
     albumArtist: body.update.albumArtist,
     artist: body.update.artist,
+    albumId: createAlbumId(body.update),
   };
+
+  console.log(`Update for ${body.songId} -> ${JSON.stringify(update)}`);
 
   return await db.runTransaction(async (transaction) => {
     const writes: Array<undefined | (() => void)> = [];
@@ -69,6 +81,9 @@ router.post("/edit", async (req) => {
     // This album may or may not exist
     // Additionally, the old album may now be empty, meaning that we should probably delete it...
     if (newAlbumId !== oldAlbumId) {
+      console.info(
+        `New album ID (${newAlbumId}) is different from the old album ID (${oldAlbumId})`,
+      );
       writes.push(
         await deleteAlbumIfSingleSong({
           db,
@@ -90,6 +105,7 @@ router.post("/edit", async (req) => {
           artwork: song.artwork,
         });
 
+        console.log(`Creating new album (${JSON.stringify(localCopy)})`);
         writes.push(() => transaction.create(albumSnap.ref, localCopy));
       }
     }
@@ -97,6 +113,9 @@ router.post("/edit", async (req) => {
     const oldArtistName = song.artist;
     const newArtistName = body.update.artist;
     if (oldArtistName != newArtistName) {
+      console.info(
+        `New artist name (${newArtistName}) is different from the old artist name (${oldArtistName})`,
+      );
       if (oldArtistName) {
         writes.push(
           await deleteArtistSingleSong({ db, artist: oldArtistName, userId, transaction }),
@@ -112,6 +131,7 @@ router.post("/edit", async (req) => {
             name: newArtistName,
           });
 
+          console.info(`Creating new artist (${newArtistName})`);
           writes.push(() => transaction.create(artistSnap.ref, localCopy));
         }
       }

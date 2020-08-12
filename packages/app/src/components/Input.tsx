@@ -21,6 +21,7 @@ export const Input = (props: InputProps) => {
     <label className={classNames("block space-y-1", props.labelClassName)}>
       <span className={props.spanClassName}>{props.label}</span>
       <input
+        value={props.value}
         type={props.type}
         id={props.inputId}
         className={classNames("form-input w-full", props.inputClassName)}

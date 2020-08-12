@@ -40,12 +40,14 @@ export const Link = ({ route, label, className, disableStyle, params, queryParam
   return (
     <a
       href={href}
-      className={classNames(disableStyle ? "" : link(), className)}
+      className={className ?? link()}
       onClick={(e) => {
         if (!e.ctrlKey && !e.metaKey) {
           e.preventDefault();
           goTo(route, params, queryParams);
         }
+
+        e.stopPropagation();
       }}
     >
       {label}
