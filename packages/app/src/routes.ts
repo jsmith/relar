@@ -124,7 +124,7 @@ export const routes = {
     path: "/library/artists/:artistName",
     protected: true,
     sidebar: true,
-    className: "py-2",
+    className: "",
     containerClassName: "px-5",
     title: "Artist | RELAR",
   },

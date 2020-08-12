@@ -34,6 +34,7 @@ import { UploadModal } from "./sections/UploadModal";
 import SVGLoadersReact from "svg-loaders-react";
 import { LoadingSpinner } from "./components/LoadingSpinner";
 import { firestore } from "./firebase";
+import ArtistOverview from "./pages/ArtistOverview";
 
 const { Bars } = SVGLoadersReact;
 
@@ -185,6 +186,8 @@ export const App = (_: React.Props<{}>) => {
                   <Search />
                 ) : isRoute(routes.album) ? (
                   <AlbumOverview container={container} />
+                ) : isRoute(routes.artist) ? (
+                  <ArtistOverview container={container} />
                 ) : null}
               </div>
             </div>

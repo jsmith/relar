@@ -16,7 +16,7 @@ export const Albums = () => {
   return (
     <div className="flex flex-wrap">
       {albums.data?.map((album) => (
-        <AlbumCard key={album.id} album={album} />
+        <AlbumCard className="mx-1" key={album.id} album={album} />
       ))}
     </div>
   );

@@ -80,7 +80,6 @@ export const tryToGetSongDownloadUrlOrLog = async (
   );
 
   if (result.isOk()) {
-    // TODO does this actually update the data?? Log snapshot and check.
     data.downloadUrl = result.value;
     await ref.update({ downloadUrl: result.value });
     return result.value;
