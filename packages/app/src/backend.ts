@@ -1,9 +1,10 @@
 import axios from "@graywolfai/rest-ts-axios";
-import { BetaAPI, UnknownError } from "./shared/types";
+import { BetaAPI, UnknownError, MetadataAPI } from "./shared/types";
 import { env } from "./env";
 import * as Sentry from "@sentry/browser";
 
-export const backend = axios.create<BetaAPI>({ baseURL: env.betaBaseUrl });
+export const betaBackend = axios.create<BetaAPI>({ baseURL: env.betaBaseUrl });
+export const metadataBackend = axios.create<MetadataAPI>({ baseURL: env.metadataBaseUrl });
 
 export const getOrUnknownError = async <T>(
   cb: () => Promise<T>,

@@ -119,6 +119,15 @@ export const routes = {
     containerClassName: "px-5",
     title: "Artists | RELAR",
   },
+  artist: {
+    id: "artist",
+    path: "/library/artists/:artistName",
+    protected: true,
+    sidebar: true,
+    className: "py-2",
+    containerClassName: "px-5",
+    title: "Artist | RELAR",
+  },
   invite: {
     id: "invite",
     path: "/invite/:invite",

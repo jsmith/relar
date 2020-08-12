@@ -41,6 +41,15 @@ export const ArtworkType = Record({
      * exist.
      */
     artworkDownloadUrl32: String.Or(Undefined).Or(Null),
+
+    /** 64x64 download URL. */
+    artworkDownloadUrl64: String.Or(Undefined).Or(Null),
+
+    /** 128x128 download URL. */
+    artworkDownloadUrl128: String.Or(Undefined).Or(Null),
+
+    /** 128x128 download URL. */
+    artworkDownloadUrl256: String.Or(Undefined).Or(Null),
   }),
 );
 
@@ -216,7 +225,10 @@ export type MetadataAPI = {
           // explicit?: boolean;
         };
       };
-      response: Success | KnownError<"unauthorized" | "song-does-not-exist"> | UnknownError;
+      response:
+        | Success
+        | KnownError<"unauthorized" | "song-does-not-exist" | "missing-title">
+        | UnknownError;
     };
   };
 };

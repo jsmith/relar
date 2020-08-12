@@ -73,6 +73,7 @@ test("can successfully edit a song", async () => {
   assert.equal(body.update.genre, updated.genre);
   assert.equal(body.update.albumArtist, updated.albumArtist);
   assert.equal(body.update.albumName, updated.albumName);
+  assert.equal(createAlbumId(body.update), updated.albumId);
   await assertExists(db.artist("Greg"));
   await assertExists(db.album(editAlbumId));
 });
