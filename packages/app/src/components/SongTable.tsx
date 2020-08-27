@@ -2,7 +2,14 @@ import React, { useMemo, useState, MutableRefObject, useEffect, useRef, useCallb
 import { Song } from "../shared/types";
 import { usePlayer } from "../player";
 import classNames from "classnames";
-import { MdMusicNote, MdPlayArrow, MdMoreVert, MdEdit, MdDelete } from "react-icons/md";
+import {
+  MdMusicNote,
+  MdPlayArrow,
+  MdMoreVert,
+  MdEdit,
+  MdDelete,
+  MdPlaylistAdd,
+} from "react-icons/md";
 import { MetadataEditor } from "./MetadataEditor";
 import { useModal } from "react-modal-hook";
 import { LikedIcon } from "./LikedIcon";
@@ -17,6 +24,7 @@ import { fmtMSS } from "../utils";
 import { Link } from "./Link";
 import { routes } from "../routes";
 import { link } from "../classes";
+import { AddToPlaylistEditor } from "../sections/AddToPlaylistModal";
 
 // I really wish I didn't have to do this but for some reason this is the only thing that works
 // Before I was getting an issue in production
@@ -113,15 +121,13 @@ export interface SongTableRowProps {
 }
 
 export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
-  const { buttonProps, itemProps, isOpen, setIsOpen } = useDropdownMenu(2);
+  const { buttonProps, itemProps, isOpen, setIsOpen } = useDropdownMenu(3);
   const [focusedPlay, setFocusedPlay] = useState(false);
   const [showEditorModal, hideEditorModal] = useModal(() => (
-    <MetadataEditor
-      display={true}
-      setDisplay={() => hideEditorModal()}
-      song={defined}
-      onSuccess={() => {}}
-    />
+    <MetadataEditor setDisplay={() => hideEditorModal()} song={defined} onSuccess={() => {}} />
+  ));
+  const [showAddPlaylistModal, hideAddPlaylistModal] = useModal(() => (
+    <AddToPlaylistEditor setDisplay={() => hideAddPlaylistModal()} song={defined} />
   ));
   const { confirmAction } = useConfirmAction();
   const [setLiked] = useLikeSong(song);
@@ -185,13 +191,22 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
         <ContextMenu
           items={[
             {
+              label: "Add To Playlist",
+              icon: MdPlaylistAdd,
+              onClick: () => {
+                showAddPlaylistModal();
+                setIsOpen(false);
+              },
+              props: itemProps[0],
+            },
+            {
               label: "Edit Info",
               icon: MdEdit,
               onClick: () => {
                 showEditorModal();
                 setIsOpen(false);
               },
-              props: itemProps[0],
+              props: itemProps[1],
             },
             {
               label: "Delete",
@@ -208,7 +223,7 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
                   await song.ref.delete();
                 }
               },
-              props: itemProps[1],
+              props: itemProps[2],
             },
           ]}
           isOpen={isOpen}

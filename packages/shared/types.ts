@@ -168,12 +168,15 @@ export type Artist = Static<typeof ArtistType>;
 
 export const PlaylistType = Record({
   /**
-   * The name of the artist. This is also the ID since artist names must be unique.
+   * The name of the playlist.
    */
   name: String,
 
-  /** The songs IDs */
+  /** The songs IDs. */
   songs: Array(String).Or(Undefined),
+
+  /** When the playlist was created. */
+  createdAt: Unknown.withGuard((x): x is firebase.firestore.Timestamp => true),
 });
 
 export type Playlist = Static<typeof PlaylistType>;

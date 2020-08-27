@@ -146,6 +146,15 @@ export const routes = {
     containerClassName: "px-5",
     title: "Playlists | RELAR",
   },
+  playlist: {
+    id: "playlist",
+    path: "/library/playlists/:playlistId",
+    protected: true,
+    sidebar: true,
+    className: "",
+    containerClassName: "px-5",
+    title: "Playlist | RELAR",
+  },
   // gallery: {
   //   id: 'gallery',
   //   path: '/gallery/:imageId',

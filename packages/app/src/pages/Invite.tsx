@@ -9,7 +9,7 @@ import { Button } from "../components/Button";
 import { betaBackend, getOrUnknownError } from "../backend";
 
 export const Invite = () => {
-  const { params, goTo } = useRouter();
+  const { params } = useRouter();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -89,3 +89,5 @@ export const Invite = () => {
     </CardPage>
   );
 };
+
+export default Invite;

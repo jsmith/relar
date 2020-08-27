@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { createEmitter } from "./events";
+import { firestore } from "./firebase";
 
 // TODO clear on logout????
 const cache: { [path: string]: unknown } = {};
@@ -7,6 +8,11 @@ const watchers = createEmitter<Record<string, [unknown]>>();
 
 export const getCachedOr = <T>(snap: firebase.firestore.QueryDocumentSnapshot<T>): T => {
   return (cache[snap.ref.path] as T) ?? snap.data();
+};
+
+export const updateCached = <T>({ data, path }: { path: string; data: T }) => {
+  cache[path] = data;
+  watchers.emit(path, data);
 };
 
 export function useFirebaseUpdater<T>(
@@ -33,8 +39,7 @@ export function useFirebaseUpdater<T>(
         return;
       }
 
-      cache[snap.ref.path] = value;
-      watchers.emit(snap.ref.path, value);
+      updateCached({ path: snap.ref.path, data: value });
     },
     [snap],
   );

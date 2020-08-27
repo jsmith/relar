@@ -1,24 +1,23 @@
 import React from "react";
-import { usePlaylists } from "../queries/playlists";
-import { ArtistCard } from "../sections/ArtistCard";
+import { usePlaylists, usePlaylistAdd } from "../queries/playlists";
+import { LoadingSpinner } from "../components/LoadingSpinner";
+import { PlaylistCard } from "../sections/PlaylistCard";
 
 export const Playlists = () => {
-  const artists = usePlaylists();
-
-  if (artists.status === "loading") {
-    return <div>LOADING</div>;
+  const playlists = usePlaylists();
+  if (playlists.status === "error") {
+    return <div>ERROR</div>;
   }
 
-  if (artists.status === "error") {
-    return <div>ERROR</div>;
+  if (!playlists.data) {
+    return <LoadingSpinner />;
   }
 
   return (
     <div className="flex flex-wrap">
-      PLAYLISTS
-      {/* {artists.data?.map((artist) => (
-        <ArtistCard className="mx-1" key={artist.id} artist={artist} />
-      ))} */}
+      {playlists.data.map((playlist) => (
+        <PlaylistCard playlist={playlist} key={playlist.id} />
+      ))}
     </div>
   );
 };
