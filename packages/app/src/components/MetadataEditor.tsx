@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Song, MetadataAPI } from "../shared/types";
-import { Modal } from "./Modal";
+import { OkCancelModal } from "./OkCancelModal";
 import { Input } from "./Input";
 import { useFirebaseUpdater } from "../watcher";
 import { metadataBackend, getOrUnknownError } from "../backend";
 import { useDefinedUser } from "../auth";
-import { ErrorTemplate } from "./ErrorTemplate";
 import { BlockAlert } from "./BlockAlert";
 
 export interface MetadataEditorProps {
-  display: boolean;
   setDisplay: (display: boolean) => void;
   song: firebase.firestore.QueryDocumentSnapshot<Song>;
   onSuccess: (song: Song) => void;
 }
 
-export const MetadataEditor = ({ song, display, setDisplay, onSuccess }: MetadataEditorProps) => {
+export const MetadataEditor = ({ song, setDisplay, onSuccess }: MetadataEditorProps) => {
   const user = useDefinedUser();
   const [title, setTitle] = useState("");
   const [artist, setArtist] = useState("");
@@ -80,10 +78,9 @@ export const MetadataEditor = ({ song, display, setDisplay, onSuccess }: Metadat
   };
 
   return (
-    <Modal
+    <OkCancelModal
       titleText="Metadata Editor"
       initialFocus="#title-input"
-      display={display}
       onCancel={() => setDisplay(false)}
       onOk={submit}
       wrapperClassName="space-y-2"
@@ -96,6 +93,6 @@ export const MetadataEditor = ({ song, display, setDisplay, onSuccess }: Metadat
       <Input value={year} onChange={setYear} label="Year" />
 
       {error && <BlockAlert type="error">{error}</BlockAlert>}
-    </Modal>
+    </OkCancelModal>
   );
 };

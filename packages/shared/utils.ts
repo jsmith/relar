@@ -42,6 +42,12 @@ export const clientDb = (db: firebase.firestore.Firestore, userId: string) => {
     doc: () => db.doc(path.build()) as DocumentReference<UserData>,
     playlists: () =>
       db.collection(`user_data/${userId}/playlists`) as CollectionReference<Playlist>,
+    playlist: (id: string) =>
+      db.doc(`user_data/${userId}/playlists/${id}`) as DocumentReference<Playlist>,
+    playlistByName: (name: string) =>
+      db
+        .collection(`user_data/${userId}/playlists`)
+        .where("name", "==", name) as firebase.firestore.Query<Playlist>,
   };
 };
 
@@ -85,7 +91,3 @@ export const getAlbumAttributes = (albumId: string) => {
     name: split[1],
   };
 };
-
-export interface Query<T, V> {
-  where(key: string, opStr: "==", value: any): V;
-}

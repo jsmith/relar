@@ -38,7 +38,10 @@ export const ContextMenu = ({ className, items, isOpen }: ContextMenuProps) => {
           <a
             key={item.label}
             {...item.props}
-            onClick={item.onClick}
+            onClick={(e) => {
+              e.stopPropagation();
+              item.onClick();
+            }}
             className="p-2 hover:bg-gray-200 cursor-pointer flex items-center space-x-2"
           >
             <item.icon className="w-5 h-5 text-gray-700" />

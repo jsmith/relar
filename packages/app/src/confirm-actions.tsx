@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useRef } from "react";
 import { ConfirmPassword } from "./components/ConfirmPassword";
-import { ConfirmationModal } from "./components/ConfirmationModal";
+import { ActionConfirmationModal } from "./components/ActionConfirmationModal";
+import { useModal } from "react-modal-hook";
 
 export interface ConfirmActionProps {
   title: string;
@@ -17,20 +18,29 @@ export const ConfirmActionContext = createContext<{
 }>(null as any);
 
 export const ConfirmActionProvider = (props: React.Props<{}>) => {
-  const [modalProps, setModalProps] = useState<ConfirmActionProps>();
-  const cb = useRef<(confirmed: boolean) => void>();
+  const cb = useRef<{ props: ConfirmActionProps; resolve: (confirmed: boolean) => void }>();
+  const [show, close] = useModal(() => (
+    <ActionConfirmationModal
+      title={cb.current?.props?.title ?? ""}
+      subtitle={cb.current?.props?.subtitle ?? ""}
+      confirmText={cb.current?.props?.confirmText ?? ""}
+      confirmEmail={cb.current?.props?.confirmEmail}
+      onCancel={() => setDisplayAndCall(false)}
+      onConfirm={() => setDisplayAndCall(true)}
+    ></ActionConfirmationModal>
+  ));
 
   const confirmAction = (props: ConfirmActionProps) => {
     return new Promise<boolean>((resolve) => {
-      setModalProps(props);
-      cb.current = resolve;
+      show();
+      cb.current = { resolve, props };
     });
   };
 
   const setDisplayAndCall = (confirmed: boolean) => {
-    setModalProps(undefined);
+    close();
     if (cb.current) {
-      cb.current(confirmed);
+      cb.current.resolve(confirmed);
       cb.current = undefined;
     }
   };
@@ -38,15 +48,6 @@ export const ConfirmActionProvider = (props: React.Props<{}>) => {
   return (
     <ConfirmActionContext.Provider value={{ confirmAction }}>
       {props.children}
-      <ConfirmationModal
-        title={modalProps?.title ?? ""}
-        subtitle={modalProps?.subtitle ?? ""}
-        confirmText={modalProps?.confirmText ?? ""}
-        confirmEmail={modalProps?.confirmEmail}
-        display={!!modalProps}
-        onCancel={() => setDisplayAndCall(false)}
-        onConfirm={() => setDisplayAndCall(true)}
-      ></ConfirmationModal>
     </ConfirmActionContext.Provider>
   );
 };

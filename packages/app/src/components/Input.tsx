@@ -18,8 +18,10 @@ export interface InputProps {
 
 export const Input = (props: InputProps) => {
   return (
-    <label className={classNames("block space-y-1", props.labelClassName)}>
-      <span className={props.spanClassName}>{props.label}</span>
+    <label className={classNames("block", props.labelClassName)}>
+      {props.label && (
+        <span className={classNames(props.spanClassName, "mb-1")}>{props.label}</span>
+      )}
       <input
         value={props.value}
         type={props.type}

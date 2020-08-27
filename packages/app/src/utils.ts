@@ -281,3 +281,12 @@ export function fmtMSS(s: number) {
   s = Math.round(s);
   return (s - (s %= 60)) / 60 + (9 < s ? ":" : ":0") + s;
 }
+
+export const pluralSongs = (count: number | undefined) => (count === 1 ? "song" : "songs");
+
+export const fmtToDate = (timestamp: firebase.firestore.Timestamp) =>
+  new Date(timestamp.toMillis()).toLocaleDateString("en", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });

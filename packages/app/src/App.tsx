@@ -21,6 +21,9 @@ const AlbumOverview = React.lazy(() => import("./pages/AlbumOverview"));
 const ForgotPasswordSuccess = React.lazy(() => import("./pages/ForgotPasswordSuccess"));
 const Hero = React.lazy(() => import("./pages/Hero"));
 const Account = React.lazy(() => import("./pages/Account"));
+const ArtistOverview = React.lazy(() => import("./pages/ArtistOverview"));
+const PlaylistOverview = React.lazy(() => import("./pages/PlaylistOverview"));
+const Invite = React.lazy(() => import("./pages/Invite"));
 import ReactQueryDevtools from "react-query-devtools";
 import { AccountDropdown } from "./components/AccountDropdown";
 import { auth } from "./firebase";
@@ -30,12 +33,9 @@ import { button, link, bgApp } from "./classes";
 import { SkipNavLink, SkipNavContent } from "@reach/skip-nav";
 import "@reach/skip-nav/styles.css";
 import "./index.css";
-import { Invite } from "./pages/Invite";
 import { UploadModal } from "./sections/UploadModal";
 import SVGLoadersReact from "svg-loaders-react";
 import { LoadingSpinner } from "./components/LoadingSpinner";
-import { firestore } from "./firebase";
-import ArtistOverview from "./pages/ArtistOverview";
 
 const { Bars } = SVGLoadersReact;
 
@@ -153,11 +153,14 @@ export const App = (_: React.Props<{}>) => {
             <div
               ref={(ref) => setContainer(ref)}
               className={classNames(
-                "h-full absolute inset-0 overflow-y-auto",
+                "h-full absolute inset-0 overflow-y-auto flex flex-col",
                 route.containerClassName,
               )}
             >
-              {(isRoute(routes.songs) || isRoute(routes.artists) || isRoute(routes.albums)) && (
+              {(isRoute(routes.songs) ||
+                isRoute(routes.artists) ||
+                isRoute(routes.albums) ||
+                isRoute(routes.playlists)) && (
                 <ul
                   className="flex space-x-4 text-xl sticky top-0 z-10"
                   style={{ backgroundColor: bgApp }}
@@ -178,7 +181,7 @@ export const App = (_: React.Props<{}>) => {
                   ))}
                 </ul>
               )}
-              <div className={route.className}>
+              <div className={classNames(route.className, "flex-grow")}>
                 {isRoute(routes.songs) ? (
                   <Songs container={container} />
                 ) : isRoute(routes.artists) ? (
@@ -195,6 +198,8 @@ export const App = (_: React.Props<{}>) => {
                   <ArtistOverview container={container} />
                 ) : isRoute(routes.playlists) ? (
                   <Playlists />
+                ) : isRoute(routes.playlist) ? (
+                  <PlaylistOverview container={container} />
                 ) : null}
               </div>
             </div>
