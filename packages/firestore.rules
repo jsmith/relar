@@ -44,6 +44,7 @@ service cloud.firestore {
       match /playlists/{playlistId} {
         allow update: if isUser() && affectedKeys().hasOnly(['name', 'songs'])
         allow create: if isUser() && newKeys().hasOnly(['name', 'songs', 'createdAt']) && newKeys().hasAll(['name', 'createdAt'])
+        allow delete: if isUser()
       }
     }
   }

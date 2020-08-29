@@ -9,6 +9,7 @@ import { updateCached, getCachedOr, useFirebaseUpdater } from "../watcher";
 import { useMemo } from "react";
 import { useSongs } from "./songs";
 import { useDataFromQueryNSnapshot } from "../utils";
+import { PlaylistCard } from "../sections/PlaylistCard";
 
 const { useQuery: usePlaylistsQuery, queryCache } = createQueryCache<
   ["playlists", { uid: string }],
@@ -160,7 +161,7 @@ export const usePlaylistSongs = (
   }, [playlist?.songs, songsLookup]);
 };
 
-export const usePlaylistDelete = (playlistId: string | undefined) => {
+export const usePlaylistRemoveSong = (playlistId: string | undefined) => {
   const userData = useUserData();
   return useMutation(
     async (songIdToRemove: string) => {
@@ -211,6 +212,28 @@ export const usePlaylistRename = (playlistId: string | undefined) => {
       onSuccess: (_, name) => {
         if (!playlistId) return;
         updatePlaylist({ userId: userData.userId, playlistId, data: { name } });
+      },
+    },
+  );
+};
+
+export const usePlaylistDelete = (playlistId: string | undefined) => {
+  const userData = useUserData();
+  return useMutation(
+    async (name: string) => {
+      if (playlistId === undefined) return;
+      await userData.playlist(playlistId).delete();
+    },
+    {
+      onSuccess: (_, name) => {
+        if (!playlistId) return;
+        // TODO also add confirmation when deleting
+        const cache = queryCache.getQueryData(["playlists", { uid: userData.userId }]);
+        if (!cache) return;
+        const index = cache.findIndex((playlist) => playlist.id === playlistId);
+        if (index === undefined) return;
+        cache.splice(index, 1);
+        queryCache.setQueryData(["playlists", { uid: userData.userId }], cache);
       },
     },
   );

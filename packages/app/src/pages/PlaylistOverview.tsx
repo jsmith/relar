@@ -12,27 +12,31 @@ import { ErrorTemplate } from "../components/ErrorTemplate";
 import { MdPlayCircleOutline } from "react-icons/md";
 import {
   usePlaylist,
-  usePlaylistDelete,
+  usePlaylistRemoveSong,
   usePlaylistSongs,
   usePlaylistRename,
+  usePlaylistDelete,
 } from "../queries/playlists";
-import { HiOutlineTrash, HiDotsHorizontal, HiPencil } from "react-icons/hi";
+import { HiOutlineTrash, HiDotsHorizontal, HiPencil, HiTrash } from "react-icons/hi";
 import { useFirebaseUpdater } from "../watcher";
 import { ContextMenu } from "../components/ContextMenu";
 import { ContentEditable } from "../components/ContentEditable";
+import { useConfirmAction } from "../confirm-actions";
+import { routes } from "../routes";
 
 const fac = new FastAverageColor();
 
 export const PlaylistOverview = ({ container }: { container: HTMLElement | null }) => {
   // TODO editing the name of a playlist
-  const { params } = useRouter();
+  const { params, goTo } = useRouter();
   // FIXME validation
   const { playlistId } = params as { playlistId?: string };
   const { playlist, status } = usePlaylist(playlistId);
   const [data] = useFirebaseUpdater(playlist);
   const playlistSongs = usePlaylistSongs(data);
-  const [removeSong] = usePlaylistDelete(playlistId);
+  const [removeSong] = usePlaylistRemoveSong(playlistId);
   const [rename] = usePlaylistRename(playlistId);
+  const [deletePlaylist] = usePlaylistDelete(playlistId);
   // const albumData = useDataFromQueryNSnapshot(playlist);
   // const thumbnail = useThumbnail(playlist.status === "success" ? playlist.playlist : undefined, "256");
   const [averageColor, setAverageColor] = useState("#cbd5e0");
@@ -44,6 +48,7 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
     [averageColor],
   );
   const [editingName, setEditingName] = useState(false);
+  const { confirmAction } = useConfirmAction();
 
   const songDuration = useMemo(
     () =>
@@ -111,6 +116,24 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
                     icon: HiPencil,
                     label: "Edit Name",
                     onClick: () => setEditingName(true),
+                  },
+                  {
+                    icon: HiTrash,
+                    label: "Delete",
+                    onClick: async () => {
+                      const confirmed = await confirmAction({
+                        title: "Delete Playlist",
+                        subtitle: `Are you sure you want to delete ${data.name}?`,
+                        confirmText: "Delete",
+                      });
+
+                      if (confirmed) {
+                        deletePlaylist(playlistId, {
+                          // FIXME notif on error
+                          onSuccess: () => goTo(routes.playlists),
+                        });
+                      }
+                    },
                   },
                 ]}
                 className="transform -translate-x-4"
