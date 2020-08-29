@@ -3,6 +3,7 @@ import { Playlist } from "../shared/types";
 import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "react-tiniest-router";
 import { routes } from "../routes";
+import { useFirebaseUpdater } from "../watcher";
 
 export const PlaylistCard = ({
   playlist,
@@ -11,7 +12,7 @@ export const PlaylistCard = ({
   playlist: firebase.firestore.QueryDocumentSnapshot<Playlist>;
   className?: string;
 }) => {
-  const data = playlist.data();
+  const [data] = useFirebaseUpdater(playlist);
   // const thumbnail = useThumbnail(album, "128");
   const { goTo } = useRouter();
 

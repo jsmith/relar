@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useRef } from "react";
+import React, { createContext, useState, useContext, useRef, useCallback } from "react";
 import { ConfirmPassword } from "./components/ConfirmPassword";
 import { ActionConfirmationModal } from "./components/ActionConfirmationModal";
 import { useModal } from "react-modal-hook";
@@ -30,12 +30,15 @@ export const ConfirmActionProvider = (props: React.Props<{}>) => {
     ></ActionConfirmationModal>
   ));
 
-  const confirmAction = (props: ConfirmActionProps) => {
-    return new Promise<boolean>((resolve) => {
-      show();
-      cb.current = { resolve, props };
-    });
-  };
+  const confirmAction = useCallback(
+    (props: ConfirmActionProps) => {
+      return new Promise<boolean>((resolve) => {
+        show();
+        cb.current = { resolve, props };
+      });
+    },
+    [show],
+  );
 
   const setDisplayAndCall = (confirmed: boolean) => {
     close();
