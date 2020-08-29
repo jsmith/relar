@@ -15,7 +15,7 @@ export const ConfirmActionContext = createContext<{
    * Returns whether or not the user confirmed action.
    */
   confirmAction: (options: ConfirmActionProps) => Promise<boolean>;
-}>(null as any);
+}>({} as any);
 
 export const ConfirmActionProvider = (props: React.Props<{}>) => {
   const cb = useRef<{ props: ConfirmActionProps; resolve: (confirmed: boolean) => void }>();

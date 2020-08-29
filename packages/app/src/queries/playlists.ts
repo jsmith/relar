@@ -173,15 +173,16 @@ export const usePlaylistRemoveSong = (playlistId: string | undefined) => {
         const ref = userData.playlist(playlistId);
         const playlist = await transaction.get(ref);
         const data = playlist.data();
-        if (!data) {
-          return;
-        }
+        if (!data || !data.songs) return;
 
-        data.songs = data.songs?.filter((songId) => songId !== songIdToRemove);
+        const indexToDelete = data.songs.findIndex((songId) => songId === songIdToRemove);
+        if (indexToDelete === undefined) return;
+
+        const songs = data.songs.splice(indexToDelete);
 
         transaction.update(ref, {
           // Note that there is no TypeScript support here
-          songs: data.songs,
+          songs,
         });
 
         return data.songs;
