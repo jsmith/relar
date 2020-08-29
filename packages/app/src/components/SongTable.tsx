@@ -25,9 +25,7 @@ import { Link } from "./Link";
 import { routes } from "../routes";
 import { link } from "../classes";
 import { AddToPlaylistEditor } from "../sections/AddToPlaylistModal";
-import ReactLoadingSkeleton from "react-loading-skeleton";
-
-const Skeleton: typeof ReactLoadingSkeleton = (ReactLoadingSkeleton as any).default;
+import { Skeleton } from "./Skeleton";
 
 // I really wish I didn't have to do this but for some reason this is the only thing that works
 // Before I was getting an issue in production
@@ -177,11 +175,7 @@ export const SongTableRow = ({ song, setSong, actions }: SongTableRowProps) => {
   }, [actions, confirmAction, data.title, showAddPlaylistModal, showEditorModal, song]);
 
   return (
-    <tr
-      className="group hover:bg-gray-300 text-gray-700 text-sm"
-      key={song.id}
-      onClick={() => setSong(song)}
-    >
+    <tr className="group hover:bg-gray-300 text-gray-700 text-sm" onClick={() => setSong(song)}>
       <Cell className="flex space-x-2 items-center h-12">
         <div className="w-5 h-5">
           <MdMusicNote
@@ -332,16 +326,13 @@ export const SongTable = ({ songs: docs, loadingRows = 5, container, actions }: 
             <LoadingCell />
             <LoadingCell />
             <LoadingCell />
-            {/* <LoadingCell />
-        <LoadingCell /> */}
           </tr>
         ));
     }
-    return docs
-      .slice(start, end + 1)
-      .map((song, i) => (
-        <SongTableRow song={song} setSong={setSong} key={song?.id ?? i} actions={actions} />
-      ));
+    return docs.slice(start, end + 1).map((song, i) => (
+      // The key is the index rather than the song ID as the song could > 1
+      <SongTableRow song={song} setSong={setSong} key={start + i} actions={actions} />
+    ));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingRows, docs, start, end]);
 
@@ -349,7 +340,6 @@ export const SongTable = ({ songs: docs, loadingRows = 5, container, actions }: 
     <table className="text-gray-800 table-fixed w-full" ref={t}>
       <thead>
         <tr>
-          {/* <HeaderCol label={""} className={""} /> */}
           <HeaderCol width="42%" label="Title" className="py-3" />
           <HeaderCol width="32%" label="Artist" className="py-3" />
           <HeaderCol width="26%" label="Album" className="py-3" />

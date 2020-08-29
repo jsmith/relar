@@ -23,6 +23,7 @@ import { ContextMenu } from "../components/ContextMenu";
 import { ContentEditable } from "../components/ContentEditable";
 import { useConfirmAction } from "../confirm-actions";
 import { routes } from "../routes";
+import { Skeleton } from "../components/Skeleton";
 
 const fac = new FastAverageColor();
 
@@ -83,27 +84,30 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
         />
         {status === "error" ? (
           <ErrorTemplate />
-        ) : status === "loading" || !data ? (
-          <div />
         ) : (
           // <LoadingSpinner />
           <div className={classNames("ml-4", isLight ? "text-gray-700" : "text-gray-200")}>
             <div className="flex items-center">
-              <ContentEditable
-                initial={data.name}
-                cancelEditing={() => setEditingName(false)}
-                editable={editingName}
-                onSave={(name) => {
-                  return new Promise((resolve) =>
-                    rename(name, {
-                      onSuccess: () => resolve(true),
-                      // FIXME error notification
-                      onError: () => resolve(false),
-                    }),
-                  );
-                }}
-                className="font-bold text-5xl"
-              />
+              {data ? (
+                <ContentEditable
+                  initial={data.name}
+                  cancelEditing={() => setEditingName(false)}
+                  editable={editingName}
+                  onSave={(name) => {
+                    return new Promise((resolve) =>
+                      rename(name, {
+                        onSuccess: () => resolve(true),
+                        // FIXME error notification
+                        onError: () => resolve(false),
+                      }),
+                    );
+                  }}
+                  className="font-bold text-5xl"
+                />
+              ) : (
+                <Skeleton className="opacity-25 w-48 h-10 my-4" />
+              )}
+
               {/* <div className="font-bold text-5xl">{data.name}</div> */}
               <ContextMenu
                 button={(props) => (
@@ -121,6 +125,7 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
                     icon: HiTrash,
                     label: "Delete",
                     onClick: async () => {
+                      if (!data) return;
                       const confirmed = await confirmAction({
                         title: "Delete Playlist",
                         subtitle: `Are you sure you want to delete ${data.name}?`,
@@ -145,9 +150,15 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
                 <MdPlayCircleOutline className="w-10 h-10" />
               </button>
             </div>
-            <span>{`Created on ${fmtToDate(data.createdAt)}`}</span>
-            <span>{` • ${playlistSongs.length} ${pluralSongs(playlistSongs.length)} • `}</span>
-            <span> {fmtMSS(songDuration / 1000)}</span>
+            {data ? (
+              <>
+                <span>{`Created on ${fmtToDate(data.createdAt)}`}</span>
+                <span>{` • ${playlistSongs.length} ${pluralSongs(playlistSongs.length)} • `}</span>
+                <span> {fmtMSS(songDuration / 1000)}</span>
+              </>
+            ) : (
+              <Skeleton className="opacity-25 w-full" />
+            )}
           </div>
         )}
       </div>
