@@ -56,13 +56,15 @@ export const ActionConfirmationModal = ({
           <h1 className="font-bold">{title}</h1>
           <p className="text-sm text-gray-600">{subtitle}</p>
         </div>
-        <Input
-          placeholder={user?.email ?? undefined}
-          value={email}
-          onChange={setEmail}
-          onEnter={checkEmail}
-          label="Confirm Email"
-        />
+        {confirmEmail && (
+          <Input
+            placeholder={user?.email ?? undefined}
+            value={email}
+            onChange={setEmail}
+            onEnter={checkEmail}
+            label="Confirm Email"
+          />
+        )}
         {error && <BlockAlert type="error">{error}</BlockAlert>}
       </div>
     </OkCancelModal>
