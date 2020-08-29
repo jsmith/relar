@@ -1,4 +1,4 @@
-import React, { useMemo, useState, MutableRefObject, useEffect, useRef, useCallback } from "react";
+import React, { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { Song } from "../shared/types";
 import { usePlayer } from "../player";
 import classNames from "classnames";
@@ -15,7 +15,7 @@ import { useModal } from "react-modal-hook";
 import { LikedIcon } from "./LikedIcon";
 import { IconButton } from "./IconButton";
 import useDropdownMenuImport from "react-accessible-dropdown-menu-hook";
-import { ContextMenu } from "./ContextMenu";
+import { ContextMenu, ContextMenuItem } from "./ContextMenu";
 import { useConfirmAction } from "../confirm-actions";
 import useResizeObserver from "use-resize-observer";
 import { useLikeSong } from "../queries/songs";
@@ -25,6 +25,9 @@ import { Link } from "./Link";
 import { routes } from "../routes";
 import { link } from "../classes";
 import { AddToPlaylistEditor } from "../sections/AddToPlaylistModal";
+import ReactLoadingSkeleton from "react-loading-skeleton";
+
+const Skeleton: typeof ReactLoadingSkeleton = (ReactLoadingSkeleton as any).default;
 
 // I really wish I didn't have to do this but for some reason this is the only thing that works
 // Before I was getting an issue in production
@@ -37,15 +40,6 @@ if ((useDropdownMenu as any).default) {
 // console.log(reactAccessibleDropdown);
 // const useDropdownMenu: typeof reactAccessibleDropdown.default = (reactAccessibleDropdown.default as any)
 //   .default;
-
-export interface SongsTableProps {
-  /**
-   * The songs. Passing in `undefined` indicates that the songs are still loading.
-   */
-  songs?: Array<firebase.firestore.QueryDocumentSnapshot<Song>>;
-  loadingRows?: number;
-  container: HTMLElement | null;
-}
 
 export const HeaderCol = ({
   label,
@@ -90,8 +84,10 @@ export const Cell = ({
 
 export const LoadingCell = ({ width }: { width?: number }) => {
   return (
-    <Cell className="px-6 py-4">
-      <div className="pr-3">{/* <Skeleton width={width} /> */}</div>
+    <Cell className="px-2 py-4">
+      <div className="pr-3">
+        <Skeleton width={width} />
+      </div>
     </Cell>
   );
 };
@@ -112,47 +108,79 @@ export const TextCell = ({
   );
 };
 
+export interface SongTableItem extends Omit<ContextMenuItem, "onClick" | "props"> {
+  onClick: (song: firebase.firestore.QueryDocumentSnapshot<Song>) => void;
+}
+
 export interface SongTableRowProps {
   /**
    * The song. `undefined` means it is loading.
    */
-  song: firebase.firestore.QueryDocumentSnapshot<Song> | undefined;
+  song: firebase.firestore.QueryDocumentSnapshot<Song>;
   setSong: (song: firebase.firestore.QueryDocumentSnapshot<Song>) => void;
+  actions: SongTableItem[] | undefined;
 }
 
-export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
-  const { buttonProps, itemProps, isOpen, setIsOpen } = useDropdownMenu(3);
+export const SongTableRow = ({ song, setSong, actions }: SongTableRowProps) => {
   const [focusedPlay, setFocusedPlay] = useState(false);
   const [showEditorModal, hideEditorModal] = useModal(() => (
-    <MetadataEditor setDisplay={() => hideEditorModal()} song={defined} onSuccess={() => {}} />
+    <MetadataEditor setDisplay={() => hideEditorModal()} song={song} onSuccess={() => {}} />
   ));
   const [showAddPlaylistModal, hideAddPlaylistModal] = useModal(() => (
-    <AddToPlaylistEditor setDisplay={() => hideAddPlaylistModal()} song={defined} />
+    <AddToPlaylistEditor setDisplay={() => hideAddPlaylistModal()} song={song} />
   ));
   const { confirmAction } = useConfirmAction();
   const [setLiked] = useLikeSong(song);
   const [data] = useFirebaseUpdater(song);
 
-  // useEffect(() => {
-  //   console.log(song?.id);
-  // }, [data, song]);
+  const contextMenuItems = useMemo(() => {
+    const extraItems: ContextMenuItem[] =
+      actions?.map((action, i) => ({
+        ...action,
+        onClick: () => {
+          action.onClick(song);
+        },
+      })) ?? [];
 
-  if (!song || !data) {
-    return (
-      <tr>
-        <LoadingCell />
-        <LoadingCell />
-        <LoadingCell />
-      </tr>
-    );
-  }
+    return [
+      {
+        label: "Add To Playlist",
+        icon: MdPlaylistAdd,
+        onClick: () => {
+          showAddPlaylistModal();
+        },
+      },
+      {
+        label: "Edit Info",
+        icon: MdEdit,
+        onClick: () => {
+          showEditorModal();
+        },
+      },
+      {
+        label: "Delete",
+        icon: MdDelete,
+        onClick: async () => {
+          const confirmed = await confirmAction({
+            title: `Delete ${data.title}`,
+            subtitle: "Are you sure you want to delete this song?",
+            confirmText: "Delete Song",
+          });
 
-  const defined = song;
+          if (confirmed) {
+            await song.ref.delete();
+          }
+        },
+      },
+      ...extraItems,
+    ];
+  }, [actions, confirmAction, data.title, showAddPlaylistModal, showEditorModal, song]);
+
   return (
     <tr
       className="group hover:bg-gray-300 text-gray-700 text-sm"
       key={song.id}
-      onClick={() => setSong(defined)}
+      onClick={() => setSong(song)}
     >
       <Cell className="flex space-x-2 items-center h-12">
         <div className="w-5 h-5">
@@ -176,57 +204,18 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
         <div title={data.title} className="truncate flex-grow">
           {data.title}
         </div>
-        <IconButton
-          icon={MdMoreVert}
-          className="group-hover:w-8 focus:w-8 w-0 overflow-hidden py-1 pl-1 flex-shrink-0"
-          hoverClassName="hover:bg-gray-400"
-          iconClassName="w-0 w-6 h-6"
-          {...buttonProps}
-          onClick={(e) => {
-            e.stopPropagation();
-            buttonProps.onClick && buttonProps.onClick(e);
-            setIsOpen(true);
-          }}
-        />
-        <ContextMenu
-          items={[
-            {
-              label: "Add To Playlist",
-              icon: MdPlaylistAdd,
-              onClick: () => {
-                showAddPlaylistModal();
-                setIsOpen(false);
-              },
-              props: itemProps[0],
-            },
-            {
-              label: "Edit Info",
-              icon: MdEdit,
-              onClick: () => {
-                showEditorModal();
-                setIsOpen(false);
-              },
-              props: itemProps[1],
-            },
-            {
-              label: "Delete",
-              icon: MdDelete,
-              onClick: async () => {
-                setIsOpen(false);
-                const confirmed = await confirmAction({
-                  title: `Delete ${data.title}`,
-                  subtitle: "Are you sure you want to delete this song?",
-                  confirmText: "Delete Song",
-                });
 
-                if (confirmed) {
-                  await song.ref.delete();
-                }
-              },
-              props: itemProps[2],
-            },
-          ]}
-          isOpen={isOpen}
+        <ContextMenu
+          button={(props) => (
+            <IconButton
+              icon={MdMoreVert}
+              className="group-hover:w-8 focus:w-8 w-0 overflow-hidden py-1 pl-1 flex-shrink-0"
+              hoverClassName="hover:bg-gray-400"
+              iconClassName="w-0 w-6 h-6"
+              {...props}
+            />
+          )}
+          items={contextMenuItems}
           className="transform -translate-x-4"
         />
       </Cell>
@@ -268,8 +257,18 @@ export const SongTableRow = ({ song, setSong }: SongTableRowProps) => {
   );
 };
 
+export interface SongTableProps {
+  /**
+   * The songs. Passing in `undefined` indicates that the songs are still loading.
+   */
+  songs?: Array<firebase.firestore.QueryDocumentSnapshot<Song>>;
+  loadingRows?: number;
+  container: HTMLElement | null;
+  actions?: SongTableItem[];
+}
+
 // Great tutorial on recycling DOM elements -> https://medium.com/@moshe_31114/building-our-recycle-list-solution-in-react-17a21a9605a0
-export const SongTable = ({ songs: docs, loadingRows = 20, container }: SongsTableProps) => {
+export const SongTable = ({ songs: docs, loadingRows = 5, container, actions }: SongTableProps) => {
   const rowHeight = 48;
   const headerHeight = 44;
   const [offsetTop, setOffsetTop] = useState(0);
@@ -325,13 +324,24 @@ export const SongTable = ({ songs: docs, loadingRows = 20, container }: SongsTab
   // }, [start, end]);
 
   const rows = useMemo(() => {
-    const snapshots: Array<firebase.firestore.QueryDocumentSnapshot<Song> | undefined> = docs
-      ? docs
-      : Array(loadingRows).fill(undefined);
-
-    return snapshots
+    if (!docs) {
+      return Array(loadingRows)
+        .fill(undefined)
+        .map((_, i) => (
+          <tr key={i}>
+            <LoadingCell />
+            <LoadingCell />
+            <LoadingCell />
+            {/* <LoadingCell />
+        <LoadingCell /> */}
+          </tr>
+        ));
+    }
+    return docs
       .slice(start, end + 1)
-      .map((song, i) => <SongTableRow song={song} setSong={setSong} key={song?.id ?? i} />);
+      .map((song, i) => (
+        <SongTableRow song={song} setSong={setSong} key={song?.id ?? i} actions={actions} />
+      ));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingRows, docs, start, end]);
 

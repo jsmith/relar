@@ -43,6 +43,8 @@ export const onDeleteSong = functions.firestore
         await transaction.update(userData, { songCount: decrement });
       }
 
+      // TODO delete songs IDs from playlist
+
       writes.forEach((write) => write && write());
     });
 

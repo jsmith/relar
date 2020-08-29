@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useThumbnail } from "../queries/thumbnail";
 import { useRouter } from "react-tiniest-router";
 import FastAverageColor from "fast-average-color";
@@ -10,16 +10,29 @@ import classNames from "classnames";
 import { SongTable } from "../components/SongTable";
 import { ErrorTemplate } from "../components/ErrorTemplate";
 import { MdPlayCircleOutline } from "react-icons/md";
-import { usePlaylist } from "../queries/playlists";
-import { LoadingSpinner } from "../components/LoadingSpinner";
+import {
+  usePlaylist,
+  usePlaylistDelete,
+  usePlaylistSongs,
+  usePlaylistRename,
+} from "../queries/playlists";
+import { HiOutlineTrash, HiDotsHorizontal, HiPencil } from "react-icons/hi";
+import { useFirebaseUpdater } from "../watcher";
+import { ContextMenu } from "../components/ContextMenu";
+import { ContentEditable } from "../components/ContentEditable";
 
 const fac = new FastAverageColor();
 
 export const PlaylistOverview = ({ container }: { container: HTMLElement | null }) => {
+  // TODO editing the name of a playlist
   const { params } = useRouter();
-  // TODO validation
-  const { playlistId } = params as { playlistId: string };
-  const playlist = usePlaylist(playlistId);
+  // FIXME validation
+  const { playlistId } = params as { playlistId?: string };
+  const { playlist, status } = usePlaylist(playlistId);
+  const [data] = useFirebaseUpdater(playlist);
+  const playlistSongs = usePlaylistSongs(data);
+  const [removeSong] = usePlaylistDelete(playlistId);
+  const [rename] = usePlaylistRename(playlistId);
   // const albumData = useDataFromQueryNSnapshot(playlist);
   // const thumbnail = useThumbnail(playlist.status === "success" ? playlist.playlist : undefined, "256");
   const [averageColor, setAverageColor] = useState("#cbd5e0");
@@ -30,15 +43,16 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
     }),
     [averageColor],
   );
+  const [editingName, setEditingName] = useState(false);
 
   const songDuration = useMemo(
     () =>
-      playlist.playlistSongs
-        ? playlist.playlistSongs
+      playlistSongs
+        ? playlistSongs
             .map((song) => song.data().duration)
             .reduce((sum, duration) => sum + duration, 0)
         : 0,
-    [playlist],
+    [playlistSongs],
   );
 
   const isLight = useMemo(() => tiny(averageColor).isLight(), [averageColor]);
@@ -62,37 +76,73 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
             }, captureException);
           }}
         />
-        {playlist.status === "error" ? (
+        {status === "error" ? (
           <ErrorTemplate />
-        ) : playlist.status === "loading" || !playlist.playlist ? (
-          <LoadingSpinner />
+        ) : status === "loading" || !data ? (
+          <div />
         ) : (
+          // <LoadingSpinner />
           <div className={classNames("ml-4", isLight ? "text-gray-700" : "text-gray-200")}>
             <div className="flex items-center">
-              <div className="font-bold text-5xl">{playlist.playlist.data().name}</div>
+              <ContentEditable
+                initial={data.name}
+                cancelEditing={() => setEditingName(false)}
+                editable={editingName}
+                onSave={(name) => {
+                  return new Promise((resolve) =>
+                    rename(name, {
+                      onSuccess: () => resolve(true),
+                      // FIXME error notification
+                      onError: () => resolve(false),
+                    }),
+                  );
+                }}
+                className="font-bold text-5xl"
+              />
+              {/* <div className="font-bold text-5xl">{data.name}</div> */}
+              <ContextMenu
+                button={(props) => (
+                  <button {...props} className="ml-3">
+                    <HiDotsHorizontal className="w-8 h-8" />
+                  </button>
+                )}
+                items={[
+                  {
+                    icon: HiPencil,
+                    label: "Edit Name",
+                    onClick: () => setEditingName(true),
+                  },
+                ]}
+                className="transform -translate-x-4"
+                menuClassName="w-48"
+              />
               {/* TODO play playlist */}
-              <button onClick={() => {}}>
-                <MdPlayCircleOutline className="w-10 h-10 ml-3" />
+              <button onClick={() => {}} className="ml-3">
+                {/* <HiOutlineCheckCircle className="w-10 h-10" /> */}
+                <MdPlayCircleOutline className="w-10 h-10" />
               </button>
             </div>
-            <span>{`Created on ${fmtToDate(playlist.playlist.data().createdAt)}`}</span>
-            <span>
-              {` • ${playlist.playlistSongs.length} ${pluralSongs(
-                playlist.playlistSongs.length,
-              )} • `}
-            </span>
+            <span>{`Created on ${fmtToDate(data.createdAt)}`}</span>
+            <span>{` • ${playlistSongs.length} ${pluralSongs(playlistSongs.length)} • `}</span>
             <span> {fmtMSS(songDuration / 1000)}</span>
           </div>
         )}
       </div>
       <div>
         <div>
-          {playlist.status === "error" ? (
+          {status === "error" ? (
             <ErrorTemplate />
           ) : (
             <SongTable
-              songs={playlist.status === "loading" ? undefined : playlist.playlistSongs}
+              songs={status === "loading" ? undefined : playlistSongs}
               container={container}
+              actions={[
+                {
+                  label: "Remove From Playlist",
+                  icon: HiOutlineTrash,
+                  onClick: (song) => removeSong(song.id),
+                },
+              ]}
             />
           )}
         </div>
