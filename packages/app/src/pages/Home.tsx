@@ -2,13 +2,13 @@ import React from "react";
 import { HomeTopic } from "../components/HomeTopic";
 import { useRecentlyAddedSongs } from "../queries/songs";
 import { SongCard } from "../sections/SongCard";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 export const Home = () => {
-  // const albums = useAlbums();
   const songs = useRecentlyAddedSongs();
 
   if (songs === undefined) {
-    return <div>LOADING</div>;
+    return <LoadingSpinner />;
   }
 
   return (

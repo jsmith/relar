@@ -43,21 +43,21 @@ const config: ReactQueryProviderConfig = {
 ReactDOM.render(
   <React.StrictMode>
     <UserProvider>
-      <Router routes={routes}>
-        {/* <SkeletonTheme color="rgb(255, 255, 255, 0.05)" highlightColor="rgb(255, 255, 255, 0.15)"> */}
-        <PlayerProvider>
-          <ConfirmActionProvider>
-            <ConfirmPasswordProvider>
-              <ReactQueryConfigProvider config={config}>
-                <ModalProvider>
+      <ModalProvider>
+        <Router routes={routes}>
+          {/* <SkeletonTheme color="rgb(255, 255, 255, 0.05)" highlightColor="rgb(255, 255, 255, 0.15)"> */}
+          <PlayerProvider>
+            <ConfirmActionProvider>
+              <ConfirmPasswordProvider>
+                <ReactQueryConfigProvider config={config}>
                   <App />
-                </ModalProvider>
-              </ReactQueryConfigProvider>
-            </ConfirmPasswordProvider>
-          </ConfirmActionProvider>
-        </PlayerProvider>
-        {/* </SkeletonTheme> */}
-      </Router>
+                </ReactQueryConfigProvider>
+              </ConfirmPasswordProvider>
+            </ConfirmActionProvider>
+          </PlayerProvider>
+          {/* </SkeletonTheme> */}
+        </Router>
+      </ModalProvider>
     </UserProvider>
   </React.StrictMode>,
   document.getElementById("root"),

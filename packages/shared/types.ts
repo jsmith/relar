@@ -9,6 +9,7 @@ import {
   Unknown,
   Partial,
   Null,
+  Array,
 } from "runtypes";
 import * as firebase from "firebase";
 
@@ -164,6 +165,21 @@ export const ArtistType = Record({
 });
 
 export type Artist = Static<typeof ArtistType>;
+
+export const PlaylistType = Record({
+  /**
+   * The name of the playlist.
+   */
+  name: String,
+
+  /** The songs IDs. */
+  songs: Array(String).Or(Undefined),
+
+  /** When the playlist was created. */
+  createdAt: Unknown.withGuard((x): x is firebase.firestore.Timestamp => true),
+});
+
+export type Playlist = Static<typeof PlaylistType>;
 
 export type SuccessWithData<Data> = {
   type: "success";

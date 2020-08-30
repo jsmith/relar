@@ -5,9 +5,9 @@ import { BsExclamationTriangle } from "react-icons/bs";
 import { Input } from "../components/Input";
 import { ErrorTemplate } from "../components/ErrorTemplate";
 import { BlockAlert } from "../components/BlockAlert";
+import { OkCancelModal } from "./OkCancelModal";
 
-export interface ConfirmationModalProps {
-  display: boolean;
+export interface ActionConfirmationModalProps {
   onCancel: () => void;
   onConfirm: () => void;
   title: string;
@@ -16,20 +16,17 @@ export interface ConfirmationModalProps {
   confirmEmail?: boolean;
 }
 
-export const ConfirmationModal = ({
+export const ActionConfirmationModal = ({
   title,
   subtitle,
   confirmText,
   onConfirm,
   onCancel,
-  display,
   confirmEmail,
-}: ConfirmationModalProps) => {
+}: ActionConfirmationModalProps) => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const { user } = useUser();
-
-  useEffect(() => setError(""), [display]);
 
   const checkEmail = () => {
     if (!confirmEmail || email === user?.email) {
@@ -40,8 +37,7 @@ export const ConfirmationModal = ({
   };
 
   return (
-    <Modal
-      display={display}
+    <OkCancelModal
       onCancel={onCancel}
       okText={confirmText}
       onOk={checkEmail}
@@ -60,15 +56,17 @@ export const ConfirmationModal = ({
           <h1 className="font-bold">{title}</h1>
           <p className="text-sm text-gray-600">{subtitle}</p>
         </div>
-        <Input
-          placeholder={user?.email ?? undefined}
-          value={email}
-          onChange={setEmail}
-          onEnter={checkEmail}
-          label="Confirm Email"
-        />
+        {confirmEmail && (
+          <Input
+            placeholder={user?.email ?? undefined}
+            value={email}
+            onChange={setEmail}
+            onEnter={checkEmail}
+            label="Confirm Email"
+          />
+        )}
         {error && <BlockAlert type="error">{error}</BlockAlert>}
       </div>
-    </Modal>
+    </OkCancelModal>
   );
 };

@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import { Thumbnail } from "../components/Thumbnail";
 import { MdPlayCircleFilled } from "react-icons/md";
 import classNames from "classnames";
+import { Collage } from "./Collage";
+import { ThumbnailObjectSnapshot } from "../queries/thumbnail";
 
 export interface ThumbnailCardProps {
-  thumbnail: string | undefined;
+  snapshot: ThumbnailObjectSnapshot | ThumbnailObjectSnapshot[];
   title: string;
   subtitle: string | undefined;
   onClick?: () => void;
@@ -12,7 +14,7 @@ export interface ThumbnailCardProps {
 }
 
 export const ThumbnailCard = ({
-  thumbnail,
+  snapshot,
   title,
   subtitle,
   onClick,
@@ -28,7 +30,11 @@ export const ThumbnailCard = ({
       )}
       onClick={onClick}
     >
-      <Thumbnail className="w-32 h-32" thumbnail={thumbnail} />
+      {Array.isArray(snapshot) ? (
+        <Collage className="w-32 h-32" snapshots={snapshot} size="128" />
+      ) : (
+        <Thumbnail className="w-32 h-32" snapshot={snapshot} size="128" />
+      )}
       <div
         className="w-32 truncate mt-2 text-sm"
         tabIndex={0}
