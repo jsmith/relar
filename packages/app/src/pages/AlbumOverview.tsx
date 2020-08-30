@@ -1,47 +1,23 @@
-import React, { useState, useMemo } from "react";
-import { useThumbnail } from "../queries/thumbnail";
+import React, { useState } from "react";
 import { useRouter } from "react-tiniest-router";
-import FastAverageColor from "fast-average-color";
 import { Thumbnail } from "../components/Thumbnail";
-import { ResultAsync } from "neverthrow";
-import { captureException, fmtMSS } from "../utils";
-import tiny from "tinycolor2";
+import { fmtMSS, useGradient } from "../utils";
 import classNames from "classnames";
 import { useAlbumSongs, useAlbum } from "../queries/album";
 import { SongTable } from "../components/SongTable";
 import { ErrorTemplate } from "../components/ErrorTemplate";
 import { MdPlayCircleOutline } from "react-icons/md";
-
-const fac = new FastAverageColor();
+import { useSongsDuration } from "../queries/songs";
 
 export const AlbumOverview = ({ container }: { container: HTMLElement | null }) => {
   const { params } = useRouter();
   // TODO validation
   const { albumId } = params as { albumId: string };
   const album = useAlbum(albumId);
-  // const albumData = useDataFromQueryNSnapshot(album);
-  const thumbnail = useThumbnail(album.status === "success" ? album.data : undefined, "256");
   const [averageColor, setAverageColor] = useState("#cbd5e0");
-  const { from, to } = useMemo(
-    () => ({
-      from: tiny(averageColor).lighten(5),
-      to: tiny(averageColor).darken(5),
-    }),
-    [averageColor],
-  );
+  const { from, to, isLight } = useGradient(averageColor);
   const songs = useAlbumSongs(albumId);
-
-  const songDuration = useMemo(
-    () =>
-      songs.data
-        ? songs.data
-            .map((song) => song.data().duration)
-            .reduce((sum, duration) => sum + duration, 0)
-        : 0,
-    [songs],
-  );
-
-  const isLight = useMemo(() => tiny(averageColor).isLight(), [averageColor]);
+  const songDuration = useSongsDuration(songs.data);
 
   return (
     <div>
@@ -54,13 +30,9 @@ export const AlbumOverview = ({ container }: { container: HTMLElement | null }) 
       >
         <Thumbnail
           className="w-48 h-48"
-          thumbnail={thumbnail}
-          onLoad={(e) => {
-            const img = e.target as HTMLImageElement;
-            ResultAsync.fromPromise(fac.getColorAsync(img), (e) => e as Error).match((color) => {
-              setAverageColor(color.hex);
-            }, captureException);
-          }}
+          snapshot={album.data}
+          setAverageColor={setAverageColor}
+          size="256"
         />
         {album.status === "error" ? (
           <div>

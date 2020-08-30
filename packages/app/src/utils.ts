@@ -1,6 +1,7 @@
-import { MutableRefObject, useEffect, useRef, useState } from "react";
+import { MutableRefObject, useEffect, useRef, useState, useMemo } from "react";
 import * as Sentry from "@sentry/browser";
 import { QueryResult } from "react-query";
+import tiny from "tinycolor2";
 
 /**
  * Hook that alerts clicks outside of the passed ref.
@@ -290,3 +291,21 @@ export const fmtToDate = (timestamp: firebase.firestore.Timestamp) =>
     day: "numeric",
     year: "numeric",
   });
+
+export const useGradient = (color: string, amount = 5) => {
+  const { to, from } = useMemo(
+    () => ({
+      from: tiny(color).lighten(amount),
+      to: tiny(color).darken(amount),
+    }),
+    [amount, color],
+  );
+
+  const isLight = useMemo(() => tiny(color).isLight(), [color]);
+
+  return {
+    to,
+    from,
+    isLight,
+  };
+};

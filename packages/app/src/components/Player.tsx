@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { usePlayer } from "../player";
-import { FaRegHeart, FaHeart, FaVolumeMute, FaVolumeDown, FaVolumeUp } from "react-icons/fa";
+import { FaVolumeMute, FaVolumeDown, FaVolumeUp } from "react-icons/fa";
 import {
   MdQueueMusic,
   MdRepeat,
@@ -16,8 +16,7 @@ import classNames from "classnames";
 import { Thumbnail } from "../components/Thumbnail";
 import { useDefinedUser } from "../auth";
 import { tryToGetSongDownloadUrlOrLog, useLikeSong } from "../queries/songs";
-import { useThumbnail } from "../queries/thumbnail";
-import { captureAndLog, fmtMSS } from "../utils";
+import { fmtMSS } from "../utils";
 import { LikedIcon } from "./LikedIcon";
 import { useFirebaseUpdater } from "../watcher";
 
@@ -36,7 +35,6 @@ export const Player = () => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [src, setSrc] = useState<string>();
   const [playing, setPlaying] = useState(false);
-  const thumbnail = useThumbnail(song);
 
   const playSong = async () => {
     if (!song) {
@@ -126,7 +124,7 @@ export const Player = () => {
       </audio>
 
       <div className="flex items-center" style={{ width: "30%" }}>
-        {songData && <Thumbnail className="w-12 h-12 flex-shrink-0" thumbnail={thumbnail} />}
+        {songData && <Thumbnail className="w-12 h-12 flex-shrink-0" snapshot={song} size="64" />}
         {songData && (
           <div className="ml-3 min-w-0">
             <div className="text-gray-100 text-sm" title={songData.title}>

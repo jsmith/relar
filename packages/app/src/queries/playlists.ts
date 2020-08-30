@@ -175,6 +175,7 @@ export const usePlaylistRemoveSong = (playlistId: string | undefined) => {
         const data = playlist.data();
         if (!data || !data.songs) return;
 
+        // FIXME use index rather than playlist ID as a song may appear twice
         const indexToDelete = data.songs.findIndex((songId) => songId === songIdToRemove);
         if (indexToDelete === undefined) return;
 

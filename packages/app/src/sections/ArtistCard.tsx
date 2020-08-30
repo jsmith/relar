@@ -1,9 +1,9 @@
 import React from "react";
 import { Album, Artist } from "../shared/types";
-import { useThumbnail, ThumbnailSize } from "../queries/thumbnail";
 import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "react-tiniest-router";
 import { routes } from "../routes";
+import { useArtistSongs } from "../queries/artist";
 
 export const ArtistCard = ({
   artist,
@@ -13,14 +13,12 @@ export const ArtistCard = ({
   className?: string;
 }) => {
   const data = artist.data();
-  // const thumbnail = useThumbnail(album, "128");
   const { goTo } = useRouter();
+  const artistSongs = useArtistSongs(artist.id);
 
   return (
     <ThumbnailCard
-      thumbnail={undefined}
-      // TODO maybe??
-      // letterArt
+      snapshot={artistSongs.data}
       title={data.name}
       subtitle={""}
       onClick={() => goTo(routes.artist, { artistName: data.name })}

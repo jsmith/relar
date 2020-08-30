@@ -105,3 +105,15 @@ export const useLikeSong = (song: firebase.firestore.DocumentSnapshot<Song> | un
       .catch(captureAndLog);
   });
 };
+
+export const useSongsDuration = (
+  songs: firebase.firestore.QueryDocumentSnapshot<Song>[] | undefined,
+) => {
+  return useMemo(
+    () =>
+      songs
+        ? songs.map((song) => song.data().duration).reduce((sum, duration) => sum + duration, 0)
+        : 0,
+    [songs],
+  );
+};
