@@ -4,6 +4,7 @@ import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "react-tiniest-router";
 import { routes } from "../routes";
 import { useFirebaseUpdater } from "../watcher";
+import { usePlaylistSongs } from "../queries/playlists";
 
 export const PlaylistCard = ({
   playlist,
@@ -13,14 +14,12 @@ export const PlaylistCard = ({
   className?: string;
 }) => {
   const [data] = useFirebaseUpdater(playlist);
-  // const thumbnail = useThumbnail(album, "128");
+  const playlistSongs = usePlaylistSongs(data);
   const { goTo } = useRouter();
 
   return (
     <ThumbnailCard
-      thumbnail={undefined}
-      // TODO maybe??
-      // letterArt
+      snapshot={playlistSongs}
       title={data.name}
       subtitle={""}
       onClick={() => goTo(routes.playlist, { playlistId: playlist.id })}

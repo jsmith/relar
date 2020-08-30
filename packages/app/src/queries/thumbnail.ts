@@ -3,29 +3,42 @@ import { useDefinedUser } from "../auth";
 import { Artwork } from "../shared/types";
 import { clientStorage } from "../shared/utils";
 import * as Sentry from "@sentry/browser";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { storage } from "../firebase";
 
 export type ThumbnailSize = "32" | "64" | "128" | "256";
 
+export interface ThumbnailObject {
+  id: string;
+  artwork: Artwork | undefined;
+}
+
+export type ThumbnailObjectSnapshot = firebase.firestore.DocumentSnapshot<ThumbnailObject>;
+
 export const useThumbnail = (
-  snapshot:
-    | firebase.firestore.DocumentSnapshot<{ id: string; artwork: Artwork | undefined }>
-    | undefined,
+  snapshot: ThumbnailObjectSnapshot | undefined,
+  size: ThumbnailSize = "32",
+) => {
+  const snapshots = useMemo(() => (snapshot ? [snapshot] : []), [snapshot]);
+  const thumbnails = useThumbnails(snapshots, size);
+  return thumbnails[0];
+};
+
+export const useThumbnails = (
+  snapshots: Array<
+    firebase.firestore.DocumentSnapshot<{ id: string; artwork: Artwork | undefined }>
+  >,
   size: ThumbnailSize = "32",
 ) => {
   const user = useDefinedUser();
-  const [thumbnailUrl, setThumbnailUrl] = useState<string>();
+  const [thumbnails, setThumbnails] = useState<Array<string | undefined>>([]);
 
   useEffect(() => {
-    if (!snapshot) {
-      return;
-    }
+    const thumbnails = snapshots.map((snapshot) => tryToGetDownloadUrlOrLog(user, snapshot, size));
+    Promise.all(thumbnails).then(setThumbnails);
+  }, [user, snapshots, size]);
 
-    tryToGetDownloadUrlOrLog(user, snapshot, size).then(setThumbnailUrl);
-  }, [user, snapshot, size]);
-
-  return thumbnailUrl;
+  return thumbnails;
 };
 
 const keyLookup = {

@@ -95,14 +95,14 @@ export const App = (_: React.Props<{}>) => {
   useDocumentTitle(route?.title);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner className="h-screen" />;
   }
 
   if (route?.protected && !user) {
     goTo(routes.login);
     // This is important
     // If we don't do this we will still try to load components which will break things
-    return <div>Loading...</div>;
+    return <LoadingSpinner className="h-screen" />;
   }
 
   const logout = async () => {

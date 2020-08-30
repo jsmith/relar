@@ -1,10 +1,7 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { useThumbnail } from "../queries/thumbnail";
+import React, { useState, useMemo } from "react";
 import { useRouter } from "react-tiniest-router";
-import FastAverageColor from "fast-average-color";
 import { Thumbnail } from "../components/Thumbnail";
-import { ResultAsync } from "neverthrow";
-import { captureException, fmtMSS, pluralSongs, fmtToDate } from "../utils";
+import { fmtMSS, pluralSongs, fmtToDate } from "../utils";
 import tiny from "tinycolor2";
 import classNames from "classnames";
 import { SongTable } from "../components/SongTable";
@@ -24,8 +21,7 @@ import { ContentEditable } from "../components/ContentEditable";
 import { useConfirmAction } from "../confirm-actions";
 import { routes } from "../routes";
 import { Skeleton } from "../components/Skeleton";
-
-const fac = new FastAverageColor();
+import { Collage } from "../components/Collage";
 
 export const PlaylistOverview = ({ container }: { container: HTMLElement | null }) => {
   // TODO editing the name of a playlist
@@ -38,8 +34,6 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
   const [removeSong] = usePlaylistRemoveSong(playlistId);
   const [rename] = usePlaylistRename(playlistId);
   const [deletePlaylist] = usePlaylistDelete(playlistId);
-  // const albumData = useDataFromQueryNSnapshot(playlist);
-  // const thumbnail = useThumbnail(playlist.status === "success" ? playlist.playlist : undefined, "256");
   const [averageColor, setAverageColor] = useState("#cbd5e0");
   const { from, to } = useMemo(
     () => ({
@@ -72,16 +66,8 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
           backgroundImage: `linear-gradient(to bottom, ${from}, ${to})`,
         }}
       >
-        <Thumbnail
-          className="w-48 h-48"
-          thumbnail={undefined}
-          onLoad={(e) => {
-            const img = e.target as HTMLImageElement;
-            ResultAsync.fromPromise(fac.getColorAsync(img), (e) => e as Error).match((color) => {
-              setAverageColor(color.hex);
-            }, captureException);
-          }}
-        />
+        <Collage size="256" snapshots={playlistSongs} />
+        {/* <Thumbnail className="w-48 h-48" thumbnail={undefined} setAverageColor={setAverageColor} /> */}
         {status === "error" ? (
           <ErrorTemplate />
         ) : (

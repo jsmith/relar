@@ -331,7 +331,12 @@ export const SongTable = ({ songs: docs, loadingRows = 5, container, actions }: 
     }
     return docs.slice(start, end + 1).map((song, i) => (
       // The key is the index rather than the song ID as the song could > 1
-      <SongTableRow song={song} setSong={setSong} key={start + i} actions={actions} />
+      <SongTableRow
+        song={song}
+        setSong={setSong}
+        key={`${song.id}///${start + i}`}
+        actions={actions}
+      />
     ));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingRows, docs, start, end]);

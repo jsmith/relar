@@ -1,6 +1,5 @@
 import React from "react";
 import { Album } from "../shared/types";
-import { useThumbnail, ThumbnailSize } from "../queries/thumbnail";
 import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "react-tiniest-router";
 import { routes } from "../routes";
@@ -13,12 +12,11 @@ export const AlbumCard = ({
   className?: string;
 }) => {
   const data = album.data();
-  const thumbnail = useThumbnail(album, "128");
   const { goTo } = useRouter();
 
   return (
     <ThumbnailCard
-      thumbnail={thumbnail}
+      snapshot={album}
       title={data.album ?? ""}
       subtitle={data.albumArtist}
       onClick={() => goTo(routes.album, { albumId: album.id })}
