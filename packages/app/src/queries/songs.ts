@@ -7,7 +7,7 @@ import { captureAndLogError, captureAndLog } from "../utils";
 import { useUserData } from "../firestore";
 import { useMutation, MutationFunction } from "react-query";
 import { useMemo } from "react";
-import { useFirebaseUpdater } from "../watcher";
+import { useFirebaseUpdater, updateCached, updateCachedWithSnapshot } from "../watcher";
 
 export const useRecentlyAddedSongs = () => {
   const songs = useSongs();
@@ -91,8 +91,6 @@ export const tryToGetSongDownloadUrlOrLog = async (
 };
 
 export const useLikeSong = (song: firebase.firestore.DocumentSnapshot<Song> | undefined) => {
-  const [_, setSong] = useFirebaseUpdater(song);
-
   return useMutation(async (liked: boolean) => {
     if (!song) {
       return;
@@ -103,7 +101,19 @@ export const useLikeSong = (song: firebase.firestore.DocumentSnapshot<Song> | un
         liked,
       })
       .then(() => song.ref.get())
-      .then((data) => setSong(data.data()))
+      .then((data) => updateCachedWithSnapshot(data))
       .catch(captureAndLog);
   });
+};
+
+export const useSongsDuration = (
+  songs: firebase.firestore.QueryDocumentSnapshot<Song>[] | undefined,
+) => {
+  return useMemo(
+    () =>
+      songs
+        ? songs.map((song) => song.data().duration).reduce((sum, duration) => sum + duration, 0)
+        : 0,
+    [songs],
+  );
 };

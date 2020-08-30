@@ -4,14 +4,14 @@ import { Input } from "../components/Input";
 import { useDefinedUser, signInWithEmailAndPassword, useUser } from "../auth";
 import { captureAndLogError } from "../utils";
 import { BlockAlert } from "../components/BlockAlert";
+import { OkCancelModal } from "./OkCancelModal";
 
 export interface ConfirmPasswordProps {
-  display: boolean;
   onCancel: () => void;
   onConfirm: () => void;
 }
 
-export const ConfirmPassword = ({ onCancel, display, onConfirm }: ConfirmPasswordProps) => {
+export const ConfirmPassword = ({ onCancel, onConfirm }: ConfirmPasswordProps) => {
   const { user } = useUser();
   const [value, setValue] = useState("");
   const [error, setError] = useState("");
@@ -39,8 +39,7 @@ export const ConfirmPassword = ({ onCancel, display, onConfirm }: ConfirmPasswor
   }, [onConfirm, user, value]);
 
   return (
-    <Modal
-      display={display}
+    <OkCancelModal
       onCancel={onCancel}
       onOk={tryAndConfirm}
       initialFocus="#password-confirm-box"
@@ -64,6 +63,6 @@ export const ConfirmPassword = ({ onCancel, display, onConfirm }: ConfirmPasswor
         onEnter={tryAndConfirm}
       />
       {error && <BlockAlert type="error">{error}</BlockAlert>}
-    </Modal>
+    </OkCancelModal>
   );
 };

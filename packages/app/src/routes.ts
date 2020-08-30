@@ -10,6 +10,8 @@ export interface CustomRoute extends RouteType {
 
 // TODO better names for className and containerClassname
 // Also all of these don't *need* these attributes
+// TODO how can we make titles dynamic?? It would be nice to have something generic
+// But the easiest solution would probably be some kind of hook
 export const routes = {
   hero: {
     id: "hero",
@@ -136,6 +138,24 @@ export const routes = {
     className: "",
     containerClassName: "px-5",
     title: "Invite | RELAR",
+  },
+  playlists: {
+    id: "playlists",
+    path: "/library/playlists",
+    protected: true,
+    sidebar: true,
+    className: "py-2",
+    containerClassName: "px-5",
+    title: "Playlists | RELAR",
+  },
+  playlist: {
+    id: "playlist",
+    path: "/library/playlists/:playlistId",
+    protected: true,
+    sidebar: true,
+    className: "",
+    containerClassName: "px-5",
+    title: "Playlist | RELAR",
   },
   // gallery: {
   //   id: 'gallery',

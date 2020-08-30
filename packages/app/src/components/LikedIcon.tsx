@@ -1,7 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
-import { Song } from "../shared/types";
-import { captureAndLog } from "../utils";
 
 export interface FavoriteIconProps {
   className?: string;

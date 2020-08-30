@@ -10,6 +10,10 @@ service cloud.firestore {
         return request.resource.data.diff(resource.data).affectedKeys();
       }
 
+      function newKeys() {
+        return request.resource.data.keys();
+      }
+
     	match /{data=**} {
         // restricted this so that users can't just write willy nilly
       	allow read: if isUser()
@@ -35,6 +39,12 @@ service cloud.firestore {
         }
 
         allow update: if isUser() && validUpdate()
+      }
+
+      match /playlists/{playlistId} {
+        allow update: if isUser() && affectedKeys().hasOnly(['name', 'songs'])
+        allow create: if isUser() && newKeys().hasOnly(['name', 'songs', 'createdAt']) && newKeys().hasAll(['name', 'createdAt'])
+        allow delete: if isUser()
       }
     }
   }

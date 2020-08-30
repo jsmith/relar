@@ -1,16 +1,18 @@
 import React from "react";
 import { AlbumCard } from "../sections/AlbumCard";
 import { useAlbums } from "../queries/album";
+import { LoadingSpinner } from "../components/LoadingSpinner";
+import { ErrorTemplate } from "../components/ErrorTemplate";
 
 export const Albums = () => {
   const albums = useAlbums();
 
   if (albums.status === "loading") {
-    return <div>LOADING</div>;
+    return <LoadingSpinner />;
   }
 
   if (albums.status === "error") {
-    return <div>ERROR</div>;
+    return <ErrorTemplate />;
   }
 
   return (
