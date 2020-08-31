@@ -1,6 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import { Song } from "../shared/types";
-import { usePlayer } from "../player";
 import classNames from "classnames";
 import {
   MdMusicNote,
@@ -26,6 +25,7 @@ import { routes } from "../routes";
 import { link } from "../classes";
 import { AddToPlaylistEditor } from "../sections/AddToPlaylistModal";
 import { Skeleton } from "./Skeleton";
+import { useQueue } from "../queue";
 
 // I really wish I didn't have to do this but for some reason this is the only thing that works
 // Before I was getting an issue in production
@@ -259,16 +259,25 @@ export interface SongTableProps {
   loadingRows?: number;
   container: HTMLElement | null;
   actions?: SongTableItem[];
+
+  // Queue information
+  source: string;
 }
 
 // Great tutorial on recycling DOM elements -> https://medium.com/@moshe_31114/building-our-recycle-list-solution-in-react-17a21a9605a0
-export const SongTable = ({ songs: docs, loadingRows = 5, container, actions }: SongTableProps) => {
+export const SongTable = ({
+  songs: docs,
+  loadingRows = 5,
+  container,
+  actions,
+  source,
+}: SongTableProps) => {
   const rowHeight = 48;
   const headerHeight = 44;
   const [offsetTop, setOffsetTop] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
   const [scrollTop, setScrollTop] = useState(0);
-  const [_, setSong] = usePlayer();
+  const { setQueue } = useQueue();
   const t = useRef<HTMLTableElement | null>(null);
   useResizeObserver<HTMLElement>({
     ref: useMemo(() => ({ current: container }), [container]),
@@ -333,7 +342,7 @@ export const SongTable = ({ songs: docs, loadingRows = 5, container, actions }: 
       // The key is the index rather than the song ID as the song could > 1
       <SongTableRow
         song={song}
-        setSong={setSong}
+        setSong={() => setQueue({ songs: docs, source, index: start + i })}
         key={`${song.id}///${start + i}`}
         actions={actions}
       />

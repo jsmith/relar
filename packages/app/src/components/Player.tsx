@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { usePlayer } from "../player";
 import { FaVolumeMute, FaVolumeDown, FaVolumeUp } from "react-icons/fa";
 import {
   MdQueueMusic,
@@ -19,110 +18,20 @@ import { tryToGetSongDownloadUrlOrLog, useLikeSong } from "../queries/songs";
 import { fmtMSS } from "../utils";
 import { LikedIcon } from "./LikedIcon";
 import { useFirebaseUpdater } from "../watcher";
+import { useQueue } from "../queue";
 
 export const Player = () => {
   const [repeat, setRepeat] = useState<"none" | "repeat-one" | "repeat">("none");
-  const [song] = usePlayer();
+  const { song, toggleState, seekTime, playing, volume, setVolume, currentTime } = useQueue();
   const [songData] = useFirebaseUpdater(song);
-  // const songData = song?.data();
-  const user = useDefinedUser();
-  const [volume, setVolume] = useState(80);
   const [setLiked] = useLikeSong(song);
-  // TODO save when click volume
-  // const [savedVolume, setSavedVolume] = useState(volume);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [src, setSrc] = useState<string>();
-  const [playing, setPlaying] = useState(false);
-
-  const playSong = async () => {
-    if (!song) {
-      // TODO pause
-      return;
-    }
-
-    const downloadUrl = await tryToGetSongDownloadUrlOrLog(user, song);
-    if (downloadUrl) {
-      // TODO Update play count and set last played time
-      // TODO permission issues updating this
-      setSrc(downloadUrl);
-    }
-
-    audioRef.current?.play();
-    setPlaying(true);
-  };
-
-  const togglePlayPause = () => {
-    if (!audioRef.current) {
-      return;
-    }
-
-    if (playing) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
-    }
-    setPlaying(!playing);
-  };
-
-  const onLoadedMetadata = () => {
-    if (!audioRef.current) {
-      return;
-    }
-
-    console.info(`Loaded metadata. Track length is ${audioRef.current.duration}`);
-    setDuration(audioRef.current.duration);
-  };
-
   const currentTimeText = useMemo(() => fmtMSS(currentTime), [currentTime]);
+  const duration = useMemo(() => (songData?.duration ?? 0) / 1000, [songData?.duration]);
   const endTimeText = useMemo(() => fmtMSS(duration), [duration]);
 
-  const onTimeUpdate = () => {
-    if (!audioRef.current) {
-      return;
-    }
-
-    setCurrentTime(audioRef.current.currentTime);
-  };
-
-  const seekTime = (seconds: number) => {
-    setCurrentTime(seconds);
-
-    if (audioRef.current) {
-      audioRef.current.currentTime = seconds;
-    }
-  };
-
-  useEffect(() => {
-    if (audioRef.current) {
-      // HTML5 audio.volume is a value between 0 and 1
-      // See https://stackoverflow.com/questions/10075909/how-to-set-the-loudness-of-html5-audio
-      audioRef.current.volume = volume / 100;
-    }
-  }, [volume]);
-
-  useEffect(() => {
-    playSong();
-    // TODO should we disable eslint?
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [song]);
-
   // TODO titles for all button
-
   return (
     <div className="h-20 bg-gray-800 flex items-center px-4">
-      <audio
-        ref={audioRef}
-        preload="metadata"
-        loop={repeat === "repeat-one"}
-        src={src}
-        onLoadedMetadata={onLoadedMetadata}
-        onTimeUpdate={onTimeUpdate}
-      >
-        Your browser does not support HTML5 Audio!
-      </audio>
-
       <div className="flex items-center" style={{ width: "30%" }}>
         {songData && <Thumbnail className="w-12 h-12 flex-shrink-0" snapshot={song} size="64" />}
         {songData && (
@@ -139,15 +48,7 @@ export const Player = () => {
             liked={songData.liked}
             setLiked={setLiked}
           />
-          // <button
-          //   onClick={() => likedOrUnlikeSong(!songData.liked)}
-          //   className="ml-6 text-gray-300 hover:text-gray-100"
-          //   title="Save to Likes"
-          // >
-          //   {songData.liked ? <FaHeart /> : <FaRegHeart />}
-          // </button>
         )}
-        {/* <div className="w-2" /> */}
       </div>
       <div className="w-2/5 flex flex-col items-center">
         <div className="space-x-2 flex items-center">
@@ -178,7 +79,7 @@ export const Player = () => {
           <button
             title="Play/Pause Song"
             className="text-gray-300 hover:text-gray-100"
-            onClick={togglePlayPause}
+            onClick={toggleState}
           >
             {playing ? (
               <MdPauseCircleOutline className="w-8 h-8" />

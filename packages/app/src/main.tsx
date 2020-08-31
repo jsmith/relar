@@ -21,7 +21,7 @@ import * as ReactDOM from "react-dom";
 import { Router } from "react-tiniest-router";
 import { routes } from "./routes";
 import { UserProvider } from "./auth";
-import { PlayerProvider } from "./player";
+import { QueueProvider } from "./queue";
 import { ConfirmActionProvider } from "./confirm-actions";
 import { ConfirmPasswordProvider } from "./confirm-password";
 import { ReactQueryConfigProvider, ReactQueryProviderConfig } from "react-query";
@@ -46,7 +46,7 @@ ReactDOM.render(
       <ModalProvider>
         <Router routes={routes}>
           {/* <SkeletonTheme color="rgb(255, 255, 255, 0.05)" highlightColor="rgb(255, 255, 255, 0.15)"> */}
-          <PlayerProvider>
+          <QueueProvider>
             <ConfirmActionProvider>
               <ConfirmPasswordProvider>
                 <ReactQueryConfigProvider config={config}>
@@ -54,7 +54,7 @@ ReactDOM.render(
                 </ReactQueryConfigProvider>
               </ConfirmPasswordProvider>
             </ConfirmActionProvider>
-          </PlayerProvider>
+          </QueueProvider>
           {/* </SkeletonTheme> */}
         </Router>
       </ModalProvider>

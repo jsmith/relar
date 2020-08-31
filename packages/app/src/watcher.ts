@@ -35,10 +35,8 @@ export function useFirebaseUpdater<T>(
   const [current, setCurrent] = useState<T | undefined>(snap ? getCachedOr(snap) : undefined);
 
   useEffect(() => {
-    if (!current && snap) {
-      setCurrent(getCachedOr(snap));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (snap) setCurrent(getCachedOr(snap));
+    else setCurrent(undefined);
   }, [snap]);
 
   const emitAndSetCurrent = useCallback(

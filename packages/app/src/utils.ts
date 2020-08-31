@@ -1,4 +1,4 @@
-import { MutableRefObject, useEffect, useRef, useState, useMemo } from "react";
+import { MutableRefObject, useEffect, useRef, useState, useMemo, useCallback } from "react";
 import * as Sentry from "@sentry/browser";
 import { QueryResult } from "react-query";
 import tiny from "tinycolor2";
@@ -309,3 +309,24 @@ export const useGradient = (color: string, amount = 5) => {
     isLight,
   };
 };
+
+export function useLocalStorage<T extends string>(
+  key: string,
+  defaultValue: T,
+): [T, (value: T) => void];
+export function useLocalStorage<T extends string>(key: string): [T | undefined, (value: T) => void];
+export function useLocalStorage<T extends string>(key: string, defaultValue?: T) {
+  const [value, setValue] = useState<T | undefined>(
+    (localStorage.getItem(key) as T | undefined) ?? defaultValue,
+  );
+
+  const setValueAndStore = useCallback(
+    (value: T) => {
+      setValue(value);
+      localStorage.setItem(key, value);
+    },
+    [key],
+  );
+
+  return [value, setValueAndStore];
+}

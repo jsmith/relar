@@ -36,6 +36,7 @@ import "./index.css";
 import { UploadModal } from "./sections/UploadModal";
 import SVGLoadersReact from "svg-loaders-react";
 import { LoadingSpinner } from "./components/LoadingSpinner";
+import { QueueAudio } from "./queue";
 
 const { Bars } = SVGLoadersReact;
 
@@ -281,7 +282,8 @@ export const App = (_: React.Props<{}>) => {
         )}
       </div>
       <SkipNavContent />
-      <React.Suspense fallback={<div>Lading...</div>}>{content}</React.Suspense>
+      <React.Suspense fallback={<LoadingSpinner />}>{content}</React.Suspense>
+      {user && <QueueAudio />}
       <ReactQueryDevtools.ReactQueryDevtools initialIsOpen={false} />
     </div>
   );

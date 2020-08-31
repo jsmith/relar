@@ -167,6 +167,9 @@ export const ArtistType = Record({
 export type Artist = Static<typeof ArtistType>;
 
 export const PlaylistType = Record({
+  /** The ID of the playlist. */
+  id: String,
+
   /**
    * The name of the playlist.
    */
