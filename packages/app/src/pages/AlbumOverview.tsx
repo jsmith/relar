@@ -8,12 +8,14 @@ import { SongTable } from "../components/SongTable";
 import { ErrorTemplate } from "../components/ErrorTemplate";
 import { MdPlayCircleOutline } from "react-icons/md";
 import { useSongsDuration } from "../queries/songs";
+import { useFirebaseUpdater } from "../watcher";
 
 export const AlbumOverview = ({ container }: { container: HTMLElement | null }) => {
   const { params } = useRouter();
   // TODO validation
   const { albumId } = params as { albumId: string };
   const album = useAlbum(albumId);
+  const [data] = useFirebaseUpdater(album.data);
   const [averageColor, setAverageColor] = useState("#cbd5e0");
   const { from, to, isLight } = useGradient(averageColor);
   const songs = useAlbumSongs(albumId);
@@ -41,7 +43,7 @@ export const AlbumOverview = ({ container }: { container: HTMLElement | null }) 
               ERROR
             </div>
           </div>
-        ) : album.status === "loading" || !album.data ? (
+        ) : album.status === "loading" || !data ? (
           <div>
             <div>
               {/* TODO loading */}
@@ -51,14 +53,13 @@ export const AlbumOverview = ({ container }: { container: HTMLElement | null }) 
         ) : (
           <div className={classNames("ml-4", isLight ? "text-gray-700" : "text-gray-200")}>
             <div className="flex items-center">
-              <div className="font-bold text-5xl">{album.data.data()?.album}</div>
+              <div className="font-bold text-5xl">{data?.album}</div>
               {/* TODO play album */}
               <button onClick={() => {}}>
                 <MdPlayCircleOutline className="w-10 h-10 ml-3" />
               </button>
             </div>
-            <span>{album.data.data()?.albumArtist} •</span>
-            {/* TODO store length in song */}
+            <span>{data?.albumArtist} •</span>
             <span> {`${songs.data?.length} ${songs.data?.length === 1 ? "song" : "songs"}`} •</span>
             <span> {fmtMSS(songDuration / 1000)}</span>
           </div>
@@ -72,6 +73,7 @@ export const AlbumOverview = ({ container }: { container: HTMLElement | null }) 
             <SongTable
               songs={songs.status === "loading" ? undefined : songs.data}
               container={container}
+              source={{ source: "album", id: albumId, sourceHumanName: data?.album ?? "" }}
             />
           )}
         </div>

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import React, { useMemo, useState } from "react";
 import { Song } from "../shared/types";
 import classNames from "classnames";
 import {
@@ -16,7 +16,6 @@ import { IconButton } from "./IconButton";
 import useDropdownMenuImport from "react-accessible-dropdown-menu-hook";
 import { ContextMenu, ContextMenuItem } from "./ContextMenu";
 import { useConfirmAction } from "../confirm-actions";
-import useResizeObserver from "use-resize-observer";
 import { useLikeSong } from "../queries/songs";
 import { useFirebaseUpdater } from "../watcher";
 import { fmtMSS } from "../utils";
@@ -25,7 +24,8 @@ import { routes } from "../routes";
 import { link } from "../classes";
 import { AddToPlaylistEditor } from "../sections/AddToPlaylistModal";
 import { Skeleton } from "./Skeleton";
-import { useQueue } from "../queue";
+import { useQueue, SetQueueSource } from "../queue";
+import { useRecycle } from "../recycle";
 
 // I really wish I didn't have to do this but for some reason this is the only thing that works
 // Before I was getting an issue in production
@@ -117,9 +117,10 @@ export interface SongTableRowProps {
   song: firebase.firestore.QueryDocumentSnapshot<Song>;
   setSong: (song: firebase.firestore.QueryDocumentSnapshot<Song>) => void;
   actions: SongTableItem[] | undefined;
+  mode: "regular" | "condensed";
 }
 
-export const SongTableRow = ({ song, setSong, actions }: SongTableRowProps) => {
+export const SongTableRow = ({ song, setSong, actions, mode }: SongTableRowProps) => {
   const [focusedPlay, setFocusedPlay] = useState(false);
   const [showEditorModal, hideEditorModal] = useModal(() => (
     <MetadataEditor setDisplay={() => hideEditorModal()} song={song} onSuccess={() => {}} />
@@ -174,6 +175,24 @@ export const SongTableRow = ({ song, setSong, actions }: SongTableRowProps) => {
     ];
   }, [actions, confirmAction, data.title, showAddPlaylistModal, showEditorModal, song]);
 
+  const artist = data.artist && (
+    <Link
+      className={classNames(link({ color: "" }), mode === "condensed" && "text-sm")}
+      label={data.artist}
+      route={routes.artist}
+      params={{ artistName: data.artist }}
+    />
+  );
+
+  const album = data.albumName && (
+    <Link
+      className={classNames(link({ color: "" }), mode === "condensed" && "text-sm")}
+      label={data.albumName}
+      route={routes.album}
+      params={{ albumId: data.albumId }}
+    />
+  );
+
   return (
     <tr className="group hover:bg-gray-300 text-gray-700 text-sm" onClick={() => setSong(song)}>
       <Cell className="flex space-x-2 items-center h-12">
@@ -198,6 +217,9 @@ export const SongTableRow = ({ song, setSong, actions }: SongTableRowProps) => {
         <div title={data.title} className="truncate flex-grow">
           {data.title}
         </div>
+        {mode === "condensed" && artist}
+        {mode === "condensed" && artist && album && <div className="text-sm">-</div>}
+        {mode === "condensed" && album}
 
         <ContextMenu
           button={(props) => (
@@ -213,35 +235,12 @@ export const SongTableRow = ({ song, setSong, actions }: SongTableRowProps) => {
           className="transform -translate-x-4"
         />
       </Cell>
-      {/* <TextCell text={data.title} /> */}
-      <TextCell
-        title={data.artist}
-        text={
-          data.artist && (
-            <Link
-              className={link({ color: "" })}
-              label={data.artist}
-              route={routes.artist}
-              params={{ artistName: data.artist }}
-            />
-          )
-        }
-        className="h-12 truncate"
-      />
-      <TextCell
-        title={data.albumName}
-        text={
-          data.albumName && (
-            <Link
-              className={link({ color: "" })}
-              label={data.albumName}
-              route={routes.album}
-              params={{ albumId: data.albumId }}
-            />
-          )
-        }
-        className="h-12 truncate"
-      />
+      {mode === "regular" && (
+        <TextCell title={data.artist} text={artist} className="h-12 truncate" />
+      )}
+      {mode === "regular" && (
+        <TextCell title={data.albumName} text={album} className="h-12 truncate" />
+      )}
       <TextCell text={`${data.played ?? ""}`} className="h-12 truncate" />
       <TextCell text={fmtMSS(data.duration / 1000)} className="h-12 truncate" />
       <Cell className="h-12 truncate">
@@ -260,71 +259,28 @@ export interface SongTableProps {
   container: HTMLElement | null;
   actions?: SongTableItem[];
 
-  // Queue information
-  source: string;
+  // Queue source
+  source: SetQueueSource;
+
+  mode?: "regular" | "condensed";
 }
 
-// Great tutorial on recycling DOM elements -> https://medium.com/@moshe_31114/building-our-recycle-list-solution-in-react-17a21a9605a0
 export const SongTable = ({
   songs: docs,
   loadingRows = 5,
   container,
   actions,
   source,
+  mode = "regular",
 }: SongTableProps) => {
-  const rowHeight = 48;
-  const headerHeight = 44;
-  const [offsetTop, setOffsetTop] = useState(0);
-  const [containerHeight, setContainerHeight] = useState(0);
-  const [scrollTop, setScrollTop] = useState(0);
   const { setQueue } = useQueue();
-  const t = useRef<HTMLTableElement | null>(null);
-  useResizeObserver<HTMLElement>({
-    ref: useMemo(() => ({ current: container }), [container]),
-    onResize: useCallback((e) => {
-      setContainerHeight(e.height ?? 0);
-      // console.log("Offset", t.current?.offsetTop);
-      setOffsetTop((t.current?.offsetTop ?? 0) + headerHeight);
-    }, []),
-  });
-
-  useEffect(() => {
-    if (!container) {
-      return;
-    }
-
-    container.onscroll = () => {
-      setScrollTop(container.scrollTop);
-    };
-  }, [container]);
-
   const rowCount = useMemo(() => docs?.length ?? 0, [docs]);
-
-  const { start, end, placeholderTopHeight, placeholderBottomHeight } = useMemo(() => {
-    const offTop = scrollTop - offsetTop;
-    const height = rowHeight * rowCount;
-    const offBottom = height - offTop - containerHeight;
-    // console.log(
-    //   `Offset: ${offsetTop}, container: ${containerHeight}, scroll: ${scrollTop}, units: ${rowCount}, unit: ${rowHeight}, offTop: ${offTop}, offBottom: ${offBottom}`,
-    // );
-
-    const unitsCompletelyOffScreenTop = offTop > 0 ? Math.floor(offTop / rowHeight) : 0;
-
-    const unitsCompletelyOffScreenBottom = offBottom > 0 ? Math.floor(offBottom / rowHeight) : 0;
-
-    const result = {
-      placeholderTopHeight: unitsCompletelyOffScreenTop * rowHeight,
-      placeholderBottomHeight: unitsCompletelyOffScreenBottom * rowHeight,
-      start: unitsCompletelyOffScreenTop,
-      end: rowCount - unitsCompletelyOffScreenBottom,
-    };
-
-    return result;
-  }, [offsetTop, containerHeight, scrollTop, rowHeight, rowCount]);
-
-  // useEffect(() => {
-  //   console.debug(`Displaying rows ${start} -> ${end}`);
-  // }, [start, end]);
+  const { start, end, placeholderBottomHeight, placeholderTopHeight, table } = useRecycle({
+    container,
+    rowCount,
+    rowHeight: 48,
+    headerHeight: 44,
+  });
 
   const rows = useMemo(() => {
     if (!docs) {
@@ -345,18 +301,19 @@ export const SongTable = ({
         setSong={() => setQueue({ songs: docs, source, index: start + i })}
         key={`${song.id}///${start + i}`}
         actions={actions}
+        mode={mode}
       />
     ));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingRows, docs, start, end]);
 
   return (
-    <table className="text-gray-800 table-fixed w-full" ref={t}>
+    <table className="text-gray-800 table-fixed w-full" ref={table}>
       <thead>
-        <tr>
-          <HeaderCol width="42%" label="Title" className="py-3" />
-          <HeaderCol width="32%" label="Artist" className="py-3" />
-          <HeaderCol width="26%" label="Album" className="py-3" />
+        <tr key={mode}>
+          <HeaderCol width="42%" label={mode === "regular" ? "Title" : "Song"} className="py-3" />
+          {mode === "regular" && <HeaderCol width="32%" label="Artist" className="py-3" />}
+          {mode === "regular" && <HeaderCol width="26%" label="Album" className="py-3" />}
           <HeaderCol width="50px" label={<MdMusicNote className="w-5 h-5" />} className="py-3" />
           <HeaderCol width="60px" label="" className="py-3" />
           <HeaderCol width="90px" label="" className="py-3" />

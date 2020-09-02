@@ -27,7 +27,7 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
   // TODO editing the name of a playlist
   const { params, goTo } = useRouter();
   // FIXME validation
-  const { playlistId } = params as { playlistId?: string };
+  const { playlistId } = params as { playlistId: string };
   const { playlist, status } = usePlaylist(playlistId);
   const [data] = useFirebaseUpdater(playlist);
   const playlistSongs = usePlaylistSongs(data);
@@ -163,6 +163,7 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
                   onClick: (song) => removeSong(song.id),
                 },
               ]}
+              source={{ source: "playlist", id: playlistId, sourceHumanName: data?.name ?? "" }}
             />
           )}
         </div>

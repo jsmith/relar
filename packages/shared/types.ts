@@ -118,7 +118,7 @@ export const SongType = Record({
   /**
    * The last time you played a song.
    */
-  lastPlayed: Number.Or(Undefined),
+  lastPlayed: Unknown.withGuard((x): x is firebase.firestore.Timestamp => true),
 
   /**
    * When the song was uploaded

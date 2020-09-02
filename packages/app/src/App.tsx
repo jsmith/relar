@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState, useRef, useCallback } from "react";
 import { routes, CustomRoute } from "./routes";
 import { useRouter } from "react-tiniest-router";
 import { useUser } from "./auth";
@@ -37,8 +37,7 @@ import { UploadModal } from "./sections/UploadModal";
 import SVGLoadersReact from "svg-loaders-react";
 import { LoadingSpinner } from "./components/LoadingSpinner";
 import { QueueAudio } from "./queue";
-
-const { Bars } = SVGLoadersReact;
+import { Queue } from "./sections/Queue";
 
 export interface SideBarItem {
   label: string;
@@ -86,7 +85,8 @@ const libraryLinks = [
 export const App = (_: React.Props<{}>) => {
   const { isRoute, goTo, routeId } = useRouter();
   const { user, loading } = useUser();
-  const [display, setDisplay] = useState(false);
+  const [uploadDisplay, setUploadDisplay] = useState(false);
+  const [queueDisplay, setQueueDisplay] = useState(false);
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
   const route = useMemo(() => Object.values(routes).find((route) => route.id === routeId), [
@@ -94,6 +94,8 @@ export const App = (_: React.Props<{}>) => {
   ]);
 
   useDocumentTitle(route?.title);
+
+  const closeQueue = useCallback(() => setQueueDisplay(false), []);
 
   if (loading) {
     return <LoadingSpinner className="h-screen" />;
@@ -112,8 +114,8 @@ export const App = (_: React.Props<{}>) => {
 
   const content = route?.sidebar ? (
     <UploadModal
-      display={display}
-      setDisplay={setDisplay}
+      display={uploadDisplay}
+      setDisplay={setUploadDisplay}
       className="flex flex-col h-full overflow-hidden"
     >
       <div className="relative flex-grow flex flex-col">
@@ -142,7 +144,7 @@ export const App = (_: React.Props<{}>) => {
               <div className="border-b border-gray-800 my-3 mx-3" />
               <button
                 className="flex py-2 px-5 items-center hover:bg-gray-800 w-full"
-                onClick={() => setDisplay(true)}
+                onClick={() => setUploadDisplay(true)}
               >
                 <MdAddCircle className="w-6 h-6" />
                 <div className="ml-4">Upload Music</div>
@@ -204,10 +206,11 @@ export const App = (_: React.Props<{}>) => {
                 ) : null}
               </div>
             </div>
+            <Queue visible={queueDisplay} close={closeQueue} />
           </React.Suspense>
         </Sidebar>
       </div>
-      <Player />
+      <Player toggleQueue={() => setQueueDisplay(!queueDisplay)} />
     </UploadModal>
   ) : route?.id === "hero" ? (
     <Hero />

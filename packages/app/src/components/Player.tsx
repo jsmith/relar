@@ -13,25 +13,38 @@ import {
 import { Slider } from "../components/Slider";
 import classNames from "classnames";
 import { Thumbnail } from "../components/Thumbnail";
-import { useDefinedUser } from "../auth";
-import { tryToGetSongDownloadUrlOrLog, useLikeSong } from "../queries/songs";
+import { useLikeSong } from "../queries/songs";
 import { fmtMSS } from "../utils";
 import { LikedIcon } from "./LikedIcon";
 import { useFirebaseUpdater } from "../watcher";
 import { useQueue } from "../queue";
 
-export const Player = () => {
-  const [repeat, setRepeat] = useState<"none" | "repeat-one" | "repeat">("none");
-  const { song, toggleState, seekTime, playing, volume, setVolume, currentTime } = useQueue();
+export interface PlayerProps {
+  toggleQueue: () => void;
+}
+
+export const Player = ({ toggleQueue }: PlayerProps) => {
+  const {
+    song,
+    toggleState,
+    seekTime,
+    playing,
+    volume,
+    setVolume,
+    currentTime,
+    next,
+    previous,
+    mode,
+    setMode,
+  } = useQueue();
   const [songData] = useFirebaseUpdater(song);
   const [setLiked] = useLikeSong(song);
   const currentTimeText = useMemo(() => fmtMSS(currentTime), [currentTime]);
   const duration = useMemo(() => (songData?.duration ?? 0) / 1000, [songData?.duration]);
   const endTimeText = useMemo(() => fmtMSS(duration), [duration]);
 
-  // TODO titles for all button
   return (
-    <div className="h-20 bg-gray-800 flex items-center px-4">
+    <div className="h-20 bg-gray-800 flex items-center px-4 z-10">
       <div className="flex items-center" style={{ width: "30%" }}>
         {songData && <Thumbnail className="w-12 h-12 flex-shrink-0" snapshot={song} size="64" />}
         {songData && (
@@ -54,26 +67,30 @@ export const Player = () => {
         <div className="space-x-2 flex items-center">
           <button
             title={
-              repeat === "none"
+              mode === "none"
                 ? "No Repeat"
-                : repeat === "repeat"
+                : mode === "repeat"
                 ? "Repeat All Songs"
                 : "Repeat Current Song"
             }
             className={classNames(
-              repeat === "none" ? "text-gray-300 hover:text-gray-100" : "text-purple-400",
+              mode === "none" ? "text-gray-300 hover:text-gray-100" : "text-purple-400",
             )}
             onClick={() =>
-              setRepeat(repeat === "none" ? "repeat" : repeat === "repeat" ? "repeat-one" : "none")
+              setMode(mode === "none" ? "repeat" : mode === "repeat" ? "repeat-one" : "none")
             }
           >
-            {repeat === "repeat-one" ? (
+            {mode === "repeat-one" ? (
               <MdRepeatOne className="w-6 h-6" />
             ) : (
               <MdRepeat className="w-6 h-6" />
             )}
           </button>
-          <button title="Previous Song" className="text-gray-300 hover:text-gray-100">
+          <button
+            title="Previous Song"
+            className="text-gray-300 hover:text-gray-100"
+            onClick={previous}
+          >
             <MdSkipPrevious className="w-6 h-6" />
           </button>
           <button
@@ -87,7 +104,7 @@ export const Player = () => {
               <MdPlayCircleOutline className="w-8 h-8" />
             )}
           </button>
-          <button title="Next Song" className="text-gray-300 hover:text-gray-100">
+          <button title="Next Song" className="text-gray-300 hover:text-gray-100" onClick={next}>
             <MdSkipNext className="w-6 h-6" />
           </button>
           <button title="Next Song" className="text-gray-300 hover:text-gray-100">
@@ -106,15 +123,18 @@ export const Player = () => {
         </div>
       </div>
       <div className="flex justify-end" style={{ width: "30%" }}>
-        <button className="text-gray-300 hover:text-gray-100" title="Music Queue">
-          <MdQueueMusic className="w-5 h-5" />
-        </button>
-
         <button className="text-gray-300 hover:text-gray-100 ml-3" title="Volume">
           {volume === 0 ? <FaVolumeMute /> : volume < 50 ? <FaVolumeDown /> : <FaVolumeUp />}
         </button>
-
         <Slider value={volume} maxValue={100} onChange={setVolume} className="w-32 ml-3" />
+
+        <button
+          className="text-gray-300 hover:text-gray-100 ml-3"
+          title="Music Queue"
+          onClick={toggleQueue}
+        >
+          <MdQueueMusic className="w-5 h-5" />
+        </button>
       </div>
     </div>
   );

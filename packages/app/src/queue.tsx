@@ -4,7 +4,9 @@ import { Song } from "./shared/types";
 import { tryToGetSongDownloadUrlOrLog } from "./queries/songs";
 import usePortalImport from "react-useportal";
 import { useUser } from "./auth";
-import { useLocalStorage } from "./utils";
+import { useLocalStorage, captureAndLogError } from "./utils";
+import firebase from "firebase/app";
+import { updateCached, updateCachedWithSnapshot } from "./watcher";
 
 const usePortal: typeof usePortalImport = (usePortalImport as any).default;
 
@@ -12,18 +14,18 @@ type SongSnapshot = firebase.firestore.QueryDocumentSnapshot<Song>;
 
 export interface QueueItem {
   song: SongSnapshot;
-  source: string;
+  humanReadableName: string;
 }
 
-// export type QueueType = "album" | "playlist" | "artist";
+export type SetQueueSource =
+  | { source: "album" | "artist" | "playlist"; id: string; sourceHumanName: string }
+  | { source: "library" | "manuel" | "queue" };
 
-export interface SetQueueOptions {
-  // type: "album" | "playlist" | "artist";
-  // id: string;
-  source: string;
+export type SetQueueOptions = {
   songs: SongSnapshot[];
   index?: number;
-}
+  source: SetQueueSource;
+};
 
 export type QueuePlayMode = "repeat" | "repeat-one" | "none";
 
@@ -33,9 +35,10 @@ export const QueueContext = createContext<{
   enqueue: (song: SongSnapshot) => void;
   /** The current song. */
   song: SongSnapshot | undefined;
-  // onSongChange: (cb: (song: SongSnapshot) => void) => Disposer;
-  next: () => Promise<void>;
-  previous: () => Promise<void>;
+  next: () => void;
+  /** Call this when the songs finishes. For internal use only. */
+  _nextAutomatic: () => void;
+  previous: () => void;
   mode: QueuePlayMode;
   setMode: (mode: QueuePlayMode) => void;
   /** The current time for the current song in seconds. Useful for UI purposes. */
@@ -46,8 +49,8 @@ export const QueueContext = createContext<{
   playing: boolean;
   /** Toggle the playing state. */
   toggleState: () => void;
-  /** The current source */
-  source: string | undefined;
+  /** Where the currently playing song is from. */
+  source: SetQueueOptions | undefined;
   /** The current volume from 0 to 100. Useful for UI purposes. */
   volume: number;
   /** Set the state and change the volume value in the <audio> element. */
@@ -84,7 +87,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
 
   const enqueue = useCallback(
     (song: SongSnapshot) => {
-      const newQueue = [...queue, { song, source: "Queue" }];
+      const newQueue = [...queue, { song, humanReadableName: "Queue" }];
       setQueueState(newQueue);
       current.current.queue = newQueue;
     },
@@ -110,16 +113,26 @@ export const QueueProvider = (props: React.Props<{}>) => {
         return;
       }
 
-      const { song, source } = item;
+      const { song, humanReadableName } = item;
       const downloadUrl = await tryToGetSongDownloadUrlOrLog(user, song);
       if (!downloadUrl) return;
 
-      // TODO Update play count and set last played time
+      const update: Partial<Song> = {
+        lastPlayed: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+        played: (firebase.firestore.FieldValue.increment(1) as unknown) as number,
+      };
+
+      song.ref
+        .update(update)
+        .then(() => song.ref.get())
+        .then((snapshot) => updateCachedWithSnapshot(snapshot))
+        .catch(captureAndLogError);
+
       if (ref.current) ref.current.src = downloadUrl;
       ref.current?.play();
       setPlaying(true);
       setSong(song);
-      setSource(source);
+      setSource(humanReadableName);
     },
     [stopPlaying, user],
   );
@@ -155,9 +168,19 @@ export const QueueProvider = (props: React.Props<{}>) => {
       //     break;
       // }
 
-      const newQueue = songs.map((song) => ({ song, source }));
+      let humanReadableName: string;
+      switch (source.source) {
+        case "album":
+        case "artist":
+        case "playlist":
+          humanReadableName = source.sourceHumanName;
+          break;
+        case "library":
+          humanReadableName = "Library";
+      }
+
+      const newQueue = songs.map((song) => ({ song, humanReadableName }));
       setQueueState(newQueue);
-      setSource(source);
       current.current.queue = newQueue;
       current.current.index = undefined;
       setIndex(index ?? 0);
@@ -165,13 +188,17 @@ export const QueueProvider = (props: React.Props<{}>) => {
     [setIndex],
   );
 
+  /**
+   * Tries to go to the target index. Force means actually go to the index whereas non force means
+   * repeat if the mode is set to "repeat-one".
+   */
   const tryToGoTo = useCallback(
-    (index: number) => {
+    (index: number, force: boolean) => {
       if (current.current.index === undefined) {
         // If this hasn't started yet
         if (queue.length === 0) return;
         setIndex(0);
-      } else if (mode === "repeat-one") {
+      } else if (!force && mode === "repeat-one") {
         // If we are just repeating the current song
         setIndex(current.current.index);
       } else if (index >= current.current.queue.length) {
@@ -190,8 +217,20 @@ export const QueueProvider = (props: React.Props<{}>) => {
   );
 
   // The ?? don't actually matter since we check to see if the index is currently defined in "tryToGoTo" function
-  const next = useCallback(async () => tryToGoTo((current.current.index ?? 0) + 1), [tryToGoTo]);
-  const previous = useCallback(async () => tryToGoTo((current.current.index ?? 0) - 1), [
+  const next = useCallback(() => tryToGoTo((current.current.index ?? 0) + 1, true), [tryToGoTo]);
+  const previous = useCallback(() => {
+    if (!ref.current) return;
+    if (ref.current.currentTime <= 4) {
+      // If less than 4 seconds, go to the previous song
+      tryToGoTo((current.current.index ?? 0) - 1, true);
+    } else {
+      // If not just restart the song
+      _setCurrentTime(0);
+      ref.current.currentTime = 0;
+    }
+  }, [tryToGoTo]);
+
+  const _nextAutomatic = useCallback(() => tryToGoTo((current.current.index ?? 0) + 1, false), [
     tryToGoTo,
   ]);
 
@@ -213,9 +252,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
 
   const _setRef = useCallback(
     (el: HTMLAudioElement | null) => {
-      // TODO init things here ie the volume
       ref.current = el;
-
       if (el) el.volume = volume / 100;
     },
     [volume],
@@ -241,6 +278,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
         setVolume,
         _setRef,
         _setCurrentTime,
+        _nextAutomatic,
       }}
     >
       {props.children}
@@ -250,7 +288,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
 
 export const QueueAudio = () => {
   const { Portal } = usePortal();
-  const { _setRef, _setCurrentTime, next } = useQueue();
+  const { _setRef, _setCurrentTime, _nextAutomatic } = useQueue();
 
   return (
     <Portal>
@@ -258,7 +296,7 @@ export const QueueAudio = () => {
         ref={_setRef}
         // loop={repeat === "repeat-one"}
         onTimeUpdate={(e) => _setCurrentTime((e.target as HTMLAudioElement).currentTime)}
-        onEnded={next}
+        onEnded={_nextAutomatic}
       >
         Your browser does not support HTML5 Audio...
       </audio>

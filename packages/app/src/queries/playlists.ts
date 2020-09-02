@@ -8,8 +8,6 @@ import firebase from "firebase/app";
 import { updateCached, getCachedOr, useFirebaseUpdater } from "../watcher";
 import { useMemo } from "react";
 import { useSongs, useSongLookup } from "./songs";
-import { useDataFromQueryNSnapshot } from "../utils";
-import { PlaylistCard } from "../sections/PlaylistCard";
 
 const { useQuery: usePlaylistsQuery, queryCache } = createQueryCache<
   ["playlists", { uid: string }],
