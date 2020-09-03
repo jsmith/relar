@@ -165,7 +165,7 @@ export const App = (_: React.Props<{}>) => {
                 isRoute(routes.albums) ||
                 isRoute(routes.playlists)) && (
                 <ul
-                  className="flex space-x-4 text-xl sticky top-0 z-10"
+                  className="flex space-x-4 text-xl sticky top-0 z-10 px-3"
                   style={{ backgroundColor: bgApp }}
                 >
                   {/* TODO accessible */}

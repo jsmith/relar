@@ -26,6 +26,9 @@ import { AddToPlaylistEditor } from "../sections/AddToPlaylistModal";
 import { Skeleton } from "./Skeleton";
 import { useQueue, SetQueueSource } from "../queue";
 import { useRecycle } from "../recycle";
+import SVGLoadersReact from "svg-loaders-react";
+
+const { Audio } = SVGLoadersReact;
 
 // I really wish I didn't have to do this but for some reason this is the only thing that works
 // Before I was getting an issue in production
@@ -120,9 +123,10 @@ export interface SongTableRowProps {
   setSong: (song: firebase.firestore.QueryDocumentSnapshot<Song>) => void;
   actions: SongTableItem[] | undefined;
   mode: "regular" | "condensed";
+  playing: boolean;
 }
 
-export const SongTableRow = ({ song, setSong, actions, mode }: SongTableRowProps) => {
+export const SongTableRow = ({ song, setSong, actions, mode, playing }: SongTableRowProps) => {
   const [focusedPlay, setFocusedPlay] = useState(false);
   const [showEditorModal, hideEditorModal] = useModal(() => (
     <MetadataEditor setDisplay={() => hideEditorModal()} song={song} onSuccess={() => {}} />
@@ -199,21 +203,27 @@ export const SongTableRow = ({ song, setSong, actions, mode }: SongTableRowProps
     <tr className="group hover:bg-gray-300 text-gray-700 text-sm" onClick={() => setSong(song)}>
       <Cell className="flex space-x-2 items-center h-12 pl-3">
         <div className="w-5 h-5">
-          <MdMusicNote
-            className={classNames(
-              "w-5 h-5 group-hover:opacity-0 absolute",
-              focusedPlay && "opacity-0",
-            )}
-          />
-          <button
-            title={`Play ${data.title}`}
-            className="focus:opacity-100 group-hover:opacity-100 opacity-0"
-            onFocus={() => setFocusedPlay(true)}
-            onBlur={() => setFocusedPlay(false)}
-            onClick={() => {}}
-          >
-            <MdPlayArrow className="w-5 h-5" />
-          </button>
+          {playing ? (
+            <Audio className="w-full h-4 text-purple-500" fill="currentColor" />
+          ) : (
+            <>
+              <MdMusicNote
+                className={classNames(
+                  "w-5 h-5 group-hover:opacity-0 absolute",
+                  focusedPlay && "opacity-0",
+                )}
+              />
+              <button
+                title={`Play ${data.title}`}
+                className="focus:opacity-100 group-hover:opacity-100 opacity-0"
+                onFocus={() => setFocusedPlay(true)}
+                onBlur={() => setFocusedPlay(false)}
+                onClick={() => {}}
+              >
+                <MdPlayArrow className="w-5 h-5" />
+              </button>
+            </>
+          )}
         </div>
 
         <div className="flex-grow">
@@ -282,7 +292,7 @@ export const SongTable = ({
   source,
   mode = "regular",
 }: SongTableProps) => {
-  const { setQueue } = useQueue();
+  const { setQueue, songIndex, source: playingSongSource } = useQueue();
   const rowCount = useMemo(() => docs?.length ?? 0, [docs]);
   const { start, end, placeholderBottomHeight, placeholderTopHeight, table } = useRecycle({
     container,
@@ -303,18 +313,44 @@ export const SongTable = ({
           </tr>
         ));
     }
-    return docs.slice(start, end + 1).map((song, i) => (
+    return docs.slice(start, end + 1).map((song, i) => {
+      // Default not playing
+      let playing = false;
+
+      // But if they do have the same index...
+      if (start + i === songIndex) {
+        // Check the source!
+        switch (source.type) {
+          case "album":
+          case "artist":
+          case "playlist":
+            playing = source.type === playingSongSource?.type && source.id === playingSongSource.id;
+            break;
+          case "queue":
+            playing = true;
+            break;
+          case "library":
+            playing = playingSongSource?.type === source.type;
+            break;
+          case "manuel":
+          // It should never reach this point...
+        }
+      }
+
       // The key is the index rather than the song ID as the song could > 1
-      <SongTableRow
-        song={song}
-        setSong={() => setQueue({ songs: docs, source, index: start + i })}
-        key={`${song.id}///${start + i}`}
-        actions={actions}
-        mode={mode}
-      />
-    ));
+      return (
+        <SongTableRow
+          song={song}
+          setSong={() => setQueue({ songs: docs, source, index: start + i })}
+          key={`${song.id}///${start + i}`}
+          actions={actions}
+          mode={mode}
+          playing={playing}
+        />
+      );
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingRows, docs, start, end]);
+  }, [loadingRows, docs, start, end, playingSongSource]);
 
   return (
     <table className="text-gray-800 table-fixed w-full" ref={table}>

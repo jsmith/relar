@@ -43,10 +43,10 @@ const config: ReactQueryProviderConfig = {
 ReactDOM.render(
   <React.StrictMode>
     <UserProvider>
-      <ModalProvider>
-        <Router routes={routes}>
-          {/* <SkeletonTheme color="rgb(255, 255, 255, 0.05)" highlightColor="rgb(255, 255, 255, 0.15)"> */}
-          <QueueProvider>
+      <QueueProvider>
+        <ModalProvider>
+          <Router routes={routes}>
+            {/* <SkeletonTheme color="rgb(255, 255, 255, 0.05)" highlightColor="rgb(255, 255, 255, 0.15)"> */}
             <ConfirmActionProvider>
               <ConfirmPasswordProvider>
                 <ReactQueryConfigProvider config={config}>
@@ -54,10 +54,10 @@ ReactDOM.render(
                 </ReactQueryConfigProvider>
               </ConfirmPasswordProvider>
             </ConfirmActionProvider>
-          </QueueProvider>
-          {/* </SkeletonTheme> */}
-        </Router>
-      </ModalProvider>
+            {/* </SkeletonTheme> */}
+          </Router>
+        </ModalProvider>
+      </QueueProvider>
     </UserProvider>
   </React.StrictMode>,
   document.getElementById("root"),

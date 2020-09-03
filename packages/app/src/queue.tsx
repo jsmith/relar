@@ -6,7 +6,8 @@ import usePortalImport from "react-useportal";
 import { useUser } from "./auth";
 import { useLocalStorage, captureAndLogError } from "./utils";
 import firebase from "firebase/app";
-import { updateCached, updateCachedWithSnapshot } from "./watcher";
+import { updateCachedWithSnapshot } from "./watcher";
+import { useHotkeys } from "react-hotkeys-hook";
 
 const usePortal: typeof usePortalImport = (usePortalImport as any).default;
 
@@ -36,6 +37,8 @@ export const QueueContext = createContext<{
   enqueue: (song: SongSnapshot) => void;
   /** The current song. */
   song: SongSnapshot | undefined;
+  /** The index of the playing song. */
+  songIndex: number | undefined;
   next: () => void;
   /** Call this when the songs finishes. For internal use only. */
   _nextAutomatic: () => void;
@@ -61,7 +64,28 @@ export const QueueContext = createContext<{
   _setRef: (el: HTMLAudioElement) => void;
   /** Set the current time of the song. For internal use only. */
   _setCurrentTime: (seconds: number) => void;
-}>({} as any);
+}>({
+  queue: [],
+  setQueue: async () => {},
+  enqueue: () => {},
+  song: undefined,
+  songIndex: undefined,
+  next: () => {},
+  _nextAutomatic: () => {},
+  previous: () => {},
+  mode: "none",
+  setMode: () => {},
+  currentTime: 0,
+  seekTime: () => {},
+  playing: false,
+  toggleState: () => {},
+  source: undefined,
+  volume: 0.8,
+  setVolume: () => {},
+  clear: () => {},
+  _setRef: () => {},
+  _setCurrentTime: () => {},
+});
 
 export const QueueProvider = (props: React.Props<{}>) => {
   const ref = useRef<HTMLAudioElement | null>(null);
@@ -70,6 +94,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
     queue: [],
     index: undefined,
   });
+  const [songIndex, setSongIndex] = useState<number>();
   const [song, setSong] = useState<SongSnapshot>(); // currently playing song
   const [mode, setMode] = useLocalStorage<QueuePlayMode>("player-mode", "none");
   const [currentTime, _setCurrentTime] = useState(0);
@@ -87,6 +112,17 @@ export const QueueProvider = (props: React.Props<{}>) => {
     setPlaying(!playing);
   }, [playing]);
 
+  useHotkeys(
+    "space",
+    (e) => {
+      // This preventDefault is super important as we are taking
+      // over space to start/stop music
+      e.preventDefault();
+      toggleState();
+    },
+    [toggleState],
+  );
+
   const enqueue = useCallback(
     (song: SongSnapshot) => {
       const newQueue: QueueItem[] = [...queue, { song, source: { type: "manuel" } }];
@@ -98,8 +134,10 @@ export const QueueProvider = (props: React.Props<{}>) => {
 
   const stopPlaying = useCallback(() => {
     setSong(undefined);
+    setSource(undefined);
     _setCurrentTime(0);
     current.current.index = undefined;
+    setSongIndex(undefined);
   }, []);
 
   const setIndex = useCallback(
@@ -107,6 +145,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
       if (!user) return;
 
       current.current.index = index;
+      setSongIndex(index);
       const item: QueueItem | undefined = current.current.queue[index];
 
       // This is just a sanity check as the logic here is probably flawed somehow
@@ -145,6 +184,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
       setQueueState(newQueue);
       current.current.queue = newQueue;
       current.current.index = undefined;
+      setSongIndex(undefined);
       setIndex(index ?? 0);
     },
     [setIndex],
@@ -224,6 +264,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
     setQueueState([]);
     current.current.queue = [];
     current.current.index = undefined;
+    setSongIndex(undefined);
     setIndex(0);
   }, [setIndex]);
 
@@ -249,6 +290,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
         _setCurrentTime,
         _nextAutomatic,
         clear,
+        songIndex,
       }}
     >
       {props.children}

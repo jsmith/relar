@@ -2,8 +2,7 @@ import React, { useMemo, useRef, useState, CSSProperties } from "react";
 import { useQueue } from "../queue";
 import { SongTable } from "../components/SongTable";
 import { MdQueueMusic, MdMoreVert } from "react-icons/md";
-import { useOnClickOutside, clamp } from "../utils";
-import { useFirebaseUpdater } from "../watcher";
+import { useOnClickOutside } from "../utils";
 import { Button } from "../components/Button";
 
 export interface QueueProps {
@@ -50,6 +49,7 @@ export const Queue = ({ visible, close }: QueueProps) => {
         transitionTimingFunction: "cubic-bezier(.66,-.41,1,1)",
         transform: "translateY(100px)",
         opacity: 0,
+        zIndex: -1,
       };
 
   return (
