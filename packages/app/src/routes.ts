@@ -91,7 +91,7 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "py-2",
-    containerClassName: "px-5",
+    containerClassName: "",
     title: "Songs | RELAR",
   },
   albums: {
@@ -154,7 +154,7 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "",
-    containerClassName: "px-5",
+    containerClassName: "",
     title: "Playlist | RELAR",
   },
   // gallery: {

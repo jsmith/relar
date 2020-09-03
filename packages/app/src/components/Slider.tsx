@@ -1,6 +1,6 @@
 import React, { useRef, useState, useMemo } from "react";
 import classNames from "classnames";
-import { useOutsideAlerter, clamp, addEventListeners, Keys } from "../utils";
+import { useOnClickOutside, clamp, addEventListeners, Keys } from "../utils";
 
 export interface SliderProps {
   value: number;
@@ -13,7 +13,7 @@ export const Slider = ({ value, maxValue, className, onChange }: SliderProps) =>
   const ref = useRef<HTMLDivElement | null>(null);
   const [hide, setHide] = useState(true);
 
-  useOutsideAlerter(
+  useOnClickOutside(
     ref,
     React.useCallback(() => {
       if (!hide) {

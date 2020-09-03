@@ -20,7 +20,6 @@ export const useRecycle = ({ container, headerHeight, rowHeight, rowCount }: Rec
     onResize: useCallback(
       (e) => {
         setContainerHeight(e.height ?? 0);
-        // console.log("Offset", t.current?.offsetTop);
         setOffsetTop((table.current?.offsetTop ?? 0) + headerHeight);
       },
       [headerHeight],

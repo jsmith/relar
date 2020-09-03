@@ -2,7 +2,9 @@ import React, { useMemo, useRef, useState, CSSProperties } from "react";
 import { useQueue } from "../queue";
 import { SongTable } from "../components/SongTable";
 import { MdQueueMusic, MdMoreVert } from "react-icons/md";
-import { useOutsideAlerter } from "../utils";
+import { useOnClickOutside, clamp } from "../utils";
+import { useFirebaseUpdater } from "../watcher";
+import { Button } from "../components/Button";
 
 export interface QueueProps {
   visible: boolean;
@@ -10,12 +12,31 @@ export interface QueueProps {
 }
 
 export const Queue = ({ visible, close }: QueueProps) => {
-  const { queue, song } = useQueue();
+  const { queue, song, source, clear } = useQueue();
   const songs = useMemo(() => queue.map(({ song }) => song), [queue]);
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const ref = useRef<HTMLDivElement | null>(null);
 
-  useOutsideAlerter(ref, close);
+  useOnClickOutside(ref, close);
+
+  const humanReadableName = useMemo((): string | false => {
+    if (!source?.type) {
+      return false;
+    }
+
+    switch (source.type) {
+      case "album":
+      case "artist":
+      case "playlist":
+        return source.sourceHumanName;
+      case "library":
+        return "Library";
+      case "manuel":
+        return false;
+      case "queue":
+        return false;
+    }
+  }, [source]);
 
   const style: CSSProperties = visible
     ? {
@@ -53,12 +74,34 @@ export const Queue = ({ visible, close }: QueueProps) => {
           </div>
         </div>
       ) : (
-        <SongTable
-          songs={songs}
-          container={container}
-          source={{ source: "queue" }}
-          mode="condensed"
-        />
+        <>
+          <div className="text-gray-800 px-3 py-2 flex items-center border-b border-gray-300">
+            <div>
+              <div className="text-xl">Queue</div>
+              {humanReadableName && (
+                <div className="text-sm">{`Playing from ${humanReadableName}`}</div>
+              )}
+            </div>
+            <div className="flex-grow" />
+            <Button label="Clear" invert height="h-8" onClick={clear} />
+          </div>
+          <div
+            ref={setContainer}
+            style={{
+              // 48 is the size of the table row. This must be kept in sync.
+              height: `${Math.max(songs.length, 5) * 48}px`,
+              // 150px is just from trial and error
+              maxHeight: `calc(100vh - 150px)`,
+            }}
+          >
+            <SongTable
+              songs={songs}
+              container={container}
+              source={{ type: "queue" }}
+              mode="condensed"
+            />
+          </div>
+        </>
       )}
       <div
         style={{

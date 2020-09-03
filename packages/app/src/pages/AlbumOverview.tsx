@@ -73,7 +73,7 @@ export const AlbumOverview = ({ container }: { container: HTMLElement | null }) 
             <SongTable
               songs={songs.status === "loading" ? undefined : songs.data}
               container={container}
-              source={{ source: "album", id: albumId, sourceHumanName: data?.album ?? "" }}
+              source={{ type: "album", id: albumId, sourceHumanName: data?.album ?? "" }}
             />
           )}
         </div>

@@ -14,12 +14,13 @@ type SongSnapshot = firebase.firestore.QueryDocumentSnapshot<Song>;
 
 export interface QueueItem {
   song: SongSnapshot;
-  humanReadableName: string;
+  source: SetQueueSource;
 }
 
 export type SetQueueSource =
-  | { source: "album" | "artist" | "playlist"; id: string; sourceHumanName: string }
-  | { source: "library" | "manuel" | "queue" };
+  | { type: "album" | "artist" | "playlist"; id: string; sourceHumanName: string }
+  // TODO what is queue??
+  | { type: "library" | "manuel" | "queue" };
 
 export type SetQueueOptions = {
   songs: SongSnapshot[];
@@ -50,11 +51,12 @@ export const QueueContext = createContext<{
   /** Toggle the playing state. */
   toggleState: () => void;
   /** Where the currently playing song is from. */
-  source: SetQueueOptions | undefined;
+  source: SetQueueSource | undefined;
   /** The current volume from 0 to 100. Useful for UI purposes. */
   volume: number;
   /** Set the state and change the volume value in the <audio> element. */
   setVolume: (value: number) => void;
+  clear: () => void;
   /** Set the ref. For internal use only. */
   _setRef: (el: HTMLAudioElement) => void;
   /** Set the current time of the song. For internal use only. */
@@ -72,7 +74,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
   const [mode, setMode] = useLocalStorage<QueuePlayMode>("player-mode", "none");
   const [currentTime, _setCurrentTime] = useState(0);
   const { user } = useUser();
-  const [source, setSource] = useState<string>();
+  const [source, setSource] = useState<SetQueueSource>();
   const [playing, setPlaying] = useState<boolean>(false);
   /** The volume from 0 to 100 */
   const [volumeString, setVolumeString] = useLocalStorage("player-volume");
@@ -87,7 +89,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
 
   const enqueue = useCallback(
     (song: SongSnapshot) => {
-      const newQueue = [...queue, { song, humanReadableName: "Queue" }];
+      const newQueue: QueueItem[] = [...queue, { song, source: { type: "manuel" } }];
       setQueueState(newQueue);
       current.current.queue = newQueue;
     },
@@ -113,7 +115,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
         return;
       }
 
-      const { song, humanReadableName } = item;
+      const { song, source } = item;
       const downloadUrl = await tryToGetSongDownloadUrlOrLog(user, song);
       if (!downloadUrl) return;
 
@@ -132,54 +134,14 @@ export const QueueProvider = (props: React.Props<{}>) => {
       ref.current?.play();
       setPlaying(true);
       setSong(song);
-      setSource(humanReadableName);
+      setSource(source);
     },
     [stopPlaying, user],
   );
 
   const setQueue = useCallback(
     async ({ songs, source, index }: SetQueueOptions) => {
-      // if (!songs.data || !playlists.data) {
-      //   return;
-      // }
-
-      // let newQueue: Array<{ song: SongSnapshot; source: string }>;
-      // switch (type) {
-      //   case "album":
-      //     newQueue = songs.data
-      //       .filter((song) => song.data().albumId === id)
-      //       .map((song) => ({ song, source: song.data().albumName ?? "" }));
-      //     break;
-      //   case "artist":
-      //     newQueue = songs.data
-      //       .filter((song) => song.data().artist === id)
-      //       .map((song) => ({ song, source: song.data().artist ?? "" }));
-      //     break;
-      //   case "playlist":
-      //     // eslint-disable-next-line no-case-declarations
-      //     const playlist = playlists.data.map(getCachedOr).find((playlist) => playlist.id === id);
-      //     if (!playlist) return;
-      //     // I use a filter here just in case the songs haven't loaded yet (very unlikely)
-      //     newQueue =
-      //       playlist.songs
-      //         ?.map((songId) => lookup[songId])
-      //         .filter((song) => !!song)
-      //         .map((song) => ({ song, source: playlist.name })) ?? [];
-      //     break;
-      // }
-
-      let humanReadableName: string;
-      switch (source.source) {
-        case "album":
-        case "artist":
-        case "playlist":
-          humanReadableName = source.sourceHumanName;
-          break;
-        case "library":
-          humanReadableName = "Library";
-      }
-
-      const newQueue = songs.map((song) => ({ song, humanReadableName }));
+      const newQueue: QueueItem[] = songs.map((song) => ({ song, source }));
       setQueueState(newQueue);
       current.current.queue = newQueue;
       current.current.index = undefined;
@@ -258,6 +220,13 @@ export const QueueProvider = (props: React.Props<{}>) => {
     [volume],
   );
 
+  const clear = useCallback(() => {
+    setQueueState([]);
+    current.current.queue = [];
+    current.current.index = undefined;
+    setIndex(0);
+  }, [setIndex]);
+
   return (
     <QueueContext.Provider
       value={{
@@ -279,6 +248,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
         _setRef,
         _setCurrentTime,
         _nextAutomatic,
+        clear,
       }}
     >
       {props.children}

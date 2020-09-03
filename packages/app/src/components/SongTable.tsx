@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, CSSProperties } from "react";
 import { Song } from "../shared/types";
 import classNames from "classnames";
 import {
@@ -43,18 +43,20 @@ export const HeaderCol = ({
   label,
   width,
   className,
+  style,
 }: {
   label: React.ReactNode;
   width: string;
   className?: string;
+  style?: CSSProperties;
 }) => {
   return (
     <th
       className={classNames(
-        "border-b border-gray-700 border-opacity-25 text-left text-gray-800 text-xs font-medium uppercase tracking-wider",
+        "text-left text-gray-800 text-xs uppercase tracking-wider font-bold",
         className,
       )}
-      style={{ width }}
+      style={{ width, ...style }}
     >
       {label}
     </th>
@@ -177,7 +179,7 @@ export const SongTableRow = ({ song, setSong, actions, mode }: SongTableRowProps
 
   const artist = data.artist && (
     <Link
-      className={classNames(link({ color: "" }), mode === "condensed" && "text-sm")}
+      className={classNames(link({ color: "" }), mode === "condensed" && "text-2xs")}
       label={data.artist}
       route={routes.artist}
       params={{ artistName: data.artist }}
@@ -186,7 +188,7 @@ export const SongTableRow = ({ song, setSong, actions, mode }: SongTableRowProps
 
   const album = data.albumName && (
     <Link
-      className={classNames(link({ color: "" }), mode === "condensed" && "text-sm")}
+      className={classNames(link({ color: "" }), mode === "condensed" && "text-2xs")}
       label={data.albumName}
       route={routes.album}
       params={{ albumId: data.albumId }}
@@ -195,7 +197,7 @@ export const SongTableRow = ({ song, setSong, actions, mode }: SongTableRowProps
 
   return (
     <tr className="group hover:bg-gray-300 text-gray-700 text-sm" onClick={() => setSong(song)}>
-      <Cell className="flex space-x-2 items-center h-12">
+      <Cell className="flex space-x-2 items-center h-12 pl-3">
         <div className="w-5 h-5">
           <MdMusicNote
             className={classNames(
@@ -214,12 +216,19 @@ export const SongTableRow = ({ song, setSong, actions, mode }: SongTableRowProps
           </button>
         </div>
 
-        <div title={data.title} className="truncate flex-grow">
-          {data.title}
+        <div className="flex-grow">
+          <div
+            title={data.title}
+            className={classNames("truncate", mode === "condensed" && "text-xs")}
+          >
+            {data.title}
+          </div>
+          <div className="flex space-x-2 text-gray-600">
+            {mode === "condensed" && artist}
+            {mode === "condensed" && artist && album && <div className="text-2xs">-</div>}
+            {mode === "condensed" && album}
+          </div>
         </div>
-        {mode === "condensed" && artist}
-        {mode === "condensed" && artist && album && <div className="text-sm">-</div>}
-        {mode === "condensed" && album}
 
         <ContextMenu
           button={(props) => (
@@ -311,12 +320,17 @@ export const SongTable = ({
     <table className="text-gray-800 table-fixed w-full" ref={table}>
       <thead>
         <tr key={mode}>
-          <HeaderCol width="42%" label={mode === "regular" ? "Title" : "Song"} className="py-3" />
-          {mode === "regular" && <HeaderCol width="32%" label="Artist" className="py-3" />}
-          {mode === "regular" && <HeaderCol width="26%" label="Album" className="py-3" />}
-          <HeaderCol width="50px" label={<MdMusicNote className="w-5 h-5" />} className="py-3" />
-          <HeaderCol width="60px" label="" className="py-3" />
-          <HeaderCol width="90px" label="" className="py-3" />
+          <HeaderCol
+            width="42%"
+            label={mode === "regular" ? "Title" : "Song"}
+            className="py-2 pl-3 ml-5"
+            style={{ textIndent: "27px" }}
+          />
+          {mode === "regular" && <HeaderCol width="32%" label="Artist" className="py-2" />}
+          {mode === "regular" && <HeaderCol width="26%" label="Album" className="py-2" />}
+          <HeaderCol width="50px" label={<MdMusicNote className="w-5 h-5" />} className="py-2" />
+          <HeaderCol width="60px" label="" className="py-2" />
+          <HeaderCol width="90px" label="" className="py-2" />
         </tr>
       </thead>
       <tbody>

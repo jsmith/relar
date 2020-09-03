@@ -131,7 +131,8 @@ export const Player = ({ toggleQueue }: PlayerProps) => {
         <button
           className="text-gray-300 hover:text-gray-100 ml-3"
           title="Music Queue"
-          onClick={toggleQueue}
+          onMouseDown={(e) => e.nativeEvent.stopImmediatePropagation()}
+          onClick={() => toggleQueue()}
         >
           <MdQueueMusic className="w-5 h-5" />
         </button>

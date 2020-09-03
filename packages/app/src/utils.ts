@@ -1,33 +1,7 @@
-import { MutableRefObject, useEffect, useRef, useState, useMemo, useCallback } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import * as Sentry from "@sentry/browser";
 import { QueryResult } from "react-query";
 import tiny from "tinycolor2";
-
-/**
- * Hook that alerts clicks outside of the passed ref.
- */
-export function useOutsideAlerter<T extends HTMLElement | null>(
-  ref: MutableRefObject<T>,
-  callback: () => void,
-) {
-  useEffect(() => {
-    /**
-     * Alert if clicked on outside of element
-     */
-    function handleClickOutside(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        callback();
-      }
-    }
-
-    // Bind the event listener
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      // Unbind the event listener on clean up
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [ref, callback]);
-}
 
 export interface Disposer {
   dispose: () => void;
@@ -250,17 +224,6 @@ export const captureAndLogError = (
     extra,
   });
   console.error(e);
-};
-
-export const useDataFromQueryNSnapshot = <T>(
-  query: QueryResult<firebase.firestore.DocumentSnapshot<T>>,
-): T | undefined => {
-  const [data, setData] = useState<T>();
-  useEffect(() => {
-    setData(query.data?.data());
-  }, [query.data]);
-
-  return data;
 };
 
 /**

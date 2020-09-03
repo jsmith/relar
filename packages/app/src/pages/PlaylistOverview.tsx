@@ -60,7 +60,7 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
   return (
     <div>
       <div
-        className="flex items-end -mx-5 p-8"
+        className="flex items-end p-8"
         style={{
           height: "400px",
           backgroundImage: `linear-gradient(to bottom, ${from}, ${to})`,
@@ -163,7 +163,7 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
                   onClick: (song) => removeSong(song.id),
                 },
               ]}
-              source={{ source: "playlist", id: playlistId, sourceHumanName: data?.name ?? "" }}
+              source={{ type: "playlist", id: playlistId, sourceHumanName: data?.name ?? "" }}
             />
           )}
         </div>

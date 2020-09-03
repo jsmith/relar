@@ -118,10 +118,10 @@ export const SongType = Record({
   /**
    * The last time you played a song.
    */
-  lastPlayed: Unknown.withGuard((x): x is firebase.firestore.Timestamp => true),
+  lastPlayed: Unknown.withGuard((x): x is firebase.firestore.Timestamp => true).Or(Undefined),
 
   /**
-   * When the song was uploaded
+   * When the song was uploaded.
    */
   createdAt: Unknown.withGuard((x): x is firebase.firestore.Timestamp => true),
 
@@ -152,6 +152,8 @@ export const BetaSignupType = Record({
 }).And(
   Partial({
     token: String,
+    /** When the user signed up. */
+    createdAt: Unknown.withGuard((x): x is firebase.firestore.Timestamp => true),
   }),
 );
 

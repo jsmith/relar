@@ -21,7 +21,6 @@ export const ArtistOverview = ({ container }: { container: HTMLElement | null })
   const artist = useArtist(artistName);
   const songs = useArtistSongs(artistName);
   const songWithArtwork = useMemo(() => songs.data.find((song) => !!song.data().artwork), [songs]);
-  // const albumData = useDataFromQueryNSnapshot(artist);
   const thumbnail = useThumbnail(songWithArtwork, "256");
   // console.log(songWithArtwork, thumbnail);
   const [averageColor, setAverageColor] = useState("#cbd5e0");
@@ -120,7 +119,7 @@ export const ArtistOverview = ({ container }: { container: HTMLElement | null })
             <SongTable
               songs={songs.status === "loading" ? undefined : songs.data}
               container={container}
-              source={{ source: "artist", id: artistName, sourceHumanName: artistName }}
+              source={{ type: "artist", id: artistName, sourceHumanName: artistName }}
             />
           )}
         </div>
