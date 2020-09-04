@@ -22,6 +22,7 @@ import { useConfirmAction } from "../confirm-actions";
 import { routes } from "../routes";
 import { Skeleton } from "../components/Skeleton";
 import { Collage } from "../components/Collage";
+import { useQueue } from "../queue";
 
 export const PlaylistOverview = ({ container }: { container: HTMLElement | null }) => {
   // TODO editing the name of a playlist
@@ -34,6 +35,7 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
   const [removeSong] = usePlaylistRemoveSong(playlistId);
   const [rename] = usePlaylistRename(playlistId);
   const [deletePlaylist] = usePlaylistDelete(playlistId);
+  const { setQueue } = useQueue();
   const [averageColor, setAverageColor] = useState("#cbd5e0");
   const { from, to } = useMemo(
     () => ({
@@ -130,9 +132,15 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
                 className="transform -translate-x-4"
                 menuClassName="w-48"
               />
-              {/* TODO play playlist */}
-              <button onClick={() => {}} className="ml-3">
-                {/* <HiOutlineCheckCircle className="w-10 h-10" /> */}
+              <button
+                onClick={() =>
+                  setQueue({
+                    songs: playlistSongs,
+                    source: { type: "playlist", id: playlistId, sourceHumanName: data?.name ?? "" },
+                  })
+                }
+                className="ml-3"
+              >
                 <MdPlayCircleOutline className="w-10 h-10" />
               </button>
             </div>

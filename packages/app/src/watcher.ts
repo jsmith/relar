@@ -5,9 +5,11 @@ import { createEmitter } from "./events";
 const cache: { [path: string]: unknown } = {};
 const watchers = createEmitter<Record<string, [unknown]>>();
 
-export function getCachedOr<T>(snap: firebase.firestore.DocumentSnapshot<T>): T | undefined;
-export function getCachedOr<T>(snap: firebase.firestore.QueryDocumentSnapshot<T>): T;
-export function getCachedOr<T>(snap: firebase.firestore.DocumentSnapshot<T>): T | undefined {
+export function maybeGetCachedOr<T>(snap: firebase.firestore.DocumentSnapshot<T>): T | undefined {
+  return (cache[snap.ref.path] as T | undefined) ?? snap.data();
+}
+
+export function getCachedOr<T>(snap: firebase.firestore.QueryDocumentSnapshot<T>): T {
   return (cache[snap.ref.path] as T) ?? snap.data();
 }
 

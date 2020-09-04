@@ -1,9 +1,6 @@
 import * as React from "react";
 import classNames from "classnames";
-import SVGLoadersReact from "svg-loaders-react";
-// import { Circle } from "react-spinners-css";
-
-const { ThreeDots } = SVGLoadersReact;
+import { ThreeDots } from "@jsmith21/svg-loaders-react";
 
 export interface ButtonProps
   extends React.DetailedHTMLProps<
@@ -66,7 +63,7 @@ export const Button = ({
         // <Circle className="text-white transform -translate-y-6 -mt-1 h-2" color="currentColor" />
         // <Circle color="currentColor" className="text-red-100" />
         // <div className="loader"></div>
-        <ThreeDots className="w-16 h-4" />
+        <ThreeDots fill="currentColor" className="w-16 h-4" />
       ) : (
         // <div></div> // TODO
         props.label

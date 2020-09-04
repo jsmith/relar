@@ -20,7 +20,7 @@ export interface QueueItem {
 
 export type SetQueueSource =
   | { type: "album" | "artist" | "playlist"; id: string; sourceHumanName: string }
-  // TODO what is queue??
+  // FIXME what is queue??
   | { type: "library" | "manuel" | "queue" };
 
 export type SetQueueOptions = {

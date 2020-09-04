@@ -9,6 +9,7 @@ import { ErrorTemplate } from "../components/ErrorTemplate";
 import { MdPlayCircleOutline } from "react-icons/md";
 import { useSongsDuration } from "../queries/songs";
 import { useFirebaseUpdater } from "../watcher";
+import { useQueue } from "../queue";
 
 export const AlbumOverview = ({ container }: { container: HTMLElement | null }) => {
   const { params } = useRouter();
@@ -20,11 +21,12 @@ export const AlbumOverview = ({ container }: { container: HTMLElement | null }) 
   const { from, to, isLight } = useGradient(averageColor);
   const songs = useAlbumSongs(albumId);
   const songDuration = useSongsDuration(songs.data);
+  const { setQueue } = useQueue();
 
   return (
     <div>
       <div
-        className="flex items-end -mx-5 p-8"
+        className="flex items-end p-8"
         style={{
           height: "400px",
           backgroundImage: `linear-gradient(to bottom, ${from}, ${to})`,
@@ -54,8 +56,14 @@ export const AlbumOverview = ({ container }: { container: HTMLElement | null }) 
           <div className={classNames("ml-4", isLight ? "text-gray-700" : "text-gray-200")}>
             <div className="flex items-center">
               <div className="font-bold text-5xl">{data?.album}</div>
-              {/* TODO play album */}
-              <button onClick={() => {}}>
+              <button
+                onClick={() =>
+                  setQueue({
+                    songs: songs.data,
+                    source: { type: "album", id: albumId, sourceHumanName: data.album ?? "" },
+                  })
+                }
+              >
                 <MdPlayCircleOutline className="w-10 h-10 ml-3" />
               </button>
             </div>

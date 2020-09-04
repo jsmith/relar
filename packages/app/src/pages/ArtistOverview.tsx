@@ -11,11 +11,13 @@ import { useArtistSongs, useArtist } from "../queries/artist";
 import { SongTable } from "../components/SongTable";
 import { ErrorTemplate } from "../components/ErrorTemplate";
 import { MdPlayCircleOutline } from "react-icons/md";
+import { useQueue } from "../queue";
 
 const fac = new FastAverageColor();
 
 export const ArtistOverview = ({ container }: { container: HTMLElement | null }) => {
   const { params } = useRouter();
+  const { setQueue } = useQueue();
   // TODO validation
   const { artistName } = params as { artistName: string };
   const artist = useArtist(artistName);
@@ -64,15 +66,10 @@ export const ArtistOverview = ({ container }: { container: HTMLElement | null })
 
   const isLight = useMemo(() => tiny(averageColor).isLight(), [averageColor]);
 
-  console.log({
-    height: "400px",
-    backgroundImage: thumbnail ? thumbnail : `linear-gradient(to bottom, ${from}, ${to})`,
-  });
-
   return (
     <div>
       <div
-        className="flex items-end -mx-5 p-8"
+        className="flex items-end p-8"
         style={{
           height: "400px",
           backgroundImage: thumbnail
@@ -99,8 +96,14 @@ export const ArtistOverview = ({ container }: { container: HTMLElement | null })
           <div className={classNames("ml-4", isLight ? "text-gray-700" : "text-gray-200")}>
             <div className="flex items-center">
               <div className="font-bold text-5xl">{artist.data.data()?.name}</div>
-              {/* TODO play artist */}
-              <button onClick={() => {}}>
+              <button
+                onClick={() =>
+                  setQueue({
+                    source: { type: "artist", id: artistName, sourceHumanName: artistName },
+                    songs: songs.data,
+                  })
+                }
+              >
                 <MdPlayCircleOutline className="w-10 h-10 ml-3" />
               </button>
             </div>

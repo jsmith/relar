@@ -1,0 +1,74 @@
+diff --git a/node_modules/@jsmith21/svg-loaders-react/dist/index.es.js b/node_modules/@jsmith21/svg-loaders-react/dist/index.es.js
+index b492890..442caa9 100644
+--- a/node_modules/@jsmith21/svg-loaders-react/dist/index.es.js
++++ b/node_modules/@jsmith21/svg-loaders-react/dist/index.es.js
+@@ -57,7 +57,8 @@ function _objectWithoutProperties(source, excluded) {
+ 
+ var Audio = function Audio(_ref) {
+   var className = _ref.className,
+-      props = _objectWithoutProperties(_ref, ["className"]);
++      disabled = _ref.disabled,
++      props = _objectWithoutProperties(_ref, ["className", "disabled"]);
+     
+   return React.createElement("svg", _extends({
+     width: 55,
+@@ -69,9 +70,9 @@ var Audio = function Audio(_ref) {
+     transform: "matrix(1 0 0 -1 0 80)"
+   }, React.createElement("rect", {
+     width: 10,
+-    height: 20,
++    height: disabled ? 20 : 20,
+     rx: 3
+-  }, React.createElement("animate", {
++  }, disabled ? undefined : React.createElement("animate", {
+     attributeName: "height",
+     begin: "0s",
+     dur: "4.3s",
+@@ -81,9 +82,9 @@ var Audio = function Audio(_ref) {
+   })), React.createElement("rect", {
+     x: 15,
+     width: 10,
+-    height: 80,
++    height: disabled ? 20 : 80,
+     rx: 3
+-  }, React.createElement("animate", {
++  }, disabled ? undefined : React.createElement("animate", {
+     attributeName: "height",
+     begin: "0s",
+     dur: "2s",
+@@ -93,9 +94,9 @@ var Audio = function Audio(_ref) {
+   })), React.createElement("rect", {
+     x: 30,
+     width: 10,
+-    height: 50,
++    height: disabled ? 20 : 50,
+     rx: 3
+-  }, React.createElement("animate", {
++  }, disabled ? undefined : React.createElement("animate", {
+     attributeName: "height",
+     begin: "0s",
+     dur: "1.4s",
+@@ -105,9 +106,9 @@ var Audio = function Audio(_ref) {
+   })), React.createElement("rect", {
+     x: 45,
+     width: 10,
+-    height: 30,
++    height: disabled ? 20 : 30,
+     rx: 3
+-  }, React.createElement("animate", {
++  }, disabled ? undefined : React.createElement("animate", {
+     attributeName: "height",
+     begin: "0s",
+     dur: "2s",
+diff --git a/node_modules/@jsmith21/svg-loaders-react/index.d.ts b/node_modules/@jsmith21/svg-loaders-react/index.d.ts
+index ea1ea9a..e4a530c 100644
+--- a/node_modules/@jsmith21/svg-loaders-react/index.d.ts
++++ b/node_modules/@jsmith21/svg-loaders-react/index.d.ts
+@@ -1,6 +1,6 @@
+ import React from 'react';
+ 
+-declare const Audio: (props: React.SVGProps<SVGSVGElement>) => JSX.Element;
++declare const Audio: (props: React.SVGProps<SVGSVGElement> & { disabled?: boolean }) => JSX.Element;
+ declare const BallTriangle: (props: React.SVGProps<SVGSVGElement>) => JSX.Element;
+ declare const Bars: (props: React.SVGProps<SVGSVGElement>) => JSX.Element;
+ declare const Circles: (props: React.SVGProps<SVGSVGElement>) => JSX.Element;

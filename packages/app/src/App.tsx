@@ -34,7 +34,6 @@ import { SkipNavLink, SkipNavContent } from "@reach/skip-nav";
 import "@reach/skip-nav/styles.css";
 import "./index.css";
 import { UploadModal } from "./sections/UploadModal";
-import SVGLoadersReact from "svg-loaders-react";
 import { LoadingSpinner } from "./components/LoadingSpinner";
 import { QueueAudio } from "./queue";
 import { Queue } from "./sections/Queue";
@@ -57,7 +56,7 @@ const sideLinks = [
     route: routes.search,
   },
   {
-    // TODO save most recent inner tab
+    // FIXME save most recent inner tab
     label: "Library",
     icon: MdLibraryMusic,
     route: routes.songs,
@@ -169,12 +168,12 @@ export const App = (_: React.Props<{}>) => {
                   className="flex space-x-4 text-xl sticky top-0 z-10 px-5"
                   style={{ backgroundColor: bgApp }}
                 >
-                  {/* TODO accessible */}
+                  {/* FIXME accessible */}
                   {libraryLinks.map(({ label, route }) => (
                     <li
                       key={label}
                       className={classNames(
-                        // TODO bold
+                        // FIXME bold
                         "my-2 border-gray-600 cursor-pointer hover:text-gray-800",
                         isRoute(route) ? "border-b-2 text-gray-700" : " text-gray-600",
                       )}
@@ -209,6 +208,11 @@ export const App = (_: React.Props<{}>) => {
             </div>
 
             <FocusTrap active={queueDisplay} focusTrapOptions={{ clickOutsideDeactivates: true }}>
+              {/* TODO */}
+              {/* Make the play buttons actually play the queue */}
+              {/* Refactor the current time updater into a single hook so we don't update all of the time */}
+              {/* Test with library */}
+              {/* Do deployment */}
               <Queue visible={queueDisplay} close={closeQueue} />
             </FocusTrap>
           </React.Suspense>

@@ -26,9 +26,7 @@ import { AddToPlaylistEditor } from "../sections/AddToPlaylistModal";
 import { Skeleton } from "./Skeleton";
 import { useQueue, SetQueueSource } from "../queue";
 import { useRecycle } from "../recycle";
-import SVGLoadersReact from "svg-loaders-react";
-
-const { Audio } = SVGLoadersReact;
+import { Audio } from "@jsmith21/svg-loaders-react";
 
 // I really wish I didn't have to do this but for some reason this is the only thing that works
 // Before I was getting an issue in production
@@ -37,10 +35,6 @@ let useDropdownMenu = useDropdownMenuImport;
 if ((useDropdownMenu as any).default) {
   useDropdownMenu = (useDropdownMenu as any).default;
 }
-
-// console.log(reactAccessibleDropdown);
-// const useDropdownMenu: typeof reactAccessibleDropdown.default = (reactAccessibleDropdown.default as any)
-//   .default;
 
 export const HeaderCol = ({
   label,
@@ -124,9 +118,17 @@ export interface SongTableRowProps {
   actions: SongTableItem[] | undefined;
   mode: "regular" | "condensed";
   playing: boolean;
+  paused: boolean;
 }
 
-export const SongTableRow = ({ song, setSong, actions, mode, playing }: SongTableRowProps) => {
+export const SongTableRow = ({
+  song,
+  setSong,
+  actions,
+  mode,
+  playing,
+  paused,
+}: SongTableRowProps) => {
   const [focusedPlay, setFocusedPlay] = useState(false);
   const [showEditorModal, hideEditorModal] = useModal(() => (
     <MetadataEditor setDisplay={() => hideEditorModal()} song={song} onSuccess={() => {}} />
@@ -204,7 +206,7 @@ export const SongTableRow = ({ song, setSong, actions, mode, playing }: SongTabl
       <Cell className="flex space-x-2 items-center h-12 pl-3">
         <div className="w-5 h-5">
           {playing ? (
-            <Audio className="w-full h-4 text-purple-500" fill="currentColor" />
+            <Audio className="w-full h-4 text-purple-500" fill="currentColor" disabled={paused} />
           ) : (
             <>
               <MdMusicNote
@@ -292,7 +294,7 @@ export const SongTable = ({
   source,
   mode = "regular",
 }: SongTableProps) => {
-  const { setQueue, songIndex, source: playingSongSource } = useQueue();
+  const { setQueue, songIndex, source: playingSongSource, playing: notPaused } = useQueue();
   const rowCount = useMemo(() => docs?.length ?? 0, [docs]);
   const { start, end, placeholderBottomHeight, placeholderTopHeight, table } = useRecycle({
     container,
@@ -346,11 +348,12 @@ export const SongTable = ({
           actions={actions}
           mode={mode}
           playing={playing}
+          paused={!notPaused}
         />
       );
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingRows, docs, start, end, playingSongSource]);
+  }, [loadingRows, docs, start, end, playingSongSource, notPaused, songIndex]);
 
   return (
     <table className="text-gray-800 table-fixed w-full" ref={table}>
