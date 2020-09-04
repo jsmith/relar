@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState, useRef, useCallback } from "react";
-import { routes, CustomRoute } from "./routes";
+import React, { useMemo, useState, useCallback } from "react";
+import { routes } from "./routes";
 import { useRouter } from "react-tiniest-router";
 import { useUser } from "./auth";
 import { Sidebar } from "./components/Sidebar";
@@ -38,6 +38,7 @@ import SVGLoadersReact from "svg-loaders-react";
 import { LoadingSpinner } from "./components/LoadingSpinner";
 import { QueueAudio } from "./queue";
 import { Queue } from "./sections/Queue";
+import FocusTrap from "focus-trap-react";
 
 export interface SideBarItem {
   label: string;
@@ -165,7 +166,7 @@ export const App = (_: React.Props<{}>) => {
                 isRoute(routes.albums) ||
                 isRoute(routes.playlists)) && (
                 <ul
-                  className="flex space-x-4 text-xl sticky top-0 z-10 px-3"
+                  className="flex space-x-4 text-xl sticky top-0 z-10 px-5"
                   style={{ backgroundColor: bgApp }}
                 >
                   {/* TODO accessible */}
@@ -206,7 +207,10 @@ export const App = (_: React.Props<{}>) => {
                 ) : null}
               </div>
             </div>
-            <Queue visible={queueDisplay} close={closeQueue} />
+
+            <FocusTrap active={queueDisplay} focusTrapOptions={{ clickOutsideDeactivates: true }}>
+              <Queue visible={queueDisplay} close={closeQueue} />
+            </FocusTrap>
           </React.Suspense>
         </Sidebar>
       </div>

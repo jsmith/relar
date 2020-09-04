@@ -118,6 +118,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
       // This preventDefault is super important as we are taking
       // over space to start/stop music
       e.preventDefault();
+      if (current.current.index === undefined) return;
       toggleState();
     },
     [toggleState],

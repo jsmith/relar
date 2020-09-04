@@ -1,12 +1,13 @@
 import React from "react";
 import { useArtists } from "../queries/artist";
 import { ArtistCard } from "../sections/ArtistCard";
+import { LoadingSpinner } from "../components/LoadingSpinner";
 
 export const Artists = () => {
   const artists = useArtists();
 
   if (artists.status === "loading") {
-    return <div>LOADING</div>;
+    return <LoadingSpinner />;
   }
 
   if (artists.status === "error") {
@@ -14,7 +15,7 @@ export const Artists = () => {
   }
 
   return (
-    <div className="flex flex-wrap">
+    <div className="flex flex-wrap px-5">
       {artists.data?.map((artist) => (
         <ArtistCard className="mx-1" key={artist.id} artist={artist} />
       ))}

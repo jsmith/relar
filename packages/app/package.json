@@ -22,6 +22,7 @@
     "downshift": "^5.4.2",
     "fast-average-color": "^6.0.2",
     "firebase": "^7.15.5",
+    "focus-trap-react": "^7.0.1",
     "neverthrow": "^2.7.0",
     "react-accessible-dropdown-menu-hook": "^2.1.0",
     "react-aria-modal": "^4.0.0",

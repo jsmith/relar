@@ -100,7 +100,7 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "py-2",
-    containerClassName: "px-5",
+    containerClassName: "",
     title: "Albums | RELAR",
   },
   album: {
@@ -109,7 +109,7 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "",
-    containerClassName: "px-5",
+    containerClassName: "",
     title: "Album | RELAR",
   },
   artists: {
@@ -118,7 +118,7 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "py-2",
-    containerClassName: "px-5",
+    containerClassName: "",
     title: "Artists | RELAR",
   },
   artist: {
@@ -127,7 +127,7 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "",
-    containerClassName: "px-5",
+    containerClassName: "",
     title: "Artist | RELAR",
   },
   invite: {
@@ -145,7 +145,7 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "py-2",
-    containerClassName: "px-5",
+    containerClassName: "",
     title: "Playlists | RELAR",
   },
   playlist: {

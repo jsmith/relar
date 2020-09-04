@@ -1,22 +1,26 @@
-import React, { useMemo, useRef, useState, CSSProperties } from "react";
+import React, { useMemo, useRef, useState, CSSProperties, forwardRef } from "react";
 import { useQueue } from "../queue";
 import { SongTable } from "../components/SongTable";
 import { MdQueueMusic, MdMoreVert } from "react-icons/md";
-import { useOnClickOutside } from "../utils";
+import { useOnClickOutside, useCombinedRefs } from "../utils";
 import { Button } from "../components/Button";
+import { useHotkeys } from "react-hotkeys-hook";
 
 export interface QueueProps {
   visible: boolean;
   close: () => void;
 }
 
-export const Queue = ({ visible, close }: QueueProps) => {
-  const { queue, song, source, clear } = useQueue();
+export const Queue = forwardRef<HTMLDivElement, QueueProps>(({ visible, close }, forwarded) => {
+  const { queue, source, clear } = useQueue();
   const songs = useMemo(() => queue.map(({ song }) => song), [queue]);
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const ref = useRef<HTMLDivElement | null>(null);
+  const combined = useCombinedRefs(ref, forwarded);
 
   useOnClickOutside(ref, close);
+
+  useHotkeys("escape", () => visible && close(), [visible]);
 
   const humanReadableName = useMemo((): string | false => {
     if (!source?.type) {
@@ -54,7 +58,7 @@ export const Queue = ({ visible, close }: QueueProps) => {
 
   return (
     <div
-      ref={ref}
+      ref={combined}
       className="absolute bg-white shadow-xl max-w-full"
       style={{
         width: "600px",
@@ -72,6 +76,7 @@ export const Queue = ({ visible, close }: QueueProps) => {
             Play a song or use the <MdMoreVert className="h-5 inline-block" title="More Options" />{" "}
             icon in a song table to add a song manually.
           </div>
+          <Button invert label="Close" onClick={close} />
         </div>
       ) : (
         <>
@@ -120,4 +125,4 @@ export const Queue = ({ visible, close }: QueueProps) => {
       ></div>
     </div>
   );
-};
+});

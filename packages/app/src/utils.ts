@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useMemo, useCallback } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback, RefCallback, Ref } from "react";
 import * as Sentry from "@sentry/browser";
 import { QueryResult } from "react-query";
 import tiny from "tinycolor2";
@@ -326,3 +326,30 @@ export function useOnClickOutside(
     [ref, handler],
   );
 }
+
+/**
+ * Combines many refs into one. Useful for combining many ref hooks
+ */
+export const useCombinedRefs = <T extends any>(
+  ...refs: Array<Ref<T> | undefined>
+): RefCallback<T> => {
+  return useCallback(
+    (element: T) =>
+      refs.forEach((ref) => {
+        if (!ref) {
+          return;
+        }
+
+        // Ref can have two types - a function or an object. We treat each case.
+        if (typeof ref === "function") {
+          return ref(element);
+        }
+
+        // As per https://github.com/facebook/react/issues/13029
+        // it should be fine to set current this way.
+        (ref as any).current = element;
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    refs,
+  );
+};

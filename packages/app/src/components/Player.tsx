@@ -88,15 +88,21 @@ export const Player = ({ toggleQueue }: PlayerProps) => {
           </button>
           <button
             title="Previous Song"
-            className="text-gray-300 hover:text-gray-100"
+            className={
+              !song ? "cursor-not-allowed text-gray-500" : "text-gray-300 hover:text-gray-100"
+            }
             onClick={previous}
+            disabled={!song}
           >
             <MdSkipPrevious className="w-6 h-6" />
           </button>
           <button
             title="Play/Pause Song"
-            className="text-gray-300 hover:text-gray-100"
+            className={
+              !song ? "cursor-not-allowed text-gray-500" : "text-gray-300 hover:text-gray-100"
+            }
             onClick={toggleState}
+            disabled={!song}
           >
             {playing ? (
               <MdPauseCircleOutline className="w-8 h-8" />
@@ -104,29 +110,43 @@ export const Player = ({ toggleQueue }: PlayerProps) => {
               <MdPlayCircleOutline className="w-8 h-8" />
             )}
           </button>
-          <button title="Next Song" className="text-gray-300 hover:text-gray-100" onClick={next}>
+          <button
+            title="Next Song"
+            className={
+              !song ? "cursor-not-allowed text-gray-500" : "text-gray-300 hover:text-gray-100"
+            }
+            disabled={!song}
+            onClick={next}
+          >
             <MdSkipNext className="w-6 h-6" />
           </button>
-          <button title="Next Song" className="text-gray-300 hover:text-gray-100">
+          <button title="Shuffle Queue" className="text-gray-300 hover:text-gray-100">
             <MdShuffle className="w-6 h-6" />
           </button>
         </div>
         <div className="h-2 w-full flex items-center space-x-2 mt-3">
-          <span className="text-xs text-gray-200 select-none">{currentTimeText}</span>
+          {song && <span className="text-xs text-gray-200 select-none">{currentTimeText}</span>}
           <Slider
             className="flex-grow"
             value={currentTime}
             maxValue={duration}
             onChange={seekTime}
+            disabled={!song}
           />
-          <span className="text-xs text-gray-200 select-none">{endTimeText}</span>
+          {song && <span className="text-xs text-gray-200 select-none">{endTimeText}</span>}
         </div>
       </div>
       <div className="flex justify-end" style={{ width: "30%" }}>
-        <button className="text-gray-300 hover:text-gray-100 ml-3" title="Volume">
+        <div className="text-gray-300 hover:text-gray-100 ml-3">
           {volume === 0 ? <FaVolumeMute /> : volume < 50 ? <FaVolumeDown /> : <FaVolumeUp />}
-        </button>
-        <Slider value={volume} maxValue={100} onChange={setVolume} className="w-32 ml-3" />
+        </div>
+        <Slider
+          value={volume}
+          maxValue={100}
+          onChange={setVolume}
+          className="w-32 ml-3"
+          title="Volume"
+        />
 
         <button
           className="text-gray-300 hover:text-gray-100 ml-3"
