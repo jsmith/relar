@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "scripts": {
     "dev": "vite serve src",
     "build": "vite build src --outDir dist",
@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@graywolfai/rest-ts-axios": "^0.2.4",
+    "@jsmith21/svg-loaders-react": "^2.2.2",
     "@pika/react": "^16.13.1",
     "@pika/react-dom": "^16.13.1",
     "@reach/skip-nav": "^0.10.4",
@@ -38,7 +39,6 @@
     "react-tiniest-router": "^0.1.2",
     "react-useportal": "^1.0.13",
     "runtypes": "4.3.0",
-    "@jsmith21/svg-loaders-react": "^2.2.2",
     "tinycolor2": "^1.4.1",
     "use-resize-observer": "^6.1.0",
     "uuid": "^8.3.0"
