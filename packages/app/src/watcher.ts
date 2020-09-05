@@ -74,7 +74,7 @@ export function useFirebaseUpdater<T>(
 }
 
 export const useFirebaseMemo = <T>(
-  f: () => firebase.firestore.QueryDocumentSnapshot<T>[],
+  f: () => firebase.firestore.QueryDocumentSnapshot<T>[] | undefined,
   dependencies: Array<any>,
 ) => {
   const [trigger, setTrigger] = useState(false);
@@ -87,14 +87,14 @@ export const useFirebaseMemo = <T>(
   }, [trigger, ...dependencies]);
 
   useEffect(() => {
-    const disposers = memorized.map((snap) => {
+    const disposers = memorized?.map((snap) => {
       return watchers.on(snap.ref.path, () => {
         console.info("Firebase memo triggered!");
         setTrigger(!trigger);
       });
     });
 
-    return () => disposers.forEach((disposer) => disposer());
+    return () => disposers?.forEach((disposer) => disposer());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, dependencies);
 

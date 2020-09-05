@@ -3,27 +3,21 @@ import { useMemo, useCallback, useState, useRef } from "react";
 
 export interface RecycleProps {
   container: HTMLElement | null;
-  headerHeight: number;
   rowHeight: number;
   rowCount: number;
   rootMargin?: number;
   rowsPerBlock?: number;
 }
 
-// Great tutorial on recycling DOM elements -> https://medium.com/@moshe_31114/building-our-recycle-list-solution-in-react-17a21a9605a0
-// https://uxdesign.cc/build-an-infinite-scroll-table-without-scroll-event-listener-5949ce8e9a32
-// https://blog.arnellebalane.com/the-intersection-observer-api-d441be0b088d
+// Very basic tutorial on how to do this -> https://uxdesign.cc/build-an-infinite-scroll-table-without-scroll-event-listener-5949ce8e9a32
+// Understanding the intersection API -> https://blog.arnellebalane.com/the-intersection-observer-api-d441be0b088d
 export const useRecycle = ({
   container,
-  headerHeight,
   rowHeight,
   rowCount,
   rootMargin = 30,
   rowsPerBlock = 5,
 }: RecycleProps) => {
-  // const [offsetTop, setOffsetTop] = useState(0);
-  // const [containerHeight, setContainerHeight] = useState(0);
-  // const [scrollTop, setScrollTop] = useState(0);
   const table = useRef<HTMLTableElement | null>(null);
   const observer = useRef<IntersectionObserver>();
   const intersecting = useRef<Record<number, boolean>>({});
@@ -116,7 +110,6 @@ export const useRecycle = ({
     placeholderBottomHeight,
     placeholderTopHeight,
     handleSentinel,
-    rowsPerBlock,
   };
 };
 

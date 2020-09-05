@@ -24,6 +24,7 @@ const Account = React.lazy(() => import("./pages/Account"));
 const ArtistOverview = React.lazy(() => import("./pages/ArtistOverview"));
 const PlaylistOverview = React.lazy(() => import("./pages/PlaylistOverview"));
 const Invite = React.lazy(() => import("./pages/Invite"));
+const Generated = React.lazy(() => import("./pages/Generated"));
 import ReactQueryDevtools from "react-query-devtools";
 import { AccountDropdown } from "./components/AccountDropdown";
 import { auth } from "./firebase";
@@ -203,6 +204,8 @@ export const App = (_: React.Props<{}>) => {
                   <Playlists />
                 ) : isRoute(routes.playlist) ? (
                   <PlaylistOverview container={container} />
+                ) : isRoute(routes.generated) ? (
+                  <Generated container={container} />
                 ) : null}
               </div>
             </div>

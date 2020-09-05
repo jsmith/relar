@@ -13,7 +13,7 @@ export const SongCard = ({ song }: { song: firebase.firestore.QueryDocumentSnaps
       snapshot={song}
       title={data.title}
       subtitle={data.artist}
-      onClick={() => goTo(routes.album, { albumId: data.id })}
+      onClick={() => goTo(routes.album, { albumId: data.albumId })}
       // play={() =>
       //   setQueue({
       //     songs: songs,
