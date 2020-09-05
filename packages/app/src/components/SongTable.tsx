@@ -120,6 +120,7 @@ export interface SongTableRowProps {
   playing: boolean;
   paused: boolean;
   children?: React.ReactNode;
+  includeDateAdded?: boolean;
 }
 
 export const SongTableRow = ({
@@ -130,6 +131,7 @@ export const SongTableRow = ({
   playing,
   paused,
   children,
+  includeDateAdded,
 }: SongTableRowProps) => {
   const [focusedPlay, setFocusedPlay] = useState(false);
   const [showEditorModal, hideEditorModal] = useModal(() => (
@@ -273,6 +275,13 @@ export const SongTableRow = ({
         <TextCell title={data.albumName} text={album} className="h-12 truncate" />
       )}
       <TextCell text={`${data.played ?? ""}`} className="h-12 truncate" />
+      {includeDateAdded && (
+        <TextCell
+          title={data.createdAt.toDate().toLocaleDateString()}
+          text={data.createdAt.toDate().toLocaleDateString()}
+          className="h-12 truncate"
+        />
+      )}
       <TextCell text={fmtMSS(data.duration / 1000)} className="h-12 truncate" />
       <Cell className="h-12 truncate">
         <LikedIcon liked={data.liked} setLiked={setLiked} />
@@ -291,6 +300,8 @@ export interface SongTableProps {
   container: HTMLElement | null;
   actions?: SongTableItem[];
 
+  includeDateAdded?: boolean;
+
   // Queue source
   source: SetQueueSource;
 
@@ -304,6 +315,7 @@ export const SongTable = ({
   actions,
   source,
   mode = "regular",
+  includeDateAdded,
 }: SongTableProps) => {
   const { setQueue, songIndex, source: playingSongSource, playing: notPaused } = useQueue();
   const rowCount = useMemo(() => docs?.length ?? 0, [docs]);
@@ -314,12 +326,10 @@ export const SongTable = ({
     placeholderTopHeight,
     table,
     handleSentinel,
-    rowsPerBlock,
   } = useRecycle({
     container,
     rowCount,
     rowHeight: 48,
-    headerHeight: 44,
   });
 
   const rows = useMemo(() => {
@@ -344,6 +354,7 @@ export const SongTable = ({
         switch (source.type) {
           case "album":
           case "artist":
+          case "generated":
           case "playlist":
             playing = source.type === playingSongSource?.type && source.id === playingSongSource.id;
             break;
@@ -368,6 +379,7 @@ export const SongTable = ({
           mode={mode}
           playing={playing}
           paused={!notPaused}
+          includeDateAdded={includeDateAdded}
         >
           <SentinelBlock index={start + i} ref={handleSentinel} />
         </SongTableRow>
@@ -389,6 +401,7 @@ export const SongTable = ({
           {mode === "regular" && <HeaderCol width="32%" label="Artist" className="py-2" />}
           {mode === "regular" && <HeaderCol width="26%" label="Album" className="py-2" />}
           <HeaderCol width="50px" label={<MdMusicNote className="w-5 h-5" />} className="py-2" />
+          {includeDateAdded && <HeaderCol width="100px" label="Date Added" className="py-2" />}
           <HeaderCol width="60px" label="" className="py-2" />
           <HeaderCol width="90px" label="" className="py-2" />
         </tr>

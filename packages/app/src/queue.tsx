@@ -35,7 +35,7 @@ export interface QueueItem {
 }
 
 export type SetQueueSource =
-  | { type: "album" | "artist" | "playlist"; id: string; sourceHumanName: string }
+  | { type: "album" | "artist" | "playlist" | "generated"; id: string; sourceHumanName: string }
   // FIXME what is queue??
   | { type: "library" | "manuel" | "queue" };
 

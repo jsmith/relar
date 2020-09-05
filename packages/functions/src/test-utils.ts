@@ -25,6 +25,7 @@ export const createTestSong = (song: Partial<Song>): Song => {
     albumArtist: undefined,
     genre: undefined,
     albumId: undefined,
+    whenLiked: undefined,
     lastPlayed: undefined,
     artwork: undefined,
     createdAt: admin.firestore.Timestamp.fromDate(new Date()),
