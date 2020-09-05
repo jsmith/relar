@@ -29,7 +29,7 @@ export const HomeTopic = ({
         </div>
         <Link
           label="See All →"
-          className="uppercase text-gray-700"
+          className="uppercase text-gray-700 hover:text-purple-700 focus:text-purple-700"
           route={route}
           params={params}
           queryParams={queryParams}

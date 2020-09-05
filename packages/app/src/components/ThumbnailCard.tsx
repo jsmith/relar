@@ -27,7 +27,7 @@ export const ThumbnailCard = ({
   return (
     <div
       className={classNames(
-        "bg-gray-700 flex flex-col px-3 py-4 rounded-md cursor-pointer relative group shadow-xl",
+        "bg-gray-800 flex flex-col px-3 py-4 rounded-md cursor-pointer relative group shadow-xl",
         className,
       )}
       onClick={onClick}
