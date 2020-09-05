@@ -73,10 +73,18 @@ export function useFirebaseUpdater<T>(
   return [current, emitAndSetCurrent];
 }
 
-export const useFirebaseMemo = <T>(
+export function useFirebaseMemo<T>(
+  f: () => firebase.firestore.QueryDocumentSnapshot<T>[],
+  dependencies: Array<any>,
+): firebase.firestore.QueryDocumentSnapshot<T>[];
+export function useFirebaseMemo<T>(
   f: () => firebase.firestore.QueryDocumentSnapshot<T>[] | undefined,
   dependencies: Array<any>,
-) => {
+): firebase.firestore.QueryDocumentSnapshot<T>[] | undefined;
+export function useFirebaseMemo<T>(
+  f: () => firebase.firestore.QueryDocumentSnapshot<T>[] | undefined,
+  dependencies: Array<any>,
+) {
   const [trigger, setTrigger] = useState(false);
 
   const memorized = useMemo(() => {
@@ -99,4 +107,4 @@ export const useFirebaseMemo = <T>(
   }, dependencies);
 
   return memorized;
-};
+}

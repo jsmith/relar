@@ -380,6 +380,7 @@ export const createSong = functions.storage.object().onFinalize(async (object) =
             albumId: album.id,
             year: id3Tag?.year,
             liked: false,
+            whenLiked: undefined,
             genre: id3Tag?.genre,
             played: 0,
             lastPlayed: undefined,
