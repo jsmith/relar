@@ -5,9 +5,13 @@ import { createEmitter } from "./events";
 const cache: { [path: string]: unknown } = {};
 const watchers = createEmitter<Record<string, [unknown]>>();
 
-export const getCachedOr = <T>(snap: firebase.firestore.QueryDocumentSnapshot<T>): T => {
+export function maybeGetCachedOr<T>(snap: firebase.firestore.DocumentSnapshot<T>): T | undefined {
+  return (cache[snap.ref.path] as T | undefined) ?? snap.data();
+}
+
+export function getCachedOr<T>(snap: firebase.firestore.QueryDocumentSnapshot<T>): T {
   return (cache[snap.ref.path] as T) ?? snap.data();
-};
+}
 
 export const updateCachedWithSnapshot = <T>(snapshot: firebase.firestore.DocumentSnapshot<T>) => {
   const data = snapshot.data();
@@ -27,18 +31,22 @@ export function useFirebaseUpdater<T>(
   snap: firebase.firestore.QueryDocumentSnapshot<T>,
 ): [T, (value: T) => void];
 export function useFirebaseUpdater<T>(
-  snap: firebase.firestore.QueryDocumentSnapshot<T> | undefined,
+  snap:
+    | firebase.firestore.QueryDocumentSnapshot<T>
+    | firebase.firestore.DocumentSnapshot<T>
+    | undefined,
 ): [T | undefined, (value: T) => void];
 export function useFirebaseUpdater<T>(
-  snap: firebase.firestore.QueryDocumentSnapshot<T> | undefined,
+  snap:
+    | firebase.firestore.QueryDocumentSnapshot<T>
+    | firebase.firestore.DocumentSnapshot<T>
+    | undefined,
 ): [T | undefined, (value: T) => void] {
   const [current, setCurrent] = useState<T | undefined>(snap ? getCachedOr(snap) : undefined);
 
   useEffect(() => {
-    if (!current && snap) {
-      setCurrent(getCachedOr(snap));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (snap) setCurrent(getCachedOr(snap));
+    else setCurrent(undefined);
   }, [snap]);
 
   const emitAndSetCurrent = useCallback(

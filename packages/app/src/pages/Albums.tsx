@@ -16,7 +16,7 @@ export const Albums = () => {
   }
 
   return (
-    <div className="flex flex-wrap">
+    <div className="flex flex-wrap px-5">
       {albums.data?.map((album) => (
         <AlbumCard className="mx-1" key={album.id} album={album} />
       ))}

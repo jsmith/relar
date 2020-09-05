@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState, useRef } from "react";
-import { routes, CustomRoute } from "./routes";
+import React, { useMemo, useState, useCallback } from "react";
+import { routes } from "./routes";
 import { useRouter } from "react-tiniest-router";
 import { useUser } from "./auth";
 import { Sidebar } from "./components/Sidebar";
@@ -34,10 +34,10 @@ import { SkipNavLink, SkipNavContent } from "@reach/skip-nav";
 import "@reach/skip-nav/styles.css";
 import "./index.css";
 import { UploadModal } from "./sections/UploadModal";
-import SVGLoadersReact from "svg-loaders-react";
 import { LoadingSpinner } from "./components/LoadingSpinner";
-
-const { Bars } = SVGLoadersReact;
+import { QueueAudio } from "./queue";
+import { Queue } from "./sections/Queue";
+import FocusTrap from "focus-trap-react";
 
 export interface SideBarItem {
   label: string;
@@ -56,7 +56,7 @@ const sideLinks = [
     route: routes.search,
   },
   {
-    // TODO save most recent inner tab
+    // FIXME save most recent inner tab
     label: "Library",
     icon: MdLibraryMusic,
     route: routes.songs,
@@ -85,7 +85,8 @@ const libraryLinks = [
 export const App = (_: React.Props<{}>) => {
   const { isRoute, goTo, routeId } = useRouter();
   const { user, loading } = useUser();
-  const [display, setDisplay] = useState(false);
+  const [uploadDisplay, setUploadDisplay] = useState(false);
+  const [queueDisplay, setQueueDisplay] = useState(false);
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
   const route = useMemo(() => Object.values(routes).find((route) => route.id === routeId), [
@@ -93,6 +94,8 @@ export const App = (_: React.Props<{}>) => {
   ]);
 
   useDocumentTitle(route?.title);
+
+  const closeQueue = useCallback(() => setQueueDisplay(false), []);
 
   if (loading) {
     return <LoadingSpinner className="h-screen" />;
@@ -111,8 +114,8 @@ export const App = (_: React.Props<{}>) => {
 
   const content = route?.sidebar ? (
     <UploadModal
-      display={display}
-      setDisplay={setDisplay}
+      display={uploadDisplay}
+      setDisplay={setUploadDisplay}
       className="flex flex-col h-full overflow-hidden"
     >
       <div className="relative flex-grow flex flex-col">
@@ -141,7 +144,7 @@ export const App = (_: React.Props<{}>) => {
               <div className="border-b border-gray-800 my-3 mx-3" />
               <button
                 className="flex py-2 px-5 items-center hover:bg-gray-800 w-full"
-                onClick={() => setDisplay(true)}
+                onClick={() => setUploadDisplay(true)}
               >
                 <MdAddCircle className="w-6 h-6" />
                 <div className="ml-4">Upload Music</div>
@@ -162,15 +165,15 @@ export const App = (_: React.Props<{}>) => {
                 isRoute(routes.albums) ||
                 isRoute(routes.playlists)) && (
                 <ul
-                  className="flex space-x-4 text-xl sticky top-0 z-10"
+                  className="flex space-x-4 text-xl sticky top-0 z-10 px-5"
                   style={{ backgroundColor: bgApp }}
                 >
-                  {/* TODO accessible */}
+                  {/* FIXME accessible */}
                   {libraryLinks.map(({ label, route }) => (
                     <li
                       key={label}
                       className={classNames(
-                        // TODO bold
+                        // FIXME bold
                         "my-2 border-gray-600 cursor-pointer hover:text-gray-800",
                         isRoute(route) ? "border-b-2 text-gray-700" : " text-gray-600",
                       )}
@@ -203,10 +206,14 @@ export const App = (_: React.Props<{}>) => {
                 ) : null}
               </div>
             </div>
+
+            <FocusTrap active={queueDisplay} focusTrapOptions={{ clickOutsideDeactivates: true }}>
+              <Queue visible={queueDisplay} close={closeQueue} />
+            </FocusTrap>
           </React.Suspense>
         </Sidebar>
       </div>
-      <Player />
+      <Player toggleQueue={() => setQueueDisplay(!queueDisplay)} />
     </UploadModal>
   ) : route?.id === "hero" ? (
     <Hero />
@@ -281,7 +288,8 @@ export const App = (_: React.Props<{}>) => {
         )}
       </div>
       <SkipNavContent />
-      <React.Suspense fallback={<div>Lading...</div>}>{content}</React.Suspense>
+      <React.Suspense fallback={<LoadingSpinner />}>{content}</React.Suspense>
+      {user && <QueueAudio />}
       <ReactQueryDevtools.ReactQueryDevtools initialIsOpen={false} />
     </div>
   );

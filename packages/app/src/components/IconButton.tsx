@@ -15,7 +15,11 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     ref,
   ) => {
     return (
-      <button {...props} className={classNames("rounded-full", className, hoverClassName)}>
+      <button
+        {...props}
+        className={classNames("rounded-full", className, hoverClassName)}
+        ref={ref}
+      >
         <Icon className={iconClassName} />
       </button>
     );

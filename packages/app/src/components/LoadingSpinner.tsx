@@ -1,8 +1,6 @@
 import React from "react";
-import SVGLoadersReact from "svg-loaders-react";
+import { Bars } from "@jsmith21/svg-loaders-react";
 import classNames from "classnames";
-
-const { Bars } = SVGLoadersReact;
 
 export interface LoadingSpinnerProps {
   className?: string;
@@ -16,7 +14,7 @@ export const LoadingSpinner = (props: LoadingSpinnerProps) => {
         props.className,
       )}
     >
-      <Bars className="w-12 h-16" />
+      <Bars fill="currentColor" className="w-12 h-16" />
     </div>
   );
 };

@@ -7,6 +7,7 @@ import { routes } from "../routes";
 import { Feature } from "../components/Feature";
 
 export const Hero = () => {
+  // FIXME reduce x margin/padding on small devices
   return (
     <div className="flex flex-col flex-grow overflow-y-auto">
       <div className="py-16 px-20 md:w-4/5 mx-auto flex-grow space-y-24">

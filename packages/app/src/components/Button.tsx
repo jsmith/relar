@@ -1,9 +1,6 @@
 import * as React from "react";
 import classNames from "classnames";
-import SVGLoadersReact from "svg-loaders-react";
-// import { Circle } from "react-spinners-css";
-
-const { ThreeDots } = SVGLoadersReact;
+import { ThreeDots } from "@jsmith21/svg-loaders-react";
 
 export interface ButtonProps
   extends React.DetailedHTMLProps<
@@ -15,6 +12,7 @@ export interface ButtonProps
   theme?: "purple" | "red" | "none";
   invert?: boolean;
   loading?: boolean;
+  height?: string;
 }
 
 // TODO only outline on tab
@@ -24,7 +22,7 @@ const classes = {
   purple: {
     default:
       "border-transparent bg-purple-600 text-white focus:bg-purple-500 hover:bg-purple-500 focus:border-purple-700",
-    invert: "text-white border-purple-500",
+    invert: "text-white border-purple-500 text-purple-600",
   },
   red: {
     default:
@@ -38,7 +36,13 @@ const classes = {
   },
 };
 
-export const Button = ({ invert, theme = "purple", loading, ...props }: ButtonProps) => {
+export const Button = ({
+  invert,
+  theme = "purple",
+  height = "h-10",
+  loading,
+  ...props
+}: ButtonProps) => {
   const className = invert
     ? classNames("bg-transparent", classes[theme].invert)
     : classNames("focus:outline-none", classes[theme].default);
@@ -47,11 +51,11 @@ export const Button = ({ invert, theme = "purple", loading, ...props }: ButtonPr
     <button
       {...props}
       className={classNames(
-        "flex justify-center items-center py-2 px-4 border uppercase font-medium rounded-md",
+        "flex justify-center items-center px-4 border uppercase font-medium rounded-md",
         className,
         "transition duration-150 ease-in-out",
-        "h-10",
         props.className,
+        height,
       )}
     >
       {loading ? (
@@ -59,7 +63,7 @@ export const Button = ({ invert, theme = "purple", loading, ...props }: ButtonPr
         // <Circle className="text-white transform -translate-y-6 -mt-1 h-2" color="currentColor" />
         // <Circle color="currentColor" className="text-red-100" />
         // <div className="loader"></div>
-        <ThreeDots className="w-16 h-4" />
+        <ThreeDots fill="currentColor" className="w-16 h-4" />
       ) : (
         // <div></div> // TODO
         props.label

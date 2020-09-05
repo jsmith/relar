@@ -4,7 +4,7 @@ import { SongTable } from "../components/SongTable";
 
 export const Songs = ({ container }: { container: HTMLElement | null }) => {
   const songs = useSongs();
-  return <SongTable songs={songs.data} container={container} />;
+  return <SongTable songs={songs.data} container={container} source={{ type: "library" }} />;
 };
 
 export default Songs;

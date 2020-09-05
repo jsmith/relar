@@ -22,18 +22,20 @@ import { useConfirmAction } from "../confirm-actions";
 import { routes } from "../routes";
 import { Skeleton } from "../components/Skeleton";
 import { Collage } from "../components/Collage";
+import { useQueue } from "../queue";
 
 export const PlaylistOverview = ({ container }: { container: HTMLElement | null }) => {
   // TODO editing the name of a playlist
   const { params, goTo } = useRouter();
   // FIXME validation
-  const { playlistId } = params as { playlistId?: string };
+  const { playlistId } = params as { playlistId: string };
   const { playlist, status } = usePlaylist(playlistId);
   const [data] = useFirebaseUpdater(playlist);
   const playlistSongs = usePlaylistSongs(data);
   const [removeSong] = usePlaylistRemoveSong(playlistId);
   const [rename] = usePlaylistRename(playlistId);
   const [deletePlaylist] = usePlaylistDelete(playlistId);
+  const { setQueue } = useQueue();
   const [averageColor, setAverageColor] = useState("#cbd5e0");
   const { from, to } = useMemo(
     () => ({
@@ -60,7 +62,7 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
   return (
     <div>
       <div
-        className="flex items-end -mx-5 p-8"
+        className="flex items-end p-8"
         style={{
           height: "400px",
           backgroundImage: `linear-gradient(to bottom, ${from}, ${to})`,
@@ -130,9 +132,15 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
                 className="transform -translate-x-4"
                 menuClassName="w-48"
               />
-              {/* TODO play playlist */}
-              <button onClick={() => {}} className="ml-3">
-                {/* <HiOutlineCheckCircle className="w-10 h-10" /> */}
+              <button
+                onClick={() =>
+                  setQueue({
+                    songs: playlistSongs,
+                    source: { type: "playlist", id: playlistId, sourceHumanName: data?.name ?? "" },
+                  })
+                }
+                className="ml-3"
+              >
                 <MdPlayCircleOutline className="w-10 h-10" />
               </button>
             </div>
@@ -163,6 +171,7 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
                   onClick: (song) => removeSong(song.id),
                 },
               ]}
+              source={{ type: "playlist", id: playlistId, sourceHumanName: data?.name ?? "" }}
             />
           )}
         </div>

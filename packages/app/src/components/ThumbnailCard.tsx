@@ -10,6 +10,7 @@ export interface ThumbnailCardProps {
   title: string;
   subtitle: string | undefined;
   onClick?: () => void;
+  play?: () => void;
   className?: string;
 }
 
@@ -19,6 +20,7 @@ export const ThumbnailCard = ({
   subtitle,
   onClick,
   className,
+  play,
 }: ThumbnailCardProps) => {
   const [focused, setFocused] = useState(false);
 
@@ -55,6 +57,10 @@ export const ThumbnailCard = ({
         <button
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
+          onClick={(e) => {
+            e.stopPropagation();
+            play && play();
+          }}
           className="transform translate-x-1/2 translate-y-1/2"
         >
           <MdPlayCircleFilled

@@ -1,6 +1,5 @@
-import React, { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import React, { useMemo, useState, CSSProperties } from "react";
 import { Song } from "../shared/types";
-import { usePlayer } from "../player";
 import classNames from "classnames";
 import {
   MdMusicNote,
@@ -17,7 +16,6 @@ import { IconButton } from "./IconButton";
 import useDropdownMenuImport from "react-accessible-dropdown-menu-hook";
 import { ContextMenu, ContextMenuItem } from "./ContextMenu";
 import { useConfirmAction } from "../confirm-actions";
-import useResizeObserver from "use-resize-observer";
 import { useLikeSong } from "../queries/songs";
 import { useFirebaseUpdater } from "../watcher";
 import { fmtMSS } from "../utils";
@@ -26,6 +24,9 @@ import { routes } from "../routes";
 import { link } from "../classes";
 import { AddToPlaylistEditor } from "../sections/AddToPlaylistModal";
 import { Skeleton } from "./Skeleton";
+import { useQueue, SetQueueSource } from "../queue";
+import { useRecycle, SentinelBlock } from "../recycle";
+import { Audio } from "@jsmith21/svg-loaders-react";
 
 // I really wish I didn't have to do this but for some reason this is the only thing that works
 // Before I was getting an issue in production
@@ -35,26 +36,24 @@ if ((useDropdownMenu as any).default) {
   useDropdownMenu = (useDropdownMenu as any).default;
 }
 
-// console.log(reactAccessibleDropdown);
-// const useDropdownMenu: typeof reactAccessibleDropdown.default = (reactAccessibleDropdown.default as any)
-//   .default;
-
 export const HeaderCol = ({
   label,
   width,
   className,
+  style,
 }: {
   label: React.ReactNode;
   width: string;
   className?: string;
+  style?: CSSProperties;
 }) => {
   return (
     <th
       className={classNames(
-        "border-b border-gray-700 border-opacity-25 text-left text-gray-800 text-xs font-medium uppercase tracking-wider",
+        "text-left text-gray-800 text-xs uppercase tracking-wider font-bold",
         className,
       )}
-      style={{ width }}
+      style={{ width, ...style }}
     >
       {label}
     </th>
@@ -117,9 +116,21 @@ export interface SongTableRowProps {
   song: firebase.firestore.QueryDocumentSnapshot<Song>;
   setSong: (song: firebase.firestore.QueryDocumentSnapshot<Song>) => void;
   actions: SongTableItem[] | undefined;
+  mode: "regular" | "condensed";
+  playing: boolean;
+  paused: boolean;
+  children?: React.ReactNode;
 }
 
-export const SongTableRow = ({ song, setSong, actions }: SongTableRowProps) => {
+export const SongTableRow = ({
+  song,
+  setSong,
+  actions,
+  mode,
+  playing,
+  paused,
+  children,
+}: SongTableRowProps) => {
   const [focusedPlay, setFocusedPlay] = useState(false);
   const [showEditorModal, hideEditorModal] = useModal(() => (
     <MetadataEditor setDisplay={() => hideEditorModal()} song={song} onSuccess={() => {}} />
@@ -174,29 +185,71 @@ export const SongTableRow = ({ song, setSong, actions }: SongTableRowProps) => {
     ];
   }, [actions, confirmAction, data.title, showAddPlaylistModal, showEditorModal, song]);
 
+  const artist = data.artist && (
+    <Link
+      className={classNames(link({ color: "" }), mode === "condensed" && "text-2xs")}
+      label={data.artist}
+      route={routes.artist}
+      params={{ artistName: data.artist }}
+    />
+  );
+
+  const album = data.albumName && (
+    <Link
+      className={classNames(link({ color: "" }), mode === "condensed" && "text-2xs")}
+      label={data.albumName}
+      route={routes.album}
+      params={{ albumId: data.albumId }}
+    />
+  );
+
   return (
     <tr className="group hover:bg-gray-300 text-gray-700 text-sm" onClick={() => setSong(song)}>
-      <Cell className="flex space-x-2 items-center h-12">
-        <div className="w-5 h-5">
-          <MdMusicNote
-            className={classNames(
-              "w-5 h-5 group-hover:opacity-0 absolute",
-              focusedPlay && "opacity-0",
-            )}
-          />
-          <button
-            title={`Play ${data.title}`}
-            className="focus:opacity-100 group-hover:opacity-100 opacity-0"
-            onFocus={() => setFocusedPlay(true)}
-            onBlur={() => setFocusedPlay(false)}
-            onClick={() => {}}
-          >
-            <MdPlayArrow className="w-5 h-5" />
-          </button>
+      <Cell className="flex space-x-2 items-center h-12 pl-3">
+        <div className="w-5 h-5 relative">
+          {playing ? (
+            <Audio
+              className="w-full h-4 text-purple-500 flex-shrink-0"
+              fill="currentColor"
+              disabled={paused}
+            />
+          ) : (
+            <>
+              <MdMusicNote
+                className={classNames(
+                  "w-5 h-5 group-hover:opacity-0 absolute",
+                  focusedPlay && "opacity-0",
+                )}
+              />
+              <button
+                title={`Play ${data.title}`}
+                className="focus:opacity-100 group-hover:opacity-100 opacity-0"
+                onFocus={() => setFocusedPlay(true)}
+                onBlur={() => setFocusedPlay(false)}
+                onClick={() => {}}
+              >
+                <MdPlayArrow className="w-5 h-5" />
+              </button>
+            </>
+          )}
         </div>
 
-        <div title={data.title} className="truncate flex-grow">
-          {data.title}
+        {/* The min-w-0 is actually very important to getting ellipsis to work... */}
+        {/* Got the tip from https://stackoverflow.com/questions/45813304/text-overflow-ellipsis-on-flex-child-not-working */}
+        <div className="flex-grow min-w-0">
+          <div
+            title={data.title}
+            className={classNames("truncate", mode === "condensed" && "text-xs")}
+          >
+            {data.title}
+          </div>
+          {mode === "condensed" && (
+            <div className="flex space-x-2 text-gray-600">
+              {artist}
+              {artist && album && <div className="text-2xs">-</div>}
+              {album}
+            </div>
+          )}
         </div>
 
         <ContextMenu
@@ -213,39 +266,17 @@ export const SongTableRow = ({ song, setSong, actions }: SongTableRowProps) => {
           className="transform -translate-x-4"
         />
       </Cell>
-      {/* <TextCell text={data.title} /> */}
-      <TextCell
-        title={data.artist}
-        text={
-          data.artist && (
-            <Link
-              className={link({ color: "" })}
-              label={data.artist}
-              route={routes.artist}
-              params={{ artistName: data.artist }}
-            />
-          )
-        }
-        className="h-12 truncate"
-      />
-      <TextCell
-        title={data.albumName}
-        text={
-          data.albumName && (
-            <Link
-              className={link({ color: "" })}
-              label={data.albumName}
-              route={routes.album}
-              params={{ albumId: data.albumId }}
-            />
-          )
-        }
-        className="h-12 truncate"
-      />
+      {mode === "regular" && (
+        <TextCell title={data.artist} text={artist} className="h-12 truncate" />
+      )}
+      {mode === "regular" && (
+        <TextCell title={data.albumName} text={album} className="h-12 truncate" />
+      )}
       <TextCell text={`${data.played ?? ""}`} className="h-12 truncate" />
       <TextCell text={fmtMSS(data.duration / 1000)} className="h-12 truncate" />
       <Cell className="h-12 truncate">
         <LikedIcon liked={data.liked} setLiked={setLiked} />
+        {children}
       </Cell>
     </tr>
   );
@@ -259,63 +290,37 @@ export interface SongTableProps {
   loadingRows?: number;
   container: HTMLElement | null;
   actions?: SongTableItem[];
+
+  // Queue source
+  source: SetQueueSource;
+
+  mode?: "regular" | "condensed";
 }
 
-// Great tutorial on recycling DOM elements -> https://medium.com/@moshe_31114/building-our-recycle-list-solution-in-react-17a21a9605a0
-export const SongTable = ({ songs: docs, loadingRows = 5, container, actions }: SongTableProps) => {
-  const rowHeight = 48;
-  const headerHeight = 44;
-  const [offsetTop, setOffsetTop] = useState(0);
-  const [containerHeight, setContainerHeight] = useState(0);
-  const [scrollTop, setScrollTop] = useState(0);
-  const [_, setSong] = usePlayer();
-  const t = useRef<HTMLTableElement | null>(null);
-  useResizeObserver<HTMLElement>({
-    ref: useMemo(() => ({ current: container }), [container]),
-    onResize: useCallback((e) => {
-      setContainerHeight(e.height ?? 0);
-      // console.log("Offset", t.current?.offsetTop);
-      setOffsetTop((t.current?.offsetTop ?? 0) + headerHeight);
-    }, []),
-  });
-
-  useEffect(() => {
-    if (!container) {
-      return;
-    }
-
-    container.onscroll = () => {
-      setScrollTop(container.scrollTop);
-    };
-  }, [container]);
-
+export const SongTable = ({
+  songs: docs,
+  loadingRows = 5,
+  container,
+  actions,
+  source,
+  mode = "regular",
+}: SongTableProps) => {
+  const { setQueue, songIndex, source: playingSongSource, playing: notPaused } = useQueue();
   const rowCount = useMemo(() => docs?.length ?? 0, [docs]);
-
-  const { start, end, placeholderTopHeight, placeholderBottomHeight } = useMemo(() => {
-    const offTop = scrollTop - offsetTop;
-    const height = rowHeight * rowCount;
-    const offBottom = height - offTop - containerHeight;
-    // console.log(
-    //   `Offset: ${offsetTop}, container: ${containerHeight}, scroll: ${scrollTop}, units: ${rowCount}, unit: ${rowHeight}, offTop: ${offTop}, offBottom: ${offBottom}`,
-    // );
-
-    const unitsCompletelyOffScreenTop = offTop > 0 ? Math.floor(offTop / rowHeight) : 0;
-
-    const unitsCompletelyOffScreenBottom = offBottom > 0 ? Math.floor(offBottom / rowHeight) : 0;
-
-    const result = {
-      placeholderTopHeight: unitsCompletelyOffScreenTop * rowHeight,
-      placeholderBottomHeight: unitsCompletelyOffScreenBottom * rowHeight,
-      start: unitsCompletelyOffScreenTop,
-      end: rowCount - unitsCompletelyOffScreenBottom,
-    };
-
-    return result;
-  }, [offsetTop, containerHeight, scrollTop, rowHeight, rowCount]);
-
-  // useEffect(() => {
-  //   console.debug(`Displaying rows ${start} -> ${end}`);
-  // }, [start, end]);
+  const {
+    start,
+    end,
+    placeholderBottomHeight,
+    placeholderTopHeight,
+    table,
+    handleSentinel,
+    rowsPerBlock,
+  } = useRecycle({
+    container,
+    rowCount,
+    rowHeight: 48,
+    headerHeight: 44,
+  });
 
   const rows = useMemo(() => {
     if (!docs) {
@@ -329,28 +334,63 @@ export const SongTable = ({ songs: docs, loadingRows = 5, container, actions }: 
           </tr>
         ));
     }
-    return docs.slice(start, end + 1).map((song, i) => (
+    return docs.slice(start, end).map((song, i) => {
+      // Default not playing
+      let playing = false;
+
+      // But if they do have the same index...
+      if (start + i === songIndex) {
+        // Check the source!
+        switch (source.type) {
+          case "album":
+          case "artist":
+          case "playlist":
+            playing = source.type === playingSongSource?.type && source.id === playingSongSource.id;
+            break;
+          case "queue":
+            playing = true;
+            break;
+          case "library":
+            playing = playingSongSource?.type === source.type;
+            break;
+          case "manuel":
+          // It should never reach this point...
+        }
+      }
+
       // The key is the index rather than the song ID as the song could > 1
-      <SongTableRow
-        song={song}
-        setSong={setSong}
-        key={`${song.id}///${start + i}`}
-        actions={actions}
-      />
-    ));
+      return (
+        <SongTableRow
+          song={song}
+          setSong={() => setQueue({ songs: docs, source, index: start + i })}
+          key={`${song.id}///${start + i}`}
+          actions={actions}
+          mode={mode}
+          playing={playing}
+          paused={!notPaused}
+        >
+          <SentinelBlock index={start + i} ref={handleSentinel} />
+        </SongTableRow>
+      );
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingRows, docs, start, end]);
+  }, [loadingRows, docs, start, end, playingSongSource, notPaused, songIndex]);
 
   return (
-    <table className="text-gray-800 table-fixed w-full" ref={t}>
+    <table className="text-gray-800 table-fixed w-full" ref={table}>
       <thead>
-        <tr>
-          <HeaderCol width="42%" label="Title" className="py-3" />
-          <HeaderCol width="32%" label="Artist" className="py-3" />
-          <HeaderCol width="26%" label="Album" className="py-3" />
-          <HeaderCol width="50px" label={<MdMusicNote className="w-5 h-5" />} className="py-3" />
-          <HeaderCol width="60px" label="" className="py-3" />
-          <HeaderCol width="90px" label="" className="py-3" />
+        <tr key={mode}>
+          <HeaderCol
+            width="42%"
+            label={mode === "regular" ? "Title" : "Song"}
+            className="py-2 pl-3 ml-5"
+            style={{ textIndent: "27px" }}
+          />
+          {mode === "regular" && <HeaderCol width="32%" label="Artist" className="py-2" />}
+          {mode === "regular" && <HeaderCol width="26%" label="Album" className="py-2" />}
+          <HeaderCol width="50px" label={<MdMusicNote className="w-5 h-5" />} className="py-2" />
+          <HeaderCol width="60px" label="" className="py-2" />
+          <HeaderCol width="90px" label="" className="py-2" />
         </tr>
       </thead>
       <tbody>

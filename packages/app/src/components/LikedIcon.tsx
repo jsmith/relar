@@ -1,5 +1,6 @@
 import React from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
+import classNames from "classnames";
 
 export interface FavoriteIconProps {
   className?: string;
@@ -31,7 +32,7 @@ export const LikedIcon = ({ className, liked, setLiked }: FavoriteIconProps) => 
         // likedOrUnlikeSong(!liked);
       }}
       title="Save to Likes"
-      className={className}
+      className={classNames(className, "text-purple-500")}
     >
       {liked ? <FaHeart /> : <FaRegHeart />}
     </button>
