@@ -14,6 +14,12 @@ export const SongCard = ({ song }: { song: firebase.firestore.QueryDocumentSnaps
       title={data.title}
       subtitle={data.artist}
       onClick={() => goTo(routes.album, { albumId: data.id })}
+      // play={() =>
+      //   setQueue({
+      //     songs: songs,
+      //     source: { type: "playlist", id: data.id, sourceHumanName: data.name },
+      //   })
+      // }
     />
   );
 };

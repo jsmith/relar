@@ -1,33 +1,7 @@
-import { MutableRefObject, useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, useCallback, RefCallback, Ref } from "react";
 import * as Sentry from "@sentry/browser";
 import { QueryResult } from "react-query";
 import tiny from "tinycolor2";
-
-/**
- * Hook that alerts clicks outside of the passed ref.
- */
-export function useOutsideAlerter<T extends HTMLElement | null>(
-  ref: MutableRefObject<T>,
-  callback: () => void,
-) {
-  useEffect(() => {
-    /**
-     * Alert if clicked on outside of element
-     */
-    function handleClickOutside(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        callback();
-      }
-    }
-
-    // Bind the event listener
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      // Unbind the event listener on clean up
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [ref, callback]);
-}
 
 export interface Disposer {
   dispose: () => void;
@@ -252,17 +226,6 @@ export const captureAndLogError = (
   console.error(e);
 };
 
-export const useDataFromQueryNSnapshot = <T>(
-  query: QueryResult<firebase.firestore.DocumentSnapshot<T>>,
-): T | undefined => {
-  const [data, setData] = useState<T>();
-  useEffect(() => {
-    setData(query.data?.data());
-  }, [query.data]);
-
-  return data;
-};
-
 /**
  *
  * accepts seconds as Number or String. Returns m:ss
@@ -308,4 +271,85 @@ export const useGradient = (color: string, amount = 5) => {
     from,
     isLight,
   };
+};
+
+export function useLocalStorage<T extends string>(
+  key: string,
+  defaultValue: T,
+): [T, (value: T) => void];
+export function useLocalStorage<T extends string>(key: string): [T | undefined, (value: T) => void];
+export function useLocalStorage<T extends string>(key: string, defaultValue?: T) {
+  const [value, setValue] = useState<T | undefined>(
+    (localStorage.getItem(key) as T | undefined) ?? defaultValue,
+  );
+
+  const setValueAndStore = useCallback(
+    (value: T) => {
+      setValue(value);
+      localStorage.setItem(key, value);
+    },
+    [key],
+  );
+
+  return [value, setValueAndStore];
+}
+
+export function useOnClickOutside(
+  ref: React.MutableRefObject<HTMLElement | null>,
+  handler: (event: MouseEvent | TouchEvent) => void,
+) {
+  useEffect(
+    () => {
+      const listener = (event: MouseEvent | TouchEvent) => {
+        // Do nothing if clicking ref's element or descendent elements
+        if (!ref.current || ref.current.contains(event.target as any)) {
+          return;
+        }
+
+        handler(event);
+      };
+
+      document.addEventListener("mousedown", listener);
+      document.addEventListener("touchstart", listener);
+
+      return () => {
+        document.removeEventListener("mousedown", listener);
+        document.removeEventListener("touchstart", listener);
+      };
+    },
+    // Add ref and handler to effect dependencies
+    // It's worth noting that because passed in handler is a new ...
+    // ... function on every render that will cause this effect ...
+    // ... callback/cleanup to run every render. It's not a big deal ...
+    // ... but to optimize you can wrap handler in useCallback before ...
+    // ... passing it into this hook.
+    [ref, handler],
+  );
+}
+
+/**
+ * Combines many refs into one. Useful for combining many ref hooks
+ */
+export const useCombinedRefs = <T extends any>(
+  ...refs: Array<Ref<T> | undefined>
+): RefCallback<T> => {
+  return useCallback(
+    (element: T) =>
+      refs.forEach((ref) => {
+        if (!ref) {
+          return;
+        }
+
+        // Ref can have two types - a function or an object. We treat each case.
+        if (typeof ref === "function") {
+          return ref(element);
+        }
+
+        // As per https://github.com/facebook/react/issues/13029
+        // it should be fine to set current this way.
+        (ref as any).current = element;
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    refs,
+  );
 };

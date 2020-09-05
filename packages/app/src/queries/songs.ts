@@ -117,3 +117,14 @@ export const useSongsDuration = (
     [songs],
   );
 };
+
+export const useSongLookup = () => {
+  const songs = useSongs();
+
+  return useMemo(() => {
+    const lookup: { [id: string]: firebase.firestore.QueryDocumentSnapshot<Song> } = {};
+    if (!songs.data) return lookup;
+    songs.data.forEach((song) => (lookup[song.id] = song));
+    return lookup;
+  }, [songs.data]);
+};

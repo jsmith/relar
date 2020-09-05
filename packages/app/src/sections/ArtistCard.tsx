@@ -4,6 +4,8 @@ import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "react-tiniest-router";
 import { routes } from "../routes";
 import { useArtistSongs } from "../queries/artist";
+import { useQueue } from "../queue";
+import { useFirebaseUpdater } from "../watcher";
 
 export const ArtistCard = ({
   artist,
@@ -12,9 +14,11 @@ export const ArtistCard = ({
   artist: firebase.firestore.QueryDocumentSnapshot<Artist>;
   className?: string;
 }) => {
-  const data = artist.data();
-  const { goTo } = useRouter();
   const artistSongs = useArtistSongs(artist.id);
+  const { setQueue } = useQueue();
+  const [data] = useFirebaseUpdater(artist);
+  const { goTo } = useRouter();
+  const songs = useArtistSongs(data.name);
 
   return (
     <ThumbnailCard
@@ -23,6 +27,12 @@ export const ArtistCard = ({
       subtitle={""}
       onClick={() => goTo(routes.artist, { artistName: data.name })}
       className={className}
+      play={() =>
+        setQueue({
+          songs: songs.data,
+          source: { type: "artist", id: data.name, sourceHumanName: data.name },
+        })
+      }
     />
   );
 };

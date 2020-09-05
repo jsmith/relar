@@ -7,9 +7,7 @@ import * as uuid from "uuid";
 import firebase from "firebase/app";
 import { updateCached, getCachedOr, useFirebaseUpdater } from "../watcher";
 import { useMemo } from "react";
-import { useSongs } from "./songs";
-import { useDataFromQueryNSnapshot } from "../utils";
-import { PlaylistCard } from "../sections/PlaylistCard";
+import { useSongs, useSongLookup } from "./songs";
 
 const { useQuery: usePlaylistsQuery, queryCache } = createQueryCache<
   ["playlists", { uid: string }],
@@ -66,6 +64,7 @@ export const usePlaylistCreate = () => {
       const playlist = userData.playlist(uuid.v4());
 
       await playlist.set({
+        id: playlist.id,
         name,
         songs: [],
         createdAt: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
@@ -140,25 +139,16 @@ export const usePlaylistSongs = (
   playlist: Playlist | undefined,
 ): Array<firebase.firestore.QueryDocumentSnapshot<Song>> => {
   const songs = useSongs();
-
-  const songsLookup = useMemo(() => {
-    const lookup: Record<string, firebase.firestore.QueryDocumentSnapshot<Song>> = {};
-
-    songs.data?.forEach((song) => {
-      lookup[song.id] = song;
-    });
-
-    return lookup;
-  }, [songs.data]);
+  const lookup = useSongLookup();
 
   return useMemo(() => {
     return (
       playlist?.songs
-        ?.map((songId) => songsLookup[songId])
-        // Since songsLookup could be empty if the songs haven't loaded yet
+        ?.map((songId) => lookup[songId])
+        // Since lookup could be empty if the songs haven't loaded yet
         .filter((song) => !!song) ?? []
     );
-  }, [playlist?.songs, songsLookup]);
+  }, [playlist?.songs, lookup]);
 };
 
 export const usePlaylistRemoveSong = (playlistId: string | undefined) => {

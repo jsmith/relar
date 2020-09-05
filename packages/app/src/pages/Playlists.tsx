@@ -14,9 +14,9 @@ export const Playlists = () => {
   }
 
   return (
-    <div className="flex flex-wrap">
+    <div className="flex flex-wrap px-5">
       {playlists.data.map((playlist) => (
-        <PlaylistCard playlist={playlist} key={playlist.id} />
+        <PlaylistCard className="mx-1" playlist={playlist} key={playlist.id} />
       ))}
     </div>
   );

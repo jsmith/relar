@@ -5,6 +5,7 @@ import { useRouter } from "react-tiniest-router";
 import { routes } from "../routes";
 import { useFirebaseUpdater } from "../watcher";
 import { usePlaylistSongs } from "../queries/playlists";
+import { useQueue } from "../queue";
 
 export const PlaylistCard = ({
   playlist,
@@ -16,6 +17,8 @@ export const PlaylistCard = ({
   const [data] = useFirebaseUpdater(playlist);
   const playlistSongs = usePlaylistSongs(data);
   const { goTo } = useRouter();
+  const { setQueue } = useQueue();
+  const songs = usePlaylistSongs(data);
 
   return (
     <ThumbnailCard
@@ -24,6 +27,12 @@ export const PlaylistCard = ({
       subtitle={""}
       onClick={() => goTo(routes.playlist, { playlistId: playlist.id })}
       className={className}
+      play={() =>
+        setQueue({
+          songs: songs,
+          source: { type: "playlist", id: data.id, sourceHumanName: data.name },
+        })
+      }
     />
   );
 };

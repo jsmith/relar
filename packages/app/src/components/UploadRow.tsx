@@ -3,10 +3,8 @@ import firebase from "firebase/app";
 import { MdErrorOutline, MdCheck } from "react-icons/md";
 import { captureAndLog, captureAndLogError } from "../utils";
 import { AiOutlineStop } from "react-icons/ai";
-import SVGLoadersReact from "svg-loaders-react";
+import { Bars } from "@jsmith21/svg-loaders-react";
 import { ProgressBar } from "../components/ProgressBar";
-
-const { Bars } = SVGLoadersReact;
 
 export interface StorageLocation {
   path: string;
@@ -83,9 +81,9 @@ export const UploadRow = ({ file, task }: UploadRowProps) => {
         <MdCheck title="Upload Complete" className="text-purple-700 w-5 h-5 flex-shrink-0" />
       ) : (
         <Bars
-          title="Uploading"
+          fill="currentColor"
+          // title="Uploading"
           className="text-purple-700 w-6 h-4 flex-shrink-0"
-          color="currentColor"
         />
       )}
       <div className="flex-shrink-0 text-sm">{file.name}</div>

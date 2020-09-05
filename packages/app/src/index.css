@@ -13,6 +13,10 @@
   font-weight: bold;
 }
 
+.text-2xs {
+  font-size: 0.6875rem;
+}
+
 body {
   font-family: "FiraMono", monospace;
 }

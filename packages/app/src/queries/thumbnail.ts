@@ -34,8 +34,12 @@ export const useThumbnails = (
   const [thumbnails, setThumbnails] = useState<Array<string | undefined>>([]);
 
   useEffect(() => {
+    let ignore = false;
     const thumbnails = snapshots.map((snapshot) => tryToGetDownloadUrlOrLog(user, snapshot, size));
-    Promise.all(thumbnails).then(setThumbnails);
+    Promise.all(thumbnails).then((thumbnails) => !ignore && setThumbnails(thumbnails));
+    return () => {
+      ignore = true;
+    };
   }, [user, snapshots, size]);
 
   return thumbnails;
@@ -84,8 +88,6 @@ export const tryToGetDownloadUrlOrLog = async (
   const result = await getDownloadURL(
     clientStorage(storage, user.uid).artworks(artwork.hash, artwork.type)[size](),
   );
-
-  console.log(result);
 
   if (result.isOk()) {
     artwork[key] = result.value;
