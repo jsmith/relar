@@ -17,7 +17,7 @@ import { useLikeSong } from "../queries/songs";
 import { fmtMSS } from "../utils";
 import { LikedIcon } from "./LikedIcon";
 import { useFirebaseUpdater } from "../watcher";
-import { useQueue } from "../queue";
+import { useQueue, useCurrentTime } from "../queue";
 
 export interface PlayerProps {
   toggleQueue: () => void;
@@ -31,7 +31,6 @@ export const Player = ({ toggleQueue }: PlayerProps) => {
     playing,
     volume,
     setVolume,
-    currentTime,
     next,
     previous,
     mode,
@@ -39,6 +38,7 @@ export const Player = ({ toggleQueue }: PlayerProps) => {
   } = useQueue();
   const [songData] = useFirebaseUpdater(song);
   const [setLiked] = useLikeSong(song);
+  const currentTime = useCurrentTime();
   const currentTimeText = useMemo(() => fmtMSS(currentTime), [currentTime]);
   const duration = useMemo(() => (songData?.duration ?? 0) / 1000, [songData?.duration]);
   const endTimeText = useMemo(() => fmtMSS(duration), [duration]);

@@ -95,9 +95,10 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(({ visible, close },
             style={{
               // 48 is the size of the table row. This must be kept in sync.
               height: `${Math.max(songs.length, 5) * 48}px`,
-              // 150px is just from trial and error
-              maxHeight: `calc(100vh - 150px)`,
+              // 300px is just from trial and error
+              maxHeight: `calc(100vh - 300px)`,
             }}
+            className="overflow-y-auto"
           >
             <SongTable
               songs={songs}

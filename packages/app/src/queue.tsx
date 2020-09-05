@@ -1,4 +1,4 @@
-import React, { useContext, useState, useCallback, useRef } from "react";
+import React, { useContext, useState, useCallback, useRef, useEffect } from "react";
 import { createContext } from "react";
 import { Song } from "./shared/types";
 import { tryToGetSongDownloadUrlOrLog } from "./queries/songs";
@@ -8,10 +8,26 @@ import { useLocalStorage, captureAndLogError } from "./utils";
 import firebase from "firebase/app";
 import { updateCachedWithSnapshot } from "./watcher";
 import { useHotkeys } from "react-hotkeys-hook";
+import { createEmitter } from "./events";
 
 const usePortal: typeof usePortalImport = (usePortalImport as any).default;
 
 type SongSnapshot = firebase.firestore.QueryDocumentSnapshot<Song>;
+
+const emitter = createEmitter<{ updateCurrentTime: [number] }>();
+
+export const setCurrentTime = (currentTime: number) =>
+  emitter.emit("updateCurrentTime", currentTime);
+
+export const useCurrentTime = () => {
+  const [currentTime, setCurrentTime] = useState(0);
+
+  useEffect(() => {
+    return emitter.on("updateCurrentTime", setCurrentTime);
+  }, []);
+
+  return currentTime;
+};
 
 export interface QueueItem {
   song: SongSnapshot;
@@ -45,8 +61,6 @@ export const QueueContext = createContext<{
   previous: () => void;
   mode: QueuePlayMode;
   setMode: (mode: QueuePlayMode) => void;
-  /** The current time for the current song in seconds. Useful for UI purposes. */
-  currentTime: number;
   /** Seek to a desired position in the current song. */
   seekTime: (time: number) => void;
   /** Whether the current song is playing. */
@@ -62,8 +76,6 @@ export const QueueContext = createContext<{
   clear: () => void;
   /** Set the ref. For internal use only. */
   _setRef: (el: HTMLAudioElement) => void;
-  /** Set the current time of the song. For internal use only. */
-  _setCurrentTime: (seconds: number) => void;
 }>({
   queue: [],
   setQueue: async () => {},
@@ -75,7 +87,6 @@ export const QueueContext = createContext<{
   previous: () => {},
   mode: "none",
   setMode: () => {},
-  currentTime: 0,
   seekTime: () => {},
   playing: false,
   toggleState: () => {},
@@ -84,7 +95,6 @@ export const QueueContext = createContext<{
   setVolume: () => {},
   clear: () => {},
   _setRef: () => {},
-  _setCurrentTime: () => {},
 });
 
 export const QueueProvider = (props: React.Props<{}>) => {
@@ -97,7 +107,6 @@ export const QueueProvider = (props: React.Props<{}>) => {
   const [songIndex, setSongIndex] = useState<number>();
   const [song, setSong] = useState<SongSnapshot>(); // currently playing song
   const [mode, setMode] = useLocalStorage<QueuePlayMode>("player-mode", "none");
-  const [currentTime, _setCurrentTime] = useState(0);
   const { user } = useUser();
   const [source, setSource] = useState<SetQueueSource>();
   const [playing, setPlaying] = useState<boolean>(false);
@@ -136,7 +145,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
   const stopPlaying = useCallback(() => {
     setSong(undefined);
     setSource(undefined);
-    _setCurrentTime(0);
+    setCurrentTime(0);
     current.current.index = undefined;
     setSongIndex(undefined);
   }, []);
@@ -228,7 +237,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
       tryToGoTo((current.current.index ?? 0) - 1, true);
     } else {
       // If not just restart the song
-      _setCurrentTime(0);
+      setCurrentTime(0);
       ref.current.currentTime = 0;
     }
   }, [tryToGoTo]);
@@ -238,7 +247,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
   ]);
 
   const seekTime = useCallback((seconds: number) => {
-    _setCurrentTime(seconds);
+    setCurrentTime(seconds);
     if (ref.current) ref.current.currentTime = seconds;
   }, []);
 
@@ -280,7 +289,6 @@ export const QueueProvider = (props: React.Props<{}>) => {
         setMode,
         next,
         previous,
-        currentTime,
         seekTime,
         source,
         playing,
@@ -288,7 +296,6 @@ export const QueueProvider = (props: React.Props<{}>) => {
         volume,
         setVolume,
         _setRef,
-        _setCurrentTime,
         _nextAutomatic,
         clear,
         songIndex,
@@ -301,14 +308,13 @@ export const QueueProvider = (props: React.Props<{}>) => {
 
 export const QueueAudio = () => {
   const { Portal } = usePortal();
-  const { _setRef, _setCurrentTime, _nextAutomatic } = useQueue();
+  const { _setRef, _nextAutomatic } = useQueue();
 
   return (
     <Portal>
       <audio
         ref={_setRef}
-        // loop={repeat === "repeat-one"}
-        onTimeUpdate={(e) => _setCurrentTime((e.target as HTMLAudioElement).currentTime)}
+        onTimeUpdate={(e) => setCurrentTime((e.target as HTMLAudioElement).currentTime)}
         onEnded={_nextAutomatic}
       >
         Your browser does not support HTML5 Audio...

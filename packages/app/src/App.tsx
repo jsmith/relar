@@ -208,11 +208,6 @@ export const App = (_: React.Props<{}>) => {
             </div>
 
             <FocusTrap active={queueDisplay} focusTrapOptions={{ clickOutsideDeactivates: true }}>
-              {/* TODO */}
-              {/* Make the play buttons actually play the queue */}
-              {/* Refactor the current time updater into a single hook so we don't update all of the time */}
-              {/* Test with library */}
-              {/* Do deployment */}
               <Queue visible={queueDisplay} close={closeQueue} />
             </FocusTrap>
           </React.Suspense>

@@ -25,7 +25,7 @@ import { link } from "../classes";
 import { AddToPlaylistEditor } from "../sections/AddToPlaylistModal";
 import { Skeleton } from "./Skeleton";
 import { useQueue, SetQueueSource } from "../queue";
-import { useRecycle } from "../recycle";
+import { useRecycle, SentinelBlock } from "../recycle";
 import { Audio } from "@jsmith21/svg-loaders-react";
 
 // I really wish I didn't have to do this but for some reason this is the only thing that works
@@ -119,6 +119,7 @@ export interface SongTableRowProps {
   mode: "regular" | "condensed";
   playing: boolean;
   paused: boolean;
+  children?: React.ReactNode;
 }
 
 export const SongTableRow = ({
@@ -128,6 +129,7 @@ export const SongTableRow = ({
   mode,
   playing,
   paused,
+  children,
 }: SongTableRowProps) => {
   const [focusedPlay, setFocusedPlay] = useState(false);
   const [showEditorModal, hideEditorModal] = useModal(() => (
@@ -204,9 +206,13 @@ export const SongTableRow = ({
   return (
     <tr className="group hover:bg-gray-300 text-gray-700 text-sm" onClick={() => setSong(song)}>
       <Cell className="flex space-x-2 items-center h-12 pl-3">
-        <div className="w-5 h-5">
+        <div className="w-5 h-5 relative">
           {playing ? (
-            <Audio className="w-full h-4 text-purple-500" fill="currentColor" disabled={paused} />
+            <Audio
+              className="w-full h-4 text-purple-500 flex-shrink-0"
+              fill="currentColor"
+              disabled={paused}
+            />
           ) : (
             <>
               <MdMusicNote
@@ -228,18 +234,22 @@ export const SongTableRow = ({
           )}
         </div>
 
-        <div className="flex-grow">
+        {/* The min-w-0 is actually very important to getting ellipsis to work... */}
+        {/* Got the tip from https://stackoverflow.com/questions/45813304/text-overflow-ellipsis-on-flex-child-not-working */}
+        <div className="flex-grow min-w-0">
           <div
             title={data.title}
             className={classNames("truncate", mode === "condensed" && "text-xs")}
           >
             {data.title}
           </div>
-          <div className="flex space-x-2 text-gray-600">
-            {mode === "condensed" && artist}
-            {mode === "condensed" && artist && album && <div className="text-2xs">-</div>}
-            {mode === "condensed" && album}
-          </div>
+          {mode === "condensed" && (
+            <div className="flex space-x-2 text-gray-600">
+              {artist}
+              {artist && album && <div className="text-2xs">-</div>}
+              {album}
+            </div>
+          )}
         </div>
 
         <ContextMenu
@@ -266,6 +276,7 @@ export const SongTableRow = ({
       <TextCell text={fmtMSS(data.duration / 1000)} className="h-12 truncate" />
       <Cell className="h-12 truncate">
         <LikedIcon liked={data.liked} setLiked={setLiked} />
+        {children}
       </Cell>
     </tr>
   );
@@ -296,7 +307,15 @@ export const SongTable = ({
 }: SongTableProps) => {
   const { setQueue, songIndex, source: playingSongSource, playing: notPaused } = useQueue();
   const rowCount = useMemo(() => docs?.length ?? 0, [docs]);
-  const { start, end, placeholderBottomHeight, placeholderTopHeight, table } = useRecycle({
+  const {
+    start,
+    end,
+    placeholderBottomHeight,
+    placeholderTopHeight,
+    table,
+    handleSentinel,
+    rowsPerBlock,
+  } = useRecycle({
     container,
     rowCount,
     rowHeight: 48,
@@ -315,7 +334,7 @@ export const SongTable = ({
           </tr>
         ));
     }
-    return docs.slice(start, end + 1).map((song, i) => {
+    return docs.slice(start, end).map((song, i) => {
       // Default not playing
       let playing = false;
 
@@ -349,7 +368,9 @@ export const SongTable = ({
           mode={mode}
           playing={playing}
           paused={!notPaused}
-        />
+        >
+          <SentinelBlock index={start + i} ref={handleSentinel} />
+        </SongTableRow>
       );
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
