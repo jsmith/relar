@@ -31,6 +31,7 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(({ visible, close },
       case "album":
       case "artist":
       case "playlist":
+      case "generated":
         return source.sourceHumanName;
       case "library":
         return "Library";

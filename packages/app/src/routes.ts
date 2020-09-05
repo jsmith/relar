@@ -157,8 +157,13 @@ export const routes = {
     containerClassName: "",
     title: "Playlist | RELAR",
   },
-  // gallery: {
-  //   id: 'gallery',
-  //   path: '/gallery/:imageId',
-  // },
+  generated: {
+    id: "generated",
+    path: "/library/generated/:generatedType",
+    protected: true,
+    sidebar: true,
+    className: "",
+    containerClassName: "",
+    title: "Generated | RELAR",
+  },
 } as const;

@@ -1,3 +1,4 @@
+import firebase from "firebase/app";
 import { clientStorage } from "../shared/utils";
 import { createQueryCache } from "../queries/cache";
 import { Song } from "../shared/types";
@@ -5,9 +6,9 @@ import { storage } from "../firebase";
 import { getDownloadURL } from "../storage";
 import { captureAndLogError, captureAndLog } from "../utils";
 import { useUserData } from "../firestore";
-import { useMutation, MutationFunction } from "react-query";
+import { useMutation } from "react-query";
 import { useMemo } from "react";
-import { useFirebaseUpdater, updateCached, updateCachedWithSnapshot } from "../watcher";
+import { updateCachedWithSnapshot, useFirebaseMemo, getCachedOr } from "../watcher";
 
 export const useRecentlyAddedSongs = () => {
   const songs = useSongs();
@@ -16,7 +17,21 @@ export const useRecentlyAddedSongs = () => {
     () =>
       songs.data
         ?.slice(0, 1000)
-        .sort((a, b) => a.data().createdAt.seconds - b.data().createdAt.seconds),
+        .sort((a, b) => b.data().createdAt.seconds - a.data().createdAt.seconds),
+    [songs],
+  );
+};
+
+export const useLikedSongs = () => {
+  const songs = useSongs();
+  return useFirebaseMemo(
+    () =>
+      songs.data
+        ?.filter((song) => getCachedOr(song).liked)
+        .sort(
+          (a, b) =>
+            (getCachedOr(b).whenLiked?.seconds ?? 0) - (getCachedOr(a).whenLiked?.seconds ?? 0),
+        ),
     [songs],
   );
 };
@@ -99,9 +114,10 @@ export const useLikeSong = (song: firebase.firestore.DocumentSnapshot<Song> | un
     await song.ref
       .update({
         liked,
+        whenLiked: firebase.firestore.FieldValue.serverTimestamp(),
       })
       .then(() => song.ref.get())
-      .then((data) => updateCachedWithSnapshot(data))
+      .then(updateCachedWithSnapshot)
       .catch(captureAndLog);
   });
 };

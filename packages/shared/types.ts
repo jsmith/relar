@@ -110,6 +110,9 @@ export const SongType = Record({
    */
   liked: Boolean.Or(Undefined),
 
+  /** When the song was liked. This should be updated every time that it is liked. */
+  whenLiked: Unknown.withGuard((x): x is firebase.firestore.Timestamp => true).Or(Undefined),
+
   /**
    * The # of times you've played this song.
    */
