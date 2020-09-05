@@ -8,7 +8,6 @@ export interface ButtonProps
     HTMLButtonElement
   > {
   label?: string;
-  // TODO remove
   theme?: "purple" | "red" | "none";
   invert?: boolean;
   loading?: boolean;

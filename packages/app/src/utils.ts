@@ -1,4 +1,13 @@
-import { useEffect, useRef, useState, useMemo, useCallback, RefCallback, Ref } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+  RefCallback,
+  Ref,
+  MutableRefObject,
+} from "react";
 import * as Sentry from "@sentry/browser";
 import { QueryResult } from "react-query";
 import tiny from "tinycolor2";
@@ -297,12 +306,17 @@ export function useLocalStorage<T extends string>(key: string, defaultValue?: T)
 export function useOnClickOutside(
   ref: React.MutableRefObject<HTMLElement | null>,
   handler: (event: MouseEvent | TouchEvent) => void,
+  exclude?: MutableRefObject<Element | null>,
 ) {
   useEffect(
     () => {
       const listener = (event: MouseEvent | TouchEvent) => {
         // Do nothing if clicking ref's element or descendent elements
-        if (!ref.current || ref.current.contains(event.target as any)) {
+        if (
+          !ref.current ||
+          ref.current.contains(event.target as any) ||
+          (exclude && exclude.current && exclude.current.contains(event.target as any))
+        ) {
           return;
         }
 
@@ -352,4 +366,41 @@ export const useCombinedRefs = <T extends any>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     refs,
   );
+};
+
+export const shuffleArray = <T>(
+  array: T[],
+): { shuffled: T[]; mappingTo: Record<number, number>; mappingFrom: Record<number, number> } => {
+  let currentIndex = array.length;
+  const shuffled = array.slice(0);
+
+  // Maps from the index in the shuffled array -> index in the original array
+  const mappingFrom: Record<number, number> = {};
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+    // Pick a remaining element...
+    const randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    const temporaryValue = shuffled[currentIndex];
+    shuffled[currentIndex] = shuffled[randomIndex];
+    shuffled[randomIndex] = temporaryValue;
+    const temporaryIndex = mappingFrom[currentIndex] ?? currentIndex;
+    mappingFrom[currentIndex] = mappingFrom[randomIndex] ?? randomIndex;
+    mappingFrom[randomIndex] = temporaryIndex;
+  }
+
+  // Maps from indices in original array -> indices in shuffled array
+  const mappingTo: Record<number, number> = {};
+  Object.keys(mappingFrom).map((key) => {
+    mappingTo[mappingFrom[+key]] = +key;
+  });
+
+  return {
+    shuffled,
+    mappingTo,
+    mappingFrom,
+  };
 };

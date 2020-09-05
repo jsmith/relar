@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo, MutableRefObject } from "react";
 import { FaVolumeMute, FaVolumeDown, FaVolumeUp } from "react-icons/fa";
 import {
   MdQueueMusic,
@@ -21,9 +21,11 @@ import { useQueue, useCurrentTime } from "../queue";
 
 export interface PlayerProps {
   toggleQueue: () => void;
+  // Just to avoid forwardRef
+  refFunc: MutableRefObject<HTMLDivElement | null>;
 }
 
-export const Player = ({ toggleQueue }: PlayerProps) => {
+export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
   const {
     song,
     toggleState,
@@ -35,6 +37,8 @@ export const Player = ({ toggleQueue }: PlayerProps) => {
     previous,
     mode,
     setMode,
+    shuffle,
+    toggleShuffle,
   } = useQueue();
   const [songData] = useFirebaseUpdater(song);
   const [setLiked] = useLikeSong(song);
@@ -44,7 +48,7 @@ export const Player = ({ toggleQueue }: PlayerProps) => {
   const endTimeText = useMemo(() => fmtMSS(duration), [duration]);
 
   return (
-    <div className="h-20 bg-gray-800 flex items-center px-4 z-10">
+    <div className="h-20 bg-gray-800 flex items-center px-4 z-10" ref={refFunc}>
       <div className="flex items-center" style={{ width: "30%" }}>
         {songData && <Thumbnail className="w-12 h-12 flex-shrink-0" snapshot={song} size="64" />}
         {songData && (
@@ -120,7 +124,11 @@ export const Player = ({ toggleQueue }: PlayerProps) => {
           >
             <MdSkipNext className="w-6 h-6" />
           </button>
-          <button title="Shuffle Queue" className="text-gray-300 hover:text-gray-100">
+          <button
+            title="Shuffle Queue"
+            className={shuffle ? "text-purple-400" : "text-gray-300 hover:text-gray-100"}
+            onClick={toggleShuffle}
+          >
             <MdShuffle className="w-6 h-6" />
           </button>
         </div>

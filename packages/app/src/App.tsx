@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useRef } from "react";
 import { routes } from "./routes";
 import { useRouter } from "react-tiniest-router";
 import { useUser } from "./auth";
@@ -89,6 +89,7 @@ export const App = (_: React.Props<{}>) => {
   const [uploadDisplay, setUploadDisplay] = useState(false);
   const [queueDisplay, setQueueDisplay] = useState(false);
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
+  const playerRef = useRef<HTMLDivElement | null>(null);
 
   const route = useMemo(() => Object.values(routes).find((route) => route.id === routeId), [
     routeId,
@@ -211,12 +212,13 @@ export const App = (_: React.Props<{}>) => {
             </div>
 
             <FocusTrap active={queueDisplay} focusTrapOptions={{ clickOutsideDeactivates: true }}>
-              <Queue visible={queueDisplay} close={closeQueue} />
+              {/* By passing in the the player to the exclude prop, clicking on the Player doesn't close the queue. Yay!! */}
+              <Queue visible={queueDisplay} close={closeQueue} exclude={playerRef} />
             </FocusTrap>
           </React.Suspense>
         </Sidebar>
       </div>
-      <Player toggleQueue={() => setQueueDisplay(!queueDisplay)} />
+      <Player toggleQueue={() => setQueueDisplay(!queueDisplay)} refFunc={playerRef} />
     </UploadModal>
   ) : route?.id === "hero" ? (
     <Hero />

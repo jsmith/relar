@@ -317,7 +317,7 @@ export const SongTable = ({
   mode = "regular",
   includeDateAdded,
 }: SongTableProps) => {
-  const { setQueue, songIndex, source: playingSongSource, playing: notPaused } = useQueue();
+  const { setQueue, indices, source: playingSongSource, playing: notPaused } = useQueue();
   const rowCount = useMemo(() => docs?.length ?? 0, [docs]);
   const {
     start,
@@ -331,6 +331,11 @@ export const SongTable = ({
     rowCount,
     rowHeight: 48,
   });
+
+  const songIndex = useMemo(
+    () => (source.type === "queue" ? indices?.queueSongIndex : indices?.songIndex),
+    [indices?.queueSongIndex, indices?.songIndex, source.type],
+  );
 
   const rows = useMemo(() => {
     if (!docs) {
