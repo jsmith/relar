@@ -22,8 +22,8 @@ export interface QueueProps {
 
 export const Queue = forwardRef<HTMLDivElement, QueueProps>(
   ({ visible, close, exclude }, forwarded) => {
-    const { queue, source, clear } = useQueue();
-    const songs = useMemo(() => queue.map(({ song }) => song), [queue]);
+    const { queue, songInfo, clear } = useQueue();
+    const songs = useMemo(() => queue.map(({ song, id }) => ({ song, id })), [queue]);
     const [container, setContainer] = useState<HTMLDivElement | null>(null);
     const ref = useRef<HTMLDivElement | null>(null);
     const combined = useCombinedRefs(ref, forwarded);
@@ -33,16 +33,16 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
     useHotkeys("escape", () => visible && close(), [visible]);
 
     const humanReadableName = useMemo((): string | false => {
-      if (!source?.type) {
+      if (!songInfo?.source.type) {
         return false;
       }
 
-      switch (source.type) {
+      switch (songInfo.source.type) {
         case "album":
         case "artist":
         case "playlist":
         case "generated":
-          return source.sourceHumanName;
+          return songInfo.source.sourceHumanName;
         case "library":
           return "Library";
         case "manuel":
@@ -50,7 +50,7 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
         case "queue":
           return false;
       }
-    }, [source]);
+    }, [songInfo?.source]);
 
     const style: CSSProperties = visible
       ? {

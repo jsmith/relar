@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useThumbnail } from "../queries/thumbnail";
 import { useRouter } from "react-tiniest-router";
 import FastAverageColor from "fast-average-color";
-import { Thumbnail } from "../components/Thumbnail";
 import { ResultAsync } from "neverthrow";
 import { captureException, fmtMSS } from "../utils";
 import tiny from "tinycolor2";

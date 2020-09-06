@@ -8,7 +8,7 @@ import { HiDotsHorizontal, HiPencil, HiTrash } from "react-icons/hi";
 import { ContentEditable } from "../components/ContentEditable";
 import { Skeleton } from "../components/Skeleton";
 import { Collage } from "../components/Collage";
-import { useQueue, SetQueueSource } from "../queue";
+import { useQueue, SetQueueSource, SongInfo, isSongInfo } from "../queue";
 import { Song } from "../shared/types";
 import { useSongsDuration } from "../queries/songs";
 import { QueryStatus } from "react-query";
@@ -25,7 +25,7 @@ export interface SongsOverviewProps {
   /** The title string. Undefined means that it is still loading. */
   title: string | undefined;
   /** The songs. */
-  songs: firebase.firestore.QueryDocumentSnapshot<Song>[];
+  songs: Array<SongInfo | firebase.firestore.QueryDocumentSnapshot<Song>>;
   infoPoints?: string[];
   songActions?: SongTableItem[];
   source: SetQueueSource;
@@ -38,7 +38,7 @@ export const SongsOverview = ({
   onDelete,
   status,
   title,
-  songs,
+  songs: songsMixed,
   infoPoints,
   songActions,
   source,
@@ -48,6 +48,9 @@ export const SongsOverview = ({
   const [averageColor, setAverageColor] = useState("#cbd5e0");
   const { from, to, isLight } = useGradient(averageColor);
   const [editingName, setEditingName] = useState(false);
+  const songs = useMemo(() => songsMixed.map((item) => (isSongInfo(item) ? item.song : item)), [
+    songsMixed,
+  ]);
   const songDuration = useSongsDuration(songs);
 
   const options = useMemo(() => {

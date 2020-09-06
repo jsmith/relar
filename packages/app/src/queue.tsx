@@ -4,11 +4,17 @@ import { Song } from "./shared/types";
 import { tryToGetSongDownloadUrlOrLog } from "./queries/songs";
 import usePortalImport from "react-useportal";
 import { useUser } from "./auth";
-import { useLocalStorage, captureAndLogError, shuffleArray } from "./utils";
+import {
+  useLocalStorage,
+  captureAndLogError,
+  shuffleArray,
+  removeElementFromShuffled,
+} from "./utils";
 import firebase from "firebase/app";
 import { updateCachedWithSnapshot } from "./watcher";
 import { useHotkeys } from "react-hotkeys-hook";
 import { createEmitter } from "./events";
+import * as uuid from "uuid";
 
 const usePortal: typeof usePortalImport = (usePortalImport as any).default;
 
@@ -32,14 +38,28 @@ export const useCurrentTime = () => {
 export interface QueueItem {
   song: SongSnapshot;
   source: SetQueueSource;
+  /** The temporary song ID. */
+  id: string;
 }
+
+export interface SongInfo {
+  song: SongSnapshot;
+  /**
+   * This is a temporary ID for the song.
+   */
+  id: string;
+}
+
+export const isSongInfo = (value: any): value is SongInfo => {
+  return value.id && value.song && value.song.id;
+};
 
 export type SetQueueSource =
   | { type: "album" | "artist" | "playlist" | "generated"; id: string; sourceHumanName: string }
   | { type: "library" | "manuel" | "queue" };
 
 export type SetQueueOptions = {
-  songs: SongSnapshot[];
+  songs: Array<SongInfo | SongSnapshot>;
   index?: number;
   source: SetQueueSource;
 };
@@ -50,19 +70,13 @@ export const QueueContext = createContext<{
   queue: QueueItem[];
   setQueue: (options: SetQueueOptions) => Promise<void>;
   enqueue: (song: SongSnapshot) => void;
+  /**
+   * Dequeue the given index. This will be the queue song index (meaning the index may be the
+   * shuffled index).
+   */
+  dequeue: (index: number) => void;
   /** The current song. */
-  song: SongSnapshot | undefined;
-  indices:
-    | {
-        /** The index of the playing song. */
-        songIndex: number | undefined;
-        /**
-         * The index of the song currently playing in the queue. This might be different than the above
-         * value due to shuffling.
-         */
-        queueSongIndex: number | undefined;
-      }
-    | undefined;
+  songInfo: QueueItem | undefined;
   next: () => void;
   /** Call this when the songs finishes. For internal use only. */
   _nextAutomatic: () => void;
@@ -75,8 +89,6 @@ export const QueueContext = createContext<{
   playing: boolean;
   /** Toggle the playing state. */
   toggleState: () => void;
-  /** Where the currently playing song is from. */
-  source: SetQueueSource | undefined;
   /** The current volume from 0 to 100. Useful for UI purposes. */
   volume: number;
   /** Set the state and change the volume value in the <audio> element. */
@@ -90,8 +102,8 @@ export const QueueContext = createContext<{
   queue: [],
   setQueue: async () => {},
   enqueue: () => {},
-  song: undefined,
-  indices: undefined,
+  dequeue: () => {},
+  songInfo: undefined,
   next: () => {},
   _nextAutomatic: () => {},
   previous: () => {},
@@ -100,7 +112,6 @@ export const QueueContext = createContext<{
   seekTime: () => {},
   playing: false,
   toggleState: () => {},
-  source: undefined,
   volume: 0.8,
   setVolume: () => {},
   clear: () => {},
@@ -127,11 +138,9 @@ export const QueueProvider = (props: React.Props<{}>) => {
     mappings: undefined,
     index: undefined,
   });
-  const [indices, setIndices] = useState<{ songIndex: number; queueSongIndex: number }>();
-  const [song, setSong] = useState<SongSnapshot>(); // currently playing song
+  const [songInfo, setSongInfo] = useState<QueueItem>(); // currently playing song
   const [mode, setMode] = useLocalStorage<QueuePlayMode>("player-mode", "none");
   const { user } = useUser();
-  const [source, setSource] = useState<SetQueueSource>();
   const [playing, setPlaying] = useState<boolean>(false);
   /** The volume from 0 to 100 */
   const [volumeString, setVolumeString] = useLocalStorage("player-volume");
@@ -156,33 +165,17 @@ export const QueueProvider = (props: React.Props<{}>) => {
     [toggleState],
   );
 
-  const enqueue = useCallback((song: SongSnapshot) => {
-    const newQueue: QueueItem[] = [...current.current.queue, { song, source: { type: "manuel" } }];
-    if (current.current.mappings) {
-      current.current.mappings.mappingFrom[newQueue.length - 1] = newQueue.length - 1; // new song maps to itself
-      current.current.mappings.mappingTo[newQueue.length - 1] = newQueue.length - 1; // new song maps to itself
-    }
-    setQueueState(newQueue);
-    current.current.queue = newQueue;
-  }, []);
-
   const stopPlaying = useCallback(() => {
-    setSong(undefined);
-    setSource(undefined);
+    setSongInfo(undefined);
     setCurrentTime(0);
     current.current.index = undefined;
-    setIndices(undefined);
   }, []);
 
-  const setIndex = useCallback(
+  const changeSongIndex = useCallback(
     async (index: number) => {
       if (!user) return;
 
       current.current.index = index;
-      setIndices({
-        songIndex: current.current.mappings ? current.current.mappings.mappingFrom[index] : index,
-        queueSongIndex: index,
-      });
       const item: QueueItem | undefined = current.current.queue[index];
 
       // This is just a sanity check as the logic here is probably flawed somehow
@@ -207,12 +200,90 @@ export const QueueProvider = (props: React.Props<{}>) => {
         .catch(captureAndLogError);
 
       if (ref.current) ref.current.src = downloadUrl;
-      ref.current?.play();
-      setPlaying(true);
-      setSong(song);
-      setSource(source);
+
+      if (ref.current?.paused === false) {
+        ref.current?.play();
+        setPlaying(true);
+      }
+
+      setSongInfo({ song, id: item.id, source });
     },
     [stopPlaying, user],
+  );
+
+  /**
+   * Tries to go to the target index. Force means actually go to the index whereas non force means
+   * repeat if the mode is set to "repeat-one".
+   */
+  const tryToGoTo = useCallback(
+    (index: number, force: boolean) => {
+      if (!force && mode === "repeat-one") {
+        // This condition shouldn't happen
+        if (current.current.index === undefined) return;
+        // If we are just repeating the current song
+        changeSongIndex(current.current.index);
+      } else if (index >= current.current.queue.length) {
+        console.info(`The end of the queue has been reached in mode -> ${mode}`);
+        // If we are at the last song
+        if (mode === "none") stopPlaying();
+        else changeSongIndex(0);
+      } else if (index < 0) {
+        if (mode === "none") stopPlaying();
+        else changeSongIndex(current.current.queue.length - 1);
+      } else {
+        // Else we are somewheres in the middle
+        changeSongIndex(index);
+      }
+    },
+    [mode, changeSongIndex, stopPlaying],
+  );
+
+  const enqueue = useCallback((song: SongSnapshot) => {
+    const newQueue: QueueItem[] = [
+      ...current.current.queue,
+      { song, source: { type: "manuel" }, id: uuid.v4() },
+    ];
+
+    if (current.current.mappings) {
+      current.current.mappings.mappingFrom[newQueue.length - 1] = newQueue.length - 1; // new song maps to itself
+      current.current.mappings.mappingTo[newQueue.length - 1] = newQueue.length - 1; // new song maps to itself
+    }
+    setQueueState(newQueue);
+    current.current.queue = newQueue;
+  }, []);
+
+  const dequeue = useCallback(
+    (index: number) => {
+      if (current.current.mappings) {
+        const { shuffled, mappingFrom, mappingTo } = removeElementFromShuffled(index, {
+          ...current.current.mappings,
+          shuffled: current.current.queue,
+        });
+
+        if (current.current.index !== undefined && current.current.index > index) {
+          const newIndex = current.current.index - 1;
+          current.current.index = newIndex;
+        }
+
+        current.current.mappings = { mappingTo, mappingFrom };
+        current.current.queue = shuffled;
+        setQueueState(shuffled);
+      } else {
+        const queue = current.current.queue;
+        const newQueue = [...queue.slice(0, index), ...queue.slice(index + 1)];
+        current.current.queue = newQueue;
+        setQueueState(newQueue);
+      }
+
+      if (current.current.index === index) {
+        console.info(`The song being removed is the current song. Restarting index (${index})`);
+        tryToGoTo(index, true);
+      } else if (current.current.index !== undefined && current.current.index > index) {
+        const newIndex = current.current.index - 1;
+        current.current.index = newIndex;
+      }
+    },
+    [tryToGoTo],
   );
 
   const shuffleSongs = useCallback(() => {
@@ -226,9 +297,6 @@ export const QueueProvider = (props: React.Props<{}>) => {
     const index = songIndex === undefined ? undefined : mappingTo[songIndex];
     current.current = { queue: shuffled, mappings: { mappingFrom, mappingTo }, index };
     setQueueState(shuffled);
-    setIndices(
-      songIndex === undefined ? undefined : { songIndex, queueSongIndex: mappingTo[songIndex] },
-    );
   }, []);
 
   const setQueue = useCallback(
@@ -236,47 +304,23 @@ export const QueueProvider = (props: React.Props<{}>) => {
       // Only set if the type isn't "queue"
       // If it is "queue", just change the index
       if (source.type !== "queue") {
-        const newQueue: QueueItem[] = songs.map((song) => ({ song, source }));
+        const newQueue: QueueItem[] = songs.map((item) =>
+          isSongInfo(item) ? { ...item, source } : { song: item, source, id: item.id },
+        );
         setQueueState(newQueue);
         current.current = { queue: newQueue, index: undefined, mappings: undefined };
       }
 
-      setIndices(undefined);
-      setIndex(index ?? 0);
+      await changeSongIndex(index ?? 0);
 
       if (source.type !== "queue" && shuffle === "true") {
         shuffleSongs();
       }
-    },
-    [setIndex, shuffle, shuffleSongs],
-  );
 
-  /**
-   * Tries to go to the target index. Force means actually go to the index whereas non force means
-   * repeat if the mode is set to "repeat-one".
-   */
-  const tryToGoTo = useCallback(
-    (index: number, force: boolean) => {
-      if (current.current.index === undefined) {
-        // If this hasn't started yet
-        if (queue.length === 0) return;
-        setIndex(0);
-      } else if (!force && mode === "repeat-one") {
-        // If we are just repeating the current song
-        setIndex(current.current.index);
-      } else if (index >= current.current.queue.length) {
-        // If we are at the last song
-        if (mode === "none") stopPlaying();
-        else setIndex(0);
-      } else if (index < 0) {
-        if (mode === "none") stopPlaying();
-        else setIndex(current.current.queue.length - 1);
-      } else {
-        // Else we are somewheres in the middle
-        setIndex(index);
-      }
+      setPlaying(true);
+      ref.current?.play();
     },
-    [mode, queue.length, setIndex, stopPlaying],
+    [changeSongIndex, shuffle, shuffleSongs],
   );
 
   // The ?? don't actually matter since we check to see if the index is currently defined in "tryToGoTo" function
@@ -339,11 +383,6 @@ export const QueueProvider = (props: React.Props<{}>) => {
         const original = queue.map((_, i) => queue[mappingTo[i]]);
         const originalIndex = index === undefined ? undefined : mappingFrom[index];
         current.current = { queue: original, index: originalIndex, mappings: undefined };
-        setIndices(
-          originalIndex === undefined
-            ? undefined
-            : { songIndex: originalIndex, queueSongIndex: originalIndex },
-        );
         setQueueState(original);
       }
 
@@ -360,13 +399,12 @@ export const QueueProvider = (props: React.Props<{}>) => {
         enqueue,
         setQueue,
         queue,
-        song,
+        songInfo,
         mode,
         setMode,
         next,
         previous,
         seekTime,
-        source,
         playing,
         toggleState,
         volume,
@@ -374,9 +412,9 @@ export const QueueProvider = (props: React.Props<{}>) => {
         _setRef,
         _nextAutomatic,
         clear,
-        indices,
         shuffle: shuffle === "true",
         toggleShuffle,
+        dequeue,
       }}
     >
       {props.children}

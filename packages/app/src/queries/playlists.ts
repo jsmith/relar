@@ -8,6 +8,7 @@ import firebase from "firebase/app";
 import { updateCached, getCachedOr, useFirebaseUpdater } from "../watcher";
 import { useMemo } from "react";
 import { useSongs, useSongLookup } from "./songs";
+import { SongInfo } from "../queue";
 
 const { useQuery: usePlaylistsQuery, queryCache } = createQueryCache<
   ["playlists", { uid: string }],
@@ -93,7 +94,8 @@ export const usePlaylistAdd = () => {
           return;
         }
 
-        const songs = data.songs ? [...data.songs, songId] : [songId];
+        const newItem = { songId, id: uuid.v4() };
+        const songs: Playlist["songs"] = data.songs ? [...data.songs, newItem] : [newItem];
         await transaction.update(playlist, {
           songs,
         });
@@ -135,18 +137,15 @@ export const usePlaylist = (playlistId: string | undefined) => {
   };
 };
 
-export const usePlaylistSongs = (
-  playlist: Playlist | undefined,
-): Array<firebase.firestore.QueryDocumentSnapshot<Song>> => {
-  const songs = useSongs();
+export const usePlaylistSongs = (playlist: Playlist | undefined): SongInfo[] => {
   const lookup = useSongLookup();
 
   return useMemo(() => {
     return (
       playlist?.songs
-        ?.map((songId) => lookup[songId])
+        ?.map(({ songId, id }) => ({ id, song: lookup[songId] }))
         // Since lookup could be empty if the songs haven't loaded yet
-        .filter((song) => !!song) ?? []
+        .filter(({ song }) => !!song) ?? []
     );
   }, [playlist?.songs, lookup]);
 };
@@ -154,7 +153,10 @@ export const usePlaylistSongs = (
 export const usePlaylistRemoveSong = (playlistId: string | undefined) => {
   const userData = useUserData();
   return useMutation(
-    async (songIdToRemove: string) => {
+    /**
+     * @param targetId The ID of the playlist element. This is *not* the ID of the song.
+     */
+    async (targetId: string) => {
       return firestore.runTransaction(async (transaction) => {
         if (playlistId === undefined) {
           return;
@@ -165,15 +167,15 @@ export const usePlaylistRemoveSong = (playlistId: string | undefined) => {
         const data = playlist.data();
         if (!data || !data.songs) return;
 
-        // FIXME use index rather than playlist ID as a song may appear twice
-        const indexToDelete = data.songs.findIndex((songId) => songId === songIdToRemove);
+        const indexToDelete = data.songs.findIndex(({ id }) => targetId === id);
         if (indexToDelete === undefined) return;
 
-        const songs = data.songs.splice(indexToDelete);
+        // This is in place
+        data.songs.splice(indexToDelete);
 
         transaction.update(ref, {
           // Note that there is no TypeScript support here
-          songs,
+          songs: data.songs,
         });
 
         return data.songs;

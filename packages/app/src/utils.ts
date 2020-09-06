@@ -368,22 +368,21 @@ export const useCombinedRefs = <T extends any>(
   );
 };
 
-/**
- *
- * @param array The array to shuffle.
- * @param first The index of the element to put in position 0.
- */
-export const shuffleArray = <T>(
-  array: T[],
-  first?: number,
-): {
+export interface ShuffleResult<T> {
   /** The shuffled array. */
   shuffled: T[];
   /** Mapping from original indices -> shuffled indices */
   mappingTo: Record<number, number>;
   /** Mapping from shuffled indices -> original indices */
   mappingFrom: Record<number, number>;
-} => {
+}
+
+/**
+ *
+ * @param array The array to shuffle.
+ * @param first The index of the element to put in position 0.
+ */
+export const shuffleArray = <T>(array: T[], first?: number): ShuffleResult<T> => {
   let currentIndex = array.length;
   const shuffled = array.slice(0);
 
@@ -410,10 +409,7 @@ export const shuffleArray = <T>(
   }
 
   // Maps from indices in original array -> indices in shuffled array
-  const mappingTo: Record<number, number> = {};
-  Object.keys(mappingFrom).map((key) => {
-    mappingTo[mappingFrom[+key]] = +key;
-  });
+  const mappingTo = reverseMapping(mappingFrom);
 
   if (first !== undefined) {
     // Imaging first index 87 is placed in 77
@@ -434,5 +430,40 @@ export const shuffleArray = <T>(
     shuffled,
     mappingTo,
     mappingFrom,
+  };
+};
+
+export const numberKeys = (record: Record<number, any>): number[] => {
+  return Object.keys(record).map((key) => +key);
+};
+
+export const reverseMapping = (mapping: Record<number, number>): Record<number, number> => {
+  const reverse: Record<number, number> = {};
+  numberKeys(mapping).map((key) => {
+    reverse[mapping[key]] = key;
+  });
+
+  return reverse;
+};
+
+export const removeElementFromShuffled = <T>(
+  index: number,
+  { mappingTo, mappingFrom, shuffled }: ShuffleResult<T>,
+): ShuffleResult<T> => {
+  const original = mappingFrom[index];
+  const newShuffled = [...shuffled.slice(0, index), ...shuffled.slice(index + 1)];
+
+  const newMappingTo: Record<number, number> = {};
+  for (let i = 0; i < shuffled.length; i++) {
+    if (i === original) continue;
+    const toIndex = i > original ? i - 1 : i;
+    const fromIndex = mappingTo[i] > index ? mappingTo[i] - 1 : mappingTo[i];
+    newMappingTo[toIndex] = fromIndex;
+  }
+
+  return {
+    shuffled: newShuffled,
+    mappingFrom: reverseMapping(newMappingTo),
+    mappingTo: newMappingTo,
   };
 };
