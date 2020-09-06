@@ -5,7 +5,6 @@ export interface PortalProps extends React.HTMLAttributes<HTMLDivElement> {
   onOutClick: () => void;
 }
 
-// TODO delete this I think???
 /**
  * Creates a portal to the root of the document.
  */

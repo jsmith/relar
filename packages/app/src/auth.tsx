@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState, useContext, useCallback } from "react";
+import React, { createContext, useEffect, useState, useContext, useCallback, useRef } from "react";
 import { auth } from "./firebase";
 import { Result, err, ok } from "neverthrow";
 import { captureAndLog } from "./utils";
@@ -33,6 +33,17 @@ export const UserProvider = (props: React.Props<{}>) => {
 
 export const useUser = () => {
   return useContext(UserContext);
+};
+
+export const useUserChange = (cb: (user: firebase.User | undefined) => void) => {
+  const { user } = useUser();
+  const previous = useRef<string>();
+
+  useEffect(() => {
+    if (previous.current === user?.uid) return;
+    previous.current = user?.uid;
+    cb(user);
+  }, [cb, user]);
 };
 
 export const useDefinedUser = () => {

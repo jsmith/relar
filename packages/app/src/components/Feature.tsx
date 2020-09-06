@@ -6,11 +6,13 @@ export const Feature = ({
   text,
   last,
   reverse,
+  icon: Icon,
 }: {
   title: string;
   text: string;
   last?: boolean;
   reverse?: boolean;
+  icon: (props: React.SVGAttributes<SVGElement>) => JSX.Element;
 }) => {
   return (
     <div
@@ -26,18 +28,7 @@ export const Feature = ({
           reverse ? "sm:ml-10" : "sm:mr-10",
         )}
       >
-        {/* TODO ICONS */}
-        <svg
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          className="sm:w-16 sm:h-16 w-10 h-10"
-          viewBox="0 0 24 24"
-        >
-          <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
-        </svg>
+        <Icon className="sm:w-16 sm:h-16 w-10 h-10" />
       </div>
       <div className="flex-grow sm:text-left text-center mt-6 sm:mt-0">
         <h2 className="text-gray-800 text-lg title-font font-medium mb-2">{title}</h2>

@@ -20,6 +20,7 @@ export const deleteAllUserData = async (
   await deleteCollection(adminDb(db, userId).songs());
   await deleteCollection(adminDb(db, userId).artists());
   await deleteCollection(adminDb(db, userId).albums());
+  await deleteCollection(adminDb(db, userId).playlists());
 
   if (!storage) {
     return;

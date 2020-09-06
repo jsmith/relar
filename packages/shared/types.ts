@@ -181,7 +181,17 @@ export const PlaylistType = Record({
   name: String,
 
   /** The songs IDs. */
-  songs: Array(String).Or(Undefined),
+  songs: Array(
+    Record({
+      /** The ID of the song. */
+      songId: String,
+      /**
+       * The ID of this element in the array. This is extremely useful as the songId property does
+       * not need to be unique.
+       */
+      id: String,
+    }),
+  ).Or(Undefined),
 
   /** When the playlist was created. */
   createdAt: Unknown.withGuard((x): x is firebase.firestore.Timestamp => true),
@@ -241,7 +251,7 @@ export type MetadataAPI = {
           albumName: string;
           genre: string;
           year: string;
-          // TODO
+          // FIXME
           // track?: number;
           // totalTracks?: number;
           // disc?: number;

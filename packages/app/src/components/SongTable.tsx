@@ -8,6 +8,8 @@ import {
   MdEdit,
   MdDelete,
   MdPlaylistAdd,
+  MdRemoveFromQueue,
+  MdAddToQueue,
 } from "react-icons/md";
 import { MetadataEditor } from "./MetadataEditor";
 import { useModal } from "react-modal-hook";
@@ -16,7 +18,7 @@ import { IconButton } from "./IconButton";
 import useDropdownMenuImport from "react-accessible-dropdown-menu-hook";
 import { ContextMenu, ContextMenuItem } from "./ContextMenu";
 import { useConfirmAction } from "../confirm-actions";
-import { useLikeSong } from "../queries/songs";
+import { useLikeSong, useDeleteSong } from "../queries/songs";
 import { useFirebaseUpdater } from "../watcher";
 import { fmtMSS } from "../utils";
 import { Link } from "./Link";
@@ -24,9 +26,10 @@ import { routes } from "../routes";
 import { link } from "../classes";
 import { AddToPlaylistEditor } from "../sections/AddToPlaylistModal";
 import { Skeleton } from "./Skeleton";
-import { useQueue, SetQueueSource } from "../queue";
+import { useQueue, SetQueueSource, SongInfo, isSongInfo } from "../queue";
 import { useRecycle, SentinelBlock } from "../recycle";
 import { Audio } from "@jsmith21/svg-loaders-react";
+import { act } from "react-test-renderer";
 
 // I really wish I didn't have to do this but for some reason this is the only thing that works
 // Before I was getting an issue in production
@@ -106,7 +109,7 @@ export const TextCell = ({
 };
 
 export interface SongTableItem extends Omit<ContextMenuItem, "onClick" | "props"> {
-  onClick: (song: firebase.firestore.QueryDocumentSnapshot<Song>) => void;
+  onClick: (song: firebase.firestore.QueryDocumentSnapshot<Song>, index: number) => void;
 }
 
 export interface SongTableRowProps {
@@ -121,6 +124,7 @@ export interface SongTableRowProps {
   paused: boolean;
   children?: React.ReactNode;
   includeDateAdded?: boolean;
+  index: number;
 }
 
 export const SongTableRow = ({
@@ -132,6 +136,7 @@ export const SongTableRow = ({
   paused,
   children,
   includeDateAdded,
+  index,
 }: SongTableRowProps) => {
   const [focusedPlay, setFocusedPlay] = useState(false);
   const [showEditorModal, hideEditorModal] = useModal(() => (
@@ -143,13 +148,14 @@ export const SongTableRow = ({
   const { confirmAction } = useConfirmAction();
   const [setLiked] = useLikeSong(song);
   const [data] = useFirebaseUpdater(song);
+  const [deleteSong] = useDeleteSong();
 
   const contextMenuItems = useMemo(() => {
     const extraItems: ContextMenuItem[] =
       actions?.map((action, i) => ({
         ...action,
         onClick: () => {
-          action.onClick(song);
+          action.onClick(song, index);
         },
       })) ?? [];
 
@@ -179,13 +185,22 @@ export const SongTableRow = ({
           });
 
           if (confirmed) {
-            await song.ref.delete();
+            deleteSong(song.id);
           }
         },
       },
       ...extraItems,
     ];
-  }, [actions, confirmAction, data.title, showAddPlaylistModal, showEditorModal, song]);
+  }, [
+    actions,
+    confirmAction,
+    data.title,
+    deleteSong,
+    index,
+    showAddPlaylistModal,
+    showEditorModal,
+    song,
+  ]);
 
   const artist = data.artist && (
     <Link
@@ -295,7 +310,7 @@ export interface SongTableProps {
   /**
    * The songs. Passing in `undefined` indicates that the songs are still loading.
    */
-  songs?: Array<firebase.firestore.QueryDocumentSnapshot<Song>>;
+  songs?: Array<firebase.firestore.QueryDocumentSnapshot<Song> | SongInfo>;
   loadingRows?: number;
   container: HTMLElement | null;
   actions?: SongTableItem[];
@@ -309,7 +324,7 @@ export interface SongTableProps {
 }
 
 export const SongTable = ({
-  songs: docs,
+  songs: songsMixed,
   loadingRows = 5,
   container,
   actions,
@@ -317,8 +332,12 @@ export const SongTable = ({
   mode = "regular",
   includeDateAdded,
 }: SongTableProps) => {
-  const { setQueue, songIndex, source: playingSongSource, playing: notPaused } = useQueue();
-  const rowCount = useMemo(() => docs?.length ?? 0, [docs]);
+  const songs = useMemo(
+    () => songsMixed?.map((song) => (isSongInfo(song) ? song : { song, id: song.id })),
+    [songsMixed],
+  );
+  const { setQueue, playing: notPaused, dequeue, enqueue, songInfo } = useQueue();
+  const rowCount = useMemo(() => songs?.length ?? 0, [songs]);
   const {
     start,
     end,
@@ -332,8 +351,27 @@ export const SongTable = ({
     rowHeight: 48,
   });
 
+  const actionsWithAddRemove = useMemo(() => {
+    const actionsWithAddRemove = actions ? [...actions] : [];
+    if (source.type === "queue") {
+      actionsWithAddRemove.push({
+        icon: MdRemoveFromQueue,
+        label: "Remove From Queue",
+        onClick: (_, index) => dequeue(index),
+      });
+    } else {
+      actionsWithAddRemove.push({
+        icon: MdAddToQueue,
+        label: "Add To Queue",
+        onClick: enqueue,
+      });
+    }
+
+    return actionsWithAddRemove;
+  }, [actions, dequeue, enqueue, source.type]);
+
   const rows = useMemo(() => {
-    if (!docs) {
+    if (!songs) {
       return Array(loadingRows)
         .fill(undefined)
         .map((_, i) => (
@@ -344,38 +382,43 @@ export const SongTable = ({
           </tr>
         ));
     }
-    return docs.slice(start, end).map((song, i) => {
+    return songs.slice(start, end).map(({ song, id }, i) => {
       // Default not playing
       let playing = false;
 
-      // But if they do have the same index...
-      if (start + i === songIndex) {
-        // Check the source!
+      // But if they do have the same ID...
+      if (id === songInfo?.id) {
+        // Check the source since these IDs are only unique within a source!!
         switch (source.type) {
           case "album":
           case "artist":
           case "generated":
           case "playlist":
-            playing = source.type === playingSongSource?.type && source.id === playingSongSource.id;
+            playing = source.type === songInfo.source.type && source.id === songInfo.source.id;
             break;
           case "queue":
             playing = true;
             break;
           case "library":
-            playing = playingSongSource?.type === source.type;
+            playing = songInfo.source.type === source.type;
             break;
           case "manuel":
+            throw Error("????????");
           // It should never reach this point...
         }
+        console.log(
+          `Source -> ${source.type} vs. ${songInfo.source.type} ({ start: ${start}, end: ${end}})`,
+        );
       }
 
       // The key is the index rather than the song ID as the song could > 1
       return (
         <SongTableRow
           song={song}
-          setSong={() => setQueue({ songs: docs, source, index: start + i })}
+          index={start + i}
+          setSong={() => setQueue({ songs: songs, source, index: start + i })}
           key={`${song.id}///${start + i}`}
-          actions={actions}
+          actions={actionsWithAddRemove}
           mode={mode}
           playing={playing}
           paused={!notPaused}
@@ -386,7 +429,22 @@ export const SongTable = ({
       );
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingRows, docs, start, end, playingSongSource, notPaused, songIndex]);
+  }, [
+    songs,
+    start,
+    end,
+    loadingRows,
+    songInfo?.id,
+    songInfo?.source,
+    actionsWithAddRemove,
+    mode,
+    notPaused,
+    includeDateAdded,
+    handleSentinel,
+    // We are ignoring source since they are created each time
+    // source,
+    setQueue,
+  ]);
 
   return (
     <table className="text-gray-800 table-fixed w-full" ref={table}>

@@ -1,9 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { createEmitter } from "./events";
 
-// TODO clear on logout????
-const cache: { [path: string]: unknown } = {};
+let cache: { [path: string]: unknown } = {};
 const watchers = createEmitter<Record<string, [unknown]>>();
+
+/**
+ * Run this when the user changes so nothing weird happens.
+ */
+export const clearCache = () => {
+  cache = {};
+};
 
 export function maybeGetCachedOr<T>(snap: firebase.firestore.DocumentSnapshot<T>): T | undefined {
   return (cache[snap.ref.path] as T | undefined) ?? snap.data();
