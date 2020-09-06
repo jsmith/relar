@@ -145,6 +145,7 @@ export const usePlaylistSongs = (playlist: Playlist | undefined): SongInfo[] => 
       playlist?.songs
         ?.map(({ songId, id }) => ({ id, song: lookup[songId] }))
         // Since lookup could be empty if the songs haven't loaded yet
+        // Or for a variety of reasons
         .filter(({ song }) => !!song) ?? []
     );
   }, [playlist?.songs, lookup]);
@@ -214,14 +215,13 @@ export const usePlaylistRename = (playlistId: string | undefined) => {
 export const usePlaylistDelete = (playlistId: string | undefined) => {
   const userData = useUserData();
   return useMutation(
-    async (name: string) => {
+    async () => {
       if (playlistId === undefined) return;
       await userData.playlist(playlistId).delete();
     },
     {
-      onSuccess: (_, name) => {
+      onSuccess: () => {
         if (!playlistId) return;
-        // TODO also add confirmation when deleting
         const cache = queryCache.getQueryData(["playlists", { uid: userData.userId }]);
         if (!cache) return;
         const index = cache.findIndex((playlist) => playlist.id === playlistId);

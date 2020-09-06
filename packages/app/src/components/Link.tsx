@@ -8,15 +8,11 @@ export interface LinkProps {
   className?: string;
   route: RouteType;
   label?: React.ReactNode;
-  disableStyle?: boolean; // TODO remove
   queryParams?: Record<string, string | number>;
   params?: RouterStateType["queryParams"];
 }
 
-// TODO only outline on tab
-// https://stackoverflow.com/questions/31402576/enable-focus-only-on-keyboard-use-or-tab-press
-
-export const Link = ({ route, label, className, disableStyle, params, queryParams }: LinkProps) => {
+export const Link = ({ route, label, className, params, queryParams }: LinkProps) => {
   const { goTo } = useRouter();
 
   const href = useMemo(() => {
@@ -40,7 +36,7 @@ export const Link = ({ route, label, className, disableStyle, params, queryParam
   return (
     <a
       href={href}
-      className={className ?? link()}
+      className={classNames(className ?? link())}
       onClick={(e) => {
         if (!e.ctrlKey && !e.metaKey) {
           e.preventDefault();

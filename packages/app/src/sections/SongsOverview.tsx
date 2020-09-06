@@ -26,7 +26,7 @@ export interface SongsOverviewProps {
   title: string | undefined;
   /** The songs. */
   songs: Array<SongInfo | firebase.firestore.QueryDocumentSnapshot<Song>>;
-  infoPoints?: string[];
+  infoPoints?: Array<string | undefined>;
   songActions?: SongTableItem[];
   source: SetQueueSource;
   includeDateAdded?: boolean;
@@ -77,7 +77,7 @@ export const SongsOverview = ({
 
   const infoPointsString = useMemo(() => {
     return [
-      ...(infoPoints ?? []),
+      ...(infoPoints?.filter((value) => !!value) ?? []),
       `${songs.length} ${pluralSongs(songs.length)}`,
       fmtMSS(songDuration / 1000),
     ].join(" • ");
@@ -92,7 +92,12 @@ export const SongsOverview = ({
           backgroundImage: `linear-gradient(to bottom, ${from}, ${to})`,
         }}
       >
-        <Collage size="256" snapshots={songs} className="w-64 h-64" />
+        <Collage
+          size="256"
+          snapshots={songs}
+          className="w-64 h-64"
+          setAverageColor={setAverageColor}
+        />
         {status === "error" ? (
           <ErrorTemplate />
         ) : (

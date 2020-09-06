@@ -22,8 +22,7 @@ export const Sidebar = (
     return () => mql.removeListener(mediaQueryChanged);
   }, []);
 
-  // TODO slide menu https://github.com/negomi/react-burger-menu
-
+  // FIXME slide menu https://github.com/negomi/react-burger-menu
   return (
     <div className={classNames("flex", props.className)}>
       <div>{props.sidebar}</div>

@@ -18,7 +18,7 @@ import { IconButton } from "./IconButton";
 import useDropdownMenuImport from "react-accessible-dropdown-menu-hook";
 import { ContextMenu, ContextMenuItem } from "./ContextMenu";
 import { useConfirmAction } from "../confirm-actions";
-import { useLikeSong } from "../queries/songs";
+import { useLikeSong, useDeleteSong } from "../queries/songs";
 import { useFirebaseUpdater } from "../watcher";
 import { fmtMSS } from "../utils";
 import { Link } from "./Link";
@@ -148,6 +148,7 @@ export const SongTableRow = ({
   const { confirmAction } = useConfirmAction();
   const [setLiked] = useLikeSong(song);
   const [data] = useFirebaseUpdater(song);
+  const [deleteSong] = useDeleteSong();
 
   const contextMenuItems = useMemo(() => {
     const extraItems: ContextMenuItem[] =
@@ -184,13 +185,22 @@ export const SongTableRow = ({
           });
 
           if (confirmed) {
-            await song.ref.delete();
+            deleteSong(song.id);
           }
         },
       },
       ...extraItems,
     ];
-  }, [actions, confirmAction, data.title, index, showAddPlaylistModal, showEditorModal, song]);
+  }, [
+    actions,
+    confirmAction,
+    data.title,
+    deleteSong,
+    index,
+    showAddPlaylistModal,
+    showEditorModal,
+    song,
+  ]);
 
   const artist = data.artist && (
     <Link

@@ -37,14 +37,20 @@ export const AccountDropdown = ({
   return (
     <div className={classNames("relative", className)}>
       {/* <label {...getLabelProps()}>Choose an element:</label> */}
-      <button {...getToggleButtonProps()} className="flex items-center text-xs space-x-2">
+      <button
+        {...getToggleButtonProps()}
+        className="flex items-center text-xs space-x-2 focus:outline-none border border-transparent focus:border-gray-300 rounded p-1"
+      >
         <AiOutlineUser className="w-6 h-6 text-purple-500" />
         <span className="hidden sm:block">{email}</span>
         <FaCaretDown className="w-2" />
       </button>
       <ul
         {...getMenuProps()}
-        className="absolute right-0 min-w-full bg-gray-800 rounded text-gray-300 divide-gray-400 divide-y mt-1"
+        className={classNames(
+          "absolute right-0 min-w-full bg-gray-800 rounded text-gray-300 divide-gray-400 divide-y mt-1",
+          "focus:outline-none border border-transparent focus:border-gray-200",
+        )}
       >
         {isOpen &&
           ITEMS.map((item, index) => (

@@ -44,9 +44,11 @@ export const useDeleteSong = () => {
       await userData.song(songId).delete();
     },
     {
-      onSuccess: () => {
-        // TODO delete
-        // songsQueryCache.
+      onSuccess: (_, songId) => {
+        let data = songsQueryCache.getQueryData(["songs", { uid: userData.userId }]);
+        if (!data) return;
+        data = data.filter((song) => song.id !== songId);
+        songsQueryCache.setQueryData(["songs", { uid: userData.userId }], data);
       },
     },
   );

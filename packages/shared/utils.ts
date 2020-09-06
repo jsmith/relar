@@ -44,10 +44,6 @@ export const clientDb = (db: firebase.firestore.Firestore, userId: string) => {
       db.collection(`user_data/${userId}/playlists`) as CollectionReference<Playlist>,
     playlist: (id: string) =>
       db.doc(`user_data/${userId}/playlists/${id}`) as DocumentReference<Playlist>,
-    playlistByName: (name: string) =>
-      db
-        .collection(`user_data/${userId}/playlists`)
-        .where("name", "==", name) as firebase.firestore.Query<Playlist>,
   };
 };
 

@@ -14,9 +14,6 @@ export interface ButtonProps
   height?: string;
 }
 
-// TODO only outline on tab
-// https://stackoverflow.com/questions/31402576/enable-focus-only-on-keyboard-use-or-tab-press
-
 const classes = {
   purple: {
     default:
@@ -50,23 +47,14 @@ export const Button = ({
     <button
       {...props}
       className={classNames(
-        "flex justify-center items-center px-4 border uppercase font-medium rounded-md",
+        "flex justify-center items-center px-4 border uppercase font-medium rounded-md focus:outline-none",
         className,
         "transition duration-150 ease-in-out",
         props.className,
         height,
       )}
     >
-      {loading ? (
-        // This positioning is kinda a hack but it works for now
-        // <Circle className="text-white transform -translate-y-6 -mt-1 h-2" color="currentColor" />
-        // <Circle color="currentColor" className="text-red-100" />
-        // <div className="loader"></div>
-        <ThreeDots fill="currentColor" className="w-16 h-4" />
-      ) : (
-        // <div></div> // TODO
-        props.label
-      )}
+      {loading ? <ThreeDots fill="currentColor" className="w-16 h-4" /> : props.label}
     </button>
   );
 };
