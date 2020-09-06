@@ -20,8 +20,6 @@ export const Login = () => {
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
 
-  // TODO react hook keyboard shortcut
-
   useEffect(() => {
     if (user) {
       goTo(routes.songs);

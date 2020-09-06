@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import * as path from "path";
 import { createPath, createAlbumId, AlbumId } from "./utils";
-import { Album, UserData, Artist, Song, BetaSignup } from "./types";
+import { Album, UserData, Artist, Song, BetaSignup, Playlist } from "./types";
 
 export const adminStorage = (storage: admin.storage.Storage, userId: string) => {
   const p = createPath().append(userId);
@@ -68,6 +68,10 @@ export const adminDb = (db: FirebaseFirestore.Firestore, userId: string) => {
       const value: Song["artist"] = name;
       return adminDb(db, userId).songs().where(key, "==", value);
     },
+    playlists: () =>
+      db.collection(`user_data/${userId}/playlists`) as CollectionReference<Playlist>,
+    playlist: (id: string) =>
+      db.doc(`user_data/${userId}/playlists/${id}`) as DocumentReference<Playlist>,
   };
 };
 

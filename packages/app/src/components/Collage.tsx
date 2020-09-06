@@ -10,9 +10,10 @@ export interface CollageProps {
     firebase.firestore.DocumentSnapshot<{ id: string; artwork: Artwork | undefined }>
   >;
   className?: string;
+  setAverageColor?: (color: string) => void;
 }
 
-export const Collage = ({ size, snapshots, className }: CollageProps) => {
+export const Collage = ({ setAverageColor, size, snapshots, className }: CollageProps) => {
   // Remove any snapshots that don't have artwork, limit to 4 pieces of art, and only show unique
   const filtered = useMemo(() => {
     const defined = snapshots.filter((snapshot) => snapshot.data()?.artwork);
@@ -40,7 +41,14 @@ export const Collage = ({ size, snapshots, className }: CollageProps) => {
 
   // If 1 or 0 snapshots have artwork, show a regular thumbnail
   if (filtered.length <= 1) {
-    return <Thumbnail className={className} snapshot={filtered[0]} size={size} />;
+    return (
+      <Thumbnail
+        className={className}
+        snapshot={filtered[0]}
+        size={size}
+        setAverageColor={setAverageColor}
+      />
+    );
   }
 
   // else show a collage of 4 photos
@@ -51,24 +59,28 @@ export const Collage = ({ size, snapshots, className }: CollageProps) => {
         style={{ width: "50%", height: "50%" }}
         snapshot={filtered[0]}
         size={individualImageSize}
+        setAverageColor={setAverageColor}
       />
       <Thumbnail
         className="absolute right-0 top-0"
         style={{ width: "50%", height: "50%" }}
         snapshot={filtered[1]}
         size={individualImageSize}
+        setAverageColor={setAverageColor}
       />
       <Thumbnail
         className="absolute left-0 bottom-0"
         style={{ width: "50%", height: "50%" }}
         snapshot={filtered[2]}
         size={individualImageSize}
+        setAverageColor={setAverageColor}
       />
       <Thumbnail
         className="absolute right-0 bottom-0"
         style={{ width: "50%", height: "50%" }}
         snapshot={filtered[3]}
         size={individualImageSize}
+        setAverageColor={setAverageColor}
       />
     </div>
   );

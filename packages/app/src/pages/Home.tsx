@@ -31,7 +31,7 @@ export const Home = () => {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 px-5">
       <HomeTopic
         title="Recently Added"
         subTitle="Your recently uploaded songs will appear here."

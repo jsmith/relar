@@ -30,7 +30,14 @@ export const Slider = ({ value, maxValue, className, onChange, disabled, title }
     <div ref={ref} className={classNames("flex items-center justify-center group", className)}>
       <div className="py-1 relative min-w-full">
         <div className="h-1 bg-gray-500 rounded-full">
-          <div className="absolute h-1 rounded-full bg-gray-200 w-0" style={{ width: left }}></div>
+          {/* This wrapper element and the relative className are important for overflow-hidden to actually work */}
+          <div className="w-full h-full rounded-full relative overflow-hidden">
+            <div
+              className="absolute h-1 rounded-full bg-gray-200 w-0"
+              style={{ width: left }}
+            ></div>
+          </div>
+
           {!disabled && (
             <div
               title={title}

@@ -2,6 +2,7 @@ import { deleteAllUserData, adminDb } from "./utils";
 import { testFunctions } from "./configure-tests";
 import {
   createAndUploadTestSong,
+  createAndUploadPlaylist,
   songTwo,
   songTwoAlbum,
   songTwoArtist,
@@ -21,9 +22,10 @@ test.before.each(async () => {
   await deleteAllUserData(firestore, undefined, "testUser");
 });
 
-test("deletes album and artist and decrements song count", async () => {
+test("deletes album & artist, decrements song count, and deletes playlist items", async () => {
   const wrapped = testFunctions.wrap(onDeleteSong);
   const ref = await createAndUploadTestSong("test", songTwo);
+  const playlist = await createAndUploadPlaylist("playlist name", [ref]);
   await db.doc().set({ songCount: 1 });
   await db.album(songTwo.albumId).create(songTwoAlbum);
   await db.artist(songTwo.artist).create(songTwoArtist);
@@ -31,6 +33,13 @@ test("deletes album and artist and decrements song count", async () => {
   await assertDoesNotExists(db.album(songTwo.albumId));
   await assertDoesNotExists(db.artist(songTwo.artist));
   await assert.equal((await db.doc().get()).data(), { songCount: 0 });
+  const data = await playlist.get().then((snap) => snap.data());
+  await assert.equal(data, {
+    name: "playlist name",
+    songs: [],
+    id: playlist.id,
+    createdAt: data.createdAt,
+  });
 });
 
 test.run();

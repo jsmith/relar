@@ -1,4 +1,13 @@
-import { useEffect, useRef, useState, useMemo, useCallback, RefCallback, Ref } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+  RefCallback,
+  Ref,
+  MutableRefObject,
+} from "react";
 import * as Sentry from "@sentry/browser";
 import { QueryResult } from "react-query";
 import tiny from "tinycolor2";
@@ -297,12 +306,17 @@ export function useLocalStorage<T extends string>(key: string, defaultValue?: T)
 export function useOnClickOutside(
   ref: React.MutableRefObject<HTMLElement | null>,
   handler: (event: MouseEvent | TouchEvent) => void,
+  exclude?: MutableRefObject<Element | null>,
 ) {
   useEffect(
     () => {
       const listener = (event: MouseEvent | TouchEvent) => {
         // Do nothing if clicking ref's element or descendent elements
-        if (!ref.current || ref.current.contains(event.target as any)) {
+        if (
+          !ref.current ||
+          ref.current.contains(event.target as any) ||
+          (exclude && exclude.current && exclude.current.contains(event.target as any))
+        ) {
           return;
         }
 
@@ -323,7 +337,7 @@ export function useOnClickOutside(
     // ... callback/cleanup to run every render. It's not a big deal ...
     // ... but to optimize you can wrap handler in useCallback before ...
     // ... passing it into this hook.
-    [ref, handler],
+    [ref, handler, exclude],
   );
 }
 
@@ -352,4 +366,104 @@ export const useCombinedRefs = <T extends any>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     refs,
   );
+};
+
+export interface ShuffleResult<T> {
+  /** The shuffled array. */
+  shuffled: T[];
+  /** Mapping from original indices -> shuffled indices */
+  mappingTo: Record<number, number>;
+  /** Mapping from shuffled indices -> original indices */
+  mappingFrom: Record<number, number>;
+}
+
+/**
+ *
+ * @param array The array to shuffle.
+ * @param first The index of the element to put in position 0.
+ */
+export const shuffleArray = <T>(array: T[], first?: number): ShuffleResult<T> => {
+  let currentIndex = array.length;
+  const shuffled = array.slice(0);
+
+  // Maps from the index in the shuffled array -> index in the original array
+  const mappingFrom: Record<number, number> = {};
+
+  const swap = (a: number, b: number) => {
+    const temporaryValue = shuffled[a];
+    shuffled[a] = shuffled[b];
+    shuffled[b] = temporaryValue;
+    const temporaryIndex = mappingFrom[a] ?? a;
+    mappingFrom[a] = mappingFrom[b] ?? b;
+    mappingFrom[b] = temporaryIndex;
+  };
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+    // Pick a remaining element...
+    const randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    swap(currentIndex, randomIndex);
+  }
+
+  // Maps from indices in original array -> indices in shuffled array
+  const mappingTo = reverseMapping(mappingFrom);
+
+  if (first !== undefined) {
+    // Imaging first index 87 is placed in 77
+    // And then imagine there is another index X placed in 0
+    // The mappings look like this:
+    // 87 -> 77
+    // x -> 0
+    // I grab x first before things are swapped
+    // Then I swap 77 and 0
+    // Then I swap mappingTo values
+    const x = mappingFrom[0];
+    swap(0, mappingTo[first]);
+    mappingTo[x] = mappingTo[first];
+    mappingTo[first] = 0;
+  }
+
+  return {
+    shuffled,
+    mappingTo,
+    mappingFrom,
+  };
+};
+
+export const numberKeys = (record: Record<number, any>): number[] => {
+  return Object.keys(record).map((key) => +key);
+};
+
+export const reverseMapping = (mapping: Record<number, number>): Record<number, number> => {
+  const reverse: Record<number, number> = {};
+  numberKeys(mapping).map((key) => {
+    reverse[mapping[key]] = key;
+  });
+
+  return reverse;
+};
+
+export const removeElementFromShuffled = <T>(
+  index: number,
+  { mappingTo, mappingFrom, shuffled }: ShuffleResult<T>,
+): ShuffleResult<T> => {
+  const original = mappingFrom[index];
+  const newShuffled = [...shuffled.slice(0, index), ...shuffled.slice(index + 1)];
+
+  const newMappingTo: Record<number, number> = {};
+  for (let i = 0; i < shuffled.length; i++) {
+    if (i === original) continue;
+    const toIndex = i > original ? i - 1 : i;
+    const fromIndex = mappingTo[i] > index ? mappingTo[i] - 1 : mappingTo[i];
+    newMappingTo[toIndex] = fromIndex;
+  }
+
+  return {
+    shuffled: newShuffled,
+    mappingFrom: reverseMapping(newMappingTo),
+    mappingTo: newMappingTo,
+  };
 };

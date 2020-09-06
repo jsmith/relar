@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Playlist } from "../shared/types";
 import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "react-tiniest-router";
@@ -18,18 +18,18 @@ export const PlaylistCard = ({
   const playlistSongs = usePlaylistSongs(data);
   const { goTo } = useRouter();
   const { setQueue } = useQueue();
-  const songs = usePlaylistSongs(data);
+  const snapshots = useMemo(() => playlistSongs.map(({ song }) => song), [playlistSongs]);
 
   return (
     <ThumbnailCard
-      snapshot={playlistSongs}
+      snapshot={snapshots}
       title={data.name}
       subtitle={""}
       onClick={() => goTo(routes.playlist, { playlistId: playlist.id })}
       className={className}
       play={() =>
         setQueue({
-          songs: songs,
+          songs: playlistSongs,
           source: { type: "playlist", id: data.id, sourceHumanName: data.name },
         })
       }

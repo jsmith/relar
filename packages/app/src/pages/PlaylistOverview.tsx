@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useRouter } from "react-tiniest-router";
 import { fmtToDate } from "../utils";
 import {
@@ -59,7 +59,7 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
         });
 
         if (confirmed) {
-          deletePlaylist(playlistId, {
+          deletePlaylist(undefined, {
             // FIXME notif on error
             onSuccess: () => goTo(routes.playlists),
           });

@@ -8,7 +8,7 @@ import {
 } from "./utils";
 import { Sentry, startScope } from "./sentry";
 import { admin } from "./admin";
-import { Song } from "./shared/types";
+import { Song, Playlist } from "./shared/types";
 import { createAlbumId } from "./shared/utils";
 
 const db = admin.firestore();
@@ -37,13 +37,24 @@ export const onDeleteSong = functions.firestore
         writes.push(await deleteArtistSingleSong({ db, userId, transaction, artist: song.artist }));
       }
 
+      const playlists = await transaction.get(adminDb(db, userId).playlists());
+      playlists.forEach((playlist) => {
+        let found = false;
+        const songs: Playlist["songs"] = playlist.data().songs?.filter(({ songId }) => {
+          const keep = songId !== snapshot.id;
+          if (!keep) found = true;
+          return keep;
+        });
+
+        // No TS typechecking here
+        if (found) writes.push(() => transaction.update(playlist.ref, { songs }));
+      });
+
       const snap = await transaction.get(userData);
       if (snap.exists) {
         const decrement = admin.firestore.FieldValue.increment(-1);
-        await transaction.update(userData, { songCount: decrement });
+        writes.push(() => transaction.update(userData, { songCount: decrement }));
       }
-
-      // TODO delete songs IDs from playlist
 
       writes.forEach((write) => write && write());
     });

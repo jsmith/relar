@@ -141,7 +141,6 @@ export const Account = () => {
               <div className="flex items-baseline">
                 <h2>Songs</h2>
                 <div className="flex-grow" />
-                {/* TODO show error if error */}
                 <div className="text-xs">{`${
                   userData.data?.data()?.songCount ?? 0
                 } / ${500} Uploaded`}</div>

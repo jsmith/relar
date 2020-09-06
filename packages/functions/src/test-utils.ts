@@ -1,7 +1,8 @@
 import { admin } from "./admin";
 import { removeUndefined, adminDb } from "./utils";
-import { Song, Album, Artist } from "./shared/types";
+import { Song, Album, Artist, Playlist } from "./shared/types";
 import axios from "axios";
+import * as uuid from "uuid";
 import { createAlbumId } from "./shared/utils";
 import "uvu";
 import assert from "uvu/assert";
@@ -98,6 +99,22 @@ export const createAndUploadTestSong = async (songId: string, options: Partial<S
   const song = createTestSong(options);
   const ref = await adminDb(admin.firestore(), "testUser").song(songId);
   await ref.set(song);
+  return ref;
+};
+
+export const createAndUploadPlaylist = async (
+  name: string,
+  songs: FirebaseFirestore.DocumentReference<Song>[],
+) => {
+  const playlist: Playlist = {
+    id: uuid.v4(),
+    name,
+    songs: songs.map((snapshot) => ({ songId: snapshot.id, id: uuid.v4() })),
+    createdAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+  };
+
+  const ref = await adminDb(admin.firestore(), "testUser").playlist(playlist.id);
+  await ref.set(playlist);
   return ref;
 };
 

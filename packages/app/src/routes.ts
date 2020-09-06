@@ -4,13 +4,10 @@ export interface CustomRoute extends RouteType {
   protected: boolean;
   sidebar: boolean;
   className: string;
-  containerClassName: string;
   title: string;
 }
 
-// TODO better names for className and containerClassname
-// Also all of these don't *need* these attributes
-// TODO how can we make titles dynamic?? It would be nice to have something generic
+// FIXME how can we make titles dynamic?? It would be nice to have something generic
 // But the easiest solution would probably be some kind of hook
 export const routes = {
   hero: {
@@ -19,7 +16,6 @@ export const routes = {
     protected: false,
     sidebar: false,
     className: "py-2",
-    containerClassName: "px-5",
     title: "RELAR",
   },
   account: {
@@ -28,7 +24,6 @@ export const routes = {
     protected: true,
     sidebar: false,
     className: "py-2",
-    containerClassName: "px-5",
     title: "Account | RELAR",
   },
   login: {
@@ -37,7 +32,6 @@ export const routes = {
     protected: false,
     sidebar: false,
     className: "py-2",
-    containerClassName: "px-5",
     title: "Login | RELAR",
   },
   signup: {
@@ -46,7 +40,6 @@ export const routes = {
     protected: false,
     sidebar: false,
     className: "py-2",
-    containerClassName: "px-5",
     title: "Sign Up | RELAR",
   },
   forgotPassword: {
@@ -55,7 +48,6 @@ export const routes = {
     protected: false,
     sidebar: false,
     className: "py-2",
-    containerClassName: "px-5",
     title: "Forgot Password | RELAR",
   },
   forgotPasswordSuccess: {
@@ -64,7 +56,6 @@ export const routes = {
     protected: false,
     sidebar: false,
     className: "py-2",
-    containerClassName: "px-5",
     title: "Forgot Password Confirmation | RELAR",
   },
   home: {
@@ -73,7 +64,6 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "py-2",
-    containerClassName: "px-5",
     title: "Home | RELAR",
   },
   search: {
@@ -82,7 +72,6 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "py-2",
-    containerClassName: "px-5",
     title: "Search | RELAR",
   },
   songs: {
@@ -91,7 +80,6 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "py-2",
-    containerClassName: "",
     title: "Songs | RELAR",
   },
   albums: {
@@ -100,7 +88,6 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "py-2",
-    containerClassName: "",
     title: "Albums | RELAR",
   },
   album: {
@@ -109,7 +96,6 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "",
-    containerClassName: "",
     title: "Album | RELAR",
   },
   artists: {
@@ -118,7 +104,6 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "py-2",
-    containerClassName: "",
     title: "Artists | RELAR",
   },
   artist: {
@@ -127,7 +112,6 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "",
-    containerClassName: "",
     title: "Artist | RELAR",
   },
   invite: {
@@ -136,7 +120,6 @@ export const routes = {
     protected: false,
     sidebar: false,
     className: "",
-    containerClassName: "px-5",
     title: "Invite | RELAR",
   },
   playlists: {
@@ -145,7 +128,6 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "py-2",
-    containerClassName: "",
     title: "Playlists | RELAR",
   },
   playlist: {
@@ -154,7 +136,6 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "",
-    containerClassName: "",
     title: "Playlist | RELAR",
   },
   generated: {
@@ -163,7 +144,6 @@ export const routes = {
     protected: true,
     sidebar: true,
     className: "",
-    containerClassName: "",
     title: "Generated | RELAR",
   },
 } as const;

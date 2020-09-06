@@ -1,7 +1,7 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useRef } from "react";
 import { routes } from "./routes";
 import { useRouter } from "react-tiniest-router";
-import { useUser } from "./auth";
+import { useUser, useUserChange } from "./auth";
 import { Sidebar } from "./components/Sidebar";
 import { FaMusic } from "react-icons/fa";
 import { GiSwordSpin } from "react-icons/gi";
@@ -39,6 +39,7 @@ import { LoadingSpinner } from "./components/LoadingSpinner";
 import { QueueAudio } from "./queue";
 import { Queue } from "./sections/Queue";
 import FocusTrap from "focus-trap-react";
+import { clearCache } from "./watcher";
 
 export interface SideBarItem {
   label: string;
@@ -89,10 +90,14 @@ export const App = (_: React.Props<{}>) => {
   const [uploadDisplay, setUploadDisplay] = useState(false);
   const [queueDisplay, setQueueDisplay] = useState(false);
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
+  const playerRef = useRef<HTMLDivElement | null>(null);
 
   const route = useMemo(() => Object.values(routes).find((route) => route.id === routeId), [
     routeId,
   ]);
+
+  // We need to reset the cache every time the user changes
+  useUserChange(clearCache);
 
   useDocumentTitle(route?.title);
 
@@ -130,7 +135,7 @@ export const App = (_: React.Props<{}>) => {
                     <li
                       tabIndex={0}
                       className={classNames(
-                        "flex py-2 px-5 items-center hover:bg-gray-800 cursor-pointer",
+                        "flex py-2 px-5 items-center hover:bg-gray-800 cursor-pointer focus:outline-none focus:bg-gray-700",
                         isRoute(route) ? "bg-gray-800" : undefined,
                       )}
                       onClick={() => goTo(route)}
@@ -144,7 +149,7 @@ export const App = (_: React.Props<{}>) => {
               </nav>
               <div className="border-b border-gray-800 my-3 mx-3" />
               <button
-                className="flex py-2 px-5 items-center hover:bg-gray-800 w-full"
+                className="flex py-2 px-5 items-center hover:bg-gray-800 w-full focus:outline-none focus:bg-gray-700"
                 onClick={() => setUploadDisplay(true)}
               >
                 <MdAddCircle className="w-6 h-6" />
@@ -156,10 +161,7 @@ export const App = (_: React.Props<{}>) => {
           <React.Suspense fallback={<LoadingSpinner />}>
             <div
               ref={(ref) => setContainer(ref)}
-              className={classNames(
-                "h-full absolute inset-0 overflow-y-auto flex flex-col",
-                route.containerClassName,
-              )}
+              className="h-full absolute inset-0 overflow-y-auto flex flex-col"
             >
               {(isRoute(routes.songs) ||
                 isRoute(routes.artists) ||
@@ -211,12 +213,13 @@ export const App = (_: React.Props<{}>) => {
             </div>
 
             <FocusTrap active={queueDisplay} focusTrapOptions={{ clickOutsideDeactivates: true }}>
-              <Queue visible={queueDisplay} close={closeQueue} />
+              {/* By passing in the the player to the exclude prop, clicking on the Player doesn't close the queue. Yay!! */}
+              <Queue visible={queueDisplay} close={closeQueue} exclude={playerRef} />
             </FocusTrap>
           </React.Suspense>
         </Sidebar>
       </div>
-      <Player toggleQueue={() => setQueueDisplay(!queueDisplay)} />
+      <Player toggleQueue={() => setQueueDisplay(!queueDisplay)} refFunc={playerRef} />
     </UploadModal>
   ) : route?.id === "hero" ? (
     <Hero />
@@ -242,20 +245,18 @@ export const App = (_: React.Props<{}>) => {
       <div className="flex bg-gray-900 items-center h-16 px-5 flex-shrink-0 space-x-2">
         <Link
           route={routes.hero}
-          className="flex items-center space-x-2"
+          className="flex items-center space-x-2 focus:outline-none border border-transparent focus:border-gray-300 rounded p-1"
           label={
             <>
-              <h1 className="text-2xl tracking-wider">RELAR</h1>
+              <h1 className="text-2xl tracking-wider uppercase">Relar</h1>
               <GiSwordSpin className="w-6 h-6 text-purple-500" />
             </>
           }
-          disableStyle
         />
         {user && <div className="text-purple-500 text-2xl">|</div>}
         {user && (
           <Link
             route={routes.home}
-            disableStyle
             className={link({ color: "text-white hover:text-purple-400" })}
             label={
               <div className="space-x-1">
@@ -278,15 +279,9 @@ export const App = (_: React.Props<{}>) => {
             <Link
               className={button({ color: "purple", invert: true })}
               label="Login"
-              disableStyle
               route={routes.login}
             />
-            <Link
-              className={button({ color: "purple" })}
-              label="Sign Up"
-              disableStyle
-              route={routes.signup}
-            />
+            <Link className={button({ color: "purple" })} label="Sign Up" route={routes.signup} />
           </div>
         )}
       </div>

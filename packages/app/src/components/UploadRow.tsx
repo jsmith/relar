@@ -29,19 +29,18 @@ export const UploadRow = ({ file, task }: UploadRowProps) => {
   const handleSnapshot = (snapshot: firebase.storage.UploadTaskSnapshot) => {
     const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
     setProgress(progress);
-    switch (snapshot.state) {
-      // TODO more states maybe?
-      case firebase.storage.TaskState.PAUSED:
-        break;
-      case firebase.storage.TaskState.RUNNING:
-        break;
-      case firebase.storage.TaskState.SUCCESS:
-        break;
-      case firebase.storage.TaskState.ERROR:
-        break;
-      case firebase.storage.TaskState.CANCELED:
-        break;
-    }
+    // switch (snapshot.state) {
+    //   case firebase.storage.TaskState.PAUSED:
+    //     break;
+    //   case firebase.storage.TaskState.RUNNING:
+    //     break;
+    //   case firebase.storage.TaskState.SUCCESS:
+    //     break;
+    //   case firebase.storage.TaskState.ERROR:
+    //     break;
+    //   case firebase.storage.TaskState.CANCELED:
+    //     break;
+    // }
   };
 
   useEffect(() => {

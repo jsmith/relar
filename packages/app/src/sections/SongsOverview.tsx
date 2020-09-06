@@ -8,7 +8,7 @@ import { HiDotsHorizontal, HiPencil, HiTrash } from "react-icons/hi";
 import { ContentEditable } from "../components/ContentEditable";
 import { Skeleton } from "../components/Skeleton";
 import { Collage } from "../components/Collage";
-import { useQueue, SetQueueSource } from "../queue";
+import { useQueue, SetQueueSource, SongInfo, isSongInfo } from "../queue";
 import { Song } from "../shared/types";
 import { useSongsDuration } from "../queries/songs";
 import { QueryStatus } from "react-query";
@@ -25,8 +25,8 @@ export interface SongsOverviewProps {
   /** The title string. Undefined means that it is still loading. */
   title: string | undefined;
   /** The songs. */
-  songs: firebase.firestore.QueryDocumentSnapshot<Song>[];
-  infoPoints?: string[];
+  songs: Array<SongInfo | firebase.firestore.QueryDocumentSnapshot<Song>>;
+  infoPoints?: Array<string | undefined>;
   songActions?: SongTableItem[];
   source: SetQueueSource;
   includeDateAdded?: boolean;
@@ -38,7 +38,7 @@ export const SongsOverview = ({
   onDelete,
   status,
   title,
-  songs,
+  songs: songsMixed,
   infoPoints,
   songActions,
   source,
@@ -48,6 +48,9 @@ export const SongsOverview = ({
   const [averageColor, setAverageColor] = useState("#cbd5e0");
   const { from, to, isLight } = useGradient(averageColor);
   const [editingName, setEditingName] = useState(false);
+  const songs = useMemo(() => songsMixed.map((item) => (isSongInfo(item) ? item.song : item)), [
+    songsMixed,
+  ]);
   const songDuration = useSongsDuration(songs);
 
   const options = useMemo(() => {
@@ -74,7 +77,7 @@ export const SongsOverview = ({
 
   const infoPointsString = useMemo(() => {
     return [
-      ...(infoPoints ?? []),
+      ...(infoPoints?.filter((value) => !!value) ?? []),
       `${songs.length} ${pluralSongs(songs.length)}`,
       fmtMSS(songDuration / 1000),
     ].join(" • ");
@@ -89,7 +92,12 @@ export const SongsOverview = ({
           backgroundImage: `linear-gradient(to bottom, ${from}, ${to})`,
         }}
       >
-        <Collage size="256" snapshots={songs} className="w-64 h-64" />
+        <Collage
+          size="256"
+          snapshots={songs}
+          className="w-64 h-64"
+          setAverageColor={setAverageColor}
+        />
         {status === "error" ? (
           <ErrorTemplate />
         ) : (
