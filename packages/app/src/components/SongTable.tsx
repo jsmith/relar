@@ -308,6 +308,8 @@ export interface SongTableProps {
   mode?: "regular" | "condensed";
 }
 
+// TODO make it so shuffling keeps index at position 0
+
 export const SongTable = ({
   songs: docs,
   loadingRows = 5,

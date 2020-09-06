@@ -19,12 +19,27 @@ test("shuffleArray returns the correct mapping", () => {
     .fill(0)
     .map((_, i) => i);
 
-  const { shuffled, mappingTo } = shuffleArray(array);
+  const { shuffled, mappingTo, mappingFrom } = shuffleArray(array);
 
   array.forEach((_, i) => {
     // Check that the mapping maps from the index of the shuffled array
     // to the index of the original array
-    assert.ok(shuffled[mappingTo[i]] === array[i]);
+    assert.equal(shuffled[mappingTo[i]], array[i]);
+    assert.equal(shuffled[i], array[mappingFrom[i]]);
+  });
+});
+
+test("shuffleArray places the correct value at position 0", () => {
+  const array = Array(100)
+    .fill(0)
+    .map((_, i) => i);
+
+  const { shuffled, mappingTo, mappingFrom } = shuffleArray(array, 87);
+  assert.equal(shuffled[0], 87);
+
+  array.forEach((_, i) => {
+    assert.equal(shuffled[mappingTo[i]], array[i]);
+    // assert.equal(shuffled[i], array[mappingFrom[i]]);
   });
 });
 

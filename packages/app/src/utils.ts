@@ -337,7 +337,7 @@ export function useOnClickOutside(
     // ... callback/cleanup to run every render. It's not a big deal ...
     // ... but to optimize you can wrap handler in useCallback before ...
     // ... passing it into this hook.
-    [ref, handler],
+    [ref, handler, exclude],
   );
 }
 
@@ -368,14 +368,36 @@ export const useCombinedRefs = <T extends any>(
   );
 };
 
+/**
+ *
+ * @param array The array to shuffle.
+ * @param first The index of the element to put in position 0.
+ */
 export const shuffleArray = <T>(
   array: T[],
-): { shuffled: T[]; mappingTo: Record<number, number>; mappingFrom: Record<number, number> } => {
+  first?: number,
+): {
+  /** The shuffled array. */
+  shuffled: T[];
+  /** Mapping from original indices -> shuffled indices */
+  mappingTo: Record<number, number>;
+  /** Mapping from shuffled indices -> original indices */
+  mappingFrom: Record<number, number>;
+} => {
   let currentIndex = array.length;
   const shuffled = array.slice(0);
 
   // Maps from the index in the shuffled array -> index in the original array
   const mappingFrom: Record<number, number> = {};
+
+  const swap = (a: number, b: number) => {
+    const temporaryValue = shuffled[a];
+    shuffled[a] = shuffled[b];
+    shuffled[b] = temporaryValue;
+    const temporaryIndex = mappingFrom[a] ?? a;
+    mappingFrom[a] = mappingFrom[b] ?? b;
+    mappingFrom[b] = temporaryIndex;
+  };
 
   // While there remain elements to shuffle...
   while (0 !== currentIndex) {
@@ -384,12 +406,7 @@ export const shuffleArray = <T>(
     currentIndex -= 1;
 
     // And swap it with the current element.
-    const temporaryValue = shuffled[currentIndex];
-    shuffled[currentIndex] = shuffled[randomIndex];
-    shuffled[randomIndex] = temporaryValue;
-    const temporaryIndex = mappingFrom[currentIndex] ?? currentIndex;
-    mappingFrom[currentIndex] = mappingFrom[randomIndex] ?? randomIndex;
-    mappingFrom[randomIndex] = temporaryIndex;
+    swap(currentIndex, randomIndex);
   }
 
   // Maps from indices in original array -> indices in shuffled array
@@ -397,6 +414,21 @@ export const shuffleArray = <T>(
   Object.keys(mappingFrom).map((key) => {
     mappingTo[mappingFrom[+key]] = +key;
   });
+
+  if (first !== undefined) {
+    // Imaging first index 87 is placed in 77
+    // And then imagine there is another index X placed in 0
+    // The mappings look like this:
+    // 87 -> 77
+    // x -> 0
+    // I grab x first before things are swapped
+    // Then I swap 77 and 0
+    // Then I swap mappingTo values
+    const x = mappingFrom[0];
+    swap(0, mappingTo[first]);
+    mappingTo[x] = mappingTo[first];
+    mappingTo[first] = 0;
+  }
 
   return {
     shuffled,

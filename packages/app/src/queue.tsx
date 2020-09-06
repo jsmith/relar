@@ -216,7 +216,12 @@ export const QueueProvider = (props: React.Props<{}>) => {
   );
 
   const shuffleSongs = useCallback(() => {
-    const { shuffled, mappingTo, mappingFrom } = shuffleArray(current.current.queue);
+    // By passing in the second value, the current index will also be mapped to position 0 in the
+    // shuffled array :) This is more intuitive to users and provides a better experience.
+    const { shuffled, mappingTo, mappingFrom } = shuffleArray(
+      current.current.queue,
+      current.current.index,
+    );
     const songIndex = current.current.index;
     const index = songIndex === undefined ? undefined : mappingTo[songIndex];
     current.current = { queue: shuffled, mappings: { mappingFrom, mappingTo }, index };
@@ -239,7 +244,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
       setIndices(undefined);
       setIndex(index ?? 0);
 
-      if (shuffle === "true") {
+      if (source.type !== "queue" && shuffle === "true") {
         shuffleSongs();
       }
     },
@@ -319,9 +324,8 @@ export const QueueProvider = (props: React.Props<{}>) => {
   const clear = useCallback(() => {
     setQueueState([]);
     current.current = { queue: [], mappings: undefined, index: undefined };
-    setIndices(undefined);
-    setIndex(0);
-  }, [setIndex]);
+    stopPlaying();
+  }, [stopPlaying]);
 
   const toggleShuffle = useCallback(() => {
     if (shuffle === "true") {
