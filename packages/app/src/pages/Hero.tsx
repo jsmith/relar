@@ -55,7 +55,6 @@ export const Hero = () => {
             <Link
               label="Beta Sign Up →"
               className={button({ color: "purple" })}
-              disableStyle
               route={routes.signup}
             />
           </div>

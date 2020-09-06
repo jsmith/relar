@@ -252,13 +252,11 @@ export const App = (_: React.Props<{}>) => {
               <GiSwordSpin className="w-6 h-6 text-purple-500" />
             </>
           }
-          disableStyle
         />
         {user && <div className="text-purple-500 text-2xl">|</div>}
         {user && (
           <Link
             route={routes.home}
-            disableStyle
             className={link({ color: "text-white hover:text-purple-400" })}
             label={
               <div className="space-x-1">
@@ -281,15 +279,9 @@ export const App = (_: React.Props<{}>) => {
             <Link
               className={button({ color: "purple", invert: true })}
               label="Login"
-              disableStyle
               route={routes.login}
             />
-            <Link
-              className={button({ color: "purple" })}
-              label="Sign Up"
-              disableStyle
-              route={routes.signup}
-            />
+            <Link className={button({ color: "purple" })} label="Sign Up" route={routes.signup} />
           </div>
         )}
       </div>
