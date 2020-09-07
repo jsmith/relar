@@ -194,6 +194,13 @@ export const onBetaSignup = functions.firestore
       to: email,
       subject: "RELAR Beta Signup",
       text:
-        "You have successfully signed up for RELAR beta! We will contact you soon with your account information :)",
+        "You have successfully signed up for RELAR beta! We hope to be rolling things out by the end of 2020. Once everything is ready, we will contact you with with a signup link :)",
+    });
+
+    await sgMail.send({
+      from: "contact@relar.app",
+      to: env.mail.notification_email,
+      subject: `RELAR Beta Signup (${email})`,
+      text: `It looks like you got a new beta signup from "${email}" :)`,
     });
   });
