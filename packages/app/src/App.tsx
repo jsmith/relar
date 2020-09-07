@@ -40,6 +40,7 @@ import { QueueAudio } from "./queue";
 import { Queue } from "./sections/Queue";
 import FocusTrap from "focus-trap-react";
 import { clearCache } from "./watcher";
+import * as Sentry from "@sentry/browser";
 
 export interface SideBarItem {
   label: string;
@@ -98,6 +99,13 @@ export const App = (_: React.Props<{}>) => {
 
   // We need to reset the cache every time the user changes
   useUserChange(clearCache);
+
+  useUserChange(
+    useCallback((user) => {
+      if (!user) Sentry.setUser(null);
+      else Sentry.setUser({ id: user.uid });
+    }, []),
+  );
 
   useDocumentTitle(route?.title);
 

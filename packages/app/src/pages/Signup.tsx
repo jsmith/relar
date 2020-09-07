@@ -5,7 +5,7 @@ import * as Sentry from "@sentry/browser";
 import { CardPage } from "../components/CardPage";
 import { Input } from "../components/Input";
 import { Link } from "../components/Link";
-import { betaBackend } from "../backend";
+import { betaBackend, getOrUnknownError } from "../backend";
 import { BlockAlert } from "../components/BlockAlert";
 import { BetaAPI } from "../shared/types";
 
@@ -21,20 +21,14 @@ export const Signup = () => {
   const login = async () => {
     setLoading(true);
     setError("");
-    let result: BetaAPI["/beta-signup"]["POST"]["response"];
-    try {
-      result = await betaBackend.post("/beta-signup", { email }).then((r) => r.data);
-    } catch (e) {
-      Sentry.captureException(e);
-      result = { type: "error", code: "unknown" };
-    }
+    const result = await getOrUnknownError(() => betaBackend.post("/beta-signup", { email }));
 
     setLoading(false);
-    if (result.type === "success") {
+    if (result.data.type === "success") {
       setSuccess(true);
       return;
     } else {
-      switch (result.code) {
+      switch (result.data.code) {
         case "already-on-list":
           setError("Ok I know you really want on try the app but you're already on the list 💗");
           break;
