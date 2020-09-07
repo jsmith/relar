@@ -35,7 +35,7 @@ export const AccountDropdown = ({
   });
 
   return (
-    <div className={classNames("relative", className)}>
+    <div className={classNames("relative z-20", className)}>
       {/* <label {...getLabelProps()}>Choose an element:</label> */}
       <button
         {...getToggleButtonProps()}

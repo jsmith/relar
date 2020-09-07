@@ -2,7 +2,7 @@ import * as functions from "firebase-functions";
 
 const config = functions.config();
 
-export function getOsEnv(
+export function getOrError(
   o: { [key: string]: string | undefined } | undefined,
   key: string,
 ): string {
@@ -13,14 +13,17 @@ export function getOsEnv(
   return o[key] as string;
 }
 
-/**
- * To set this up:
- * firebase functions:config:set mail.sendgrid_api_key="API_KEY" mail.notification_email="jsmith@hey.com"
- */
+export function get(
+  o: { [key: string]: string | undefined } | undefined,
+  key: string,
+): string | undefined {
+  return o ? o[key] : undefined;
+}
 
 export const env = {
   mail: {
-    sendgrid_api_key: getOsEnv(config.mail, "sendgrid_api_key"),
-    notification_email: getOsEnv(config.mail, "notification_email"),
+    sendgrid_api_key: getOrError(config.mail, "sendgrid_api_key"),
+    notification_email: get(config.mail, "notification_email"),
   },
+  project: get(config.environment, "project"),
 };

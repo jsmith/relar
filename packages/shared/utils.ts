@@ -1,4 +1,27 @@
 import { Song, Album, Artist, UserData, BetaSignup, Playlist } from "./types";
+import { Record, Runtype, Static, Success, Failure } from "runtypes";
+
+export type DecodeResult<T> = (Success<T> | Failure) & { _unsafeUnwrap: () => T };
+
+export const decode = <V extends Runtype<any>>(
+  data: unknown,
+  record: V,
+): DecodeResult<Static<V>> => {
+  const result = record.validate(data);
+  if (result.success) {
+    return {
+      ...result,
+      _unsafeUnwrap: () => result.value,
+    };
+  } else {
+    return {
+      ...result,
+      _unsafeUnwrap: () => {
+        throw Error(`${result.message}${result.key ? ` (${result.key})` : ""}`);
+      },
+    };
+  }
+};
 
 // at least six characters
 // at least one number, one lowercase and one uppercase letter

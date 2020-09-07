@@ -1,4 +1,4 @@
-import * as functions from "firebase-functions";
+import * as f from "firebase-functions";
 import {
   deleteAllUserData,
   adminStorage,
@@ -6,26 +6,24 @@ import {
   deleteAlbumIfSingleSong,
   deleteArtistSingleSong,
 } from "./utils";
-import { Sentry, startScope } from "./sentry";
+import { Sentry, setSentryUser, wrapAndReport } from "./sentry";
 import { admin } from "./admin";
-import { Song, Playlist } from "./shared/types";
-import { createAlbumId } from "./shared/utils";
+import { Playlist, SongType } from "./shared/types";
+import { createAlbumId, decode } from "./shared/utils";
 
 const db = admin.firestore();
 
-export const onDeleteUser = functions.auth.user().onDelete(async (user) => {
-  startScope({ id: user.uid, email: user.email });
+export const onDeleteUser = f.auth.user().onDelete(async (user) => {
+  setSentryUser({ id: user.uid, email: user.email });
   await deleteAllUserData(db, admin.storage(), user.uid);
 });
 
-export const onDeleteSong = functions.firestore
-  .document("user_data/{userId}/songs/{songId}")
-  .onDelete(async (snapshot, context) => {
+export const onDeleteSong = f.firestore.document("user_data/{userId}/songs/{songId}").onDelete(
+  wrapAndReport(async (snapshot, context) => {
     const userId = context.params.userId;
-    startScope({ id: userId });
+    setSentryUser({ id: userId });
 
-    // FIXME validation
-    const song = snapshot.data() as Song;
+    const song = decode(snapshot.data(), SongType)._unsafeUnwrap();
 
     const userData = adminDb(db, userId).doc();
 
@@ -89,4 +87,5 @@ export const onDeleteSong = functions.firestore
         throw e;
       }
     }
-  });
+  }),
+);

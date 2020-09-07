@@ -5,6 +5,7 @@ import * as uuid from "uuid";
 import { UploadRow } from "../components/UploadRow";
 import { link } from "../classes";
 import { useUserStorage } from "../storage";
+import { analytics } from "../firebase";
 
 export interface UploadModalProps {
   children?: React.ReactNode;
@@ -48,6 +49,10 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
           file,
         };
       }
+    });
+
+    analytics.logEvent("songs_uploaded", {
+      value: newFiles.length,
     });
 
     setFiles([...files, ...newFiles]);
