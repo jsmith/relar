@@ -9,6 +9,7 @@ import { updateCached, getCachedOr, useFirebaseUpdater } from "../watcher";
 import { useMemo } from "react";
 import { useSongs, useSongLookup } from "./songs";
 import { SongInfo } from "../queue";
+import { withPerformanceAndAnalytics } from "../utils";
 
 const { useQuery: usePlaylistsQuery, queryCache } = createQueryCache<
   ["playlists", { uid: string }],
@@ -45,11 +46,20 @@ const updatePlaylist = ({
 export const usePlaylists = () => {
   const userData = useUserData();
 
-  return usePlaylistsQuery(["playlists", { uid: userData.userId }], () =>
-    userData
-      .playlists()
-      .get()
-      .then((snapshot) => snapshot.docs),
+  return usePlaylistsQuery(
+    ["playlists", { uid: userData.userId }],
+    withPerformanceAndAnalytics(
+      () =>
+        userData
+          .playlists()
+          .get()
+          .then((snapshot) => snapshot.docs),
+      "loading_playlists",
+    ),
+    {
+      // Keep this fresh for the duration of the app
+      staleTime: Infinity,
+    },
   );
 };
 
@@ -124,7 +134,6 @@ export const usePlaylistAdd = () => {
 
 export const usePlaylist = (playlistId: string | undefined) => {
   const playlists = usePlaylists();
-  const songs = useSongs();
 
   const playlist = useMemo(() => playlists.data?.find((playlist) => playlist.id === playlistId), [
     playlistId,

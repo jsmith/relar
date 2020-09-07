@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback, useRef } from "react";
+import React, { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { routes } from "./routes";
 import { useRouter } from "react-tiniest-router";
 import { useUser, useUserChange } from "./auth";
@@ -27,7 +27,7 @@ const Invite = React.lazy(() => import("./pages/Invite"));
 const Generated = React.lazy(() => import("./pages/Generated"));
 import ReactQueryDevtools from "react-query-devtools";
 import { AccountDropdown } from "./components/AccountDropdown";
-import { auth } from "./firebase";
+import { auth, analytics } from "./firebase";
 import { useDocumentTitle } from "./utils";
 import { Link } from "./components/Link";
 import { button, link, bgApp } from "./classes";
@@ -97,13 +97,32 @@ export const App = (_: React.Props<{}>) => {
     routeId,
   ]);
 
+  useEffect(() => {
+    if (loading) return;
+    // This seems to have the uid so we should be able to track logins by user!
+    analytics.logEvent("app_open");
+  }, [loading]);
+
+  useEffect(() => {
+    // "This event is incredibly important to understand your users' behavior since it can tell
+    // you the number of users who have visited each screen in your app, and which screens are
+    // the most popular."
+    // See https://firebase.googleblog.com/2020/08/google-analytics-manual-screen-view.html
+    analytics.logEvent("screen_view", { app_name: "RELAR", screen_name: routeId });
+  });
+
   // We need to reset the cache every time the user changes
   useUserChange(clearCache);
 
   useUserChange(
     useCallback((user) => {
-      if (!user) Sentry.setUser(null);
-      else Sentry.setUser({ id: user.uid });
+      if (!user) {
+        Sentry.setUser(null);
+        analytics.setUserId("");
+      } else {
+        Sentry.setUser({ id: user.uid });
+        analytics.setUserId(user.uid);
+      }
     }, []),
   );
 
@@ -166,35 +185,35 @@ export const App = (_: React.Props<{}>) => {
             </div>
           }
         >
-          <React.Suspense fallback={<LoadingSpinner />}>
-            <div
-              ref={(ref) => setContainer(ref)}
-              className="h-full absolute inset-0 overflow-y-auto flex flex-col"
-            >
-              {(isRoute(routes.songs) ||
-                isRoute(routes.artists) ||
-                isRoute(routes.albums) ||
-                isRoute(routes.playlists)) && (
-                <ul
-                  className="flex space-x-4 text-xl sticky top-0 z-10 px-5"
-                  style={{ backgroundColor: bgApp }}
-                >
-                  {/* FIXME accessible */}
-                  {libraryLinks.map(({ label, route }) => (
-                    <li
-                      key={label}
-                      className={classNames(
-                        // FIXME bold
-                        "my-2 border-gray-600 cursor-pointer hover:text-gray-800",
-                        isRoute(route) ? "border-b-2 text-gray-700" : " text-gray-600",
-                      )}
-                      onClick={() => goTo(route)}
-                    >
-                      {label}
-                    </li>
-                  ))}
-                </ul>
-              )}
+          <div
+            ref={(ref) => setContainer(ref)}
+            className="h-full absolute inset-0 overflow-y-auto flex flex-col"
+          >
+            {(isRoute(routes.songs) ||
+              isRoute(routes.artists) ||
+              isRoute(routes.albums) ||
+              isRoute(routes.playlists)) && (
+              <ul
+                className="flex space-x-4 text-xl sticky top-0 z-10 px-5"
+                style={{ backgroundColor: bgApp }}
+              >
+                {/* FIXME accessible */}
+                {libraryLinks.map(({ label, route }) => (
+                  <li
+                    key={label}
+                    className={classNames(
+                      // FIXME bold
+                      "my-2 border-gray-600 cursor-pointer hover:text-gray-800",
+                      isRoute(route) ? "border-b-2 text-gray-700" : " text-gray-600",
+                    )}
+                    onClick={() => goTo(route)}
+                  >
+                    {label}
+                  </li>
+                ))}
+              </ul>
+            )}
+            <React.Suspense fallback={<LoadingSpinner />}>
               <div className={classNames(route.className, "flex-grow")}>
                 {isRoute(routes.songs) ? (
                   <Songs container={container} />
@@ -218,13 +237,13 @@ export const App = (_: React.Props<{}>) => {
                   <Generated container={container} />
                 ) : null}
               </div>
-            </div>
+            </React.Suspense>
+          </div>
 
-            <FocusTrap active={queueDisplay} focusTrapOptions={{ clickOutsideDeactivates: true }}>
-              {/* By passing in the the player to the exclude prop, clicking on the Player doesn't close the queue. Yay!! */}
-              <Queue visible={queueDisplay} close={closeQueue} exclude={playerRef} />
-            </FocusTrap>
-          </React.Suspense>
+          <FocusTrap active={queueDisplay} focusTrapOptions={{ clickOutsideDeactivates: true }}>
+            {/* By passing in the the player to the exclude prop, clicking on the Player doesn't close the queue. Yay!! */}
+            <Queue visible={queueDisplay} close={closeQueue} exclude={playerRef} />
+          </FocusTrap>
         </Sidebar>
       </div>
       <Player toggleQueue={() => setQueueDisplay(!queueDisplay)} refFunc={playerRef} />

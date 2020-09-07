@@ -4,6 +4,7 @@ import { useUserData } from "../firestore";
 import { useFirebaseMemo, getCachedOr } from "../watcher";
 import { useSongs } from "./songs";
 import { useMemo } from "react";
+import { withPerformanceAndAnalytics } from "../utils";
 
 const { useQuery: useArtistQuery, queryCache: artistQueryCache } = createQueryCache<
   ["artists", { uid: string; id: string }],
@@ -32,17 +33,22 @@ export const useArtists = () => {
 
   return useArtistsQuery(
     ["artists", { uid: userData.userId }],
-    () =>
-      userData
-        .artists()
-        .get()
-        .then((result) => result.docs),
+    withPerformanceAndAnalytics(
+      () =>
+        userData
+          .artists()
+          .get()
+          .then((result) => result.docs),
+      "loading_artists",
+    ),
     {
       onSuccess: (docs) => {
         docs.forEach((doc) => {
           artistQueryCache.setQueryData(["artists", { uid: userData.userId, id: doc.id }], doc);
         });
       },
+      // Keep this fresh for the duration of the app
+      staleTime: Infinity,
     },
   );
 };

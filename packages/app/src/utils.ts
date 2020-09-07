@@ -11,6 +11,7 @@ import {
 import * as Sentry from "@sentry/browser";
 import { QueryResult } from "react-query";
 import tiny from "tinycolor2";
+import { performance, analytics } from "./firebase";
 
 export interface Disposer {
   dispose: () => void;
@@ -181,12 +182,6 @@ export const Mouse = {
   RIGHT: 2,
 };
 
-export const captureException = (e: Error) => {
-  // Very similar to captureException except it doesn't return anything
-  // This was useful for type inference
-  Sentry.captureException(e);
-};
-
 export const preventAndCall = <E extends { preventDefault: () => void }>(f: (e: E) => void) => (
   e: E,
 ) => {
@@ -218,7 +213,20 @@ export const wrap = (f: () => Promise<any>) => () => {
 };
 
 export const captureAndLog = (e: unknown) => {
-  Sentry.captureException(e);
+  const extra: Record<string, any> = {};
+  // This specifically handles axios errors which return the response as a field in the error object
+  if ((e as any).response) {
+    extra.response = (e as any).response;
+  }
+
+  if ((e as any).config) {
+    extra.config = Object.assign({}, (e as any).config);
+    // Ensure we aren't sending any post data as it could contain sensitive information
+    // Sentry does scrub data though so it's probably OK if we didn't do this
+    delete extra.config.data;
+  }
+
+  Sentry.captureException(e, { extra });
   console.error(e);
 };
 
@@ -466,4 +474,23 @@ export const removeElementFromShuffled = <T>(
     mappingFrom: reverseMapping(newMappingTo),
     mappingTo: newMappingTo,
   };
+};
+
+export const withPerformanceAndAnalytics = <T>(
+  cb: () => Promise<T[]>,
+  name: string,
+) => async (): Promise<T[]> => {
+  const trace = performance.trace(name);
+  trace.start();
+
+  const result = await cb();
+
+  // If result errors out, the trace is never ended and nothing actually happens
+  trace.stop();
+  trace.putMetric("count", result.length);
+  analytics.logEvent(name, {
+    value: result.length,
+  });
+
+  return result;
 };

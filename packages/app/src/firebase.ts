@@ -2,6 +2,8 @@ import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/storage";
 import "firebase/firestore";
+import "firebase/analytics";
+import "firebase/performance";
 import { env } from "./env";
 
 firebase.initializeApp({
@@ -18,3 +20,5 @@ firebase.initializeApp({
 export const firestore = firebase.firestore();
 export const storage = firebase.storage();
 export const auth = firebase.auth();
+export const analytics = firebase.analytics();
+export const performance = firebase.performance();
