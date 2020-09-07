@@ -2,14 +2,13 @@ import { createQueryCache } from "../queries/cache";
 import { Playlist, Song } from "../shared/types";
 import { useUserData } from "../firestore";
 import { useMutation } from "react-query";
-import { firestore } from "../firebase";
 import * as uuid from "uuid";
 import firebase from "firebase/app";
 import { updateCached, getCachedOr, useFirebaseUpdater } from "../watcher";
 import { useMemo } from "react";
 import { useSongs, useSongLookup } from "./songs";
 import { SongInfo } from "../queue";
-import { withPerformanceAndAnalytics } from "../utils";
+import { withPerformanceAndAnalytics, firestore } from "../firebase";
 
 const { useQuery: usePlaylistsQuery, queryCache } = createQueryCache<
   ["playlists", { uid: string }],

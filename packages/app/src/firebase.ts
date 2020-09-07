@@ -22,3 +22,22 @@ export const storage = firebase.storage();
 export const auth = firebase.auth();
 export const analytics = firebase.analytics();
 export const performance = firebase.performance();
+
+export const withPerformanceAndAnalytics = <T>(
+  cb: () => Promise<T[]>,
+  name: string,
+) => async (): Promise<T[]> => {
+  const trace = performance.trace(name);
+  trace.start();
+
+  const result = await cb();
+
+  // If result errors out, the trace is never ended and nothing actually happens
+  trace.stop();
+  trace.putMetric("count", result.length);
+  analytics.logEvent(name, {
+    value: result.length,
+  });
+
+  return result;
+};

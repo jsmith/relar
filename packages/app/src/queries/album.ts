@@ -3,8 +3,7 @@ import { Song, Album } from "../shared/types";
 import { useUserData } from "../firestore";
 import { useSongs } from "./songs";
 import { useFirebaseMemo, getCachedOr } from "../watcher";
-import { performance, analytics } from "../firebase";
-import { withPerformanceAndAnalytics } from "../utils";
+import { withPerformanceAndAnalytics } from "../firebase";
 
 const {
   useQuery: useAlbumsQuery,

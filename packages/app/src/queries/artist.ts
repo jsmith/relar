@@ -4,7 +4,7 @@ import { useUserData } from "../firestore";
 import { useFirebaseMemo, getCachedOr } from "../watcher";
 import { useSongs } from "./songs";
 import { useMemo } from "react";
-import { withPerformanceAndAnalytics } from "../utils";
+import { withPerformanceAndAnalytics } from "../firebase";
 
 const { useQuery: useArtistQuery, queryCache: artistQueryCache } = createQueryCache<
   ["artists", { uid: string; id: string }],

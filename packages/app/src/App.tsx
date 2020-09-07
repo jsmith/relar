@@ -142,6 +142,7 @@ export const App = (_: React.Props<{}>) => {
   }
 
   const logout = async () => {
+    analytics.logEvent("logout");
     await auth.signOut();
   };
 
