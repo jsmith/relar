@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "../components/Button";
-import { auth } from "../firebase";
+import { auth, analytics } from "../firebase";
 import { useRouter } from "react-tiniest-router";
 import { routes } from "../routes";
 import { useUser, signInWithEmailAndPassword } from "../auth";
@@ -32,6 +32,10 @@ export const Login = () => {
     const result = await signInWithEmailAndPassword(email, password);
     setLoading(false);
     if (result.isOk()) {
+      analytics.logEvent("login", {
+        method: result.value.credential?.signInMethod,
+        uid: result.value.user?.uid,
+      });
       goTo(routes.home);
     } else {
       setError(result.error.message);

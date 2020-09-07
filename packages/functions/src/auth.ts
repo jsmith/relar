@@ -1,13 +1,13 @@
 import express from "express";
 import cors from "cors";
 import { TypedAsyncRouter } from "@graywolfai/rest-ts-express";
-import { BetaAPI, BetaSignup } from "./shared/types";
-import { isPasswordValid } from "./shared/utils";
+import { BetaAPI, BetaSignup, BetaSignupType } from "./shared/types";
+import { isPasswordValid, decode } from "./shared/utils";
 import * as bodyParser from "body-parser";
 import sgMail from "@sendgrid/mail";
 import { env } from "./env";
 import { admin } from "./admin";
-import { Sentry } from "./sentry";
+import { Sentry, wrapAndReport, setSentryUser } from "./sentry";
 import { Result, ok, err } from "neverthrow";
 import * as functions from "firebase-functions";
 import { betaSignups } from "./utils";
@@ -21,8 +21,9 @@ function validateEmail(email: string) {
 }
 
 export const app = express();
-app.use(bodyParser.json());
 
+app.use(Sentry.Handlers.requestHandler());
+app.use(bodyParser.json());
 app.use(
   cors({
     origin: [
@@ -53,7 +54,6 @@ const checkUserExists = async (
       case "auth/user-not-found":
         return ok("does-not-exist");
       default:
-        Sentry.captureException(e);
         return err(e);
     }
   }
@@ -76,6 +76,7 @@ router.post("/beta-signup", async (req) => {
 
   const result = await checkUserExists(req.body.email);
   if (result.isErr()) {
+    Sentry.captureException(result.error);
     return {
       type: "error",
       code: "unknown",
@@ -182,13 +183,14 @@ router.post("/create-account", async (req) => {
   );
 });
 
+app.use(Sentry.Handlers.errorHandler());
+
 export const authApp = functions.https.onRequest(app);
 
-export const onBetaSignup = functions.firestore
-  .document("beta_signups/{email}")
-  .onCreate(async (object) => {
-    // FIXME validation
-    const { email } = object.data() as BetaSignup;
+export const onBetaSignup = functions.firestore.document("beta_signups/{email}").onCreate(
+  wrapAndReport(async (object) => {
+    const { email } = decode(object.data(), BetaSignupType)._unsafeUnwrap();
+    setSentryUser({ email });
     await sgMail.send({
       from: "contact@relar.app",
       to: email,
@@ -197,10 +199,14 @@ export const onBetaSignup = functions.firestore
         "You have successfully signed up for RELAR beta! We hope to be rolling things out by the end of 2020. Once everything is ready, we will contact you with with a signup link :)",
     });
 
+    if (!env.mail.notification_email) return;
+
+    // Don't send the email if the "to" email is undefined
     await sgMail.send({
       from: "contact@relar.app",
       to: env.mail.notification_email,
       subject: `RELAR Beta Signup (${email})`,
       text: `It looks like you got a new beta signup from "${email}" :)`,
     });
-  });
+  }),
+);

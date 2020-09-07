@@ -2,7 +2,7 @@ import firebase from "firebase/app";
 import { clientStorage } from "../shared/utils";
 import { createQueryCache } from "../queries/cache";
 import { Song } from "../shared/types";
-import { storage } from "../firebase";
+import { storage, withPerformanceAndAnalytics } from "../firebase";
 import { getDownloadURL } from "../storage";
 import { captureAndLogError, captureAndLog } from "../utils";
 import { useUserData } from "../firestore";
@@ -64,11 +64,15 @@ export const useSongs = () => {
 
   return useSongsQuery(
     ["songs", { uid: userData.userId }],
-    () =>
-      userData
-        .songs()
-        .get()
-        .then((r) => r.docs),
+    withPerformanceAndAnalytics(
+      () =>
+        userData
+          .songs()
+          .get()
+          .then((r) => r.docs),
+      "loading_songs",
+    ),
+
     {
       // Super important
       // See https://github.com/jsmith/relar/issues/7

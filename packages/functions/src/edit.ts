@@ -7,10 +7,11 @@ import { admin } from "./admin";
 import { adminDb, deleteAlbumIfSingleSong, deleteArtistSingleSong } from "./utils";
 import { createAlbumId } from "./shared/utils";
 import * as functions from "firebase-functions";
+import { Sentry } from "./sentry";
 
 export const app = express();
+app.use(Sentry.Handlers.requestHandler());
 app.use(bodyParser.json());
-
 app.use(
   cors({
     origin: [
@@ -148,5 +149,7 @@ router.post("/edit", async (req) => {
     };
   });
 });
+
+app.use(Sentry.Handlers.errorHandler());
 
 export const editApp = functions.https.onRequest(app);

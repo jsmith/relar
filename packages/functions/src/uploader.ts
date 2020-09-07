@@ -1,4 +1,4 @@
-import * as functions from "firebase-functions";
+import * as f from "firebase-functions";
 import * as os from "os";
 import * as path from "path";
 import sharp from "sharp";
@@ -15,6 +15,7 @@ import { env } from "./env";
 import { createAlbumId } from "./shared/utils";
 import { adminDb } from "./utils";
 import { getMp3Duration } from "./get-mp3-duration";
+import { wrapAndReport, setSentryUser } from "./sentry";
 
 sgMail.setApiKey(env.mail.sendgrid_api_key);
 
@@ -62,11 +63,7 @@ interface IError {
   message: string;
 }
 
-interface Warning {
-  type: "warn";
-  message: string;
-}
-
+// This "info" type allows us to terminate execution for reasons that aren't errors
 interface Info {
   type: "info";
   message: string;
@@ -74,18 +71,18 @@ interface Info {
 
 const checkObjectName = <O extends ObjectMetadata>(
   object: O,
-): Result<O & { name: string }, Warning> => {
+): Result<O & { name: string }, IError> => {
   return object.name
     ? ok(Object.assign(object, { name: object.name })) // This bit is just to satisfy TS
-    : err({ type: "warn", message: "object.name is undefined" });
+    : err({ type: "error", message: "object.name is undefined" });
 };
 
 const checkContentType = <O extends ObjectMetadata>(
   object: O,
-): Result<O & { contentType: string }, Warning> => {
+): Result<O & { contentType: string }, IError> => {
   return object.contentType
     ? ok(Object.assign(object, { contentType: object.contentType })) // This bit is just to satisfy TS
-    : err({ type: "warn", message: "object.contentType is undefined" });
+    : err({ type: "error", message: "object.contentType is undefined" });
 };
 
 const getPaths = <O extends ObjectMetadata & { name: string; contentType: string }, E>(
@@ -121,12 +118,15 @@ const matchContentType = (pattern: string) => <O extends CustomObject>(
       });
 };
 
-const unwrap = (r: Result<unknown, IError | Warning | Info>) => {
+const unwrap = (r: Result<unknown, IError | Info>) => {
   if (r.isErr()) {
     if (r.error.type === "error") {
+      // This will get logged to Sentry using the wrapAndReport function
       throw new Error(r.error.message);
     } else {
-      console[r.error.type](r.error.message);
+      // Just log these to the logger (not to Sentry)
+      // This is kinda weird honestly but oh well
+      console.info(r.error.message);
       return false;
     }
   } else {
@@ -169,44 +169,49 @@ const createTmpDir = async () => {
 };
 
 // For reference -> https://us-central1-toga-4e3f5.cloudfunctions.net/health
-export const health = functions.https.onRequest((_, res) => {
+export const health = f.https.onRequest((_, res) => {
   res.send(`Running v${process.env.npm_package_version}`);
 });
 
-export const generateThumbs = functions.storage.object().onFinalize(async (object) => {
-  const { dispose, tmpDir } = await createTmpDir();
-  return ok<ObjectMetadata, Warning | IError | Info>(object)
-    .andThen(checkObjectName)
-    .andThen(checkContentType)
-    .andThen(getPaths)
-    .andThen(matchRegex(/^([^/]+)\/song_artwork\/([^/]+)\/(artwork\.(?:png|jpg))$/))
-    .andThen(matchContentType("image"))
-    .asyncAndThen(downloadObject(tmpDir))
-    .andThen(({ tmpFilePath, filePath, fileName, fileDir, bucket }) => {
-      // Resize the images and define an array of upload promises
-      const sizes = [32, 64, 128, 256];
+export const generateThumbs = f.storage.object().onFinalize(
+  wrapAndReport(async (object) => {
+    const { dispose, tmpDir } = await createTmpDir();
+    return ok<ObjectMetadata, IError | Info>(object)
+      .andThen(checkObjectName)
+      .andThen(checkContentType)
+      .andThen(getPaths)
+      .andThen(matchRegex(/^([^/]+)\/song_artwork\/([^/]+)\/(artwork\.(?:png|jpg))$/))
+      .andThen(matchContentType("image"))
+      .asyncAndThen(downloadObject(tmpDir))
+      .andThen(({ tmpFilePath, filePath, fileName, fileDir, bucket, match }) => {
+        const userId = match[1];
+        setSentryUser({ id: userId });
 
-      const uploadPromises = sizes.map(async (size) => {
-        const thumbName = `thumb@${size}_${fileName}`;
-        const thumbPath = path.join(tmpDir, thumbName);
+        // Resize the images and define an array of upload promises
+        const sizes = [32, 64, 128, 256];
 
-        // Resize source image
-        await sharp(tmpFilePath).resize(size, null).toFile(thumbPath);
+        const uploadPromises = sizes.map(async (size) => {
+          const thumbName = `thumb@${size}_${fileName}`;
+          const thumbPath = path.join(tmpDir, thumbName);
 
-        // Upload to GCS
-        const destination = path.join(fileDir, thumbName);
-        console.info(`Uploading "${thumbPath}" to "${destination}"!`);
-        return bucket.upload(thumbPath, { destination });
-      });
+          // Resize source image
+          await sharp(tmpFilePath).resize(size, null).toFile(thumbPath);
 
-      return ResultAsync.fromPromise(
-        Promise.all(uploadPromises),
-        (e): IError => ({ type: "error", message: `Unknown error resizing "${filePath}": ` + e }),
-      );
-    })
-    .then(dispose)
-    .then(unwrap);
-});
+          // Upload to GCS
+          const destination = path.join(fileDir, thumbName);
+          console.info(`Uploading "${thumbPath}" to "${destination}"!`);
+          return bucket.upload(thumbPath, { destination });
+        });
+
+        return ResultAsync.fromPromise(
+          Promise.all(uploadPromises),
+          (e): IError => ({ type: "error", message: `Unknown error resizing "${filePath}": ` + e }),
+        );
+      })
+      .then(dispose)
+      .then(unwrap);
+  }),
+);
 
 const readFile = (filePath: string): ResultAsync<Buffer, IError> => {
   return ResultAsync.fromPromise(
@@ -240,206 +245,210 @@ const andPromise = <O1, O2, E>(f: (o: O1) => Promise<Result<O2, E>>) => (
   return new ResultAsync<O2, E>(f(o));
 };
 
-export const createSong = functions.storage.object().onFinalize(async (object) => {
-  const { dispose, tmpDir } = await createTmpDir();
-  // This is kinda a hack but we need this for later
-  const userId = object.name?.split("/")[1];
+export const createSong = f.storage.object().onFinalize(
+  wrapAndReport(async (object) => {
+    const { dispose, tmpDir } = await createTmpDir();
+    // This is kinda a hack but we need this for later
+    const userId = object.name?.split("/")[1];
 
-  // prettier-ignore
-  return ok<ObjectMetadata, Warning | IError | Info>(object)
-    .andThen(checkObjectName)
-    .andThen(checkContentType)
-    .andThen(getPaths)
-    .andThen(matchRegex(/^([^/]+)\/songs\/([^/]+)\/[^/]+$/))
-    .andThen(matchContentType("audio/mpeg"))
-    .asyncAndThen(downloadObject(tmpDir))
-    .andThen(parseID3Tags)
-    .andThen(andPromise(async ({ bucket, filePath, duration, fileName, match, id3Tag }) => {
-      try {
-        const userId = match[1];
-        const songId = match[2];
+    return ok<ObjectMetadata, IError | Info>(object)
+      .andThen(checkObjectName)
+      .andThen(checkContentType)
+      .andThen(getPaths)
+      .andThen(matchRegex(/^([^/]+)\/songs\/([^/]+)\/[^/]+$/))
+      .andThen(matchContentType("audio/mpeg"))
+      .asyncAndThen(downloadObject(tmpDir))
+      .andThen(parseID3Tags)
+      .andThen(
+        andPromise(async ({ bucket, filePath, duration, fileName, match, id3Tag }) => {
+          try {
+            const userId = match[1];
+            setSentryUser({ id: userId });
+            const songId = match[2];
 
-        const userRef = db.collection("user_data").doc(userId);
-        const newSongRef = userRef.collection("songs").doc(songId);
+            const userRef = db.collection("user_data").doc(userId);
+            const newSongRef = userRef.collection("songs").doc(songId);
 
-        // In a transaction, add the new rating and update the aggregate totals
-        let artwork: Artwork | undefined;
-        return await db.runTransaction(async (transaction) => {
-          const userData = adminDb(db, userId);
-          const res = await transaction.get(userRef);
+            // In a transaction, add the new rating and update the aggregate totals
+            let artwork: Artwork | undefined;
+            return await db.runTransaction(async (transaction) => {
+              const userData = adminDb(db, userId);
+              const res = await transaction.get(userRef);
 
-          const result = UserDataType.validate(res.data() ?? {});
-          if (!result.success) {
+              const result = UserDataType.validate(res.data() ?? {});
+              if (!result.success) {
+                return err({
+                  type: "error",
+                  message: `Invalid UserData[${result.key}]: ${result.message}`,
+                  delete: true,
+                });
+              }
+
+              // Compute new number # of songs
+              result.value.songCount = (result.value.songCount ?? 0) + 1;
+              if (result.value.songCount > MAX_SONGS) {
+                return err({
+                  type: "error",
+                  message: `User exceeded maximum song count (${MAX_SONGS}).`,
+                  delete: true,
+                });
+              }
+
+              // FIXME remove the uploaded file if we fail after this point
+              // I don't see this happening that often but it's very possible
+              // that we will throw an error after this if blocks finishes
+              if (id3Tag?.image) {
+                let fileName: string;
+                let type: "jpg" | "png";
+                if (id3Tag.image.mime === "image/png") {
+                  fileName = "artwork.png";
+                  type = "png";
+                } else if (id3Tag.image.mime === "image/jpeg") {
+                  fileName = "artwork.jpg";
+                  type = "jpg";
+                } else {
+                  return err({
+                    type: "error",
+                    message: `Invalid MIME type "${id3Tag.image.mime}". Expected "image/png" or "image/jpeg".`,
+                    delete: true,
+                  });
+                }
+
+                const imageFilePath = path.resolve(tmpDir, fileName);
+                // This isn't the *most* efficient process 💁
+                // Basically we write the image data to disc and then stream the data back
+                // The example MD5 code I found online used a stream so it looks like I'm
+                // using a stream too 😂
+                await fs.writeFile(imageFilePath, id3Tag.image.data);
+                const hashResult = await md5Hash(imageFilePath);
+                if (hashResult.isErr()) {
+                  return err({
+                    type: "error",
+                    message: `Unable to hash song artwork for "${filePath}": ` + hashResult.error,
+                    delete: true,
+                  });
+                }
+
+                artwork = { hash: hashResult.value, type };
+                const destination = `${userId}/song_artwork/${artwork.hash}/${fileName}`;
+                const [artworkExists] = await bucket.file(destination).exists();
+                if (artworkExists) {
+                  console.log(`Artwork for song already exists: "${destination}"`);
+                } else {
+                  console.info(`Uploading artwork from "${imageFilePath}" to "${destination}"!`);
+                  await bucket.upload(imageFilePath, { destination });
+                }
+              }
+
+              const albumId = createAlbumId({
+                albumName: id3Tag?.album,
+                albumArtist: id3Tag?.band,
+                artist: id3Tag?.artist,
+              });
+
+              // reads must come before writes in a snapshot so the following reads are grouped together
+              const albumSnap = await transaction.get(userData.album(albumId));
+
+              const artistSnap = id3Tag?.artist
+                ? await transaction.get(userData.artist(id3Tag?.artist))
+                : undefined;
+
+              let album = albumSnap.data();
+              if (!album) {
+                album = {
+                  id: albumId,
+                  album: id3Tag?.album,
+                  // The band value is the album artist
+                  albumArtist: id3Tag?.band,
+                  // If this is a new album, initialize the artwork hash the the hash
+                  // of the artwork for this song. Note that this value may be undefined.
+                  artwork,
+                };
+
+                transaction.set(albumSnap.ref, album);
+              }
+
+              let artist = artistSnap?.data();
+              if (!artist && artistSnap && id3Tag?.artist) {
+                artist = { name: id3Tag.artist };
+                transaction.set(artistSnap.ref, artist);
+              }
+
+              const defaultTitle = fileName.slice(0, fileName.lastIndexOf("."));
+
+              // Now we can create the song!
+              const newSong: Song = {
+                fileName,
+                id: songId,
+                downloadUrl: undefined,
+                title: id3Tag?.title ?? defaultTitle,
+                artist: artist?.name,
+                albumName: album?.album,
+                albumArtist: album.albumArtist,
+                albumId: album.id,
+                year: id3Tag?.year,
+                liked: false,
+                whenLiked: undefined,
+                genre: id3Tag?.genre,
+                played: 0,
+                lastPlayed: undefined,
+                artwork,
+                duration,
+                createdAt: (admin.firestore.FieldValue.serverTimestamp() as unknown) as admin.firestore.Timestamp,
+              };
+
+              // Update the user information (ie. the # of songs)
+              transaction.set(userRef, result.value);
+
+              // Finally create the new song
+              transaction.set(newSongRef, newSong);
+
+              return ok({});
+            });
+          } catch (e) {
+            // TODO how can we send info the the user??
+            // Maybe create a custom error with properties?
+            // It would be type unsafe but the easiest way
             return err({
               type: "error",
-              message: `Invalid UserData[${result.key}]: ${result.message}`,
               delete: true,
-            })
+              message: e.message,
+            });
           }
+        }),
+      )
+      .then(dispose)
+      .then(async (result) => {
+        if (
+          !userId ||
+          !object.name ||
+          result.isOk() ||
+          result.error.type !== "error" ||
+          !result.error.delete
+        ) {
+          return result;
+        }
 
-          // Compute new number # of songs
-          result.value.songCount = (result.value.songCount ?? 0) + 1;
-          if (result.value.songCount > MAX_SONGS) {
-            return err({
-              type: "error",
-              message: `User exceeded maximum song count (${MAX_SONGS}).`,
-              delete: true,
-            })
-          }
+        try {
+          // It's important that we delete this file from storage when
+          // we detect an error
+          console.warn(`Deleting "${object.name}" due to failure.`);
+          await gcs.bucket(object.bucket).file(object.name).delete();
+          const user = await admin.auth().getUser(userId);
 
-          // FIXME remove the uploaded file if we fail after this point
-          // I don't see this happening that often but it's very possible
-          // that we will throw an error after this if blocks finishes
-          if (id3Tag?.image) {
-            let fileName: string;
-            let type: "jpg" | "png"
-            if (id3Tag.image.mime === "image/png") {
-              fileName = "artwork.png";
-              type = "png"
-            } else if (id3Tag.image.mime === "image/jpeg") {
-              fileName = "artwork.jpg";
-              type = "jpg"
-            } else {
-              return err({
-                type: "error",
-                message:`Invalid MIME type "${id3Tag.image.mime}". Expected "image/png" or "image/jpeg".`,
-                delete: true,
-              })
-            }
+          await sgMail.send({
+            from: "contact@relar.app",
+            to: user.email,
+            subject: "RELAR Upload Error",
+            text:
+              "There was an error processing your song. Please try again or contact support (ie. respond to this email)!",
+          });
+        } catch (e) {
+          console.warn(`Unable to send an email to ${userId}`);
+        }
 
-            const imageFilePath = path.resolve(tmpDir, fileName);
-            // This isn't the *most* efficient process 💁
-            // Basically we write the image data to disc and then stream the data back
-            // The example MD5 code I found online used a stream so it looks like I'm
-            // using a stream too 😂
-            await fs.writeFile(imageFilePath, id3Tag.image.data);
-            const hashResult = await md5Hash(imageFilePath);
-            if (hashResult.isErr()) {
-              return err({
-                type: "error",
-                message:`Unable to hash song artwork for "${filePath}": ` + hashResult.error,
-                delete: true,
-              })
-            }
-
-            artwork = { hash: hashResult.value, type };
-            const destination = `${userId}/song_artwork/${artwork.hash}/${fileName}`;
-            const [artworkExists] = await bucket.file(destination).exists();
-            if (artworkExists) {
-              console.log(`Artwork for song already exists: "${destination}"`);
-            } else {
-              console.info(`Uploading artwork from "${imageFilePath}" to "${destination}"!`);
-              await bucket.upload(imageFilePath, { destination });
-            }
-          }
-
-          const albumId = createAlbumId({ albumName: id3Tag?.album, albumArtist: id3Tag?.band, artist: id3Tag?.artist })
-
-          // reads must come before writes in a snapshot so the following reads are grouped together
-          const albumSnap = await transaction.get(
-            userData.album(albumId)
-          );
-
-          const artistSnap = id3Tag?.artist ? await transaction.get(
-            userData.artist(id3Tag?.artist),
-          ) : undefined;
-
-          let album = albumSnap.data();
-          if (!album) {
-
-            album = {
-              id: albumId,
-              album: id3Tag?.album,
-              // The band value is the album artist
-              albumArtist: id3Tag?.band,
-              // If this is a new album, initialize the artwork hash the the hash
-              // of the artwork for this song. Note that this value may be undefined.
-              artwork,
-            };
-
-            transaction.set(albumSnap.ref, album);
-          }
-
-          let artist = artistSnap?.data();
-          if (!artist && artistSnap && id3Tag?.artist) {
-            artist = { name: id3Tag.artist };
-            transaction.set(artistSnap.ref, artist);
-          }
-
-          const defaultTitle = fileName.slice(0, fileName.lastIndexOf("."));
-
-          // Now we can create the song!
-          const newSong: Song = {
-            fileName,
-            id: songId,
-            downloadUrl: undefined,
-            title: id3Tag?.title ?? defaultTitle,
-            artist: artist?.name,
-            albumName: album?.album,
-            albumArtist: album.albumArtist,
-            albumId: album.id,
-            year: id3Tag?.year,
-            liked: false,
-            whenLiked: undefined,
-            genre: id3Tag?.genre,
-            played: 0,
-            lastPlayed: undefined,
-            artwork,
-            duration,
-            createdAt: (admin.firestore.FieldValue.serverTimestamp() as unknown) as admin.firestore.Timestamp,
-          };
-
-          // Update the user information (ie. the # of songs)
-          transaction.set(userRef, result.value);
-
-          // Finally create the new song
-          transaction.set(newSongRef, newSong);
-
-          return ok({});
-        });
-      } catch (e) {
-        // TODO how can we send info the the user??
-        // Maybe create a custom error with properties?
-        // It would be type unsafe but the easiest way
-        return err({
-          type: "error",
-          delete: true,
-          message: e.message,
-        });
-      }
-
-    }))
-    .then(dispose)
-    .then(async (result) => {
-      if (
-        !userId || 
-        !object.name || 
-        result.isOk() || 
-        result.error.type !== "error" || 
-        !result.error.delete
-      ) {
         return result;
-      }
-
-      try {
-        // It's important that we delete this file from storage when
-        // we detect an error
-        console.warn(`Deleting "${object.name}" due to failure.`);
-        await gcs.bucket(object.bucket).file(object.name).delete();
-        const user = await admin.auth().getUser(userId);
-
-        await sgMail.send({
-          from: "contact@relar.app",
-          to: user.email,
-          subject: "RELAR Upload Error",
-          text:
-            "There was an error processing your song. Please try again or contact support (ie. respond to this email)!",
-        });
-      } catch (e) {
-        console.warn(`Unable to send an email to ${userId}`);
-      }
-
-      return result;
-    })
-    .then(unwrap);
-});
+      })
+      .then(unwrap);
+  }),
+);

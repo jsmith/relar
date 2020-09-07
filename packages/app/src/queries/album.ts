@@ -3,6 +3,7 @@ import { Song, Album } from "../shared/types";
 import { useUserData } from "../firestore";
 import { useSongs } from "./songs";
 import { useFirebaseMemo, getCachedOr } from "../watcher";
+import { withPerformanceAndAnalytics } from "../firebase";
 
 const {
   useQuery: useAlbumsQuery,
@@ -17,11 +18,14 @@ export const useAlbums = () => {
 
   return useAlbumsQuery(
     ["albums", { uid: userData.userId }],
-    () =>
-      userData
-        .albums()
-        .get()
-        .then((result) => result.docs),
+    withPerformanceAndAnalytics(
+      () =>
+        userData
+          .albums()
+          .get()
+          .then((result) => result.docs),
+      "loading_albums",
+    ),
     {
       onSuccess: (docs) => {
         docs.forEach((doc) => {
@@ -31,6 +35,8 @@ export const useAlbums = () => {
           );
         });
       },
+      // Keep this fresh for the duration of the app
+      staleTime: Infinity,
     },
   );
 };

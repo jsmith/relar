@@ -176,10 +176,11 @@ export type LoginErrorCode =
 export const signInWithEmailAndPassword = async (
   email: string,
   password: string,
-): Promise<Result<unknown, { code: LoginErrorCode | "unknown"; message: string }>> => {
+): Promise<
+  Result<firebase.auth.UserCredential, { code: LoginErrorCode | "unknown"; message: string }>
+> => {
   try {
-    await auth.signInWithEmailAndPassword(email, password);
-    return ok({});
+    return ok(await auth.signInWithEmailAndPassword(email, password));
   } catch (e) {
     const code: LoginErrorCode = e.code;
     switch (code) {
