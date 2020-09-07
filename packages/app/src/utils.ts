@@ -9,7 +9,6 @@ import {
   MutableRefObject,
 } from "react";
 import * as Sentry from "@sentry/browser";
-import { QueryResult } from "react-query";
 import tiny from "tinycolor2";
 import { performance, analytics } from "./firebase";
 
