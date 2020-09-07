@@ -13,8 +13,14 @@ export function getOsEnv(
   return o[key] as string;
 }
 
+/**
+ * To set this up:
+ * firebase functions:config:set mail.sendgrid_api_key="API_KEY" mail.notification_email="jsmith@hey.com"
+ */
+
 export const env = {
   mail: {
     sendgrid_api_key: getOsEnv(config.mail, "sendgrid_api_key"),
+    notification_email: getOsEnv(config.mail, "notification_email"),
   },
 };
