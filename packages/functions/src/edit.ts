@@ -7,15 +7,18 @@ import { admin } from "./admin";
 import { adminDb, deleteAlbumIfSingleSong, deleteArtistSingleSong } from "./utils";
 import { createAlbumId } from "./shared/utils";
 import * as functions from "firebase-functions";
-import { Sentry } from "./sentry";
-import { captureException } from "@sentry/node";
 
 export const app = express();
 app.use(bodyParser.json());
 
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://toga-4e3f5.web.app", "https://relar.app"],
+    origin: [
+      "http://localhost:3000",
+      "https://toga-4e3f5.web.app",
+      "https://relar.app",
+      "https://staging.relar.app",
+    ],
   }),
 );
 
