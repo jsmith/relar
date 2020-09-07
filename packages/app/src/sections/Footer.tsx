@@ -28,7 +28,7 @@ export const Footer = () => {
           <span>•</span>
           <Link className="text-xs" route={routes.hero} label="Blog" />
           <span>•</span>
-          <Link className="text-xs" route={routes.hero} label="Privacy" />
+          <Link className="text-xs" route={routes.privacy} label="Privacy" />
         </span>
       </div>
     </footer>

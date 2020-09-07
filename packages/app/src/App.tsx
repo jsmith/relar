@@ -41,6 +41,7 @@ import { Queue } from "./sections/Queue";
 import FocusTrap from "focus-trap-react";
 import { clearCache } from "./watcher";
 import * as Sentry from "@sentry/browser";
+import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 
 export interface SideBarItem {
   label: string;
@@ -263,6 +264,8 @@ export const App = (_: React.Props<{}>) => {
     <Account />
   ) : route?.id === "invite" ? (
     <Invite />
+  ) : route?.id === "privacy" ? (
+    <PrivacyPolicy />
   ) : (
     <div className="text-black">404</div>
   );
