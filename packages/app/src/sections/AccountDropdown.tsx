@@ -3,32 +3,38 @@ import { useSelect } from "downshift";
 import { AiOutlineUser } from "react-icons/ai";
 import classNames from "classnames";
 import { FaCaretDown } from "react-icons/fa";
+import { useRouter } from "react-tiniest-router";
+import { routes } from "../routes";
+import { analytics, auth } from "../firebase";
+import { useDefinedUser } from "../auth";
+import { useModal } from "react-modal-hook";
+import { Feedback } from "./Feedback";
 
-const ITEMS = ["Account" as const, "Log Out" as const];
+const ITEMS = ["Account" as const, "Feedback" as const, "Log Out" as const];
 
 export interface AccountDropdownProps {
-  email: string;
   className?: string;
-  onAccountClick: () => void;
-  onLogoutClick: () => void;
 }
 
-export const AccountDropdown = ({
-  email,
-  className,
-  onAccountClick,
-  onLogoutClick,
-}: AccountDropdownProps) => {
+export const AccountDropdown = ({ className }: AccountDropdownProps) => {
+  const { goTo } = useRouter();
+  const user = useDefinedUser();
+  const [show, close] = useModal(() => <Feedback onExit={close} />);
+
   const { isOpen, getToggleButtonProps, highlightedIndex, getMenuProps, getItemProps } = useSelect({
     items: ITEMS,
     selectedItem: null,
     onSelectedItemChange: (j) => {
       switch (j.selectedItem) {
         case "Account":
-          onAccountClick();
+          goTo(routes.account);
           break;
         case "Log Out":
-          onLogoutClick();
+          analytics.logEvent("logout");
+          auth.signOut();
+          break;
+        case "Feedback":
+          show();
           break;
       }
     },
@@ -36,13 +42,12 @@ export const AccountDropdown = ({
 
   return (
     <div className={classNames("relative z-20", className)}>
-      {/* <label {...getLabelProps()}>Choose an element:</label> */}
       <button
         {...getToggleButtonProps()}
         className="flex items-center text-xs space-x-2 focus:outline-none border border-transparent focus:border-gray-300 rounded p-1"
       >
         <AiOutlineUser className="w-6 h-6 text-purple-500" />
-        <span className="hidden sm:block">{email}</span>
+        <span className="hidden sm:block">{user.email}</span>
         <FaCaretDown className="w-2" />
       </button>
       <ul

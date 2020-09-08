@@ -1,4 +1,4 @@
-import { Song, Album, Artist, UserData, BetaSignup, Playlist } from "./types";
+import { Song, Album, Artist, UserData, BetaSignup, Playlist, UserFeedback } from "./types";
 import { Record, Runtype, Static, Success, Failure } from "runtypes";
 
 export type DecodeResult<T> = (Success<T> | Failure) & { _unsafeUnwrap: () => T };
@@ -67,6 +67,8 @@ export const clientDb = (db: firebase.firestore.Firestore, userId: string) => {
       db.collection(`user_data/${userId}/playlists`) as CollectionReference<Playlist>,
     playlist: (id: string) =>
       db.doc(`user_data/${userId}/playlists/${id}`) as DocumentReference<Playlist>,
+    feedback: (id: string) =>
+      db.doc(`user_data/${userId}/feedback/${id}`) as DocumentReference<UserFeedback>,
   };
 };
 

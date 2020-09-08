@@ -24,8 +24,16 @@ export const Footer = () => {
 
         <div className="flex-grow" />
         <span className="flex items-center space-x-2 text-gray-600">
-          <Link className="text-xs" route={routes.hero} label="FAQ" />
+          <a
+            className="text-xs"
+            href="https://github.com/jsmith/relar-roadmap/projects/1"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Roadmap
+          </a>
           <span>•</span>
+          {/* TODO */}
           <Link className="text-xs" route={routes.hero} label="Blog" />
           <span>•</span>
           <Link className="text-xs" route={routes.privacy} label="Privacy" />

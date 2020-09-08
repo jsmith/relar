@@ -26,7 +26,7 @@ const PlaylistOverview = React.lazy(() => import("./pages/PlaylistOverview"));
 const Invite = React.lazy(() => import("./pages/Invite"));
 const Generated = React.lazy(() => import("./pages/Generated"));
 import ReactQueryDevtools from "react-query-devtools";
-import { AccountDropdown } from "./components/AccountDropdown";
+import { AccountDropdown } from "./sections/AccountDropdown";
 import { auth, analytics } from "./firebase";
 import { useDocumentTitle } from "./utils";
 import { Link } from "./components/Link";
@@ -141,11 +141,6 @@ export const App = (_: React.Props<{}>) => {
     // If we don't do this we will still try to load components which will break things
     return <LoadingSpinner className="h-screen" />;
   }
-
-  const logout = async () => {
-    analytics.logEvent("logout");
-    await auth.signOut();
-  };
 
   const content = route?.sidebar ? (
     <UploadModal
@@ -299,12 +294,7 @@ export const App = (_: React.Props<{}>) => {
         )}
         <div className="flex-grow" />
         {user ? (
-          <AccountDropdown
-            email={user.email ?? ""}
-            className="z-10"
-            onAccountClick={() => goTo(routes.account)}
-            onLogoutClick={logout}
-          />
+          <AccountDropdown className="z-10" />
         ) : (
           <div className="flex space-x-2">
             <Link

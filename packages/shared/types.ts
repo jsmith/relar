@@ -13,6 +13,8 @@ import {
 } from "runtypes";
 import * as firebase from "firebase";
 
+export const Timestamp = Unknown.withGuard((x): x is firebase.firestore.Timestamp => true);
+
 export const UserDataType = Record({
   songCount: Number.Or(Undefined),
 });
@@ -111,7 +113,7 @@ export const SongType = Record({
   liked: Boolean.Or(Undefined),
 
   /** When the song was liked. This should be updated every time that it is liked. */
-  whenLiked: Unknown.withGuard((x): x is firebase.firestore.Timestamp => true).Or(Undefined),
+  whenLiked: Timestamp.Or(Undefined),
 
   /**
    * The # of times you've played this song.
@@ -121,12 +123,12 @@ export const SongType = Record({
   /**
    * The last time you played a song.
    */
-  lastPlayed: Unknown.withGuard((x): x is firebase.firestore.Timestamp => true).Or(Undefined),
+  lastPlayed: Timestamp.Or(Undefined),
 
   /**
    * When the song was uploaded.
    */
-  createdAt: Unknown.withGuard((x): x is firebase.firestore.Timestamp => true),
+  createdAt: Timestamp,
 
   /**
    * The hash of the song artwork.
@@ -156,7 +158,7 @@ export const BetaSignupType = Record({
   Partial({
     token: String,
     /** When the user signed up. */
-    createdAt: Unknown.withGuard((x): x is firebase.firestore.Timestamp => true),
+    createdAt: Timestamp,
   }),
 );
 
@@ -194,10 +196,22 @@ export const PlaylistType = Record({
   ).Or(Undefined),
 
   /** When the playlist was created. */
-  createdAt: Unknown.withGuard((x): x is firebase.firestore.Timestamp => true),
+  createdAt: Timestamp,
 });
 
 export type Playlist = Static<typeof PlaylistType>;
+
+export const UserFeedbackType = Record({
+  id: String,
+  /**
+   * The actual feedback.
+   */
+  feedback: String,
+  type: Literal("issue").Or(Literal("idea")).Or(Literal("other")),
+  createdAt: Timestamp,
+});
+
+export type UserFeedback = Static<typeof UserFeedbackType>;
 
 export type SuccessWithData<Data> = {
   type: "success";
