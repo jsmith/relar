@@ -42,6 +42,7 @@ import FocusTrap from "focus-trap-react";
 import { clearCache } from "./watcher";
 import * as Sentry from "@sentry/browser";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
+import { TermsAndConditions } from "./pages/TermsAndConditions";
 
 export interface SideBarItem {
   label: string;
@@ -261,6 +262,8 @@ export const App = (_: React.Props<{}>) => {
     <Invite />
   ) : route?.id === "privacy" ? (
     <PrivacyPolicy />
+  ) : route?.id === "terms" ? (
+    <TermsAndConditions />
   ) : (
     <div className="text-black">404</div>
   );

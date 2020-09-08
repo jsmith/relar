@@ -154,4 +154,12 @@ export const routes = {
     className: "",
     title: "Privacy Policy | RELAR",
   },
+  terms: {
+    id: "terms",
+    path: "/terms",
+    protected: false,
+    sidebar: false,
+    className: "",
+    title: "Terms and Conditions | RELAR",
+  },
 } as const;

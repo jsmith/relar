@@ -22,9 +22,7 @@ export const PrivacyPolicy = () => {
           This Privacy Policy applies only to our online activities and is valid for visitors to our
           website with regards to the information that they shared and/or collect in RELAR. This
           policy is not applicable to any information collected offline or via channels other than
-          this website. Our Privacy Policy was created with the help of the{" "}
-          <a href="https://www.privacypolicygenerator.info">Privacy Policy Generator</a> and the{" "}
-          <a href="https://www.generateprivacypolicy.com">Generate Privacy Policy Generator</a>.
+          this website.
         </p>
 
         <h2>Consent</h2>
