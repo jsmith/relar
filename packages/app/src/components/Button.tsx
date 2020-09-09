@@ -8,7 +8,7 @@ export interface ButtonProps
     HTMLButtonElement
   > {
   label?: string;
-  theme?: "purple" | "red" | "none";
+  theme?: "purple" | "red" | "none" | "disabled";
   invert?: boolean;
   loading?: boolean;
   height?: string;
@@ -28,6 +28,10 @@ const classes = {
   none: {
     default:
       "border-gray-300 bg-white text-gray-700 focus:bg-gray-100 hover:bg-gray-100 focus:border-gray-500",
+    invert: "text-white border-gray-100",
+  },
+  disabled: {
+    default: "border-gray-100 bg-gray-200 text-gray-500 cursor-not-allowed",
     invert: "text-white border-gray-100",
   },
 };
@@ -53,6 +57,7 @@ export const Button = ({
         props.className,
         height,
       )}
+      disabled={theme === "disabled"}
     >
       {loading ? <ThreeDots fill="currentColor" className="w-16 h-4" /> : props.label}
     </button>

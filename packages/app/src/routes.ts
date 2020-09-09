@@ -146,4 +146,20 @@ export const routes = {
     className: "",
     title: "Generated | RELAR",
   },
+  privacy: {
+    id: "privacy",
+    path: "/privacy",
+    protected: false,
+    sidebar: false,
+    className: "",
+    title: "Privacy Policy | RELAR",
+  },
+  terms: {
+    id: "terms",
+    path: "/terms",
+    protected: false,
+    sidebar: false,
+    className: "",
+    title: "Terms and Conditions | RELAR",
+  },
 } as const;
