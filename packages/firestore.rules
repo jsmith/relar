@@ -47,6 +47,10 @@ service cloud.firestore {
         allow create: if isUser() && newKeys().hasOnly(['name', 'songs', 'createdAt']) && newKeys().hasAll(['name', 'createdAt'])
         allow delete: if isUser()
       }
+
+      match /feedback/{feedbackId} {
+        allow create: if isUser()
+      }
     }
   }
 }
