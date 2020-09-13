@@ -1,5 +1,3 @@
-"use strict";
-
 import { test } from "uvu";
 import fs from "fs";
 import path from "path";

@@ -1,5 +1,5 @@
 import React from "react";
-import { usePlaylists, usePlaylistAdd } from "../queries/playlists";
+import { usePlaylists, usePlaylistAdd } from "../shared/web/queries/playlists";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { PlaylistCard } from "../sections/PlaylistCard";
 

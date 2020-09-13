@@ -1,15 +1,10 @@
 import * as f from "firebase-functions";
-import {
-  deleteAllUserData,
-  adminStorage,
-  adminDb,
-  deleteAlbumIfSingleSong,
-  deleteArtistSingleSong,
-} from "./utils";
+import { deleteAllUserData, deleteAlbumIfSingleSong, deleteArtistSingleSong } from "./utils";
+import { adminDb, adminStorage } from "./shared/node/utils";
 import { Sentry, setSentryUser, wrapAndReport } from "./sentry";
 import { admin } from "./admin";
-import { Playlist, SongType } from "./shared/types";
-import { createAlbumId, decode } from "./shared/utils";
+import { Playlist, SongType } from "./shared/universal/types";
+import { createAlbumId, decode } from "./shared/universal/utils";
 
 const db = admin.firestore();
 

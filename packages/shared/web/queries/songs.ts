@@ -1,8 +1,8 @@
 import firebase from "firebase/app";
-import { clientStorage } from "../shared/utils";
-import { createQueryCache } from "../queries/cache";
-import { Song } from "../shared/types";
-import { storage, withPerformanceAndAnalytics } from "../firebase";
+import { clientStorage } from "../../universal/utils";
+import { createQueryCache } from "./cache";
+import { Song } from "../../universal/types";
+import { withPerformanceAndAnalytics } from "../performance";
 import { getDownloadURL } from "../storage";
 import { captureAndLogError, captureAndLog } from "../utils";
 import { useUserData } from "../firestore";
@@ -97,7 +97,7 @@ export const tryToGetSongDownloadUrlOrLog = async (
   }
 
   const result = await getDownloadURL(
-    clientStorage(storage, user.uid).song(data.id, data.fileName),
+    clientStorage(firebase.storage(), user.uid).song(data.id, data.fileName),
   );
 
   if (result.isOk()) {

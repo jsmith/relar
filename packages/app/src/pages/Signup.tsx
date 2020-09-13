@@ -6,7 +6,7 @@ import { Input } from "../components/Input";
 import { Link } from "../components/Link";
 import { betaBackend, getOrUnknownError } from "../backend";
 import { BlockAlert } from "../components/BlockAlert";
-import { analytics } from "../firebase";
+import firebase from "firebase/app";
 
 const BETA_TEXT =
   "Want to be apart of the beta? Sign up now and we'll add you to our testers list.";
@@ -24,7 +24,7 @@ export const Signup = () => {
 
     setLoading(false);
     if (result.data.type === "success") {
-      analytics.logEvent("beta_sign_up", { method: "email" });
+      firebase.analytics().logEvent("beta_sign_up", { method: "email" });
       setSuccess(true);
       return;
     } else {

@@ -1,11 +1,9 @@
 import React, { useEffect } from "react";
 import { useRouter } from "react-tiniest-router";
 import { CardPage } from "../components/CardPage";
-import { Button } from "../components/Button";
 import { routes } from "../routes";
-import { auth } from "../firebase";
 import * as Sentry from "@sentry/browser";
-import { sendPasswordResetEmail } from "../auth";
+import { sendPasswordResetEmail } from "../shared/web/auth";
 import { MdEmail } from "react-icons/md";
 import { LinkButton } from "../components/LinkButton";
 

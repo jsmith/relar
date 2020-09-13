@@ -1,14 +1,14 @@
-import { createQueryCache } from "../queries/cache";
-import { Playlist, Song } from "../shared/types";
+import { createQueryCache } from "./cache";
+import { Playlist, Song } from "../../universal/types";
 import { useUserData } from "../firestore";
 import { useMutation } from "react-query";
 import * as uuid from "uuid";
-import firebase from "firebase/app";
 import { updateCached, getCachedOr, useFirebaseUpdater } from "../watcher";
 import { useMemo } from "react";
-import { useSongs, useSongLookup } from "./songs";
+import { useSongLookup } from "./songs";
 import { SongInfo } from "../queue";
-import { withPerformanceAndAnalytics, firestore } from "../firebase";
+import { withPerformanceAndAnalytics } from "../performance";
+import firebase from "firebase/app";
 
 const { useQuery: usePlaylistsQuery, queryCache } = createQueryCache<
   ["playlists", { uid: string }],
@@ -95,7 +95,7 @@ export const usePlaylistAdd = () => {
 
   return useMutation(
     async ({ playlistId, songId }: { playlistId: string; songId: string }) => {
-      return await firestore.runTransaction(async (transaction) => {
+      return await firebase.firestore().runTransaction(async (transaction) => {
         const playlist = userData.playlist(playlistId);
         const snap = await transaction.get(playlist);
         const data = snap.data();
@@ -166,7 +166,7 @@ export const usePlaylistRemoveSong = (playlistId: string | undefined) => {
      * @param targetId The ID of the playlist element. This is *not* the ID of the song.
      */
     async (targetId: string) => {
-      return firestore.runTransaction(async (transaction) => {
+      return firebase.firestore().runTransaction(async (transaction) => {
         if (playlistId === undefined) {
           return;
         }

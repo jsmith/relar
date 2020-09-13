@@ -1,5 +1,5 @@
 import React from "react";
-import { Song } from "../shared/types";
+import { Song } from "../shared/universal/types";
 import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "react-tiniest-router";
 import { routes } from "../routes";

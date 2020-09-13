@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { routes } from "./routes";
 import { useRouter } from "react-tiniest-router";
-import { useUser, useUserChange } from "./auth";
+import { useUser, useUserChange } from "./shared/web/auth";
 import { Sidebar } from "./components/Sidebar";
 import { FaMusic } from "react-icons/fa";
 import { GiSwordSpin } from "react-icons/gi";
@@ -27,8 +27,8 @@ const Invite = React.lazy(() => import("./pages/Invite"));
 const Generated = React.lazy(() => import("./pages/Generated"));
 import ReactQueryDevtools from "react-query-devtools";
 import { AccountDropdown } from "./sections/AccountDropdown";
-import { auth, analytics } from "./firebase";
-import { useDocumentTitle } from "./utils";
+import firebase from "firebase/app";
+import { useDocumentTitle } from "./shared/web/utils";
 import { Link } from "./components/Link";
 import { button, link, bgApp } from "./classes";
 import { SkipNavLink, SkipNavContent } from "@reach/skip-nav";
@@ -36,10 +36,10 @@ import "@reach/skip-nav/styles.css";
 import "./index.css";
 import { UploadModal } from "./sections/UploadModal";
 import { LoadingSpinner } from "./components/LoadingSpinner";
-import { QueueAudio } from "./queue";
+import { QueueAudio } from "./shared/web/queue";
 import { Queue } from "./sections/Queue";
 import FocusTrap from "focus-trap-react";
-import { clearCache } from "./watcher";
+import { clearCache } from "./shared/web/watcher";
 import * as Sentry from "@sentry/browser";
 import { PrivacyPolicy } from "./pages/PrivacyPolicy";
 import { TermsAndConditions } from "./pages/TermsAndConditions";
@@ -102,7 +102,7 @@ export const App = (_: React.Props<{}>) => {
   useEffect(() => {
     if (loading) return;
     // This seems to have the uid so we should be able to track logins by user!
-    analytics.logEvent("app_open");
+    firebase.analytics().logEvent("app_open");
   }, [loading]);
 
   useEffect(() => {
@@ -110,7 +110,7 @@ export const App = (_: React.Props<{}>) => {
     // you the number of users who have visited each screen in your app, and which screens are
     // the most popular."
     // See https://firebase.googleblog.com/2020/08/google-analytics-manual-screen-view.html
-    analytics.logEvent("screen_view", { app_name: "RELAR", screen_name: routeId });
+    firebase.analytics().logEvent("screen_view", { app_name: "RELAR", screen_name: routeId });
   });
 
   // We need to reset the cache every time the user changes
@@ -120,10 +120,10 @@ export const App = (_: React.Props<{}>) => {
     useCallback((user) => {
       if (!user) {
         Sentry.setUser(null);
-        analytics.setUserId("");
+        firebase.analytics().setUserId("");
       } else {
         Sentry.setUser({ id: user.uid });
-        analytics.setUserId(user.uid);
+        firebase.analytics().setUserId(user.uid);
       }
     }, []),
   );

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Modal } from "../components/Modal";
-import { useDefinedUser, useUser } from "../auth";
+import { useDefinedUser, useUser } from "../shared/web/auth";
 import { BsExclamationTriangle } from "react-icons/bs";
 import { Input } from "../components/Input";
 import { ErrorTemplate } from "../components/ErrorTemplate";

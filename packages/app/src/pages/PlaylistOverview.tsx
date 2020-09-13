@@ -1,15 +1,15 @@
 import React, { useMemo } from "react";
 import { useRouter } from "react-tiniest-router";
-import { fmtToDate } from "../utils";
+import { fmtToDate } from "../shared/web/utils";
 import {
   usePlaylist,
   usePlaylistRemoveSong,
   usePlaylistSongs,
   usePlaylistRename,
   usePlaylistDelete,
-} from "../queries/playlists";
+} from "../shared/web/queries/playlists";
 import { HiOutlineTrash } from "react-icons/hi";
-import { useFirebaseUpdater } from "../watcher";
+import { useFirebaseUpdater } from "../shared/web/watcher";
 import { useConfirmAction } from "../confirm-actions";
 import { routes } from "../routes";
 import { SongsOverview } from "../sections/SongsOverview";

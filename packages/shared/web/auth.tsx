@@ -1,13 +1,15 @@
 import React, { createContext, useEffect, useState, useContext, useCallback, useRef } from "react";
-import { auth } from "./firebase";
+import firebase from "firebase/app";
 import { Result, err, ok } from "neverthrow";
 import { captureAndLog } from "./utils";
 import * as Sentry from "@sentry/browser";
 
-export const UserContext = createContext<{
+export interface UserContextInterface {
   user: firebase.User | undefined;
   loading: boolean;
-}>({ user: undefined, loading: true });
+}
+
+export const UserContext = createContext<UserContextInterface>({ user: undefined, loading: true });
 
 export const UserProvider = (props: React.Props<{}>) => {
   const [loading, setLoading] = useState(true);
@@ -25,7 +27,7 @@ export const UserProvider = (props: React.Props<{}>) => {
   );
 
   useEffect(() => {
-    return auth.onAuthStateChanged(checkUser);
+    return firebase.auth().onAuthStateChanged(checkUser);
   }, [checkUser]);
 
   return <UserContext.Provider value={{ user, loading }}>{props.children}</UserContext.Provider>;
@@ -66,7 +68,7 @@ export const sendPasswordResetEmail = async (
   email: string,
 ): Promise<Result<unknown, { code: PasswordResetErrorCode | "unknown"; message: string }>> => {
   try {
-    await auth.sendPasswordResetEmail(email);
+    await firebase.auth().sendPasswordResetEmail(email);
     return ok({});
   } catch (e) {
     const code: "auth/invalid-email" = e.code;
@@ -180,7 +182,7 @@ export const signInWithEmailAndPassword = async (
   Result<firebase.auth.UserCredential, { code: LoginErrorCode | "unknown"; message: string }>
 > => {
   try {
-    return ok(await auth.signInWithEmailAndPassword(email, password));
+    return ok(await firebase.auth().signInWithEmailAndPassword(email, password));
   } catch (e) {
     const code: LoginErrorCode = e.code;
     switch (code) {

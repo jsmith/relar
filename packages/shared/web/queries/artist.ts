@@ -1,10 +1,10 @@
-import { createQueryCache } from "../queries/cache";
-import { Artist } from "../shared/types";
+import { createQueryCache } from "./cache";
+import { Artist } from "../../universal/types";
 import { useUserData } from "../firestore";
 import { useFirebaseMemo, getCachedOr } from "../watcher";
 import { useSongs } from "./songs";
 import { useMemo } from "react";
-import { withPerformanceAndAnalytics } from "../firebase";
+import { withPerformanceAndAnalytics } from "../performance";
 
 const { useQuery: useArtistQuery, queryCache: artistQueryCache } = createQueryCache<
   ["artists", { uid: string; id: string }],

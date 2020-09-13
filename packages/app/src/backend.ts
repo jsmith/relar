@@ -1,7 +1,7 @@
 import axios from "@graywolfai/rest-ts-axios";
-import { BetaAPI, UnknownError, MetadataAPI } from "./shared/types";
+import { BetaAPI, UnknownError, MetadataAPI } from "./shared/universal/types";
 import { env } from "./env";
-import { captureAndLog } from "./utils";
+import { captureAndLog } from "./shared/web/utils";
 
 export const betaBackend = axios.create<BetaAPI>({ baseURL: env.betaBaseUrl });
 export const metadataBackend = axios.create<MetadataAPI>({ baseURL: env.metadataBaseUrl });

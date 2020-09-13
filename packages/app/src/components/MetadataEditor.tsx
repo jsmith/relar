@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Song, MetadataAPI } from "../shared/types";
+import { Song, MetadataAPI } from "../shared/universal/types";
 import { OkCancelModal } from "./OkCancelModal";
 import { Input } from "./Input";
-import { useFirebaseUpdater } from "../watcher";
+import { useFirebaseUpdater } from "../shared/web/watcher";
 import { metadataBackend, getOrUnknownError } from "../backend";
-import { useDefinedUser } from "../auth";
+import { useDefinedUser } from "../shared/web/auth";
 import { BlockAlert } from "./BlockAlert";
 
 export interface MetadataEditorProps {

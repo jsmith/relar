@@ -1,15 +1,15 @@
 import React, { useState } from "react";
-import { Song } from "../shared/types";
+import { Song } from "../shared/universal/types";
 import { Input } from "../components/Input";
 import { ErrorTemplate } from "../components/ErrorTemplate";
-import { usePlaylists, usePlaylistCreate, usePlaylistAdd } from "../queries/playlists";
+import { usePlaylists, usePlaylistCreate, usePlaylistAdd } from "../shared/web/queries/playlists";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { Modal } from "../components/Modal";
 import { SearchMagnifyingGlass } from "../illustrations/SearchMagnifyingGlass";
 import { BlockAlert } from "../components/BlockAlert";
-import { pluralSongs, fmtToDate } from "../utils";
+import { pluralSongs, fmtToDate } from "../shared/web/utils";
 import { HiChevronRight } from "react-icons/hi";
-import { getCachedOr } from "../watcher";
+import { getCachedOr } from "../shared/web/watcher";
 
 export interface MetadataEditorProps {
   setDisplay: (display: boolean) => void;

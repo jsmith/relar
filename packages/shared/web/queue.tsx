@@ -1,6 +1,6 @@
 import React, { useContext, useState, useCallback, useRef, useEffect } from "react";
 import { createContext } from "react";
-import { Song } from "./shared/types";
+import { Song } from "../universal/types";
 import { tryToGetSongDownloadUrlOrLog } from "./queries/songs";
 import usePortalImport from "react-useportal";
 import { useUser } from "./auth";
@@ -13,7 +13,7 @@ import {
 import firebase from "firebase/app";
 import { updateCachedWithSnapshot } from "./watcher";
 import { useHotkeys } from "react-hotkeys-hook";
-import { createEmitter } from "./events";
+import { createEmitter } from "../../events";
 import * as uuid from "uuid";
 
 const usePortal: typeof usePortalImport = (usePortalImport as any).default;

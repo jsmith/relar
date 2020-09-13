@@ -1,6 +1,6 @@
 import React from "react";
 import { HomeTopic } from "../components/HomeTopic";
-import { useRecentlyAddedSongs, useLikedSongs } from "../queries/songs";
+import { useRecentlyAddedSongs, useLikedSongs } from "../shared/web/queries/songs";
 import { SongCard } from "../sections/SongCard";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { routes } from "../routes";

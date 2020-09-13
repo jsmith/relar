@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from "react";
 import { Modal } from "../components/Modal";
 import { Input } from "../components/Input";
-import { useDefinedUser, signInWithEmailAndPassword, useUser } from "../auth";
-import { captureAndLogError } from "../utils";
+import { useDefinedUser, signInWithEmailAndPassword, useUser } from "../shared/web/auth";
+import { captureAndLogError } from "../shared/web/utils";
 import { BlockAlert } from "../components/BlockAlert";
 import { OkCancelModal } from "./OkCancelModal";
 

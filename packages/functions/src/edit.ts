@@ -1,11 +1,12 @@
 import express from "express";
 import cors from "cors";
 import { TypedAsyncRouter } from "@graywolfai/rest-ts-express";
-import { MetadataAPI, Song, Album } from "./shared/types";
+import { MetadataAPI, Song, Album } from "./shared/universal/types";
 import * as bodyParser from "body-parser";
 import { admin } from "./admin";
-import { adminDb, deleteAlbumIfSingleSong, deleteArtistSingleSong } from "./utils";
-import { createAlbumId } from "./shared/utils";
+import { deleteAlbumIfSingleSong, deleteArtistSingleSong } from "./utils";
+import { adminDb } from "./shared/node/utils";
+import { createAlbumId } from "./shared/universal/utils";
 import * as functions from "firebase-functions";
 import { Sentry } from "./sentry";
 

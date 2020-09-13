@@ -1,9 +1,10 @@
 import { admin } from "./admin";
-import { removeUndefined, adminDb } from "./utils";
-import { Song, Album, Artist, Playlist } from "./shared/types";
+import { removeUndefined } from "./utils";
+import { adminDb } from "./shared/node/utils";
+import { Song, Album, Artist, Playlist } from "./shared/universal/types";
 import axios from "axios";
 import * as uuid from "uuid";
-import { createAlbumId } from "./shared/utils";
+import { createAlbumId } from "./shared/universal/utils";
 import "uvu";
 import assert from "uvu/assert";
 
@@ -66,7 +67,7 @@ export const createTestUser = async (): Promise<{ user: admin.auth.UserRecord; t
   };
 };
 
-export const songOne: Partial<Song> = {
+export const songOne = {
   title: "one",
 };
 
@@ -76,7 +77,7 @@ export const songTwoAlbumId = createAlbumId({
   albumName: "Old Al",
 });
 
-export const songTwo: Partial<Song> = {
+export const songTwo = {
   title: "two",
   artist: "Old Ar",
   albumArtist: "Old AA",

@@ -11,9 +11,11 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v2
-      # FIXME I'm not sure this will work for monorepos
-      # - uses: c-hive/gha-npm-cache@v1
       - uses: actions/setup-node@v1
+      - uses: c-hive/gha-npm-cache@v1
+      # We *need* to hoist our dependencies due to symlinks
+      - run: npm run bootstrap
+      - run: npx patch-package
 
       - id: changes
         uses: jsmith/changes-since-last-tag@v0.3.2
@@ -27,8 +29,6 @@ jobs:
       # See https://firebase.google.com/docs/cli#cli-ci-systems
       - if: contains(steps.changes.outputs.files, 'packages/functions/')
         run: |
-          npm install
-          npx patch-package
           npm run build
           firebase deploy --only functions --project staging
         env: { FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}" }
@@ -36,8 +36,6 @@ jobs:
 
       - if: contains(steps.changes.outputs.files, 'packages/app/')
         run: |
-          npm install
-          npx patch-package
           npm run build
           firebase deploy --only hosting --project production
         env: { FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}" }

@@ -1,8 +1,6 @@
 import * as admin from "firebase-admin";
 import { GetFilesResponse } from "@google-cloud/storage";
-import { adminDb } from "./shared/admin-utils";
-// TODO remove
-export * from "./shared/admin-utils";
+import { adminDb } from "./shared/node/utils";
 
 export const deleteCollection = async (
   collection: FirebaseFirestore.CollectionReference<unknown>,

@@ -4,8 +4,8 @@ import AriaModal from "react-aria-modal";
 import * as uuid from "uuid";
 import { UploadRow } from "../components/UploadRow";
 import { link } from "../classes";
-import { useUserStorage } from "../storage";
-import { analytics } from "../firebase";
+import { useUserStorage } from "../shared/web/storage";
+import firebase from "firebase/app";
 
 export interface UploadModalProps {
   children?: React.ReactNode;
@@ -51,7 +51,7 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
       }
     });
 
-    analytics.logEvent("songs_uploaded", {
+    firebase.analytics().logEvent("songs_uploaded", {
       value: newFiles.length,
     });
 

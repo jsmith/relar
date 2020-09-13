@@ -7,7 +7,7 @@ import { useRouter } from "react-tiniest-router";
 import { BlockAlert } from "../components/BlockAlert";
 import { Button } from "../components/Button";
 import { betaBackend, getOrUnknownError } from "../backend";
-import { analytics } from "../firebase";
+import firebase from "firebase/app";
 
 export const Invite = () => {
   const { params } = useRouter();
@@ -30,7 +30,7 @@ export const Invite = () => {
 
     const data = response.data;
     if (data.type === "success") {
-      analytics.logEvent("sign_up", { method: "email", invite });
+      firebase.analytics().logEvent("sign_up", { method: "email", invite });
       setSuccess(true);
       return;
     }

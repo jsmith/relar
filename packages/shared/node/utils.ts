@@ -1,7 +1,7 @@
 import * as admin from "firebase-admin";
 import * as path from "path";
-import { createPath, createAlbumId, AlbumId } from "./utils";
-import { Album, UserData, Artist, Song, BetaSignup, Playlist } from "./types";
+import { createPath, createAlbumId, AlbumId } from "../universal/utils";
+import { Album, UserData, Artist, Song, BetaSignup, Playlist } from "../universal/types";
 
 export const adminStorage = (storage: admin.storage.Storage, userId: string) => {
   const p = createPath().append(userId);

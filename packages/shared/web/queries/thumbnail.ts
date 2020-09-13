@@ -1,10 +1,10 @@
 import { getDownloadURL } from "../storage";
 import { useDefinedUser } from "../auth";
-import { Artwork } from "../shared/types";
-import { clientStorage } from "../shared/utils";
+import { Artwork } from "../../universal/types";
+import { clientStorage } from "../../universal/utils";
 import * as Sentry from "@sentry/browser";
 import { useEffect, useState, useMemo } from "react";
-import { storage } from "../firebase";
+import firebase from "firebase/app";
 
 export type ThumbnailSize = "32" | "64" | "128" | "256";
 
@@ -81,7 +81,7 @@ export const tryToGetDownloadUrlOrLog = async (
   }
 
   const result = await getDownloadURL(
-    clientStorage(storage, user.uid).artworks(artwork.hash, artwork.type)[size](),
+    clientStorage(firebase.storage(), user.uid).artworks(artwork.hash, artwork.type)[size](),
   );
 
   if (result.isOk()) {

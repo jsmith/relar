@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "../components/Button";
-import { auth, analytics } from "../firebase";
+import firebase from "firebase/app";
 import { useRouter } from "react-tiniest-router";
 import { routes } from "../routes";
-import { useUser, signInWithEmailAndPassword } from "../auth";
-import * as Sentry from "@sentry/browser";
+import { useUser, signInWithEmailAndPassword } from "../shared/web/auth";
 import { CardPage } from "../components/CardPage";
 import { Input } from "../components/Input";
 import { Link } from "../components/Link";
-import { preventAndCall, wrap } from "../utils";
+import { preventAndCall, wrap } from "../shared/web/utils";
 import { useHotkeys } from "react-hotkeys-hook";
 import { BlockAlert } from "../components/BlockAlert";
 
@@ -32,7 +31,7 @@ export const Login = () => {
     const result = await signInWithEmailAndPassword(email, password);
     setLoading(false);
     if (result.isOk()) {
-      analytics.logEvent("login", {
+      firebase.analytics().logEvent("login", {
         method: result.value.credential?.signInMethod,
         uid: result.value.user?.uid,
       });

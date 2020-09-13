@@ -1,5 +1,4 @@
-import React, { createContext, useState, useContext, useRef, useCallback } from "react";
-import { ConfirmPassword } from "./components/ConfirmPassword";
+import React, { createContext, useContext, useRef, useCallback } from "react";
 import { ActionConfirmationModal } from "./components/ActionConfirmationModal";
 import { useModal } from "react-modal-hook";
 

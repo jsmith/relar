@@ -14,18 +14,18 @@ if (process.env.NODE_ENV !== "development") {
 }
 
 // It's super important to import this first
-import "./watcher";
+import "./shared/web/watcher";
 import { App } from "./App"; // this must be first for hot reloading
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Router } from "react-tiniest-router";
 import { routes } from "./routes";
-import { UserProvider } from "./auth";
-import { QueueProvider } from "./queue";
+import { UserProvider } from "./shared/web/auth";
+import { QueueProvider } from "./shared/web/queue";
 import { ConfirmActionProvider } from "./confirm-actions";
 import { ConfirmPasswordProvider } from "./confirm-password";
 import { ReactQueryConfigProvider, ReactQueryProviderConfig } from "react-query";
-import { captureAndLog } from "./utils";
+import { captureAndLog } from "./shared/web/utils";
 import { ModalProvider } from "react-modal-hook";
 
 const config: ReactQueryProviderConfig = {

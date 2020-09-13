@@ -1,8 +1,8 @@
 import express from "express";
 import cors from "cors";
 import { TypedAsyncRouter } from "@graywolfai/rest-ts-express";
-import { BetaAPI, BetaSignup, BetaSignupType } from "./shared/types";
-import { isPasswordValid, decode } from "./shared/utils";
+import { BetaAPI, BetaSignup, BetaSignupType } from "./shared/universal/types";
+import { isPasswordValid, decode } from "./shared/universal/utils";
 import * as bodyParser from "body-parser";
 import sgMail from "@sendgrid/mail";
 import { env } from "./env";
@@ -10,7 +10,7 @@ import { admin } from "./admin";
 import { Sentry, wrapAndReport, setSentryUser } from "./sentry";
 import { Result, ok, err } from "neverthrow";
 import * as functions from "firebase-functions";
-import { betaSignups } from "./utils";
+import { betaSignups } from "./shared/node/utils";
 
 sgMail.setApiKey(env.mail.sendgrid_api_key);
 

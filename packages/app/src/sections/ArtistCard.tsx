@@ -1,11 +1,11 @@
 import React from "react";
-import { Album, Artist } from "../shared/types";
+import { Album, Artist } from "../shared/universal/types";
 import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "react-tiniest-router";
 import { routes } from "../routes";
-import { useArtistSongs } from "../queries/artist";
-import { useQueue } from "../queue";
-import { useFirebaseUpdater } from "../watcher";
+import { useArtistSongs } from "../shared/web/queries/artist";
+import { useQueue } from "../shared/web/queue";
+import { useFirebaseUpdater } from "../shared/web/watcher";
 
 export const ArtistCard = ({
   artist,

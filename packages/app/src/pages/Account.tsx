@@ -1,14 +1,14 @@
 import React, { useState, useCallback } from "react";
-import { useDefinedUser } from "../auth";
+import { useDefinedUser } from "../shared/web/auth";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { ProgressBar } from "../components/ProgressBar";
-import { useUserDataDoc } from "../queries/user";
+import { useUserDataDoc } from "../shared/web/queries/user";
 import { Button, ButtonProps } from "../components/Button";
 import { BlockAlert } from "../components/BlockAlert";
 import { Result, ok } from "neverthrow";
 import { useConfirmPassword } from "../confirm-password";
 import { useConfirmAction } from "../confirm-actions";
-import { resetPassword, changeEmail, deleteAccount } from "../auth";
+import { resetPassword, changeEmail, deleteAccount } from "../shared/web/auth";
 
 export const OverviewSection = ({
   title,

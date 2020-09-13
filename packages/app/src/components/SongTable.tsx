@@ -1,5 +1,5 @@
 import React, { useMemo, useState, CSSProperties } from "react";
-import { Song } from "../shared/types";
+import { Song } from "../shared/universal/types";
 import classNames from "classnames";
 import {
   MdMusicNote,
@@ -18,18 +18,17 @@ import { IconButton } from "./IconButton";
 import useDropdownMenuImport from "react-accessible-dropdown-menu-hook";
 import { ContextMenu, ContextMenuItem } from "./ContextMenu";
 import { useConfirmAction } from "../confirm-actions";
-import { useLikeSong, useDeleteSong } from "../queries/songs";
-import { useFirebaseUpdater } from "../watcher";
-import { fmtMSS } from "../utils";
+import { useLikeSong, useDeleteSong } from "../shared/web/queries/songs";
+import { useFirebaseUpdater } from "../shared/web/watcher";
+import { fmtMSS } from "../shared/web/utils";
 import { Link } from "./Link";
 import { routes } from "../routes";
 import { link } from "../classes";
 import { AddToPlaylistEditor } from "../sections/AddToPlaylistModal";
 import { Skeleton } from "./Skeleton";
-import { useQueue, SetQueueSource, SongInfo, isSongInfo } from "../queue";
+import { useQueue, SetQueueSource, SongInfo, isSongInfo } from "../shared/web/queue";
 import { useRecycle, SentinelBlock } from "../recycle";
 import { Audio } from "@jsmith21/svg-loaders-react";
-import { act } from "react-test-renderer";
 
 // I really wish I didn't have to do this but for some reason this is the only thing that works
 // Before I was getting an issue in production

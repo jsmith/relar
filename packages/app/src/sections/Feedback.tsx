@@ -6,7 +6,7 @@ import classNames from "classnames";
 import { IdeaIcon } from "../illustrations/IdeaIcon";
 import { MoreVerticalIcon } from "../illustrations/MoreVerticalIcon";
 import { Button } from "../components/Button";
-import { useUserData } from "../firestore";
+import { useUserData } from "../shared/web/firestore";
 import * as uuid from "uuid";
 import { BlockAlert } from "../components/BlockAlert";
 import { AirplaneIcon } from "../illustrations/AirplaneIcon";

@@ -1,5 +1,5 @@
 import React from "react";
-import { useArtists } from "../queries/artist";
+import { useArtists } from "../shared/web/queries/artist";
 import { ArtistCard } from "../sections/ArtistCard";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 

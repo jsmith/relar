@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { fmtMSS, pluralSongs, useGradient } from "../utils";
+import { fmtMSS, pluralSongs, useGradient } from "../shared/web/utils";
 import classNames from "classnames";
 import { SongTable, SongTableItem } from "../components/SongTable";
 import { ErrorTemplate } from "../components/ErrorTemplate";
@@ -8,9 +8,9 @@ import { HiDotsHorizontal, HiPencil, HiTrash } from "react-icons/hi";
 import { ContentEditable } from "../components/ContentEditable";
 import { Skeleton } from "../components/Skeleton";
 import { Collage } from "../components/Collage";
-import { useQueue, SetQueueSource, SongInfo, isSongInfo } from "../queue";
-import { Song } from "../shared/types";
-import { useSongsDuration } from "../queries/songs";
+import { useQueue, SetQueueSource, SongInfo, isSongInfo } from "../shared/web/queue";
+import { Song } from "../shared/universal/types";
+import { useSongsDuration } from "../shared/web/queries/songs";
 import { QueryStatus } from "react-query";
 import { ContextMenuItem, ContextMenu } from "../components/ContextMenu";
 

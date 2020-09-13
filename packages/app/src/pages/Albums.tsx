@@ -1,6 +1,6 @@
 import React from "react";
 import { AlbumCard } from "../sections/AlbumCard";
-import { useAlbums } from "../queries/album";
+import { useAlbums } from "../shared/web/queries/album";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { ErrorTemplate } from "../components/ErrorTemplate";
 

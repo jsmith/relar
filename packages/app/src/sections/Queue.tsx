@@ -6,10 +6,10 @@ import React, {
   forwardRef,
   MutableRefObject,
 } from "react";
-import { useQueue } from "../queue";
+import { useQueue } from "../shared/web/queue";
 import { SongTable } from "../components/SongTable";
 import { MdQueueMusic, MdMoreVert } from "react-icons/md";
-import { useOnClickOutside, useCombinedRefs } from "../utils";
+import { useOnClickOutside, useCombinedRefs } from "../shared/web/utils";
 import { Button } from "../components/Button";
 import { useHotkeys } from "react-hotkeys-hook";
 

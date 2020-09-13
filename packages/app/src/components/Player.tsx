@@ -13,11 +13,11 @@ import {
 import { Slider } from "../components/Slider";
 import classNames from "classnames";
 import { Thumbnail } from "../components/Thumbnail";
-import { useLikeSong } from "../queries/songs";
-import { fmtMSS } from "../utils";
+import { useLikeSong } from "../shared/web/queries/songs";
+import { fmtMSS } from "../shared/web/utils";
 import { LikedIcon } from "./LikedIcon";
-import { useFirebaseUpdater } from "../watcher";
-import { useQueue, useCurrentTime } from "../queue";
+import { useFirebaseUpdater } from "../shared/web/watcher";
+import { useQueue, useCurrentTime } from "../shared/web/queue";
 
 export interface PlayerProps {
   toggleQueue: () => void;

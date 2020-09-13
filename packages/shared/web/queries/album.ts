@@ -1,9 +1,9 @@
-import { createQueryCache } from "../queries/cache";
-import { Song, Album } from "../shared/types";
+import { createQueryCache } from "./cache";
+import { Album } from "../../universal/types";
 import { useUserData } from "../firestore";
 import { useSongs } from "./songs";
 import { useFirebaseMemo, getCachedOr } from "../watcher";
-import { withPerformanceAndAnalytics } from "../firebase";
+import { withPerformanceAndAnalytics } from "../performance";
 
 const {
   useQuery: useAlbumsQuery,

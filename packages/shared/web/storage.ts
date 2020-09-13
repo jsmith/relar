@@ -1,8 +1,8 @@
-import { storage } from "./firebase";
+import firebase from "firebase/app";
 import { useDefinedUser } from "./auth";
 import { useMemo } from "react";
 import { Result, ok, err } from "neverthrow";
-import { clientStorage } from "./shared/utils";
+import { clientStorage } from "../universal/utils";
 
 export type StorageErrorCode =
   | "storage/unknown" // An unknown error occurred.
@@ -24,7 +24,7 @@ export type StorageErrorCode =
 
 export const useUserStorage = () => {
   const user = useDefinedUser();
-  return useMemo(() => clientStorage(storage, user.uid), [user]);
+  return useMemo(() => clientStorage(firebase.storage(), user.uid), [user]);
 };
 
 /**
