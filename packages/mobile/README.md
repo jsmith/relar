@@ -36,7 +36,7 @@ See the [Xcode Setup](https://ionicframework.com/docs/developing/ios#xcode-setup
 Previewing on the device requires the app to be built to web assets and synced to the iOS project. Once this is done, just push the run button in Xcode. See the docs [Running on Xcode](https://ionicframework.com/docs/developing/ios#running-with-xcode).
 
 ```
-ionic capacitor copy ios
+npx cap sync # or just npx cap copy
 ```
 
 > Tip: Make sure to build first!
@@ -70,7 +70,7 @@ See the [Ionic Android Studio](https://ionicframework.com/docs/developing/androi
 Like iOS, you need to sync your built assets to the android file. Once this is done, just click the Run button and select the emulator.
 
 ```
-ionic capacitor copy android
+npx cap sync # or just npx cap copy
 ```
 
 ### Android Hot Reload

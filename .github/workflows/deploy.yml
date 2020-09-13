@@ -65,19 +65,32 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - uses: c-hive/gha-npm-cache@v1
 
-      - id: ios_changes
+      - id: changes
         uses: jsmith/changes-since-last-tag@v0.3.2
         with: { glob: "packages/mobile/ios/**" }
 
-      - id: android_changes
-        uses: jsmith/changes-since-last-tag@v0.3.2
-        with: { glob: "packages/mobile/android/**" }
+      # We *need* to hoist our dependencies due to symlinks
+      - if: steps.changes.outputs.any_changed == 'true'
+        run: npm run bootstrap
+      - if: steps.changes.outputs.any_changed == 'true'
+        run: npx patch-package
 
-      - uses: actions/setup-ruby@v1
-      - run: bundle install
+      - if: steps.changes.outputs.any_changed == 'true'
+        uses: actions/setup-ruby@v1
 
-      - if: steps.ios_changes.outputs.any_changed == 'true'
+      - if: steps.changes.outputs.any_changed == 'true'
+        run: bundle install
+
+      - if: steps.changes.outputs.any_changed == 'true'
+        run: |
+          npm run build
+          npx cap sync ios
+          npx cap sync android
+
+      - if: steps.changes.outputs.any_changed == 'true'
         run: fastlane beta
         working-directory: packages/mobile/ios/App
         env:
@@ -87,7 +100,7 @@ jobs:
             FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}",
           }
 
-      - if: steps.android_changes.outputs.any_changed == 'true'
+      - if: steps.changes.outputs.any_changed == 'true'
         run: fastlane beta
         working-directory: packages/mobile/android
         env: { FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}" }

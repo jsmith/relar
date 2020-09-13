@@ -1,6 +1,6 @@
 {
   "appId": "app.relar.mobile",
-  "appName": "mobile",
+  "appName": "RELAR",
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "build",
@@ -9,5 +9,8 @@
       "launchShowDuration": 0
     }
   },
-  "cordova": {}
+  "cordova": {},
+  "server": {
+    "url": "http://0.0.0.0:8080"
+  }
 }
