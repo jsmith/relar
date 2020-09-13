@@ -2,12 +2,9 @@
   "name": "root",
   "private": true,
   "devDependencies": {
-    "lerna": "^3.20.2",
-    "patch-package": "^6.2.2"
+    "lerna": "^3.20.2"
   },
   "scripts": {
-    "bootstrap": "lerna bootstrap --hoist",
-    "build": "lerna run build",
     "version": "lerna version --force-publish",
     "check:types": "lerna run check:types",
     "check:lint": "lerna run check:lint",

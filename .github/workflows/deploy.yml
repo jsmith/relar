@@ -1,6 +1,5 @@
 name: Deploy
 
-# on: [push]
 on:
   push:
     tags:
@@ -9,26 +8,88 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v2
-      - uses: c-hive/gha-npm-cache@v1
+      # FIXME I'm not sure this will work for monorepos
+      # - uses: c-hive/gha-npm-cache@v1
       - uses: actions/setup-node@v1
-      - run: npm install --no-package-lock
-      - run: npm run bootstrap
-      - run: npx patch-package
-      - run: npm run build
 
-      - run: npm install -g firebase-tools
-      - run: firebase deploy --project production
-        env:
-          # FIREBASE_TOKEN generated using firebase login:ci
-          # See https://firebase.google.com/docs/cli#cli-ci-systems
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      - id: changes
+        uses: jsmith/changes-since-last-tag@v0.3.2
+        with:
+          glob: packages/app/**,packages/functions/**,packages/firestore.rules,packages/storage.rules,packages/storage.json,packages/indexes.json
+
+      - if: steps.changes.outputs.any_changed == 'true'
+        run: npm install -g firebase-tools
+
+      # FIREBASE_TOKEN generated using firebase login:ci
+      # See https://firebase.google.com/docs/cli#cli-ci-systems
+      - if: contains(steps.changes.outputs.files, 'packages/functions/')
+        run: |
+          npm install
+          npx patch-package
+          npm run build
+          firebase deploy --only functions --project staging
+        env: { FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}" }
+        working-directory: packages/functions
+
+      - if: contains(steps.changes.outputs.files, 'packages/app/')
+        run: |
+          npm install
+          npx patch-package
+          npm run build
+          firebase deploy --only hosting --project production
+        env: { FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}" }
+        working-directory: packages/app
+
+      - if: contains(steps.changes.outputs.files, 'packages/firestore.rules') || contains(steps.changes.outputs.files, 'packages/indexes.json')
+        run: firebase deploy --only firestore --project production
+        env: { FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}" }
         working-directory: packages
 
-      - uses: softprops/action-gh-release@v1
-        with:
-          # TODO changelog
-          draft: true
+      - if: contains(steps.changes.outputs.files, 'packages/storage.rules') || contains(steps.changes.outputs.files, 'packages/storage.json')
+        run: firebase deploy --only storage --project production
+        env: { FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}" }
+        working-directory: packages
+
+      - if: steps.android_changes.outputs.any_changed == 'true'
+        run: |
+          npm install
+          npm run build
+          firebase deploy --only hosting --project production
+        env: { FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}" }
+        working-directory: packages/mobile
+
+  deploy_mobile:
+    # Make this separate since it has to use macOS which costs 10x as much as ubuntu
+    runs-on: macOS-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v2
+
+      - id: ios_changes
+        uses: jsmith/changes-since-last-tag@v0.3.2
+        with: { glob: "packages/mobile/ios/**" }
+
+      - id: android_changes
+        uses: jsmith/changes-since-last-tag@v0.3.2
+        with: { glob: "packages/mobile/android/**" }
+
+      - uses: actions/setup-ruby@v1
+      - run: bundle install
+
+      - if: steps.ios_changes.outputs.any_changed == 'true'
+        run: fastlane beta
+        working-directory: packages/mobile/ios/App
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          {
+            GITHUB_TOKEN: "${{ secrets.PERSONAL_GIT_ACCESS_TOKEN }}",
+            GITHUB_USERNAME: jsmith,
+            FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}",
+          }
+
+      - if: steps.android_changes.outputs.any_changed == 'true'
+        run: fastlane beta
+        working-directory: packages/mobile/android
+        env: { FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}" }

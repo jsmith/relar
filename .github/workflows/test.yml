@@ -17,6 +17,7 @@ jobs:
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
           GOOGLE_KEY_GPG_PASS: ${{ secrets.GOOGLE_KEY_GPG_PASS }}
 
+      # TODO change this
       - run: npm install --no-package-lock
       - run: npm run bootstrap
       - run: npx patch-package
