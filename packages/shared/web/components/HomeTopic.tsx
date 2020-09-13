@@ -1,7 +1,6 @@
 import React from "react";
-import { ThumbnailCard, ThumbnailCardProps } from "../components/ThumbnailCard";
 import { Link } from "./Link";
-import { RouteType, RouterStateType } from "react-tiniest-router/dist/types";
+import { RouteType, RouterStateType } from "@graywolfai/react-tiniest-router";
 
 export interface HomeTopicProps {
   title: string;

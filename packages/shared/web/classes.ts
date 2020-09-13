@@ -22,7 +22,6 @@ export const button = ({ color = "purple", invert }: { color?: "purple"; invert?
     "py-2 px-4 border uppercase font-medium rounded-md",
     className,
     "transition duration-150 ease-in-out",
-    "h-10",
   );
 };
 

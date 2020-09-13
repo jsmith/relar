@@ -14,7 +14,7 @@ export const CardPage = ({ children, footer, cardClassName }: CardPageProps) => 
       {/* CARD */}
       <div
         className={classNames(
-          "shadow-xl rounded-lg px-6 bg-white w-full max-w-sm space-y-4",
+          "md:shadow-xl rounded-lg px-6 bg-white w-full max-w-sm space-y-4",
           cardClassName,
         )}
       >

@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useRouter } from "react-tiniest-router";
+import { useRouter } from "@graywolfai/react-tiniest-router";
 import { fmtToDate } from "../shared/web/utils";
 import {
   usePlaylist,

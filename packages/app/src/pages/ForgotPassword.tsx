@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "../components/Button";
-import { useRouter } from "react-tiniest-router";
+import { Button } from "../shared/web/components/Button";
+import { useRouter } from "@graywolfai/react-tiniest-router";
 import { routes } from "../routes";
 import { useUser, sendPasswordResetEmail } from "../shared/web/auth";
-import { CardPage } from "../components/CardPage";
-import { Input } from "../components/Input";
-import { Link } from "../components/Link";
+import { CardPage } from "../shared/web/components/CardPage";
+import { Input } from "../shared/web/components/Input";
+import { Link } from "../shared/web/components/Link";
 import { preventAndCall } from "../shared/web/utils";
-import { BlockAlert } from "../components/BlockAlert";
+import { BlockAlert } from "../shared/web/components/BlockAlert";
 
 const RESET_INSTRUCTIONS =
   "Enter your email address and we will send you instructions to reset your password.";

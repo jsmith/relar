@@ -3,11 +3,7 @@ import classNames from "classnames";
 import { FiDisc } from "react-icons/fi";
 import * as Sentry from "@sentry/browser";
 import FastAverageColor from "fast-average-color";
-import {
-  ThumbnailObjectSnapshot,
-  useThumbnail,
-  ThumbnailSize,
-} from "../shared/web/queries/thumbnail";
+import { ThumbnailObjectSnapshot, useThumbnail, ThumbnailSize } from "../queries/thumbnail";
 
 const fac = new FastAverageColor();
 

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Modal } from "../components/Modal";
-import { useDefinedUser, useUser } from "../shared/web/auth";
+import { Modal } from "./Modal";
+import { useDefinedUser, useUser } from "../auth";
 import { BsExclamationTriangle } from "react-icons/bs";
-import { Input } from "../components/Input";
-import { ErrorTemplate } from "../components/ErrorTemplate";
-import { BlockAlert } from "../components/BlockAlert";
+import { Input } from "./Input";
+import { ErrorTemplate } from "./ErrorTemplate";
+import { BlockAlert } from "./BlockAlert";
 import { OkCancelModal } from "./OkCancelModal";
 
 export interface ActionConfirmationModalProps {

@@ -1,7 +1,7 @@
 import React from "react";
 import { Album, Artist } from "../shared/universal/types";
-import { ThumbnailCard } from "../components/ThumbnailCard";
-import { useRouter } from "react-tiniest-router";
+import { ThumbnailCard } from "../shared/web/components/ThumbnailCard";
+import { useRouter } from "@graywolfai/react-tiniest-router";
 import { routes } from "../routes";
 import { useArtistSongs } from "../shared/web/queries/artist";
 import { useQueue } from "../shared/web/queue";

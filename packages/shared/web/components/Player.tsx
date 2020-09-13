@@ -10,14 +10,14 @@ import {
   MdShuffle,
   MdPauseCircleOutline,
 } from "react-icons/md";
-import { Slider } from "../components/Slider";
+import { Slider } from "./Slider";
 import classNames from "classnames";
-import { Thumbnail } from "../components/Thumbnail";
-import { useLikeSong } from "../shared/web/queries/songs";
-import { fmtMSS } from "../shared/web/utils";
+import { Thumbnail } from "./Thumbnail";
+import { useLikeSong } from "../queries/songs";
+import { fmtMSS } from "../utils";
 import { LikedIcon } from "./LikedIcon";
-import { useFirebaseUpdater } from "../shared/web/watcher";
-import { useQueue, useCurrentTime } from "../shared/web/queue";
+import { useFirebaseUpdater } from "../watcher";
+import { useQueue, useCurrentTime } from "../queue";
 
 export interface PlayerProps {
   toggleQueue: () => void;

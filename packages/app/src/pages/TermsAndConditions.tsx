@@ -1,6 +1,6 @@
 import React from "react";
 import { Footer } from "../sections/Footer";
-import { Link } from "../components/Link";
+import { Link } from "../shared/web/components/Link";
 import { routes } from "../routes";
 
 export const TermsAndConditions = () => {

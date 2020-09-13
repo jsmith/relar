@@ -1,8 +1,8 @@
 import React from "react";
-import { HomeTopic } from "../components/HomeTopic";
+import { HomeTopic } from "../shared/web/components/HomeTopic";
 import { useRecentlyAddedSongs, useLikedSongs } from "../shared/web/queries/songs";
 import { SongCard } from "../sections/SongCard";
-import { LoadingSpinner } from "../components/LoadingSpinner";
+import { LoadingSpinner } from "../shared/web/components/LoadingSpinner";
 import { routes } from "../routes";
 import { MusicalNote } from "../illustrations/MusicalNote";
 import { MdAddCircle } from "react-icons/md";

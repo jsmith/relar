@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { Button } from "../shared/web/components/Button";
-import { routes } from "../routes";
-import { CardPage } from "../shared/web/components/CardPage";
-import { Input } from "../shared/web/components/Input";
-import { Link } from "../shared/web/components/Link";
+import { Button } from "../components/Button";
+import { routes } from "../../../routes";
+import { CardPage } from "../components/CardPage";
+import { Input } from "../components/Input";
+import { Link } from "../components/Link";
 import { betaBackend, getOrUnknownError } from "../backend";
-import { BlockAlert } from "../shared/web/components/BlockAlert";
+import { BlockAlert } from "../components/BlockAlert";
 import firebase from "firebase/app";
 
 const BETA_TEXT =
@@ -20,7 +20,7 @@ export const Signup = () => {
   const login = async () => {
     setLoading(true);
     setError("");
-    const result = await getOrUnknownError(() => betaBackend.post("/beta-signup", { email }));
+    const result = await getOrUnknownError(() => betaBackend().post("/beta-signup", { email }));
 
     setLoading(false);
     if (result.data.type === "success") {

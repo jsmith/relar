@@ -1,10 +1,10 @@
 import React, { useState, useCallback } from "react";
 import { useDefinedUser } from "../shared/web/auth";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import { ProgressBar } from "../components/ProgressBar";
+import { ProgressBar } from "../shared/web/components/ProgressBar";
 import { useUserDataDoc } from "../shared/web/queries/user";
-import { Button, ButtonProps } from "../components/Button";
-import { BlockAlert } from "../components/BlockAlert";
+import { Button, ButtonProps } from "../shared/web/components/Button";
+import { BlockAlert } from "../shared/web/components/BlockAlert";
 import { Result, ok } from "neverthrow";
 import { useConfirmPassword } from "../confirm-password";
 import { useConfirmAction } from "../confirm-actions";

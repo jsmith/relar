@@ -1,11 +1,11 @@
 import React, { useEffect } from "react";
-import { useRouter } from "react-tiniest-router";
-import { CardPage } from "../components/CardPage";
+import { useRouter } from "@graywolfai/react-tiniest-router";
+import { CardPage } from "../shared/web/components/CardPage";
 import { routes } from "../routes";
 import * as Sentry from "@sentry/browser";
 import { sendPasswordResetEmail } from "../shared/web/auth";
 import { MdEmail } from "react-icons/md";
-import { LinkButton } from "../components/LinkButton";
+import { LinkButton } from "../shared/web/components/LinkButton";
 
 export const ForgotPasswordSuccess = () => {
   const { goTo, queryParams } = useRouter();

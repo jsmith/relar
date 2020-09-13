@@ -3,7 +3,7 @@ import { useSelect } from "downshift";
 import { AiOutlineUser } from "react-icons/ai";
 import classNames from "classnames";
 import { FaCaretDown } from "react-icons/fa";
-import { useRouter } from "react-tiniest-router";
+import { useRouter } from "@graywolfai/react-tiniest-router";
 import { routes } from "../routes";
 import { useDefinedUser } from "../shared/web/auth";
 import { useModal } from "react-modal-hook";

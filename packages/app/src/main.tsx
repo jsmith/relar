@@ -18,7 +18,7 @@ import "./shared/web/watcher";
 import { App } from "./App"; // this must be first for hot reloading
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Router } from "react-tiniest-router";
+import { Router } from "@graywolfai/react-tiniest-router";
 import { routes } from "./routes";
 import { UserProvider } from "./shared/web/auth";
 import { QueueProvider } from "./shared/web/queue";

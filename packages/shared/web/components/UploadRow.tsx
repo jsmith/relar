@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import firebase from "firebase/app";
 import { MdErrorOutline, MdCheck } from "react-icons/md";
-import { captureAndLog, captureAndLogError } from "../shared/web/utils";
+import { captureAndLog, captureAndLogError } from "../utils";
 import { AiOutlineStop } from "react-icons/ai";
 import { Bars } from "@jsmith21/svg-loaders-react";
-import { ProgressBar } from "../components/ProgressBar";
+import { ProgressBar } from "./ProgressBar";
 
 export interface StorageLocation {
   path: string;

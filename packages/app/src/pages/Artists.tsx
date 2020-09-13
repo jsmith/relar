@@ -1,7 +1,7 @@
 import React from "react";
 import { useArtists } from "../shared/web/queries/artist";
 import { ArtistCard } from "../sections/ArtistCard";
-import { LoadingSpinner } from "../components/LoadingSpinner";
+import { LoadingSpinner } from "../shared/web/components/LoadingSpinner";
 
 export const Artists = () => {
   const artists = useArtists();

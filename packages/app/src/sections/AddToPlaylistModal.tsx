@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Song } from "../shared/universal/types";
-import { Input } from "../components/Input";
-import { ErrorTemplate } from "../components/ErrorTemplate";
+import { Input } from "../shared/web/components/Input";
+import { ErrorTemplate } from "../shared/web/components/ErrorTemplate";
 import { usePlaylists, usePlaylistCreate, usePlaylistAdd } from "../shared/web/queries/playlists";
-import { LoadingSpinner } from "../components/LoadingSpinner";
-import { Modal } from "../components/Modal";
+import { LoadingSpinner } from "../shared/web/components/LoadingSpinner";
+import { Modal } from "../shared/web/components/Modal";
 import { SearchMagnifyingGlass } from "../illustrations/SearchMagnifyingGlass";
-import { BlockAlert } from "../components/BlockAlert";
+import { BlockAlert } from "../shared/web/components/BlockAlert";
 import { pluralSongs, fmtToDate } from "../shared/web/utils";
 import { HiChevronRight } from "react-icons/hi";
 import { getCachedOr } from "../shared/web/watcher";

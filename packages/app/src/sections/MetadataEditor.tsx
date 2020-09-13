@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Song, MetadataAPI } from "../shared/universal/types";
-import { OkCancelModal } from "./OkCancelModal";
-import { Input } from "./Input";
+import { OkCancelModal } from "../shared/web/components/OkCancelModal";
+import { Input } from "../shared/web/components/Input";
 import { useFirebaseUpdater } from "../shared/web/watcher";
 import { metadataBackend, getOrUnknownError } from "../backend";
 import { useDefinedUser } from "../shared/web/auth";
-import { BlockAlert } from "./BlockAlert";
+import { BlockAlert } from "../shared/web/components/BlockAlert";
 
 export interface MetadataEditorProps {
   setDisplay: (display: boolean) => void;

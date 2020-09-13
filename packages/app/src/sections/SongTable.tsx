@@ -13,19 +13,19 @@ import {
 } from "react-icons/md";
 import { MetadataEditor } from "./MetadataEditor";
 import { useModal } from "react-modal-hook";
-import { LikedIcon } from "./LikedIcon";
-import { IconButton } from "./IconButton";
+import { LikedIcon } from "../shared/web/components/LikedIcon";
+import { IconButton } from "../shared/web/components/IconButton";
 import useDropdownMenuImport from "react-accessible-dropdown-menu-hook";
-import { ContextMenu, ContextMenuItem } from "./ContextMenu";
+import { ContextMenu, ContextMenuItem } from "../shared/web/components/ContextMenu";
 import { useConfirmAction } from "../confirm-actions";
 import { useLikeSong, useDeleteSong } from "../shared/web/queries/songs";
 import { useFirebaseUpdater } from "../shared/web/watcher";
 import { fmtMSS } from "../shared/web/utils";
-import { Link } from "./Link";
+import { Link } from "../shared/web/components/Link";
 import { routes } from "../routes";
-import { link } from "../classes";
-import { AddToPlaylistEditor } from "../sections/AddToPlaylistModal";
-import { Skeleton } from "./Skeleton";
+import { link } from "../shared/web/classes";
+import { AddToPlaylistEditor } from "./AddToPlaylistModal";
+import { Skeleton } from "../shared/web/components/Skeleton";
 import { useQueue, SetQueueSource, SongInfo, isSongInfo } from "../shared/web/queue";
 import { useRecycle, SentinelBlock } from "../recycle";
 import { Audio } from "@jsmith21/svg-loaders-react";
@@ -210,7 +210,7 @@ export const SongTableRow = ({
     />
   );
 
-  const album = data.albumName && (
+  const album = data.albumId && (
     <Link
       className={classNames(link({ color: "" }), mode === "condensed" && "text-2xs")}
       label={data.albumName}

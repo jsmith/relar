@@ -6,6 +6,11 @@ import { App } from "./App";
 import { Router } from "@graywolfai/react-tiniest-router";
 import { routes } from "./routes";
 import { UserProvider } from "./shared/web/auth";
+import { setBaseUrls } from "./shared/web/backend";
+import { env } from "./env";
+
+// Make sure to set the base URLs before the backend is used
+setBaseUrls(env);
 
 ReactDOM.render(
   <React.StrictMode>

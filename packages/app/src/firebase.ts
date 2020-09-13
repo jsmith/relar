@@ -16,9 +16,3 @@ firebase.initializeApp({
   appId: env.appId,
   measurementId: env.measurementId,
 });
-
-// export const firestore = firebase.firestore();
-// export const storage = firebase.storage();
-// export const auth = firebase.auth();
-// export const analytics = firebase.analytics();
-// export const performance = firebase.performance();

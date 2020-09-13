@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { CardPage } from "../components/CardPage";
-import { Link } from "../components/Link";
+import { CardPage } from "../shared/web/components/CardPage";
+import { Link } from "../shared/web/components/Link";
 import { routes } from "../routes";
-import { Input } from "../components/Input";
-import { useRouter } from "react-tiniest-router";
-import { BlockAlert } from "../components/BlockAlert";
-import { Button } from "../components/Button";
+import { Input } from "../shared/web/components/Input";
+import { useRouter } from "@graywolfai/react-tiniest-router";
+import { BlockAlert } from "../shared/web/components/BlockAlert";
+import { Button } from "../shared/web/components/Button";
 import { betaBackend, getOrUnknownError } from "../backend";
 import firebase from "firebase/app";
 

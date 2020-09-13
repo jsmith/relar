@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
-import { useRouter } from "react-tiniest-router";
-import { RouteType, RouterStateType } from "react-tiniest-router/dist/types";
+import { useRouter } from "@graywolfai/react-tiniest-router";
+import { RouteType, RouterStateType } from "@graywolfai/react-tiniest-router";
 import classNames from "classnames";
 import { link } from "../classes";
 

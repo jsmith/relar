@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { createEmitter } from "../../events";
+import { createEmitter } from "./events";
 
 let cache: { [path: string]: unknown } = {};
 const watchers = createEmitter<Record<string, [unknown]>>();

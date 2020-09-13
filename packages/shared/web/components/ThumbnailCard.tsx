@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { Thumbnail } from "../components/Thumbnail";
+import { Thumbnail } from "./Thumbnail";
 import { MdPlayCircleFilled } from "react-icons/md";
 import classNames from "classnames";
 import { Collage } from "./Collage";
-import { ThumbnailObjectSnapshot } from "../shared/web/queries/thumbnail";
+import { ThumbnailObjectSnapshot } from "../queries/thumbnail";
 
 export interface ThumbnailCardProps {
   snapshot: ThumbnailObjectSnapshot | ThumbnailObjectSnapshot[];

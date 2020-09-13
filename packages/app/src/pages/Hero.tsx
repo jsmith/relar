@@ -1,10 +1,10 @@
 import React from "react";
 import { Footer } from "../sections/Footer";
 import { PersonMusic } from "../illustrations/PersonMusic";
-import { Link } from "../components/Link";
-import { button } from "../classes";
+import { Link } from "../shared/web/components/Link";
+import { button } from "../shared/web/classes";
 import { routes } from "../routes";
-import { Feature } from "../components/Feature";
+import { Feature } from "../shared/web/components/Feature";
 import { HiOutlineCloudDownload } from "react-icons/hi";
 import { HeartBeat } from "../illustrations/HeartBeat";
 import { CgUndo } from "react-icons/cg";

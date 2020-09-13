@@ -1,6 +1,6 @@
 import React, { useRef, useState, useMemo } from "react";
 import classNames from "classnames";
-import { useOnClickOutside, clamp, addEventListeners, Keys } from "../shared/web/utils";
+import { useOnClickOutside, clamp, addEventListeners, Keys } from "../utils";
 
 export interface SliderProps {
   value: number;

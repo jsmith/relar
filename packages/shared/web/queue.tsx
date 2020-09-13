@@ -13,7 +13,7 @@ import {
 import firebase from "firebase/app";
 import { updateCachedWithSnapshot } from "./watcher";
 import { useHotkeys } from "react-hotkeys-hook";
-import { createEmitter } from "../../events";
+import { createEmitter } from "./events";
 import * as uuid from "uuid";
 
 const usePortal: typeof usePortalImport = (usePortalImport as any).default;

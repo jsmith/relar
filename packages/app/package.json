@@ -12,6 +12,7 @@
     "deps": "depcheck --ignore-dirs node_modules --ignores \"@types/*\""
   },
   "dependencies": {
+    "@graywolfai/react-tiniest-router": "^0.2.2",
     "@graywolfai/rest-ts-axios": "^0.2.4",
     "@jsmith21/svg-loaders-react": "^2.2.2",
     "@pika/react": "^16.13.1",

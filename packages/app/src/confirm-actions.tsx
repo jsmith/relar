@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useRef, useCallback } from "react";
-import { ActionConfirmationModal } from "./components/ActionConfirmationModal";
+import { ActionConfirmationModal } from "./shared/web/components/ActionConfirmationModal";
 import { useModal } from "react-modal-hook";
 
 export interface ConfirmActionProps {

@@ -1,7 +1,7 @@
 import { Home } from "./pages/Home";
 import { Library } from "./pages/Library";
 import { Login } from "./pages/Login";
-import { Register } from "./pages/Register";
+import { Signup } from "./shared/web/pages/Signup";
 import { Search } from "./pages/Search";
 import { Settings } from "./pages/Settings";
 import { Welcome } from "./pages/Welcome";
@@ -17,10 +17,10 @@ export const routes = {
     path: "/login",
     component: Login,
   },
-  register: {
-    id: "register",
-    path: "/register",
-    component: Register,
+  signup: {
+    id: "signup",
+    path: "/signup",
+    component: Signup,
   },
   search: {
     id: "search",
