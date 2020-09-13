@@ -1,6 +1,6 @@
 {
   "appId": "app.relar.mobile",
-  "appName": "mobile",
+  "appName": "RELAR",
   "bundledWebRuntime": false,
   "npmClient": "npm",
   "webDir": "build",

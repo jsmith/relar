@@ -1,9 +1,9 @@
 import React from "react";
 
-export const Search = () => {
+export const Register = () => {
   return (
     <div>
-      <div>Search</div>
+      <div>Register</div>
     </div>
   );
 };
