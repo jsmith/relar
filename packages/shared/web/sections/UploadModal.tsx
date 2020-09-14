@@ -2,9 +2,9 @@ import React, { useState, useRef } from "react";
 import { FiMusic } from "react-icons/fi";
 import AriaModal from "react-aria-modal";
 import * as uuid from "uuid";
-import { UploadRow } from "../shared/web/components/UploadRow";
-import { link } from "../shared/web/classes";
-import { useUserStorage } from "../shared/web/storage";
+import { UploadRow } from "../components/UploadRow";
+import { link } from "../classes";
+import { useUserStorage } from "../storage";
 import firebase from "firebase/app";
 
 export interface UploadModalProps {

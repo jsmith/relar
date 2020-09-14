@@ -7,8 +7,7 @@
     "firebase/firestore",
     "firebase/storage",
     "firebase/analytics",
-    "firebase/performance",
-    "react-icons/gi"
+    "firebase/performance"
   ],
   "installOptions": {
     "treeShake": true
@@ -16,5 +15,8 @@
   "mount": {
     "src/shared": "/_dist_/shared"
   },
-  "exclude": ["**/src/shared/node/**"]
+  "exclude": ["**/src/shared/node/**"],
+  "devOptions": {
+    "port": 3000
+  }
 }

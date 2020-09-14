@@ -12,7 +12,7 @@ import { HiOutlineTrash } from "react-icons/hi";
 import { useFirebaseUpdater } from "../shared/web/watcher";
 import { useConfirmAction } from "../confirm-actions";
 import { routes } from "../routes";
-import { SongsOverview } from "../sections/SongsOverview";
+import { SongsOverview } from "../shared/web/sections/SongsOverview";
 
 export const PlaylistOverview = ({ container }: { container: HTMLElement | null }) => {
   const { params, goTo } = useRouter();

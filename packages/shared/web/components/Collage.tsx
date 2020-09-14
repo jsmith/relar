@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
-import { Artwork } from "../../universal/types";
+import type { Artwork } from "../../universal/types";
 import { Thumbnail } from "./Thumbnail";
-import { ThumbnailSize } from "../queries/thumbnail";
+import type { ThumbnailSize } from "../queries/thumbnail";
 import classNames from "classnames";
 
 export interface CollageProps {

@@ -1,6 +1,6 @@
 import React from "react";
 import { PuttingThingsTogether } from "../illustrations/PuttingThingsTogether";
-import { link } from "../shared/web/classes";
+import { link } from "../classes";
 
 export const Search = () => {
   // FIXME search analytics event

@@ -1,7 +1,7 @@
 import React from "react";
 import { usePlaylists, usePlaylistAdd } from "../shared/web/queries/playlists";
 import { LoadingSpinner } from "../shared/web/components/LoadingSpinner";
-import { PlaylistCard } from "../sections/PlaylistCard";
+import { PlaylistCard } from "../shared/web/sections/PlaylistCard";
 
 export const Playlists = () => {
   const playlists = usePlaylists();

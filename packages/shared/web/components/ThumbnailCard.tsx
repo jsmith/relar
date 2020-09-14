@@ -3,7 +3,7 @@ import { Thumbnail } from "./Thumbnail";
 import { MdPlayCircleFilled } from "react-icons/md";
 import classNames from "classnames";
 import { Collage } from "./Collage";
-import { ThumbnailObjectSnapshot } from "../queries/thumbnail";
+import type { ThumbnailObjectSnapshot } from "../queries/thumbnail";
 
 export interface ThumbnailCardProps {
   snapshot: ThumbnailObjectSnapshot | ThumbnailObjectSnapshot[];
@@ -27,18 +27,19 @@ export const ThumbnailCard = ({
   return (
     <div
       className={classNames(
-        "bg-gray-800 flex flex-col px-3 py-4 rounded-md cursor-pointer relative group shadow-xl",
+        "lg:bg-gray-800 flex flex-col lg:px-3 lg:py-4 rounded-md cursor-pointer relative group lg:shadow-xl",
+        "text-xs lg:text-sm w-24 lg:w-32",
         className,
       )}
       onClick={onClick}
     >
       {Array.isArray(snapshot) ? (
-        <Collage className="w-32 h-32" snapshots={snapshot} size="128" />
+        <Collage className="h-24 lg:h-32" snapshots={snapshot} size="128" />
       ) : (
-        <Thumbnail className="w-32 h-32" snapshot={snapshot} size="128" />
+        <Thumbnail className="h-24 lg:h-32" snapshot={snapshot} size="128" />
       )}
       <div
-        className="w-32 truncate mt-2 text-sm"
+        className="truncate mt-1 lg:mt-2 text-gray-900 font-bold lg:text-gray-200"
         tabIndex={0}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
@@ -47,7 +48,7 @@ export const ThumbnailCard = ({
         {title}
       </div>
       {/* FIXME do we want this to truncate? */}
-      <div className="w-32 truncate mt-1 text-xs text-gray-400">{subtitle}</div>
+      <div className="truncate lg:mt-1 text-gray-600 lg:text-gray-400">{subtitle}</div>
       <div
         className={classNames(
           "right-0 bottom-0 absolute opacity-0 group-hover:opacity-100 m-6 p-1",

@@ -1,11 +1,11 @@
 import React from "react";
-import { Album } from "../shared/universal/types";
-import { ThumbnailCard } from "../shared/web/components/ThumbnailCard";
+import { Album } from "../../universal/types";
+import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "@graywolfai/react-tiniest-router";
-import { routes } from "../routes";
-import { useAlbumSongs } from "../shared/web/queries/album";
-import { useFirebaseUpdater } from "../shared/web/watcher";
-import { useQueue } from "../shared/web/queue";
+import { routes } from "../../../routes";
+import { useAlbumSongs } from "../queries/album";
+import { useFirebaseUpdater } from "../watcher";
+import { useQueue } from "../queue";
 
 export const AlbumCard = ({
   album,

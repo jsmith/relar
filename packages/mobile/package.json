@@ -20,8 +20,10 @@
     "neverthrow": "^2.7.1",
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
+    "react-hotkeys-hook": "^2.3.1",
     "react-icons": "^3.11.0",
     "react-query": "^2.17.1",
+    "react-transition-group": "^4.4.1",
     "typescript": "3.8.3"
   },
   "devDependencies": {
@@ -37,6 +39,7 @@
     "@types/node": "^12.12.24",
     "@types/react": "^16.9.35",
     "@types/react-dom": "^16.9.8",
+    "@types/react-transition-group": "^4.4.0",
     "@types/snowpack-env": "^2.3.0",
     "jest": "^26.2.2",
     "prettier": "^2.0.5",

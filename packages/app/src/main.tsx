@@ -27,6 +27,10 @@ import { ConfirmPasswordProvider } from "./confirm-password";
 import { ReactQueryConfigProvider, ReactQueryProviderConfig } from "react-query";
 import { captureAndLog } from "./shared/web/utils";
 import { ModalProvider } from "react-modal-hook";
+import { setBaseUrls } from "./shared/web/backend";
+import { env } from "./env";
+
+setBaseUrls(env);
 
 const config: ReactQueryProviderConfig = {
   queries: {

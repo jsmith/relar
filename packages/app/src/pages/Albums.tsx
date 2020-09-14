@@ -1,5 +1,5 @@
 import React from "react";
-import { AlbumCard } from "../sections/AlbumCard";
+import { AlbumCard } from "../shared/web/sections/AlbumCard";
 import { useAlbums } from "../shared/web/queries/album";
 import { LoadingSpinner } from "../shared/web/components/LoadingSpinner";
 import { ErrorTemplate } from "../shared/web/components/ErrorTemplate";

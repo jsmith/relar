@@ -20,21 +20,21 @@ jobs:
       - id: changes
         uses: jsmith/changes-since-last-tag@v0.3.2
         with:
-          glob: packages/app/**,packages/functions/**,packages/firestore.rules,packages/storage.rules,packages/storage.json,packages/indexes.json
+          glob: packages/app/**,packages/functions/**,packages/firestore.rules,packages/storage.rules,packages/storage.json,packages/indexes.json,packages/shared/**
 
       - if: steps.changes.outputs.any_changed == 'true'
         run: npm install -g firebase-tools
 
       # FIREBASE_TOKEN generated using firebase login:ci
       # See https://firebase.google.com/docs/cli#cli-ci-systems
-      - if: contains(steps.changes.outputs.files, 'packages/functions/')
+      - if: contains(steps.changes.outputs.files, 'packages/functions/') || contains(steps.changes.outputs.files, 'packages/shared/')
         run: |
           npm run build
           firebase deploy --only functions --project staging
         env: { FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}" }
         working-directory: packages/functions
 
-      - if: contains(steps.changes.outputs.files, 'packages/app/')
+      - if: contains(steps.changes.outputs.files, 'packages/app/') || contains(steps.changes.outputs.files, 'packages/shared/')
         run: |
           npm run build
           firebase deploy --only hosting --project production
@@ -70,7 +70,7 @@ jobs:
 
       - id: changes
         uses: jsmith/changes-since-last-tag@v0.3.2
-        with: { glob: "packages/mobile/ios/**" }
+        with: { glob: "packages/mobile/**,packages/shared/**" }
 
       # We *need* to hoist our dependencies due to symlinks
       - if: steps.changes.outputs.any_changed == 'true'

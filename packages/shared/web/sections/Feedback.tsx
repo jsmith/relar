@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { Modal } from "../shared/web/components/Modal";
-import { link } from "../shared/web/classes";
+import { Modal } from "../components/Modal";
+import { link } from "../classes";
 import { IssueOutlineOffset } from "../illustrations/IssueOutlineOffset";
 import classNames from "classnames";
 import { IdeaIcon } from "../illustrations/IdeaIcon";
 import { MoreVerticalIcon } from "../illustrations/MoreVerticalIcon";
-import { Button } from "../shared/web/components/Button";
-import { useUserData } from "../shared/web/firestore";
+import { Button } from "../components/Button";
+import { useUserData } from "../firestore";
 import * as uuid from "uuid";
-import { BlockAlert } from "../shared/web/components/BlockAlert";
+import { BlockAlert } from "../components/BlockAlert";
 import { AirplaneIcon } from "../illustrations/AirplaneIcon";
 import firebase from "firebase/app";
 

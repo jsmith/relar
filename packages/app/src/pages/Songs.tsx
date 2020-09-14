@@ -1,6 +1,6 @@
 import React from "react";
 import { useSongs } from "../shared/web/queries/songs";
-import { SongTable } from "../sections/SongTable";
+import { SongTable } from "../shared/web/sections/SongTable";
 
 export const Songs = ({ container }: { container: HTMLElement | null }) => {
   const songs = useSongs();

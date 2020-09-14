@@ -1,7 +1,7 @@
 import React from "react";
 import { GiSwordSpin } from "react-icons/gi";
-import { Link } from "../shared/web/components/Link";
-import { routes } from "../routes";
+import { Link } from "../components/Link";
+import { routes } from "../../../routes";
 
 export const Footer = () => {
   return (

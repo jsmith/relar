@@ -25,7 +25,10 @@ export const Thumbnail = ({
   const thumbnail = useThumbnail(snapshot, size);
   return (
     <div
-      className={classNames("bg-gray-400 shadow-2xl flex items-center justify-center", className)}
+      className={classNames(
+        "bg-gray-400 lg:shadow-2xl flex items-center justify-center",
+        className,
+      )}
       style={style}
     >
       {thumbnail ? (

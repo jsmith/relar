@@ -1,12 +1,12 @@
 import React from "react";
-import { Footer } from "../sections/Footer";
-import { PersonMusic } from "../illustrations/PersonMusic";
+import { Footer } from "../shared/web/sections/Footer";
+import { PersonMusic } from "../shared/web/illustrations/PersonMusic";
 import { Link } from "../shared/web/components/Link";
 import { button } from "../shared/web/classes";
 import { routes } from "../routes";
 import { Feature } from "../shared/web/components/Feature";
 import { HiOutlineCloudDownload } from "react-icons/hi";
-import { HeartBeat } from "../illustrations/HeartBeat";
+import { HeartBeat } from "../shared/web/illustrations/HeartBeat";
 import { CgUndo } from "react-icons/cg";
 
 export const Hero = () => {

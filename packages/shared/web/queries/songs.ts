@@ -1,7 +1,7 @@
 import firebase from "firebase/app";
 import { clientStorage } from "../../universal/utils";
 import { createQueryCache } from "./cache";
-import { Song } from "../../universal/types";
+import type { Song } from "../../universal/types";
 import { withPerformanceAndAnalytics } from "../performance";
 import { getDownloadURL } from "../storage";
 import { captureAndLogError, captureAndLog } from "../utils";
@@ -9,6 +9,19 @@ import { useUserData } from "../firestore";
 import { useMutation } from "react-query";
 import { useMemo } from "react";
 import { updateCachedWithSnapshot, useFirebaseMemo, getCachedOr } from "../watcher";
+
+export const useRecentlyPlayedSongs = () => {
+  const songs = useSongs();
+
+  return useMemo(
+    () =>
+      songs.data
+        ?.slice(0, 1000)
+        .filter((song) => song.data().lastPlayed !== undefined)
+        .sort((a, b) => (b.data().lastPlayed?.seconds ?? 0) - (a.data().lastPlayed?.seconds ?? 0)),
+    [songs],
+  );
+};
 
 export const useRecentlyAddedSongs = () => {
   const songs = useSongs();

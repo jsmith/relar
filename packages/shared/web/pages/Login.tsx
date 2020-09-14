@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Button } from "../shared/web/components/Button";
+import { Button } from "../components/Button";
 import firebase from "firebase/app";
 import { useRouter } from "@graywolfai/react-tiniest-router";
-import { routes } from "../routes";
-import { useUser, signInWithEmailAndPassword } from "../shared/web/auth";
-import { CardPage } from "../shared/web/components/CardPage";
-import { Input } from "../shared/web/components/Input";
-import { Link } from "../shared/web/components/Link";
-import { preventAndCall, wrap } from "../shared/web/utils";
+import { routes } from "../../../routes";
+import { useUser, signInWithEmailAndPassword } from "../auth";
+import { CardPage } from "../components/CardPage";
+import { Input } from "../components/Input";
+import { Link } from "../components/Link";
+import { preventAndCall, wrap } from "../utils";
 import { useHotkeys } from "react-hotkeys-hook";
-import { BlockAlert } from "../shared/web/components/BlockAlert";
+import { BlockAlert } from "../components/BlockAlert";
 
 export const Login = () => {
   const [email, setEmail] = useState("");
@@ -20,8 +20,9 @@ export const Login = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    console.log(user);
     if (user) {
-      goTo(routes.songs);
+      goTo(routes.home);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
