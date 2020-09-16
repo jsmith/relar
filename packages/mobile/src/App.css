@@ -2,12 +2,12 @@
 @font-face {
   font-family: "FiraMono";
   /* We need this since we mount src/shared to _dist_/shared */
-  src: url("./_dist_/shared/web/fonts/FiraMono-Regular.ttf") format("truetype");
+  src: url("/_dist_/shared/web/fonts/FiraMono-Regular.ttf") format("truetype");
 }
 
 @font-face {
   font-family: "FiraMono";
-  src: url("./_dist_/shared/web/fonts/FiraMono-Bold.ttf") format("truetype");
+  src: url("/_dist_/shared/web/fonts/FiraMono-Bold.ttf") format("truetype");
   font-weight: bold;
 }
 

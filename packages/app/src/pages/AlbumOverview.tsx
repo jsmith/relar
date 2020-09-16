@@ -2,7 +2,7 @@ import React from "react";
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import { useAlbumSongs, useAlbum } from "../shared/web/queries/album";
 import { useFirebaseUpdater } from "../shared/web/watcher";
-import { SongsOverview } from "../shared/web/sections/SongsOverview";
+import { SongsOverview } from "../sections/SongsOverview";
 
 export const AlbumOverview = ({ container }: { container: HTMLElement | null }) => {
   const { params } = useRouter();

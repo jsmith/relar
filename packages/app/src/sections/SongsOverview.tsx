@@ -1,18 +1,18 @@
 import React, { useState, useMemo } from "react";
-import { fmtMSS, pluralSongs, useGradient } from "../utils";
+import { fmtMSS, pluralSongs, useGradient } from "../shared/web/utils";
 import classNames from "classnames";
 import { SongTable, SongTableItem } from "./SongTable";
-import { ErrorTemplate } from "../components/ErrorTemplate";
+import { ErrorTemplate } from "../shared/web/components/ErrorTemplate";
 import { MdPlayCircleOutline } from "react-icons/md";
 import { HiDotsHorizontal, HiPencil, HiTrash } from "react-icons/hi";
-import { ContentEditable } from "../components/ContentEditable";
-import { Skeleton } from "../components/Skeleton";
-import { Collage } from "../components/Collage";
-import { useQueue, SetQueueSource, SongInfo, isSongInfo } from "../queue";
-import { Song } from "../../universal/types";
-import { useSongsDuration } from "../queries/songs";
+import { ContentEditable } from "../shared/web/components/ContentEditable";
+import { Skeleton } from "../shared/web/components/Skeleton";
+import { Collage } from "../shared/web/components/Collage";
+import { useQueue, SetQueueSource, SongInfo, isSongInfo } from "../shared/web/queue";
+import { Song } from "../shared/universal/types";
+import { useSongsDuration } from "../shared/web/queries/songs";
 import { QueryStatus } from "react-query";
-import { ContextMenuItem, ContextMenu } from "../components/ContextMenu";
+import { ContextMenuItem, ContextMenu } from "../shared/web/components/ContextMenu";
 
 export interface SongsOverviewProps {
   container: HTMLElement | null;

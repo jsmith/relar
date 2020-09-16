@@ -14,7 +14,7 @@ const Artists = React.lazy(() => import("./pages/Artists"));
 const Albums = React.lazy(() => import("./pages/Albums"));
 const Playlists = React.lazy(() => import("./pages/Playlists"));
 const Home = React.lazy(() => import("./pages/Home"));
-const Search = React.lazy(() => import("./pages/Search"));
+const Search = React.lazy(() => import("./shared/web/pages/Search"));
 const Signup = React.lazy(() => import("./shared/web/pages/Signup"));
 const ForgotPassword = React.lazy(() => import("./shared/web/pages/ForgotPassword"));
 const AlbumOverview = React.lazy(() => import("./pages/AlbumOverview"));
@@ -37,11 +37,11 @@ import "./index.css";
 import { UploadModal } from "./shared/web/sections/UploadModal";
 import { LoadingSpinner } from "./shared/web/components/LoadingSpinner";
 import { QueueAudio } from "./shared/web/queue";
-import { Queue } from "./shared/web/sections/Queue";
+import { Queue } from "./sections/Queue";
 import FocusTrap from "focus-trap-react";
 import { clearCache } from "./shared/web/watcher";
 import * as Sentry from "@sentry/browser";
-import { PrivacyPolicy } from "./pages/PrivacyPolicy";
+import { PrivacyPolicy } from "./shared/web/pages/PrivacyPolicy";
 import { TermsAndConditions } from "./pages/TermsAndConditions";
 
 export interface SideBarItem {

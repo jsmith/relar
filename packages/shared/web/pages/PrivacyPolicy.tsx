@@ -1,5 +1,5 @@
 import React from "react";
-import { Footer } from "../shared/web/sections/Footer";
+import { Footer } from "../sections/Footer";
 
 export const PrivacyPolicy = () => {
   return (

@@ -72,6 +72,9 @@ const { useQuery: useSongsQuery, queryCache: songsQueryCache } = createQueryCach
   Array<firebase.firestore.QueryDocumentSnapshot<Song>>
 >();
 
+// Just for TS
+const title: keyof Song = "title";
+
 export const useSongs = () => {
   const userData = useUserData();
 
@@ -81,6 +84,7 @@ export const useSongs = () => {
       () =>
         userData
           .songs()
+          .orderBy(title)
           .get()
           .then((r) => r.docs),
       "loading_songs",

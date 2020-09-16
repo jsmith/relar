@@ -6,10 +6,11 @@ import { routes } from "./routes";
 import { CSSTransition } from "react-transition-group";
 import "./App.css";
 import { LoadingSpinner } from "./shared/web/components/LoadingSpinner";
-import { HiChevronLeft, HiHome, HiSearch } from "react-icons/hi";
+import { HiChevronLeft, HiHome, HiOutlineCog, HiSearch } from "react-icons/hi";
 import type { IconType } from "react-icons/lib";
 import { Link } from "./shared/web/components/Link";
 import { MdLibraryMusic } from "react-icons/md";
+import { GiSwordSpin } from "react-icons/gi";
 
 export const Tab = ({
   label,
@@ -39,10 +40,9 @@ export const App = () => {
   const route = useMemo(() => {
     return Object.values(routes).find((route) => route.id === routeId);
   }, [routeId]);
-  console.log(routeId);
 
   useEffect(() => {
-    if (!loading && user) {
+    if (!loading && user && route?.protected === false) {
       goTo(routes.home);
     }
   }, [loading]);
@@ -61,32 +61,42 @@ export const App = () => {
             unmountOnExit
           >
             <div className="absolute inset-0 overflow-hidden page">
-              {route.showBack ? (
-                <div className="h-full flex flex-col">
-                  <div className="text-center relative m-2 font-bold text-gray-700">
-                    <button className="absolute left-0" onClick={() => window.history.back()}>
-                      <HiChevronLeft className="w-6 h-6" />
-                    </button>
-                    {route.showBack}
+              <div className="flex flex-col h-full text-gray-700">
+                {route.title && (
+                  // h-10 makes it so the hight stays constant depending on whether we are showing the back button
+                  <div className="flex justify-between items-center px-3 mt-1 py-1 relative border-b h-10">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div>{route.title}</div>
+                    </div>
+
+                    {route.showBack ? (
+                      <button className="z-10" onClick={() => window.history.back()}>
+                        <HiChevronLeft className="w-6 h-6" />
+                      </button>
+                    ) : (
+                      <div className="text-xl font-bold">
+                        RELAR <GiSwordSpin className="inline-block -mt-1 -ml-1" />
+                      </div>
+                    )}
+
+                    {route.id !== "settings" && (
+                      <button className="z-10" onClick={() => goTo(routes.settings)}>
+                        <HiOutlineCog className="w-6 h-6" />
+                      </button>
+                    )}
                   </div>
-                  <div className="flex-grow">
-                    <route.component />
-                  </div>
+                )}
+                <div className="flex-grow min-h-0 relative">
+                  <route.component />
                 </div>
-              ) : route.showTabs ? (
-                <div className="flex flex-col h-full">
-                  <div className="flex-grow overflow-scroll">
-                    <route.component />
-                  </div>
+                {route.showTabs && (
                   <div className="pb-4 bg-gray-900 flex justify-around text-white flex-shrink-0">
                     <Tab label="Home" route={routes.home} icon={HiHome} />
-                    <Tab label="Search" route={routes.home} icon={HiSearch} />
-                    <Tab label="Library" route={routes.home} icon={MdLibraryMusic} />
+                    <Tab label="Search" route={routes.search} icon={HiSearch} />
+                    <Tab label="Library" route={routes.library} icon={MdLibraryMusic} />
                   </div>
-                </div>
-              ) : (
-                <route.component />
-              )}
+                )}
+              </div>
             </div>
           </CSSTransition>
         )),

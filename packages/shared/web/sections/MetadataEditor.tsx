@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Song, MetadataAPI } from "../../universal/types";
+import type { Song, MetadataAPI } from "../../universal/types";
 import { OkCancelModal } from "../components/OkCancelModal";
 import { Input } from "../components/Input";
 import { useFirebaseUpdater } from "../watcher";
-import { metadataBackend, getOrUnknownError } from "../../../backend";
+import { metadataBackend, getOrUnknownError } from "../backend";
 import { useDefinedUser } from "../auth";
 import { BlockAlert } from "../components/BlockAlert";
 
@@ -47,7 +47,7 @@ export const MetadataEditor = ({ song, setDisplay, onSuccess }: MetadataEditorPr
 
     const idToken = await user.getIdToken();
     const result = await getOrUnknownError(() =>
-      metadataBackend.post("/edit", {
+      metadataBackend().post("/edit", {
         idToken,
         songId: song.id,
         update,

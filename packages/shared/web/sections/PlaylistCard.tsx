@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Playlist } from "../../universal/types";
+import type { Playlist } from "../../universal/types";
 import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import { routes } from "../../../routes";

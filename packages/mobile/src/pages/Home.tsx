@@ -10,8 +10,6 @@ import { LoadingSpinner } from "../shared/web/components/LoadingSpinner";
 import { routes } from "../routes";
 import { MusicalNote } from "../shared/web/illustrations/MusicalNote";
 import { MdAddCircle } from "react-icons/md";
-import { HiCog, HiOutlineCog } from "react-icons/hi";
-import { GiSwordSpin } from "react-icons/gi";
 
 export const Home = () => {
   const recentlyAddedSongs = useRecentlyAddedSongs();
@@ -42,22 +40,14 @@ export const Home = () => {
   }
 
   return (
-    <div className="space-y-4 mx-5 my-1">
-      <div className="flex justify-between text-gray-700 items-center">
-        <div className="text-xl font-bold">
-          RELAR <GiSwordSpin className="inline-block -mt-1" />
-        </div>
-        <button>
-          <HiOutlineCog className="w-6 h-6" />
-        </button>
-      </div>
+    <div className="space-y-4 px-3 lg:px-5 py-1 overflow-y-scroll h-full">
       <HomeTopic
         title="Recently Played"
         subTitle=""
         route={routes.home} // TODO routes.generated
         // TODO add support for recently-played
         params={{ generatedType: "recently-played" }}
-        wrapperClassName="-mx-5 px-5"
+        wrapperClassName="-mx-3 lg:-mx-5 px-3 lg:px-5"
       >
         {recentlyAddedSongs.slice(0, 10).map((song) => (
           <SongCard key={song.id} song={song} />
@@ -69,7 +59,7 @@ export const Home = () => {
         subTitle=""
         route={routes.home} // TODO routes.generated
         params={{ generatedType: "recently-added" }}
-        wrapperClassName="-mx-5 px-5"
+        wrapperClassName="-mx-3 lg:-mx-5 px-3 lg:px-5"
       >
         {recentlyAddedSongs.slice(0, 10).map((song) => (
           <SongCard key={song.id} song={song} />
@@ -81,7 +71,7 @@ export const Home = () => {
         subTitle=""
         route={routes.home} // TODO routes.generated
         params={{ generatedType: "liked" }}
-        wrapperClassName="-mx-5 px-5"
+        wrapperClassName="-mx-3 lg:-mx-5 px-3 lg:px-5"
       >
         {likedSongs.slice(0, 10).map((song) => (
           <SongCard key={song.id} song={song} />

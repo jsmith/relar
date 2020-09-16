@@ -1,5 +1,5 @@
 import React, { useMemo, useState, CSSProperties } from "react";
-import { Song } from "../../universal/types";
+import { Song } from "../shared/universal/types";
 import classNames from "classnames";
 import {
   MdMusicNote,
@@ -11,23 +11,23 @@ import {
   MdRemoveFromQueue,
   MdAddToQueue,
 } from "react-icons/md";
-import { MetadataEditor } from "./MetadataEditor";
+import { MetadataEditor } from "../shared/web/sections/MetadataEditor";
 import { useModal } from "react-modal-hook";
-import { LikedIcon } from "../components/LikedIcon";
-import { IconButton } from "../components/IconButton";
+import { LikedIcon } from "../shared/web/components/LikedIcon";
+import { IconButton } from "../shared/web/components/IconButton";
 import useDropdownMenuImport from "react-accessible-dropdown-menu-hook";
-import { ContextMenu, ContextMenuItem } from "../components/ContextMenu";
-import { useConfirmAction } from "../../../confirm-actions";
-import { useLikeSong, useDeleteSong } from "../queries/songs";
-import { useFirebaseUpdater } from "../watcher";
-import { fmtMSS } from "../utils";
-import { Link } from "../components/Link";
-import { routes } from "../../../routes";
-import { link } from "../classes";
-import { AddToPlaylistEditor } from "./AddToPlaylistModal";
-import { Skeleton } from "../components/Skeleton";
-import { useQueue, SetQueueSource, SongInfo, isSongInfo } from "../queue";
-import { useRecycle, SentinelBlock } from "../recycle";
+import { ContextMenu, ContextMenuItem } from "../shared/web/components/ContextMenu";
+import { useConfirmAction } from "../confirm-actions";
+import { useLikeSong, useDeleteSong } from "../shared/web/queries/songs";
+import { useFirebaseUpdater } from "../shared/web/watcher";
+import { fmtMSS } from "../shared/web/utils";
+import { Link } from "../shared/web/components/Link";
+import { routes } from "../routes";
+import { link } from "../shared/web/classes";
+import { AddToPlaylistEditor } from "../shared/web/sections/AddToPlaylistModal";
+import { Skeleton } from "../shared/web/components/Skeleton";
+import { useQueue, SetQueueSource, SongInfo, isSongInfo } from "../shared/web/queue";
+import { useRecycle, SentinelBlock } from "../shared/web/recycle";
 import { Audio } from "@jsmith21/svg-loaders-react";
 
 // I really wish I didn't have to do this but for some reason this is the only thing that works

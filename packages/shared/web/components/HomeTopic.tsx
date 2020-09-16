@@ -26,7 +26,7 @@ export const HomeTopic = ({
     <div className="space-y-1 lg:space-y-3">
       <div className="flex justify-between items-center">
         <div>
-          <div className="text-gray-800 text-xl md:text-2xl leading-tight">{title}</div>
+          <div className="text-gray-800 text-base md:text-2xl leading-tight">{title}</div>
           <div className="text-gray-600 text-xs">{subTitle}</div>
         </div>
         <Link
@@ -40,6 +40,9 @@ export const HomeTopic = ({
 
       <div className={classNames("flex space-x-3 overflow-x-auto", wrapperClassName)}>
         {children.length === 0 ? <div>NOTHING</div> : children}
+        {/* This is so the items don't end right at the edge of the screen */}
+        {/* This pushes the items out just a bit more */}
+        <div className="w-1 flex-shrink-0" />
       </div>
     </div>
   );

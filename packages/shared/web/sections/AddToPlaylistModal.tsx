@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Song } from "../../universal/types";
+import type { Song } from "../../universal/types";
 import { Input } from "../components/Input";
 import { ErrorTemplate } from "../components/ErrorTemplate";
 import { usePlaylists, usePlaylistCreate, usePlaylistAdd } from "../queries/playlists";

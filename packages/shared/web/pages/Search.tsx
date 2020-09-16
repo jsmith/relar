@@ -7,8 +7,9 @@ export const Search = () => {
   // See https://support.google.com/firebase/answer/6317498?hl=en&ref_topic=6317484
   return (
     <div className="flex flex-col items-center justify-center h-full space-y-5">
-      <PuttingThingsTogether className="max-w-xs" />
-      <p className="text-gray-700 max-w-lg text-center">
+      <PuttingThingsTogether className="mx-5 max-w-xs" />
+      {/* TODO */}
+      <p className="text-gray-700 mx-5 max-w-lg text-center text-sm lg:text-base">
         The search functionality is currently in progress. Make sure to check out our{" "}
         <a
           className={link()}
