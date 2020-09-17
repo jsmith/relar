@@ -2,5 +2,13 @@
 /build
 .DS_Store
 
+*.zip
+*.ipa
+
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/screenshots
+**/fastlane/test_output
+
 # Ignore since this is built
 src/tailwind.css
