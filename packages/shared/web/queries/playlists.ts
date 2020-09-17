@@ -1,12 +1,12 @@
 import { createQueryCache } from "./cache";
-import { Playlist, Song } from "../../universal/types";
+import type { Playlist } from "../../universal/types";
 import { useUserData } from "../firestore";
 import { useMutation } from "react-query";
 import * as uuid from "uuid";
 import { updateCached, getCachedOr, useFirebaseUpdater } from "../watcher";
 import { useMemo } from "react";
 import { useSongLookup } from "./songs";
-import { SongInfo } from "../queue";
+import type { SongInfo } from "../queue";
 import { withPerformanceAndAnalytics } from "../performance";
 import firebase from "firebase/app";
 

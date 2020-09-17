@@ -7,6 +7,7 @@ import * as uuid from "uuid";
 import { createAlbumId } from "./shared/universal/utils";
 import "uvu";
 import assert from "uvu/assert";
+import type firebase from "firebase";
 
 /** Call this function with things you don't want to be removed (ie. side effects) */
 export const noOp = (...args: any[]) => {};

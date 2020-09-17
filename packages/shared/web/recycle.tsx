@@ -119,7 +119,7 @@ export const SentinelBlock = forwardRef<HTMLSpanElement, { index: number; rowsPe
     if (index % rowsPerBlock !== 0) return null;
     // `index` is not a valid attribute
     // But we're using it to pass information to the IntersectionObserver callback.
-    // @ts-expect-error
+    // @ts-ignore
     return <span index={index} ref={ref} />;
   },
 );

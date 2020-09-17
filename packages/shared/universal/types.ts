@@ -11,7 +11,6 @@ import {
   Null,
   Array,
 } from "runtypes";
-import * as firebase from "firebase";
 
 export const Timestamp = Unknown.withGuard((x): x is firebase.firestore.Timestamp => true);
 

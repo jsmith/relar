@@ -46,7 +46,7 @@ export const Songs = () => {
     clearTimeout(timer.current);
   }, []);
 
-  const resetTimer = () => {
+  const resetTimer = useCallback(() => {
     if (!showing.current) {
       setShow(true);
       showing.current = true;
@@ -59,7 +59,8 @@ export const Songs = () => {
       setShow(false);
       showing.current = false;
     }, 1000);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const scrollTo = useCallback(
     (letter: string) => {
@@ -78,6 +79,7 @@ export const Songs = () => {
       resetTimer();
       container.scrollTop = height * index;
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [container, songs.data],
   );
 
@@ -89,6 +91,7 @@ export const Songs = () => {
       container.removeEventListener("scroll", resetTimer);
       clearTimer();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [container]);
 
   // showing and show should always have the save value
@@ -124,6 +127,7 @@ export const Songs = () => {
         >
           {letters.map((letter) => (
             <button
+              key={letter}
               className="uppercase select-none focus:outline-none"
               onTouchStart={(e) => {
                 scrollTo(letter);
@@ -134,7 +138,7 @@ export const Songs = () => {
                 if (letter) scrollTo(letter);
               }}
               onDragStart={(e) => e.preventDefault()}
-              // @ts-expect-error
+              // @ts-ignore
               letter={letter}
             >
               {letter}

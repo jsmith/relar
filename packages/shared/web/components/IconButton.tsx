@@ -1,5 +1,5 @@
 import React, { forwardRef } from "react";
-import { IconType } from "react-icons/lib";
+import type { IconType } from "react-icons/lib";
 import classNames from "classnames";
 
 export interface IconButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

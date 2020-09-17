@@ -1,6 +1,6 @@
 import { getDownloadURL } from "../storage";
 import { useDefinedUser } from "../auth";
-import { Artwork } from "../../universal/types";
+import type { Artwork } from "../../universal/types";
 import { clientStorage } from "../../universal/utils";
 import * as Sentry from "@sentry/browser";
 import { useEffect, useState, useMemo } from "react";

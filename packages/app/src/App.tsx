@@ -25,8 +25,10 @@ const ArtistOverview = React.lazy(() => import("./pages/ArtistOverview"));
 const PlaylistOverview = React.lazy(() => import("./pages/PlaylistOverview"));
 const Invite = React.lazy(() => import("./pages/Invite"));
 const Generated = React.lazy(() => import("./pages/Generated"));
+const PrivacyPolicy = React.lazy(() => import("./shared/web/pages/PrivacyPolicy"));
+const TermsAndConditions = React.lazy(() => import("./shared/web/pages/TermsAndConditions"));
 import ReactQueryDevtools from "react-query-devtools";
-import { AccountDropdown } from "./shared/web/sections/AccountDropdown";
+import { AccountDropdown } from "./sections/AccountDropdown";
 import firebase from "firebase/app";
 import { useDocumentTitle } from "./shared/web/utils";
 import { Link } from "./shared/web/components/Link";
@@ -41,8 +43,6 @@ import { Queue } from "./sections/Queue";
 import FocusTrap from "focus-trap-react";
 import { clearCache } from "./shared/web/watcher";
 import * as Sentry from "@sentry/browser";
-import { PrivacyPolicy } from "./shared/web/pages/PrivacyPolicy";
-import { TermsAndConditions } from "./pages/TermsAndConditions";
 
 export interface SideBarItem {
   label: string;

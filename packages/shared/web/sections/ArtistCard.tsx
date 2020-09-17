@@ -1,5 +1,5 @@
 import React from "react";
-import { Album, Artist } from "../../universal/types";
+import type { Artist } from "../../universal/types";
 import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import { routes } from "../../../routes";

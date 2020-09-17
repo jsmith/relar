@@ -1,5 +1,5 @@
 import { createQueryCache } from "./cache";
-import { UserData } from "../../universal/types";
+import type { UserData } from "../../universal/types";
 import { useUserData } from "../firestore";
 
 const {

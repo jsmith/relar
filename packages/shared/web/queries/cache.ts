@@ -14,7 +14,7 @@ export interface QueryCache<TResult, TKey extends QueryKey> {
     key: TKey,
     dataOrUpdater: TResult | ((oldData: TResult | undefined) => TResult),
   ): void;
-  invalidateQueries(queryKeyOrPredicateFn: TKey, options?: InvalidateQueriesOptions): Promise<void>;
+  invalidateQueries(queryKeyOrPredicateFn: TKey, options?: InvalidateQueriesOptions): void;
   removeQueries(queryKeyOrPredicateFn: TKey, { exact }: { exact?: boolean }): void;
   getQuery(queryKey: TKey): Query<TResult, Error> | undefined;
   isFetching: number;

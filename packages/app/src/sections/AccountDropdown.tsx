@@ -4,10 +4,10 @@ import { AiOutlineUser } from "react-icons/ai";
 import classNames from "classnames";
 import { FaCaretDown } from "react-icons/fa";
 import { useRouter } from "@graywolfai/react-tiniest-router";
-import { routes } from "../../../routes";
-import { useDefinedUser } from "../auth";
+import { routes } from "../routes";
+import { useDefinedUser } from "../shared/web/auth";
 import { useModal } from "react-modal-hook";
-import { Feedback } from "./Feedback";
+import { Feedback } from "../shared/web/sections/Feedback";
 import firebase from "firebase/app";
 
 const ITEMS = ["Account" as const, "Feedback" as const, "Log Out" as const];

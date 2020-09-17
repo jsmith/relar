@@ -1,5 +1,5 @@
 import { createQueryCache } from "./cache";
-import { Artist } from "../../universal/types";
+import type { Artist } from "../../universal/types";
 import { useUserData } from "../firestore";
 import { useFirebaseMemo, getCachedOr } from "../watcher";
 import { useSongs } from "./songs";

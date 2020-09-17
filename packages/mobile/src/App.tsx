@@ -45,6 +45,7 @@ export const App = () => {
     if (!loading && user && route?.protected === false) {
       goTo(routes.home);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
 
   // TODO eslint
@@ -100,6 +101,7 @@ export const App = () => {
             </div>
           </CSSTransition>
         )),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [routeId],
   );
 

@@ -1,6 +1,6 @@
 import React, { useContext, useState, useCallback, useRef, useEffect } from "react";
 import { createContext } from "react";
-import { Song } from "../universal/types";
+import type { Song } from "../universal/types";
 import { tryToGetSongDownloadUrlOrLog } from "./queries/songs";
 import usePortalImport from "react-useportal";
 import { useUser } from "./auth";

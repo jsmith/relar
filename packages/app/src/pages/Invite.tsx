@@ -6,7 +6,7 @@ import { Input } from "../shared/web/components/Input";
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import { BlockAlert } from "../shared/web/components/BlockAlert";
 import { Button } from "../shared/web/components/Button";
-import { betaBackend, getOrUnknownError } from "../backend";
+import { betaBackend, getOrUnknownError } from "../shared/web/backend";
 import firebase from "firebase/app";
 
 export const Invite = () => {
@@ -20,7 +20,7 @@ export const Invite = () => {
   const createAccount = async () => {
     setLoading(true);
     const response = await getOrUnknownError(() =>
-      betaBackend.post("/create-account", {
+      betaBackend().post("/create-account", {
         token: invite,
         password: password,
       }),

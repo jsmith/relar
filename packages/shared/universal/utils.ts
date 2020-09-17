@@ -1,5 +1,5 @@
-import { Song, Album, Artist, UserData, Playlist, UserFeedback } from "./types";
-import { Runtype, Static, Success, Failure } from "runtypes";
+import type { Song, Album, Artist, UserData, Playlist, UserFeedback } from "./types";
+import type { Runtype, Static, Success, Failure } from "runtypes";
 
 export type DecodeResult<T> = (Success<T> | Failure) & { _unsafeUnwrap: () => T };
 

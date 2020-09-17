@@ -1,5 +1,5 @@
 import axios from "@graywolfai/rest-ts-axios";
-import { BetaAPI, UnknownError, MetadataAPI } from "../universal/types";
+import type { BetaAPI, UnknownError, MetadataAPI } from "../universal/types";
 import { captureAndLog } from "./utils";
 
 interface Urls {
