@@ -67,6 +67,9 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
       - uses: c-hive/gha-npm-cache@v1
+      # We *need* to hoist our dependencies due to symlinks
+      - run: npm run bootstrap
+      - run: npx patch-package
 
       - id: changes
         uses: jsmith/changes-since-last-tag@v0.3.2
