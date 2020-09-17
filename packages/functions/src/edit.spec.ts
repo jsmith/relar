@@ -1,5 +1,6 @@
 import supertest from "supertest";
-import { adminDb, deleteAllUserData } from "./utils";
+import { deleteAllUserData } from "./utils";
+import { adminDb } from "./shared/node/utils";
 import { testFunctions } from "./configure-tests";
 import {
   noOp,
@@ -17,8 +18,8 @@ import { admin } from "./admin";
 import { app } from "./edit";
 import { test } from "uvu";
 import assert from "uvu/assert";
-import { MetadataAPI } from "./shared/types";
-import { createAlbumId } from "./shared/utils";
+import { MetadataAPI } from "./shared/universal/types";
+import { createAlbumId } from "./shared/universal/utils";
 
 const firestore = admin.firestore();
 noOp(testFunctions);
@@ -67,13 +68,13 @@ test("can successfully edit a song", async () => {
     type: "success",
   });
   const updated = await ref.get().then((snap) => snap.data());
-  assert.equal(body.update.title, updated.title);
-  assert.equal(body.update.year, updated.year);
-  assert.equal(body.update.artist, updated.artist);
-  assert.equal(body.update.genre, updated.genre);
-  assert.equal(body.update.albumArtist, updated.albumArtist);
-  assert.equal(body.update.albumName, updated.albumName);
-  assert.equal(createAlbumId(body.update), updated.albumId);
+  assert.equal(body.update.title, updated?.title);
+  assert.equal(body.update.year, updated?.year);
+  assert.equal(body.update.artist, updated?.artist);
+  assert.equal(body.update.genre, updated?.genre);
+  assert.equal(body.update.albumArtist, updated?.albumArtist);
+  assert.equal(body.update.albumName, updated?.albumName);
+  assert.equal(createAlbumId(body.update), updated?.albumId);
   await assertExists(db.artist("Greg"));
   await assertExists(db.album(editAlbumId));
 });

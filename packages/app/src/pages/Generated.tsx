@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
-import { useRouter } from "react-tiniest-router";
+import { useRouter } from "@graywolfai/react-tiniest-router";
 import { SongsOverview } from "../sections/SongsOverview";
-import { useRecentlyAddedSongs, useSongs, useLikedSongs } from "../queries/songs";
+import { useRecentlyAddedSongs, useSongs, useLikedSongs } from "../shared/web/queries/songs";
 
 export const Generated = ({ container }: { container: HTMLElement | null }) => {
   const { params } = useRouter();

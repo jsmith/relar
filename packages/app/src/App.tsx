@@ -1,48 +1,48 @@
 import React, { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { routes } from "./routes";
-import { useRouter } from "react-tiniest-router";
-import { useUser, useUserChange } from "./auth";
-import { Sidebar } from "./components/Sidebar";
+import { useRouter } from "@graywolfai/react-tiniest-router";
+import { useUser, useUserChange } from "./shared/web/auth";
+import { Sidebar } from "./shared/web/components/Sidebar";
 import { FaMusic } from "react-icons/fa";
 import { GiSwordSpin } from "react-icons/gi";
 import classNames from "classnames";
-import { Player } from "./components/Player";
+import { Player } from "./shared/web/components/Player";
 import { MdLibraryMusic, MdSearch, MdAddCircle, MdMusicNote } from "react-icons/md";
-const Login = React.lazy(() => import("./pages/Login"));
+const Login = React.lazy(() => import("./shared/web/pages/Login"));
 const Songs = React.lazy(() => import("./pages/Songs"));
 const Artists = React.lazy(() => import("./pages/Artists"));
 const Albums = React.lazy(() => import("./pages/Albums"));
 const Playlists = React.lazy(() => import("./pages/Playlists"));
 const Home = React.lazy(() => import("./pages/Home"));
-const Search = React.lazy(() => import("./pages/Search"));
-const Signup = React.lazy(() => import("./pages/Signup"));
-const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
+const Search = React.lazy(() => import("./shared/web/pages/Search"));
+const Signup = React.lazy(() => import("./shared/web/pages/Signup"));
+const ForgotPassword = React.lazy(() => import("./shared/web/pages/ForgotPassword"));
 const AlbumOverview = React.lazy(() => import("./pages/AlbumOverview"));
-const ForgotPasswordSuccess = React.lazy(() => import("./pages/ForgotPasswordSuccess"));
+const ForgotPasswordSuccess = React.lazy(() => import("./shared/web/pages/ForgotPasswordSuccess"));
 const Hero = React.lazy(() => import("./pages/Hero"));
 const Account = React.lazy(() => import("./pages/Account"));
 const ArtistOverview = React.lazy(() => import("./pages/ArtistOverview"));
 const PlaylistOverview = React.lazy(() => import("./pages/PlaylistOverview"));
 const Invite = React.lazy(() => import("./pages/Invite"));
 const Generated = React.lazy(() => import("./pages/Generated"));
+const PrivacyPolicy = React.lazy(() => import("./shared/web/pages/PrivacyPolicy"));
+const TermsAndConditions = React.lazy(() => import("./shared/web/pages/TermsAndConditions"));
 import ReactQueryDevtools from "react-query-devtools";
 import { AccountDropdown } from "./sections/AccountDropdown";
-import { auth, analytics } from "./firebase";
-import { useDocumentTitle } from "./utils";
-import { Link } from "./components/Link";
-import { button, link, bgApp } from "./classes";
+import firebase from "firebase/app";
+import { useDocumentTitle } from "./shared/web/utils";
+import { Link } from "./shared/web/components/Link";
+import { button, link, bgApp } from "./shared/web/classes";
 import { SkipNavLink, SkipNavContent } from "@reach/skip-nav";
 import "@reach/skip-nav/styles.css";
 import "./index.css";
-import { UploadModal } from "./sections/UploadModal";
-import { LoadingSpinner } from "./components/LoadingSpinner";
-import { QueueAudio } from "./queue";
+import { UploadModal } from "./shared/web/sections/UploadModal";
+import { LoadingSpinner } from "./shared/web/components/LoadingSpinner";
+import { QueueAudio } from "./shared/web/queue";
 import { Queue } from "./sections/Queue";
 import FocusTrap from "focus-trap-react";
-import { clearCache } from "./watcher";
+import { clearCache } from "./shared/web/watcher";
 import * as Sentry from "@sentry/browser";
-import { PrivacyPolicy } from "./pages/PrivacyPolicy";
-import { TermsAndConditions } from "./pages/TermsAndConditions";
 
 export interface SideBarItem {
   label: string;
@@ -102,7 +102,7 @@ export const App = (_: React.Props<{}>) => {
   useEffect(() => {
     if (loading) return;
     // This seems to have the uid so we should be able to track logins by user!
-    analytics.logEvent("app_open");
+    firebase.analytics().logEvent("app_open");
   }, [loading]);
 
   useEffect(() => {
@@ -110,7 +110,7 @@ export const App = (_: React.Props<{}>) => {
     // you the number of users who have visited each screen in your app, and which screens are
     // the most popular."
     // See https://firebase.googleblog.com/2020/08/google-analytics-manual-screen-view.html
-    analytics.logEvent("screen_view", { app_name: "RELAR", screen_name: routeId });
+    firebase.analytics().logEvent("screen_view", { app_name: "RELAR", screen_name: routeId });
   });
 
   // We need to reset the cache every time the user changes
@@ -120,10 +120,10 @@ export const App = (_: React.Props<{}>) => {
     useCallback((user) => {
       if (!user) {
         Sentry.setUser(null);
-        analytics.setUserId("");
+        firebase.analytics().setUserId("");
       } else {
         Sentry.setUser({ id: user.uid });
-        analytics.setUserId(user.uid);
+        firebase.analytics().setUserId(user.uid);
       }
     }, []),
   );

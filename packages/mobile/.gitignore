@@ -1,0 +1,6 @@
+/node_modules
+/build
+.DS_Store
+
+# Ignore since this is built
+src/tailwind.css

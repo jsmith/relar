@@ -3,12 +3,12 @@ import { useSelect } from "downshift";
 import { AiOutlineUser } from "react-icons/ai";
 import classNames from "classnames";
 import { FaCaretDown } from "react-icons/fa";
-import { useRouter } from "react-tiniest-router";
+import { useRouter } from "@graywolfai/react-tiniest-router";
 import { routes } from "../routes";
-import { analytics, auth } from "../firebase";
-import { useDefinedUser } from "../auth";
+import { useDefinedUser } from "../shared/web/auth";
 import { useModal } from "react-modal-hook";
-import { Feedback } from "./Feedback";
+import { Feedback } from "../shared/web/sections/Feedback";
+import firebase from "firebase/app";
 
 const ITEMS = ["Account" as const, "Feedback" as const, "Log Out" as const];
 
@@ -30,8 +30,8 @@ export const AccountDropdown = ({ className }: AccountDropdownProps) => {
           goTo(routes.account);
           break;
         case "Log Out":
-          analytics.logEvent("logout");
-          auth.signOut();
+          firebase.analytics().logEvent("logout");
+          firebase.auth().signOut();
           break;
         case "Feedback":
           show();

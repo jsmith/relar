@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { CardPage } from "../components/CardPage";
-import { Link } from "../components/Link";
+import { CardPage } from "../shared/web/components/CardPage";
+import { Link } from "../shared/web/components/Link";
 import { routes } from "../routes";
-import { Input } from "../components/Input";
-import { useRouter } from "react-tiniest-router";
-import { BlockAlert } from "../components/BlockAlert";
-import { Button } from "../components/Button";
-import { betaBackend, getOrUnknownError } from "../backend";
-import { analytics } from "../firebase";
+import { Input } from "../shared/web/components/Input";
+import { useRouter } from "@graywolfai/react-tiniest-router";
+import { BlockAlert } from "../shared/web/components/BlockAlert";
+import { Button } from "../shared/web/components/Button";
+import { betaBackend, getOrUnknownError } from "../shared/web/backend";
+import firebase from "firebase/app";
 
 export const Invite = () => {
   const { params } = useRouter();
@@ -20,7 +20,7 @@ export const Invite = () => {
   const createAccount = async () => {
     setLoading(true);
     const response = await getOrUnknownError(() =>
-      betaBackend.post("/create-account", {
+      betaBackend().post("/create-account", {
         token: invite,
         password: password,
       }),
@@ -30,7 +30,7 @@ export const Invite = () => {
 
     const data = response.data;
     if (data.type === "success") {
-      analytics.logEvent("sign_up", { method: "email", invite });
+      firebase.analytics().logEvent("sign_up", { method: "email", invite });
       setSuccess(true);
       return;
     }

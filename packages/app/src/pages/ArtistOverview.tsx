@@ -1,10 +1,7 @@
 import React from "react";
-import { useRouter } from "react-tiniest-router";
-import FastAverageColor from "fast-average-color";
-import { useArtistSongs, useArtist } from "../queries/artist";
+import { useRouter } from "@graywolfai/react-tiniest-router";
+import { useArtistSongs, useArtist } from "../shared/web/queries/artist";
 import { SongsOverview } from "../sections/SongsOverview";
-
-const fac = new FastAverageColor();
 
 export const ArtistOverview = ({ container }: { container: HTMLElement | null }) => {
   const { params } = useRouter();

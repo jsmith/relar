@@ -8,12 +8,12 @@ import { Result, ok, err, ResultAsync } from "neverthrow";
 import * as id3 from "id3-parser";
 import { ObjectMetadata } from "firebase-functions/lib/providers/storage";
 import { IID3Tag } from "id3-parser/lib/interface";
-import { Song, UserDataType, Artwork } from "./shared/types";
+import { Song, UserDataType, Artwork } from "./shared/universal/types";
 import { admin } from "./admin";
 import sgMail from "@sendgrid/mail";
 import { env } from "./env";
-import { createAlbumId } from "./shared/utils";
-import { adminDb } from "./utils";
+import { createAlbumId } from "./shared/universal/utils";
+import { adminDb } from "./shared/node/utils";
 import { getMp3Duration } from "./get-mp3-duration";
 import { wrapAndReport, setSentryUser } from "./sentry";
 

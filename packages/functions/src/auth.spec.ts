@@ -1,11 +1,12 @@
 import supertest from "supertest";
-import { deleteCollection, betaSignups } from "./utils";
+import { deleteCollection } from "./utils";
+import { betaSignups } from "./shared/node/utils";
 import { testFunctions } from "./configure-tests";
 import { noOp } from "./test-utils";
 import { admin } from "./admin";
 
 import { app } from "./auth";
-import { BetaSignup } from "./shared/types";
+import { BetaSignup } from "./shared/universal/types";
 import { test } from "uvu";
 import assert from "uvu/assert";
 

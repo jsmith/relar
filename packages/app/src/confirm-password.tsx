@@ -1,5 +1,5 @@
-import React, { createContext, useState, useContext, useReducer, useRef } from "react";
-import { ConfirmPassword } from "./components/ConfirmPassword";
+import React, { createContext, useContext, useRef } from "react";
+import { ConfirmPassword } from "./shared/web/components/ConfirmPassword";
 import { useModal } from "react-modal-hook";
 
 export const ConfirmPasswordContext = createContext<{

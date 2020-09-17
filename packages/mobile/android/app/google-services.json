@@ -1,0 +1,56 @@
+{
+  "project_info": {
+    "project_number": "39664165734",
+    "firebase_url": "https://toga-4e3f5.firebaseio.com",
+    "project_id": "toga-4e3f5",
+    "storage_bucket": "toga-4e3f5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:39664165734:android:45419d678f4cf781ef9ea7",
+        "android_client_info": {
+          "package_name": "app.relar.mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "39664165734-3cvtsgdllakd2p8bcjcqna8c80a4prof.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "app.relar.mobile",
+            "certificate_hash": "d1ebde5661f3403129ee1702ea98eb83c1680185"
+          }
+        },
+        {
+          "client_id": "39664165734-299noguu9k86bhdpjlsq3mhi5bqngjle.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWlF3Chio-KJMHNUMX-8pOGIJpTwTSoAI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "39664165734-299noguu9k86bhdpjlsq3mhi5bqngjle.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "39664165734-tumu0u9jta3506cp3gdb3ujirn8ouug7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "app.relar.mobile",
+                "app_store_id": "1531313754"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

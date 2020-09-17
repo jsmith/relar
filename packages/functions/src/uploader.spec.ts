@@ -1,8 +1,9 @@
-import { Song, Artist, Album } from "./shared/types";
+import { Song, Artist, Album } from "./shared/universal/types";
 import * as uuid from "uuid";
 import * as path from "path";
 import { testFunctions } from "./configure-tests";
-import { deleteAllUserData, removeUndefined, adminDb } from "./utils";
+import { deleteAllUserData, removeUndefined } from "./utils";
+import { adminDb } from "./shared/node/utils";
 import { createTestSong } from "./test-utils";
 import { test } from "uvu";
 import assert from "uvu/assert";
@@ -10,7 +11,7 @@ import assert from "uvu/assert";
 // This must go *after* the `functions` init call
 import { createSong, parseID3Tags, md5Hash } from "./uploader";
 import { admin } from "./admin";
-import { createAlbumId } from "./shared/utils";
+import { createAlbumId } from "./shared/universal/utils";
 
 const storage = admin.storage();
 const firestore = admin.firestore();
@@ -169,7 +170,7 @@ test("works when uploading a valid song with a title, artist and album", async (
 
   const albumId = createAlbumId(testSong);
 
-  const artist = await getArtist(song.artist);
+  const artist = await getArtist(song.artist!);
   const album = await getAlbum(albumId);
 
   const expectedArtist: Artist = {
