@@ -14,11 +14,13 @@ jobs:
       - uses: actions/setup-node@v1
       - uses: c-hive/gha-npm-cache@v1
       # We *need* to hoist our dependencies due to symlinks
+      - run: npm install --no-package-lock
       - run: npm run bootstrap
       - run: npx patch-package
 
       - id: changes
         uses: jsmith/changes-since-last-tag@v0.3.2
+        env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
         with:
           glob: packages/app/**,packages/functions/**,packages/firestore.rules,packages/storage.rules,packages/storage.json,packages/indexes.json,packages/shared/**
 
@@ -30,7 +32,7 @@ jobs:
       - if: contains(steps.changes.outputs.files, 'packages/functions/') || contains(steps.changes.outputs.files, 'packages/shared/')
         run: |
           npm run build
-          firebase deploy --only functions --project staging
+          firebase deploy --only functions --project production
         env: { FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}" }
         working-directory: packages/functions
 
@@ -53,7 +55,6 @@ jobs:
 
       - if: steps.android_changes.outputs.any_changed == 'true'
         run: |
-          npm install
           npm run build
           firebase deploy --only hosting --project production
         env: { FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}" }
@@ -67,12 +68,14 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
       - uses: c-hive/gha-npm-cache@v1
+      - run: npm install --no-package-lock
       # We *need* to hoist our dependencies due to symlinks
       - run: npm run bootstrap
       - run: npx patch-package
 
       - id: changes
         uses: jsmith/changes-since-last-tag@v0.3.2
+        env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
         with: { glob: "packages/mobile/**,packages/shared/**" }
 
       # We *need* to hoist our dependencies due to symlinks
@@ -85,9 +88,11 @@ jobs:
         uses: actions/setup-ruby@v1
 
       - if: steps.changes.outputs.any_changed == 'true'
+        working-directory: packages/mobile
         run: bundle install
 
       - if: steps.changes.outputs.any_changed == 'true'
+        working-directory: packages/mobile
         run: |
           npm run build
           npx cap sync ios

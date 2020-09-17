@@ -13,8 +13,6 @@ if (process.env.NODE_ENV !== "development") {
   });
 }
 
-// It's super important to import this first
-import "./shared/web/watcher";
 import { App } from "./App"; // this must be first for hot reloading
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -29,6 +27,7 @@ import { captureAndLog } from "./shared/web/utils";
 import { ModalProvider } from "react-modal-hook";
 import { setBaseUrls } from "./shared/web/backend";
 import { env } from "./env";
+import "./firebase";
 
 setBaseUrls(env);
 
