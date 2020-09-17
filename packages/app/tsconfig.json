@@ -1,12 +1,13 @@
 {
-  "include": ["src", "types"],
-  "exclude": ["node_modules"],
+  "include": ["src"],
+  "exclude": ["node_modules", "src/shared/node/**"],
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "strict": true,
     "moduleResolution": "node",
     "jsx": "react",
     "module": "esnext",
+    "noEmit": true,
     "baseUrl": ".",
     "paths": {
       "react": ["@pika/react"],

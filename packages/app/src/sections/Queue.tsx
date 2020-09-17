@@ -6,11 +6,11 @@ import React, {
   forwardRef,
   MutableRefObject,
 } from "react";
-import { useQueue } from "../queue";
-import { SongTable } from "../components/SongTable";
+import { useQueue } from "../shared/web/queue";
+import { SongTable } from "./SongTable";
 import { MdQueueMusic, MdMoreVert } from "react-icons/md";
-import { useOnClickOutside, useCombinedRefs } from "../utils";
-import { Button } from "../components/Button";
+import { useOnClickOutside, useCombinedRefs } from "../shared/web/utils";
+import { Button } from "../shared/web/components/Button";
 import { useHotkeys } from "react-hotkeys-hook";
 
 export interface QueueProps {

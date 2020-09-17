@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
 import { wrapAndReport, setSentryUser, Sentry } from "./sentry";
-import { decode } from "./shared/utils";
-import { UserFeedbackType } from "./shared/types";
+import { decode } from "./shared/universal/utils";
+import { UserFeedbackType } from "./shared/universal/types";
 import sgMail from "@sendgrid/mail";
 import { env } from "./env";
 import { admin } from "./admin";

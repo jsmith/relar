@@ -1,8 +1,8 @@
 import React from "react";
-import { AlbumCard } from "../sections/AlbumCard";
-import { useAlbums } from "../queries/album";
-import { LoadingSpinner } from "../components/LoadingSpinner";
-import { ErrorTemplate } from "../components/ErrorTemplate";
+import { AlbumCard } from "../shared/web/sections/AlbumCard";
+import { useAlbums } from "../shared/web/queries/album";
+import { LoadingSpinner } from "../shared/web/components/LoadingSpinner";
+import { ErrorTemplate } from "../shared/web/components/ErrorTemplate";
 
 export const Albums = () => {
   const albums = useAlbums();

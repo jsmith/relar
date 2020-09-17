@@ -1,4 +1,5 @@
-import { deleteAllUserData, adminDb } from "./utils";
+import { deleteAllUserData } from "./utils";
+import { adminDb } from "./shared/node/utils";
 import { testFunctions } from "./configure-tests";
 import {
   createAndUploadTestSong,
@@ -38,7 +39,7 @@ test("deletes album & artist, decrements song count, and deletes playlist items"
     name: "playlist name",
     songs: [],
     id: playlist.id,
-    createdAt: data.createdAt,
+    createdAt: data?.createdAt,
   });
 });
 

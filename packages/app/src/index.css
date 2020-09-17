@@ -4,12 +4,12 @@
 
 @font-face {
   font-family: "FiraMono";
-  src: url("./fonts/FiraMono-Regular.ttf") format("truetype");
+  src: url("./shared/web/fonts/FiraMono-Regular.ttf") format("truetype");
 }
 
 @font-face {
   font-family: "FiraMono";
-  src: url("./fonts/FiraMono-Bold.ttf") format("truetype");
+  src: url("./shared/web/fonts/FiraMono-Bold.ttf") format("truetype");
   font-weight: bold;
 }
 
