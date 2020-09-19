@@ -99,7 +99,7 @@ export const Songs = () => {
   const showing = useRef(false);
 
   return (
-    <div className="overflow-y-scroll h-full" ref={setContainer}>
+    <div className="overflow-y-scroll w-full" ref={setContainer}>
       <div className="divide-y h-full">
         {songs.data?.map((song, i) => {
           const data = getCachedOr(song);

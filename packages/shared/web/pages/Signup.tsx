@@ -20,7 +20,9 @@ export const Signup = () => {
   const login = async () => {
     setLoading(true);
     setError("");
-    const result = await getOrUnknownError(() => betaBackend().post("/beta-signup", { email }));
+    const result = await getOrUnknownError(() =>
+      betaBackend().post("/beta-signup", { email })
+    );
 
     setLoading(false);
     if (result.data.type === "success") {
@@ -30,16 +32,22 @@ export const Signup = () => {
     } else {
       switch (result.data.code) {
         case "already-on-list":
-          setError("Ok I know you really want on try the app but you're already on the list 💗");
+          setError(
+            "Ok I know you really want on try the app but you're already on the list 💗"
+          );
           break;
         case "already-have-account":
-          setError("Sooo you actually already have an account? I hope you are enjoying it 💕");
+          setError(
+            "Sooo you actually already have an account? I hope you are enjoying it 💕"
+          );
           break;
         case "invalid-email":
           setError("Your email is invalid. Could you try again?");
           break;
         case "unknown":
-          setError("Somewheres something went wrong. Do you mind trying again?");
+          setError(
+            "Somewheres something went wrong. Do you mind trying again?"
+          );
           break;
       }
       // FIXME compile time error if not all handled
@@ -58,7 +66,9 @@ export const Signup = () => {
       <h3>Beta Sign Up</h3>
       <p className="text-gray-600">{BETA_TEXT}</p>
       {success ? (
-        <BlockAlert type="success">Success!! Thank you so much for signing up :)</BlockAlert>
+        <BlockAlert type="success">
+          Success!! Thank you so much for signing up :)
+        </BlockAlert>
       ) : (
         <form className="space-y-3">
           <Input

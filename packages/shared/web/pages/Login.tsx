@@ -62,7 +62,12 @@ export const Login = () => {
           type="email"
           placeholder="john@example.com"
         />
-        <Input value={password} onChange={setPassword} label="Password" type="password" />
+        <Input
+          value={password}
+          onChange={setPassword}
+          label="Password"
+          type="password"
+        />
         {error && <BlockAlert type="error">{error}</BlockAlert>}
         <div>
           <Link route={routes.forgotPassword} label="Forgot password?" />

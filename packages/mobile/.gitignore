@@ -10,5 +10,8 @@
 **/fastlane/screenshots
 **/fastlane/test_output
 
+# See https://github.com/ionic-team/capacitor/discussions/1478#discussioncomment-24256
+capacitor.config.json
+
 # Ignore since this is built
 src/tailwind.css

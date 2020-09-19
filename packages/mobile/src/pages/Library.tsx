@@ -38,7 +38,7 @@ export const Library = () => {
   ];
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col w-full">
       {libraryLinks.map((link) => (
         <Link
           key={link.label}

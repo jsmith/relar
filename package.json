@@ -12,6 +12,7 @@
     "check:types": "lerna run check:types",
     "check:lint": "lerna run check:lint",
     "check:formatting": "lerna run check:formatting",
-    "test": "lerna run test"
+    "test": "lerna run test",
+    "postversion": "node scripts/postversion.js"
   }
 }

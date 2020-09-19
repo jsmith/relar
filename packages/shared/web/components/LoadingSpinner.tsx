@@ -10,8 +10,8 @@ export const LoadingSpinner = (props: LoadingSpinnerProps) => {
   return (
     <div
       className={classNames(
-        "text-purple-600 flex flex-col items-center justify-center h-full",
-        props.className,
+        "text-purple-600 flex flex-col items-center justify-center w-full",
+        props.className
       )}
     >
       <Bars fill="currentColor" className="w-12 h-16" />
