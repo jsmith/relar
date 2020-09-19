@@ -10,14 +10,15 @@ import {
   MdShuffle,
   MdPauseCircleOutline,
 } from "react-icons/md";
-import { Slider } from "./Slider";
+import { Slider } from "../shared/web/components/Slider";
 import classNames from "classnames";
-import { Thumbnail } from "./Thumbnail";
-import { useLikeSong } from "../queries/songs";
-import { fmtMSS } from "../utils";
-import { LikedIcon } from "./LikedIcon";
-import { useFirebaseUpdater } from "../watcher";
-import { useQueue, useCurrentTime } from "../queue";
+import { Thumbnail } from "../shared/web/components/Thumbnail";
+import { useLikeSong } from "../shared/web/queries/songs";
+import { fmtMSS } from "../shared/web/utils";
+import { LikedIcon } from "../shared/web/components/LikedIcon";
+import { SongTimeSlider } from "../shared/web/sections/SongTimeSlider";
+import { useFirebaseUpdater } from "../shared/web/watcher";
+import { useQueue, useCurrentTime } from "../shared/web/queue";
 
 export interface PlayerProps {
   toggleQueue: () => void;
@@ -134,17 +135,7 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
             <MdShuffle className="w-6 h-6" />
           </button>
         </div>
-        <div className="h-2 w-full flex items-center space-x-2 mt-3">
-          {songInfo && <span className="text-xs text-gray-200 select-none">{currentTimeText}</span>}
-          <Slider
-            className="flex-grow"
-            value={currentTime}
-            maxValue={duration}
-            onChange={seekTime}
-            disabled={!songInfo}
-          />
-          {songInfo && <span className="text-xs text-gray-200 select-none">{endTimeText}</span>}
-        </div>
+        <SongTimeSlider disabled={!songInfo} duration={songData?.duration} />
       </div>
       <div className="flex justify-end" style={{ width: "30%" }}>
         <div className="text-gray-300 hover:text-gray-100 ml-3">

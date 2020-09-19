@@ -6,7 +6,7 @@ import { Sidebar } from "./shared/web/components/Sidebar";
 import { FaMusic } from "react-icons/fa";
 import { GiSwordSpin } from "react-icons/gi";
 import classNames from "classnames";
-import { Player } from "./shared/web/components/Player";
+import { Player } from "./sections/Player";
 import { MdLibraryMusic, MdSearch, MdAddCircle, MdMusicNote } from "react-icons/md";
 const Login = React.lazy(() => import("./shared/web/pages/Login"));
 const Songs = React.lazy(() => import("./pages/Songs"));

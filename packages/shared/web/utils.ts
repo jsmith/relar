@@ -487,3 +487,5 @@ export const isMobile = () => {
     )
   );
 };
+
+export const useIsMobile = () => useMemo(() => isMobile(), []);

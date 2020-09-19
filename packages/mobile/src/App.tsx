@@ -86,6 +86,6 @@ export const App = () => {
     return <div>404</div>;
   }
 
-  // return <div className="relative h-screen overflow-hidden">{transitions}</div>;
-  return <ButtonTabs />;
+  return <div className="relative h-screen overflow-hidden">{transitions}</div>;
+  // return <ButtonTabs />;
 };
