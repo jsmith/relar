@@ -1,9 +1,7 @@
-import React, { useEffect, useState, useRef, useMemo, MutableRefObject } from "react";
+import React, { useMemo, MutableRefObject } from "react";
 import { FaVolumeMute, FaVolumeDown, FaVolumeUp } from "react-icons/fa";
 import {
   MdQueueMusic,
-  MdRepeat,
-  MdRepeatOne,
   MdSkipPrevious,
   MdPlayCircleOutline,
   MdSkipNext,
@@ -11,14 +9,14 @@ import {
   MdPauseCircleOutline,
 } from "react-icons/md";
 import { Slider } from "../shared/web/components/Slider";
-import classNames from "classnames";
+import { Repeat } from "../shared/web/components/Repeat";
+import { Shuffle } from "../shared/web/components/Shuffle";
 import { Thumbnail } from "../shared/web/components/Thumbnail";
 import { useLikeSong } from "../shared/web/queries/songs";
-import { fmtMSS } from "../shared/web/utils";
 import { LikedIcon } from "../shared/web/components/LikedIcon";
 import { SongTimeSlider } from "../shared/web/sections/SongTimeSlider";
 import { useFirebaseUpdater } from "../shared/web/watcher";
-import { useQueue, useCurrentTime } from "../shared/web/queue";
+import { useQueue } from "../shared/web/queue";
 
 export interface PlayerProps {
   toggleQueue: () => void;
@@ -30,7 +28,6 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
   const {
     songInfo,
     toggleState,
-    seekTime,
     playing,
     volume,
     setVolume,
@@ -43,10 +40,6 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
   } = useQueue();
   const [songData] = useFirebaseUpdater(songInfo?.song);
   const [setLiked] = useLikeSong(songInfo?.song);
-  const currentTime = useCurrentTime();
-  const currentTimeText = useMemo(() => fmtMSS(currentTime), [currentTime]);
-  const duration = useMemo(() => (songData?.duration ?? 0) / 1000, [songData?.duration]);
-  const endTimeText = useMemo(() => fmtMSS(duration), [duration]);
 
   return (
     <div className="h-20 bg-gray-800 flex items-center px-4 z-10" ref={refFunc}>
@@ -72,27 +65,7 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
       </div>
       <div className="w-2/5 flex flex-col items-center">
         <div className="space-x-2 flex items-center">
-          <button
-            title={
-              mode === "none"
-                ? "No Repeat"
-                : mode === "repeat"
-                ? "Repeat All Songs"
-                : "Repeat Current Song"
-            }
-            className={classNames(
-              mode === "none" ? "text-gray-300 hover:text-gray-100" : "text-purple-400",
-            )}
-            onClick={() =>
-              setMode(mode === "none" ? "repeat" : mode === "repeat" ? "repeat-one" : "none")
-            }
-          >
-            {mode === "repeat-one" ? (
-              <MdRepeatOne className="w-6 h-6" />
-            ) : (
-              <MdRepeat className="w-6 h-6" />
-            )}
-          </button>
+          <Repeat mode={mode} setMode={setMode} iconClassName="w-6 h-6" />
           <button
             title="Previous Song"
             className={
@@ -127,13 +100,7 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
           >
             <MdSkipNext className="w-6 h-6" />
           </button>
-          <button
-            title="Shuffle Queue"
-            className={shuffle ? "text-purple-400" : "text-gray-300 hover:text-gray-100"}
-            onClick={toggleShuffle}
-          >
-            <MdShuffle className="w-6 h-6" />
-          </button>
+          <Shuffle shuffle={shuffle} toggleShuffle={toggleShuffle} iconClassName="w-6 h-6" />
         </div>
         <SongTimeSlider disabled={!songInfo} duration={songData?.duration} />
       </div>
