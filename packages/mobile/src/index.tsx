@@ -9,6 +9,8 @@ import { UserProvider } from "./shared/web/auth";
 import { setBaseUrls } from "./shared/web/backend";
 import { env } from "./env";
 import { QueueProvider } from "./shared/web/queue";
+import "./shared/web/common.css";
+import "./shared/web/tailwind.css";
 
 // Make sure to set the base URLs before the backend is used
 setBaseUrls(env);

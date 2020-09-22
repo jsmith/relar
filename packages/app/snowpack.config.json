@@ -14,7 +14,7 @@
   "mount": {
     "src/shared": "/_dist_/shared"
   },
-  "exclude": ["**/src/shared/node/**"],
+  "exclude": ["**/src/shared/node/**", "**/load-env.ts"],
   "devOptions": {
     "port": 3000
   }

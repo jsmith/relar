@@ -4,14 +4,14 @@ const get = (key: string): string => {
 };
 
 export const env = {
-  betaBaseUrl: get("VITE_AUTH_URL"),
-  metadataBaseUrl: get("VITE_METADATA_URL"),
-  apiKey: get("VITE_API_KEY"),
-  authDomain: get("VITE_AUTH_DOMAIN"),
-  databaseURL: get("VITE_DATABASE_URL"),
-  projectId: get("VITE_PROJECT_ID"),
-  storageBucket: get("VITE_STORAGE_BUCKET"),
-  messagingSenderId: get("VITE_MESSAGING_SENDER_ID"),
-  appId: get("VITE_APP_ID"),
-  measurementId: get("VITE_MEASUREMENT_ID"),
+  betaBaseUrl: get("SNOWPACK_PUBLIC_AUTH_URL"),
+  metadataBaseUrl: get("SNOWPACK_PUBLIC_METADATA_URL"),
+  apiKey: get("SNOWPACK_PUBLIC_API_KEY"),
+  authDomain: get("SNOWPACK_PUBLIC_AUTH_DOMAIN"),
+  databaseURL: get("SNOWPACK_PUBLIC_DATABASE_URL"),
+  projectId: get("SNOWPACK_PUBLIC_PROJECT_ID"),
+  storageBucket: get("SNOWPACK_PUBLIC_STORAGE_BUCKET"),
+  messagingSenderId: get("SNOWPACK_PUBLIC_MESSAGING_SENDER_ID"),
+  appId: get("SNOWPACK_PUBLIC_APP_ID"),
+  measurementId: get("SNOWPACK_PUBLIC_MEASUREMENT_ID"),
 };

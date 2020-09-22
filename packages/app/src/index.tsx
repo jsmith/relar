@@ -1,8 +1,5 @@
 import * as Sentry from "@sentry/browser";
 
-// Issues that we are tracking
-// Tracking https://github.com/vitejs/vite/issues/503
-
 if (process.env.NODE_ENV !== "development") {
   // Only enable sentry in production
   Sentry.init({
@@ -28,6 +25,8 @@ import { ModalProvider } from "react-modal-hook";
 import { setBaseUrls } from "./shared/web/backend";
 import { env } from "./env";
 import "./firebase";
+import "./shared/web/common.css";
+import "./shared/web/tailwind.css";
 
 setBaseUrls(env);
 
@@ -65,3 +64,9 @@ ReactDOM.render(
   </React.StrictMode>,
   document.getElementById("root"),
 );
+
+// Hot Module Replacement (HMR) - Remove this snippet to remove HMR.
+// Learn more: https://www.snowpack.dev/#hot-module-replacement
+if (import.meta.hot) {
+  import.meta.hot.accept();
+}

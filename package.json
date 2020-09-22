@@ -6,7 +6,7 @@
     "patch-package": "^6.2.2"
   },
   "scripts": {
-    "bootstrap": "lerna bootstrap --hoist --nohoist snowpack",
+    "bootstrap": "lerna bootstrap",
     "version": "lerna version --force-publish",
     "build": "lerna run build",
     "check:types": "lerna run check:types",

@@ -2,7 +2,7 @@ import React, { useContext, useState, useCallback, useRef, useEffect } from "rea
 import { createContext } from "react";
 import type { Song } from "../universal/types";
 import { tryToGetSongDownloadUrlOrLog } from "./queries/songs";
-import usePortalImport from "react-useportal";
+import usePortal from "react-useportal";
 import { useUser } from "./auth";
 import {
   useLocalStorage,
@@ -15,8 +15,6 @@ import { updateCachedWithSnapshot } from "./watcher";
 import { useHotkeys } from "react-hotkeys-hook";
 import { createEmitter } from "./events";
 import * as uuid from "uuid";
-
-const usePortal: typeof usePortalImport = (usePortalImport as any).default;
 
 type SongSnapshot = firebase.firestore.QueryDocumentSnapshot<Song>;
 

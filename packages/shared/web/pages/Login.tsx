@@ -48,7 +48,7 @@ export const Login = () => {
   return (
     <CardPage
       footer={
-        <div className="space-x-2 flex justify-center items-center h-full">
+        <div className="space-x-2 flex justify-center items-center h-full text-sm md:text-base">
           <span>{"Don't have an account?"}</span>
           <Link route={routes.signup} label="Sign Up" />
         </div>
@@ -62,12 +62,7 @@ export const Login = () => {
           type="email"
           placeholder="john@example.com"
         />
-        <Input
-          value={password}
-          onChange={setPassword}
-          label="Password"
-          type="password"
-        />
+        <Input value={password} onChange={setPassword} label="Password" type="password" />
         {error && <BlockAlert type="error">{error}</BlockAlert>}
         <div>
           <Link route={routes.forgotPassword} label="Forgot password?" />

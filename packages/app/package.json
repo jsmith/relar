@@ -2,21 +2,21 @@
   "name": "app",
   "version": "0.5.0",
   "scripts": {
-    "dev": "vite serve src",
-    "build": "vite build src --outDir dist",
-    "build-staging": "vite build src --mode staging --outDir dist",
+    "dev": "snowpack dev",
+    "build": "snowpack build",
+    "build-staging": "NODE_ENV=staging snowpack build",
     "test": "./test.sh",
     "check:formatting": "prettier --list-different \"**/*.{ts,tsx,js}\"",
     "check:lint": "eslint \"**/*.{ts,tsx}\"",
     "check:types": "tsc --noEmit",
-    "deps": "depcheck --ignore-dirs node_modules --ignores \"@types/*\""
+    "deps": "depcheck --ignore-dirs node_modules --ignores \"@types/*\"",
+    "tailwind:dev": "tailwind build src/shared/web/tailwind.directives.css -o src/shared/web/tailwind.css",
+    "tailwind:prod": "NODE_ENV=production tailwind build src/shared/web/tailwind.directives.css -o src/shared/web/tailwind.css"
   },
   "dependencies": {
     "@graywolfai/react-tiniest-router": "^0.2.2",
     "@graywolfai/rest-ts-axios": "^0.2.4",
     "@jsmith21/svg-loaders-react": "^2.2.2",
-    "@pika/react": "^16.13.1",
-    "@pika/react-dom": "^16.13.1",
     "@reach/skip-nav": "^0.10.4",
     "@sentry/browser": "^5.23.0",
     "axios": "^0.19.2",
@@ -26,8 +26,10 @@
     "firebase": "^7.20.0",
     "focus-trap-react": "^7.0.1",
     "neverthrow": "^2.7.1",
+    "react": "^16.13.1",
     "react-accessible-dropdown-menu-hook": "^2.1.0",
     "react-aria-modal": "^4.0.0",
+    "react-dom": "^16.13.1",
     "react-hot-loader": "^4.12.21",
     "react-hotkeys-hook": "^2.3.1",
     "react-icons": "^3.11.0",
@@ -45,6 +47,7 @@
     "uuid": "^8.3.0"
   },
   "devDependencies": {
+    "@snowpack/app-scripts-react": "^1.10.0",
     "@tailwindcss/custom-forms": "^0.2.1",
     "@tailwindcss/typography": "^0.2.0",
     "@testing-library/react-hooks": "^3.4.1",
@@ -67,22 +70,12 @@
     "eslint-plugin-react": "^7.19.0",
     "eslint-plugin-react-hooks": "^4.0.8",
     "esm": "^3.2.25",
+    "patch-package": "^6.2.2",
     "prettier": "^2.0.5",
-    "react": "^16.13.1",
     "react-test-renderer": "^16.13.1",
+    "snowpack": "^2.11.1",
     "tailwindcss": "^1.8.6",
     "typescript": "^3.9.7",
-    "uvu": "^0.3.2",
-    "vite": "1.0.0-rc.4",
-    "vite-plugin-react": "3.0.2"
-  },
-  "comments": {
-    "devDependencies": {
-      "react": [
-        "This is *only* for jest because everything is a mess. vite uses @pika/react which is",
-        "an ESM version which jest doesn't support of course. So... I use the real react for testing",
-        "but the ESM react for development."
-      ]
-    }
+    "uvu": "^0.3.2"
   }
 }

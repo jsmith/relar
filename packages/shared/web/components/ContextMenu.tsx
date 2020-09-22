@@ -2,9 +2,7 @@ import React, { useRef } from "react";
 import type { IconType } from "react-icons/lib";
 import classNames from "classnames";
 import { bgApp } from "../classes";
-import useDropdownMenuImport from "react-accessible-dropdown-menu-hook";
-
-const useDropdownMenu: typeof useDropdownMenuImport = (useDropdownMenuImport as any).default;
+import useDropdownMenu from "react-accessible-dropdown-menu-hook";
 
 export interface ItemProps {
   onKeyDown: (e: React.KeyboardEvent<HTMLAnchorElement>) => void;

@@ -1,5 +1,5 @@
 import React, { useMemo, useState, CSSProperties } from "react";
-import { Song } from "../shared/universal/types";
+import type { Song } from "../shared/universal/types";
 import classNames from "classnames";
 import {
   MdMusicNote,
@@ -15,7 +15,6 @@ import { MetadataEditor } from "../shared/web/sections/MetadataEditor";
 import { useModal } from "react-modal-hook";
 import { LikedIcon } from "../shared/web/components/LikedIcon";
 import { IconButton } from "../shared/web/components/IconButton";
-import useDropdownMenuImport from "react-accessible-dropdown-menu-hook";
 import { ContextMenu, ContextMenuItem } from "../shared/web/components/ContextMenu";
 import { useConfirmAction } from "../confirm-actions";
 import { useLikeSong, useDeleteSong } from "../shared/web/queries/songs";
@@ -29,14 +28,6 @@ import { Skeleton } from "../shared/web/components/Skeleton";
 import { useQueue, SetQueueSource, SongInfo, isSongInfo } from "../shared/web/queue";
 import { useRecycle, SentinelBlock } from "../shared/web/recycle";
 import { Audio } from "@jsmith21/svg-loaders-react";
-
-// I really wish I didn't have to do this but for some reason this is the only thing that works
-// Before I was getting an issue in production
-let useDropdownMenu = useDropdownMenuImport;
-
-if ((useDropdownMenu as any).default) {
-  useDropdownMenu = (useDropdownMenu as any).default;
-}
 
 export const HeaderCol = ({
   label,

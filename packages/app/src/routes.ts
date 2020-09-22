@@ -1,4 +1,4 @@
-import { RouteType } from "@graywolfai/react-tiniest-router/dist/types";
+import type { RouteType } from "@graywolfai/react-tiniest-router";
 
 export interface CustomRoute extends RouteType {
   protected: boolean;

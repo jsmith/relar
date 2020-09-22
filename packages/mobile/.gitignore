@@ -15,3 +15,4 @@ capacitor.config.json
 
 # Ignore since this is built
 src/tailwind.css
+src/native-audio

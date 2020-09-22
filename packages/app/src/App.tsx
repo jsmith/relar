@@ -35,7 +35,6 @@ import { Link } from "./shared/web/components/Link";
 import { button, link, bgApp } from "./shared/web/classes";
 import { SkipNavLink, SkipNavContent } from "@reach/skip-nav";
 import "@reach/skip-nav/styles.css";
-import "./index.css";
 import { UploadModal } from "./shared/web/sections/UploadModal";
 import { LoadingSpinner } from "./shared/web/components/LoadingSpinner";
 import { QueueAudio } from "./shared/web/queue";
