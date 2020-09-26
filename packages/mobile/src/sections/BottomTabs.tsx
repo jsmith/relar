@@ -7,6 +7,7 @@ import { HiDotsHorizontal, HiHome, HiSearch, HiTrash, HiUser } from "react-icons
 import {
   MdLibraryMusic,
   MdPause,
+  MdPauseCircleFilled,
   MdPlayArrow,
   MdPlayCircleFilled,
   MdQueueMusic,
@@ -57,7 +58,18 @@ const TABS_HEIGHT = 69;
 export const ButtonTabs = () => {
   const { height: SCREEN_HEIGHT } = useWindowSize();
   const [up, setUp] = useState(false);
-  const { mode, setMode, shuffle, toggleShuffle, clear, playing, songInfo } = useQueue();
+  const {
+    mode,
+    setMode,
+    shuffle,
+    toggleShuffle,
+    toggleState,
+    clear,
+    playing,
+    songInfo,
+    previous,
+    next,
+  } = useQueue();
   const height = useMotionValue(MINIFIED_HEIGHT);
   const [data] = useFirebaseUpdater(songInfo?.song);
   const tabsHeight = useTransform(
@@ -88,7 +100,7 @@ export const ButtonTabs = () => {
     <>
       <motion.div
         layout
-        initial="down"
+        initial={false}
         animate={!songInfo ? "invisible" : up ? "up" : "down"}
         variants={containerVariants}
         onPan={(_, info) => {
@@ -122,7 +134,13 @@ export const ButtonTabs = () => {
             <div className="flex-grow text-xs text-gray-300">{data?.artist}</div>
           </div>
 
-          <button className="p-3">
+          <button
+            className="p-3"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleState();
+            }}
+          >
             {playing ? (
               <MdPause className="text-gray-200 w-6 h-6" />
             ) : (
@@ -149,9 +167,20 @@ export const ButtonTabs = () => {
             <SongTimeSlider duration={data?.duration} />
             <div className="flex justify-around items-center">
               <Repeat mode={mode} setMode={setMode} iconClassName="w-8 h-8" />
-              <MdSkipPrevious className="text-gray-200 w-12 h-12" />
-              <MdPlayCircleFilled className="text-gray-200 w-16 h-16" />
-              <MdSkipNext className="text-gray-200 w-12 h-12" />
+              <button onClick={previous}>
+                <MdSkipPrevious className="text-gray-200 w-12 h-12" />
+              </button>
+              <button onClick={toggleState}>
+                {playing ? (
+                  <MdPauseCircleFilled className="text-gray-200 w-16 h-16" />
+                ) : (
+                  <MdPlayCircleFilled className="text-gray-200 w-16 h-16" />
+                )}
+              </button>
+
+              <button onClick={next}>
+                <MdSkipNext className="text-gray-200 w-12 h-12" />
+              </button>
               <Shuffle iconClassName="w-8 h-8" shuffle={shuffle} toggleShuffle={toggleShuffle} />
             </div>
             <div className="flex justify-between">

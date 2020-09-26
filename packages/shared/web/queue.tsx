@@ -93,7 +93,7 @@ export const QueueContext = createContext<{
   setVolume: (value: number) => void;
   clear: () => void;
   /** Set the ref. For internal use only. */
-  _setRef: (el: HTMLAudioElement) => void;
+  _setRef: (el: AudioControls | null) => void;
   shuffle: boolean;
   toggleShuffle: () => void;
 }>({
@@ -118,8 +118,18 @@ export const QueueContext = createContext<{
   toggleShuffle: () => {},
 });
 
+export interface AudioControls {
+  pause: () => void;
+  play: () => void;
+  setSrc: (opts: { src: string; songId: string }) => void;
+  paused: boolean;
+  getCurrentTime(): Promise<number>;
+  setCurrentTime(currentTime: number): void;
+  setVolume(volume: number): void;
+}
+
 export const QueueProvider = (props: React.Props<{}>) => {
-  const ref = useRef<HTMLAudioElement | null>(null);
+  const ref = useRef<AudioControls | null>(null);
   const [queue, setQueueState] = useState<QueueItem[]>([]);
   const [shuffle, setShuffle] = useLocalStorage<"true" | "false">("player-shuffle", "true");
   const current = useRef<{
@@ -144,6 +154,23 @@ export const QueueProvider = (props: React.Props<{}>) => {
   const [volumeString, setVolumeString] = useLocalStorage("player-volume");
   // ?? just in case parsing fails
   const [volume, setVolumeState] = useState(volumeString ? parseInt(volumeString) ?? 80 : 80);
+
+  // We do this internally since iOS (and maybe android) don't have time update events
+  // So, to resolve this, we use timers while playing and then fetch the time manually
+  // This seems like the easiest cross platform solution
+  useEffect(() => {
+    if (!playing) return;
+
+    const setTimer = () => {
+      return setTimeout(() => {
+        timer = setTimer();
+        ref.current?.getCurrentTime().then(setCurrentTime);
+      }, 1000);
+    };
+
+    let timer = setTimer();
+    return () => clearTimeout(timer);
+  }, [playing]);
 
   const toggleState = useCallback(() => {
     if (playing) ref.current?.pause();
@@ -197,7 +224,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
         .then((snapshot) => updateCachedWithSnapshot(snapshot))
         .catch(captureAndLogError);
 
-      if (ref.current) ref.current.src = downloadUrl;
+      if (ref.current) ref.current.setSrc({ src: downloadUrl, songId: song.id });
 
       if (ref.current?.paused === false) {
         ref.current?.play();
@@ -323,15 +350,16 @@ export const QueueProvider = (props: React.Props<{}>) => {
 
   // The ?? don't actually matter since we check to see if the index is currently defined in "tryToGoTo" function
   const next = useCallback(() => tryToGoTo((current.current.index ?? 0) + 1, true), [tryToGoTo]);
-  const previous = useCallback(() => {
+  const previous = useCallback(async () => {
     if (!ref.current) return;
-    if (ref.current.currentTime <= 4) {
+    const currentTime = await ref.current.getCurrentTime();
+    if (currentTime <= 4) {
       // If less than 4 seconds, go to the previous song
       tryToGoTo((current.current.index ?? 0) - 1, true);
     } else {
       // If not just restart the song
       setCurrentTime(0);
-      ref.current.currentTime = 0;
+      ref.current.setCurrentTime(0);
     }
   }, [tryToGoTo]);
 
@@ -341,7 +369,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
 
   const seekTime = useCallback((seconds: number) => {
     setCurrentTime(seconds);
-    if (ref.current) ref.current.currentTime = seconds;
+    if (ref.current) ref.current.setCurrentTime(seconds);
   }, []);
 
   const setVolume = useCallback(
@@ -350,15 +378,15 @@ export const QueueProvider = (props: React.Props<{}>) => {
       setVolumeState(value);
       // HTML5 audio.volume is a value between 0 and 1
       // See https://stackoverflow.com/questions/10075909/how-to-set-the-loudness-of-html5-audio
-      if (ref.current) ref.current.volume = value / 100;
+      if (ref.current) ref.current.setVolume(value / 100);
     },
     [setVolumeString],
   );
 
   const _setRef = useCallback(
-    (el: HTMLAudioElement | null) => {
+    (el: AudioControls | null) => {
       ref.current = el;
-      if (el) el.volume = volume / 100;
+      if (el) el.setVolume(volume / 100);
     },
     [volume],
   );
@@ -427,8 +455,21 @@ export const QueueAudio = () => {
   return (
     <Portal>
       <audio
-        ref={_setRef}
-        onTimeUpdate={(e) => setCurrentTime((e.target as HTMLAudioElement).currentTime)}
+        ref={(el) => {
+          if (el === null) _setRef(null);
+          else
+            _setRef(
+              Object.assign(el, {
+                setSrc: ({ src }: { src: string }) => {
+                  el.src = src;
+                },
+                getCurrentTime: async () => el.currentTime,
+                setVolume: (volume: number) => (el.volume = volume),
+                setCurrentTime: (currentTime: number) => (el.currentTime = currentTime),
+              }),
+            );
+        }}
+        // onTimeUpdate={(e) => setCurrentTime((e.target as HTMLAudioElement).currentTime)}
         onEnded={_nextAutomatic}
       >
         Your browser does not support HTML5 Audio...

@@ -5,8 +5,8 @@ declare module "cordova-plugin-nativeaudio/www/nativeaudio" {
     preloadComplex: (id, assetPath, volume, voices, delay, successCallback, errorCallback) => void;
     play: (id, successCallback, errorCallback, completeCallback) => void;
     stop: (id, successCallback, errorCallback) => void;
-    loop: (id, successCallback, errorCallback) => void;
-    unload: (id, successCallback, errorCallback) => void;
+    // loop: (id, successCallback, errorCallback) => void;
+    clear: (id, successCallback, errorCallback) => void;
     setVolumeForComplexAsset: (id, volume, successCallback, errorCallback) => void;
   }
 

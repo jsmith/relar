@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { HomeTopic } from "../shared/web/components/HomeTopic";
 import {
   useRecentlyAddedSongs,
@@ -10,69 +10,11 @@ import { LoadingSpinner } from "../shared/web/components/LoadingSpinner";
 import { routes } from "../routes";
 import { MusicalNote } from "../shared/web/illustrations/MusicalNote";
 import { MdAddCircle } from "react-icons/md";
-import { useSongs } from "../shared/web/queries/songs";
-import { Plugins, FilesystemDirectory, FilesystemEncoding } from "@capacitor/core";
-// import type { NativeAudioPlugin } from "@capacitor-community/native-audio";
-import "@capacitor-community/native-audio";
-import type { NativeAudioPlugin } from "@capacitor-community/native-audio";
-import { writeFile } from "capacitor-blob-writer";
-
-const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 
 export const Home = () => {
   const recentlyAddedSongs = useRecentlyAddedSongs();
   const likedSongs = useLikedSongs();
   const recentlyPlayed = useRecentlyPlayedSongs();
-  const songs = useSongs();
-
-  useEffect(() => {
-    if (!songs.data) return;
-    const data = songs.data[0].data();
-    if (!data.downloadUrl) return;
-
-    console.log("Downloading " + data.downloadUrl);
-
-    fetch(data.downloadUrl)
-      .then((res) => res.blob())
-      .then((blob) =>
-        writeFile({
-          path: "media/videos/funny.mp3",
-          directory: FilesystemDirectory.Data,
-
-          // data must be a Blob (creating a Blob which wraps other data types
-          // is trivial)
-          data: blob,
-
-          // create intermediate directories if they don't already exist
-          // default: false
-          recursive: true,
-
-          // fallback to Filesystem.writeFile instead of throwing an error
-          // (you may also specify a unary callback, which takes an Error and returns
-          // a boolean)
-          // default: true
-          fallback: (err) => {
-            console.log(err);
-            return process.env.NODE_ENV === "production";
-          },
-        })
-          // .then(({ uri }) => {
-          //   console.log("DOWNLOAD SUCCESSFUL TO " + uri);
-
-          //   return NativeAudio.preloadComplex({
-          //     assetPath: uri,
-          //     assetId: "inception_audio",
-          //     volume: 1.0,
-          //     audioChannelNum: 1,
-          //     isUrl: true,
-          //   });
-          // })
-          .then(() => {
-            console.log("LOADED NATIVE AUDIO");
-            NativeAudio.play({ assetId: "inception_audio" });
-          }),
-      );
-  }, [songs.data]);
 
   if (
     recentlyAddedSongs === undefined ||

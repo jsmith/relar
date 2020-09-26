@@ -1,5 +1,5 @@
 import React from "react";
-import { QueuePlayMode } from "../queue";
+import type { QueuePlayMode } from "../queue";
 import classNames from "classnames";
 import { MdRepeatOne, MdRepeat } from "react-icons/md";
 

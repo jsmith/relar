@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { fmtMSS, useIsMobile } from "../utils";
 import { useQueue, useCurrentTime } from "../queue";
 import { Slider } from "../components/Slider";
