@@ -28,7 +28,7 @@ export const Home = () => {
   // TODO adapt for mobile
   if (recentlyAddedSongs.length === 0) {
     return (
-      <div className="flex flex-col justify-center items-center h-full space-y-3">
+      <div className="flex flex-col justify-center items-center space-y-3">
         <MusicalNote />
         <h1 className="text-3xl text-gray-700">Welcome to RELAR</h1>
         <p className="text-gray-600">
@@ -41,7 +41,7 @@ export const Home = () => {
   }
 
   return (
-    <div className="space-y-4 px-2 lg:px-5 py-1 overflow-y-scroll h-full">
+    <div className="space-y-4 px-2 lg:px-5 py-1 overflow-y-scroll">
       <HomeTopic
         title="Recently Played"
         subTitle=""

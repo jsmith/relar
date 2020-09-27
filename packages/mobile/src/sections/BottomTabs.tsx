@@ -99,7 +99,6 @@ export const ButtonTabs = () => {
   return (
     <>
       <motion.div
-        layout
         initial={false}
         animate={!songInfo ? "invisible" : up ? "up" : "down"}
         variants={containerVariants}
@@ -123,11 +122,15 @@ export const ButtonTabs = () => {
         style={{ height, bottom: tabsHeight, touchAction: "none" }}
         className="bg-gray-800 flex flex-col absolute left-0 right-0 overflow-hidden z-20"
       >
-        <motion.div style={{ opacity: minifiedOpacity }} className="flex items-center space-x-2">
+        <motion.div
+          style={{ opacity: minifiedOpacity }}
+          className="flex items-center space-x-2 flex-shrink-0"
+        >
           <Thumbnail
             snapshot={songInfo?.song}
             size="256"
             style={{ height: `${MINIFIED_HEIGHT}px`, width: `${MINIFIED_HEIGHT}px` }}
+            className="flex-shrink-0"
           />
           <div className="flex flex-col justify-center flex-grow">
             <div className="flex-grow text-gray-100">{data?.title}</div>
@@ -157,7 +160,7 @@ export const ButtonTabs = () => {
             <button className="h-1 rounded-full w-10 bg-gray-300 bg-opacity-50" />
           </div>
 
-          <Thumbnail snapshot={songInfo?.song} size="256" className="w-64 h-64" />
+          <Thumbnail snapshot={songInfo?.song} size="256" className="w-48 h-48 flex-shrink-0" />
 
           <div className="w-full px-8 space-y-5">
             <div>

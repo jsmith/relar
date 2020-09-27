@@ -121,7 +121,7 @@ export const QueueContext = createContext<{
 export interface AudioControls {
   pause: () => void;
   play: () => void;
-  setSrc: (opts: { src: string; songId: string }) => void;
+  setSrc: (opts: { src: string; songId: string }) => Promise<void>;
   paused: boolean;
   getCurrentTime(): Promise<number>;
   setCurrentTime(currentTime: number): void;
@@ -191,6 +191,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
   );
 
   const stopPlaying = useCallback(() => {
+    setPlaying(false);
     setSongInfo(undefined);
     setCurrentTime(0);
     current.current.index = undefined;
@@ -198,18 +199,26 @@ export const QueueProvider = (props: React.Props<{}>) => {
 
   const changeSongIndex = useCallback(
     async (index: number) => {
-      if (!user) return;
+      if (!user) {
+        console.warn("The user is undefined in queue > changeSongIndex");
+        stopPlaying();
+        return;
+      }
 
       current.current.index = index;
       const item: QueueItem | undefined = current.current.queue[index];
 
       // This is just a sanity check as the logic here is probably flawed somehow
       if (!item) {
+        console.info(
+          `Tried to play song at index ${index} which is > queue.length (${current.current.queue.length})`,
+        );
         stopPlaying();
         return;
       }
 
       const { song, source } = item;
+      console.info(`Changing song to index ${index} (title: ${song.data().title}, id: ${song.id})`);
       const downloadUrl = await tryToGetSongDownloadUrlOrLog(user, song);
       if (!downloadUrl) return;
 
@@ -224,12 +233,12 @@ export const QueueProvider = (props: React.Props<{}>) => {
         .then((snapshot) => updateCachedWithSnapshot(snapshot))
         .catch(captureAndLogError);
 
-      if (ref.current) ref.current.setSrc({ src: downloadUrl, songId: song.id });
+      if (ref.current) await ref.current.setSrc({ src: downloadUrl, songId: song.id });
 
-      if (ref.current?.paused === false) {
-        ref.current?.play();
-        setPlaying(true);
-      }
+      // if (ref.current?.paused === false) {
+      //   ref.current?.play();
+      //   setPlaying(true);
+      // }
 
       setSongInfo({ song, id: item.id, source });
     },
@@ -242,22 +251,28 @@ export const QueueProvider = (props: React.Props<{}>) => {
    */
   const tryToGoTo = useCallback(
     (index: number, force: boolean) => {
+      const changeSongIndexAndPlay = async (index: number) => {
+        await changeSongIndex(index);
+        ref.current?.play();
+        setPlaying(true);
+      };
+
       if (!force && mode === "repeat-one") {
         // This condition shouldn't happen
         if (current.current.index === undefined) return;
         // If we are just repeating the current song
-        changeSongIndex(current.current.index);
+        changeSongIndexAndPlay(current.current.index);
       } else if (index >= current.current.queue.length) {
         console.info(`The end of the queue has been reached in mode -> ${mode}`);
         // If we are at the last song
         if (mode === "none") stopPlaying();
-        else changeSongIndex(0);
+        else changeSongIndexAndPlay(0);
       } else if (index < 0) {
         if (mode === "none") stopPlaying();
-        else changeSongIndex(current.current.queue.length - 1);
+        else changeSongIndexAndPlay(current.current.queue.length - 1);
       } else {
         // Else we are somewheres in the middle
-        changeSongIndex(index);
+        changeSongIndexAndPlay(index);
       }
     },
     [mode, changeSongIndex, stopPlaying],
@@ -336,14 +351,15 @@ export const QueueProvider = (props: React.Props<{}>) => {
         current.current = { queue: newQueue, index: undefined, mappings: undefined };
       }
 
+      // It's important that we do this before shuffling
       await changeSongIndex(index ?? 0);
 
       if (source.type !== "queue" && shuffle === "true") {
         shuffleSongs();
       }
 
-      setPlaying(true);
       ref.current?.play();
+      setPlaying(true);
     },
     [changeSongIndex, shuffle, shuffleSongs],
   );
@@ -460,7 +476,7 @@ export const QueueAudio = () => {
           else
             _setRef(
               Object.assign(el, {
-                setSrc: ({ src }: { src: string }) => {
+                setSrc: async ({ src }: { src: string }) => {
                   el.src = src;
                 },
                 getCurrentTime: async () => el.currentTime,

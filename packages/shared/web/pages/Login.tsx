@@ -20,7 +20,6 @@ export const Login = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    console.log(user);
     if (user) {
       goTo(routes.home);
     }

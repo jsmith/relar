@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo } from "react";
-import path from "path";
 import { useUser } from "./shared/web/auth";
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import { routes } from "./routes";
@@ -7,7 +6,6 @@ import { LoadingSpinner } from "./shared/web/components/LoadingSpinner";
 import { HiChevronLeft, HiOutlineCog } from "react-icons/hi";
 import { GiSwordSpin } from "react-icons/gi";
 import { ButtonTabs } from "./sections/BottomTabs";
-import { useWindowSize } from "./shared/web/utils";
 import { ActionSheet } from "./action-sheet";
 import { FilesystemDirectory, Plugins } from "@capacitor/core";
 import { writeFile } from "capacitor-blob-writer";
@@ -36,14 +34,14 @@ class Controls implements AudioControls {
 
   async setSrc({ src, songId }: { src: string; songId: string }) {
     const directory = FilesystemDirectory.Cache;
-    const pathFromDir = path.join("songs_cache", `${songId}.mp3`);
+    const pathFromDir = `songs_cache/${songId}.mp3`;
     let uri: string | null = null;
     try {
       const stat = await Plugins.Filesystem.stat({ path: pathFromDir, directory });
-      if (stat.type === "file") {
+      if (stat.type === "NSFileTypeRegular") {
         uri = stat.uri;
       } else {
-        console.log(`${pathFromDir} is not a file: ${stat.type}`);
+        console.info(`${pathFromDir} is not a file: ${stat.type}`);
       }
     } catch (e) {
       console.info(`Unable to stat ${pathFromDir}: ` + e.message);
@@ -68,13 +66,10 @@ class Controls implements AudioControls {
         // (you may also specify a unary callback, which takes an Error and returns
         // a boolean)
         // default: true
-        fallback: (err) => {
-          console.log(err);
+        fallback: () => {
           return process.env.NODE_ENV === "production";
         },
       }).then((r) => r.uri);
-
-      console.log("DOWNLOAD SUCCESSFUL TO " + uri);
     }
 
     if (uri === null) {
@@ -86,9 +81,6 @@ class Controls implements AudioControls {
       path: uri,
       volume: this._volume ?? 1.0,
     });
-
-    console.log("LOADED NATIVE AUDIO");
-    await NativeAudio.play();
   }
 
   getCurrentTime() {
@@ -109,7 +101,7 @@ class Controls implements AudioControls {
 export const App = () => {
   const { routeId, goTo } = useRouter();
   const { loading, user } = useUser();
-  const { _setRef } = useQueue();
+  const { _setRef, _nextAutomatic, toggleState } = useQueue();
 
   const route = useMemo(() => {
     return Object.values(routes).find((route) => route.id === routeId);
@@ -123,9 +115,10 @@ export const App = () => {
   }, [loading]);
 
   useEffect(() => {
+    const { remove } = NativeAudio.addListener("complete", _nextAutomatic);
     _setRef(new Controls());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    return () => remove();
+  }, [_nextAutomatic, _setRef]);
 
   if (loading) {
     return <LoadingSpinner className="h-screen bg-gray-900" />;

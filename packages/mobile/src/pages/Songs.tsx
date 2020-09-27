@@ -133,8 +133,7 @@ export const Songs = () => {
         <div
           className={classNames(
             "sticky h-full rounded-lg bg-gray-800 text-gray-200 p-1 bg-opacity-75  flex flex-col text-xs justify-between ease-in-out duration-500 transform transition-opacity",
-            // "opacity-100",
-            show ? "opacity-100" : "opacity-0",
+            show ? "opacity-100" : "opacity-0 pointer-events-none",
           )}
         >
           {letters.map((letter) => (
