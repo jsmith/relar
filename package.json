@@ -1,18 +1,7 @@
 {
   "name": "root",
   "private": true,
-  "devDependencies": {
-    "lerna": "^3.20.2",
-    "patch-package": "^6.2.2"
-  },
   "scripts": {
-    "bootstrap": "lerna bootstrap",
-    "version": "lerna version --force-publish",
-    "build": "lerna run build",
-    "check:types": "lerna run check:types",
-    "check:lint": "lerna run check:lint",
-    "check:formatting": "lerna run check:formatting",
-    "test": "lerna run test",
     "postversion": "node scripts/postversion.js"
   }
 }
