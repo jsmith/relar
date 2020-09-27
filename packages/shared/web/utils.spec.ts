@@ -11,7 +11,6 @@ test("preventAndCall calls preventDefault", () => {
   f({ preventDefault: () => (calledPreventDefault = true) });
   assert.ok(calledPreventDefault);
   assert.ok(called);
-  // assert.ok(false);
 });
 
 test("shuffleArray returns the correct mapping", () => {

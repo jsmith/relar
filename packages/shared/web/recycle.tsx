@@ -36,11 +36,11 @@ export const useRecycle = ({
             entries.forEach((e) => {
               const index = +e.target.getAttribute("index")!;
               const cursorIndex = index / rowsPerBlock;
-              if (e.isIntersecting) {
-                // console.log("START INTERSECT", cursorIndex, e.target);
-              } else {
-                // console.log("END INTERSECT", cursorIndex, e.target);
-              }
+              // if (e.isIntersecting) {
+              //   console.log("START INTERSECT", cursorIndex, e.target);
+              // } else {
+              //   console.log("END INTERSECT", cursorIndex, e.target);
+              // }
 
               if (e.isIntersecting) {
                 intersecting.current[cursorIndex] = true;

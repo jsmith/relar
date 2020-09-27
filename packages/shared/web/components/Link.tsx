@@ -10,9 +10,10 @@ export interface LinkProps {
   label?: React.ReactNode;
   queryParams?: Record<string, string | number>;
   params?: RouterStateType["queryParams"];
+  onGo?: () => void;
 }
 
-export const Link = ({ route, label, className, params, queryParams }: LinkProps) => {
+export const Link = ({ route, label, className, params, queryParams, onGo }: LinkProps) => {
   const { goTo } = useRouter();
 
   const href = useMemo(() => {
@@ -41,6 +42,7 @@ export const Link = ({ route, label, className, params, queryParams }: LinkProps
         if (!e.ctrlKey && !e.metaKey) {
           e.preventDefault();
           goTo(route, params, queryParams);
+          onGo && onGo();
         }
 
         e.stopPropagation();

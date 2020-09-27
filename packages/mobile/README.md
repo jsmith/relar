@@ -2,14 +2,6 @@
 
 The RELAR mobile app!
 
-## Setup
-
-```
-# if you don't have the CLI installed
-npm install -g @ionic/cli
-npm i
-```
-
 ## Development
 
 See [previewing](https://ionicframework.com/docs/developing/previewing) document from the Ionic team.

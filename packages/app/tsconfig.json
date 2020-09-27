@@ -1,17 +1,9 @@
 {
-  "include": ["src"],
-  "exclude": ["node_modules", "src/shared/node/**"],
+  "include": ["src", "types"],
+  "exclude": ["node_modules", "src/shared/node"],
+  "extends": "@snowpack/app-scripts-react/tsconfig.base.json",
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "moduleResolution": "node",
-    "jsx": "react",
-    "module": "esnext",
-    "noEmit": true,
-    "baseUrl": ".",
-    "paths": {
-      "react": ["@pika/react"],
-      "react-dom": ["@pika/react-dom"]
-    }
+    "baseUrl": "./",
+    "paths": { "*": ["web_modules/.types/*"] }
   }
 }

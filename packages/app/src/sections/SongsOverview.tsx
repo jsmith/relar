@@ -9,9 +9,9 @@ import { ContentEditable } from "../shared/web/components/ContentEditable";
 import { Skeleton } from "../shared/web/components/Skeleton";
 import { Collage } from "../shared/web/components/Collage";
 import { useQueue, SetQueueSource, SongInfo, isSongInfo } from "../shared/web/queue";
-import { Song } from "../shared/universal/types";
+import type { Song } from "../shared/universal/types";
 import { useSongsDuration } from "../shared/web/queries/songs";
-import { QueryStatus } from "react-query";
+import type { QueryStatus } from "react-query";
 import { ContextMenuItem, ContextMenu } from "../shared/web/components/ContextMenu";
 
 export interface SongsOverviewProps {

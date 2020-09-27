@@ -10,17 +10,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - uses: c-hive/gha-npm-cache@v1
+
+      - uses: actions/cache@v1
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - uses: actions/setup-node@v1
       - run: ./.github/scripts/decrypt.sh
         env:
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
           GOOGLE_KEY_GPG_PASS: ${{ secrets.GOOGLE_KEY_GPG_PASS }}
 
-      - run: npm install --no-package-lock
-      - run: npm run bootstrap
-      - run: npx patch-package
-      - run: npm run check:formatting
-      - run: npm run check:lint
-      - run: npm run check:types
-      - run: npm run test
+      - run: make install-ci
+      - run: npm run build
+        working-directory: packages/native-audio
+      - run: make patch
+      - run: make checks

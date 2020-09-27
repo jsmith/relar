@@ -9,19 +9,28 @@ export interface SliderProps {
   className?: string;
   disabled?: boolean;
   title?: string;
+  disableHide?: boolean;
 }
 
-export const Slider = ({ value, maxValue, className, onChange, disabled, title }: SliderProps) => {
+export const Slider = ({
+  value,
+  maxValue,
+  className,
+  onChange,
+  disabled,
+  title,
+  disableHide,
+}: SliderProps) => {
   const ref = useRef<HTMLDivElement | null>(null);
-  const [hide, setHide] = useState(true);
+  const [hide, setHide] = useState(!disableHide);
 
   useOnClickOutside(
     ref,
     React.useCallback(() => {
-      if (!hide) {
+      if (!disableHide && !hide) {
         setHide(true);
       }
-    }, [hide]),
+    }, [hide, disableHide]),
   );
 
   const left = useMemo(() => `${(value / maxValue) * 100}%`, [value, maxValue]);

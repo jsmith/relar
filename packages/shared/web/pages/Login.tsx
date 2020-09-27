@@ -20,7 +20,6 @@ export const Login = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    console.log(user);
     if (user) {
       goTo(routes.home);
     }
@@ -48,7 +47,7 @@ export const Login = () => {
   return (
     <CardPage
       footer={
-        <div className="space-x-2 flex justify-center items-center h-full">
+        <div className="space-x-2 flex justify-center items-center h-full text-sm md:text-base">
           <span>{"Don't have an account?"}</span>
           <Link route={routes.signup} label="Sign Up" />
         </div>

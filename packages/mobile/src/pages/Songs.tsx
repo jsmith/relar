@@ -5,6 +5,7 @@ import { useSongs } from "../shared/web/queries/songs";
 import { addEventListener, fmtMSS } from "../shared/web/utils";
 import { getCachedOr } from "../shared/web/watcher";
 import classNames from "classnames";
+import { useQueue } from "../shared/web/queue";
 
 const letters = [
   "a",
@@ -40,6 +41,7 @@ export const Songs = () => {
   const songs = useSongs();
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const timer = useRef<NodeJS.Timeout>();
+  const { setQueue } = useQueue();
 
   const clearTimer = useCallback(() => {
     if (timer.current === undefined) return;
@@ -99,12 +101,22 @@ export const Songs = () => {
   const showing = useRef(false);
 
   return (
-    <div className="overflow-y-scroll h-full" ref={setContainer}>
+    <div className="overflow-y-scroll w-full" ref={setContainer}>
       <div className="divide-y h-full">
         {songs.data?.map((song, i) => {
           const data = getCachedOr(song);
           return (
-            <div key={i} className="flex items-center p-1 space-x-1">
+            <div
+              key={i}
+              className="flex items-center p-1 space-x-1"
+              onClick={() =>
+                setQueue({
+                  source: { type: "library" },
+                  songs: songs.data!,
+                  index: i,
+                })
+              }
+            >
               <Thumbnail snapshot={song} className="w-12 h-12 flex-shrink-0" size="64" />
               <div className="flex flex-col justify-center min-w-0 flex-grow">
                 <div className="text-xs truncate">{data.title}</div>
@@ -121,15 +133,14 @@ export const Songs = () => {
         <div
           className={classNames(
             "sticky h-full rounded-lg bg-gray-800 text-gray-200 p-1 bg-opacity-75  flex flex-col text-xs justify-between ease-in-out duration-500 transform transition-opacity",
-            // "opacity-100",
-            show ? "opacity-100" : "opacity-0",
+            show ? "opacity-100" : "opacity-0 pointer-events-none",
           )}
         >
           {letters.map((letter) => (
             <button
               key={letter}
               className="uppercase select-none focus:outline-none"
-              onTouchStart={(e) => {
+              onTouchStart={() => {
                 scrollTo(letter);
               }}
               onTouchMove={(e) => {

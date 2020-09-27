@@ -25,9 +25,10 @@ export const Home = () => {
   }
 
   // Show a nice welcome page when the user opens the app :)
+  // TODO adapt for mobile
   if (recentlyAddedSongs.length === 0) {
     return (
-      <div className="flex flex-col justify-center items-center h-full space-y-3">
+      <div className="flex flex-col justify-center items-center space-y-3">
         <MusicalNote />
         <h1 className="text-3xl text-gray-700">Welcome to RELAR</h1>
         <p className="text-gray-600">
@@ -40,14 +41,14 @@ export const Home = () => {
   }
 
   return (
-    <div className="space-y-4 px-3 lg:px-5 py-1 overflow-y-scroll h-full">
+    <div className="space-y-4 px-2 lg:px-5 py-1 overflow-y-scroll">
       <HomeTopic
         title="Recently Played"
         subTitle=""
         route={routes.home} // TODO routes.generated
         // TODO add support for recently-played
         params={{ generatedType: "recently-played" }}
-        wrapperClassName="-mx-3 lg:-mx-5 px-3 lg:px-5"
+        wrapperClassName="-mx-2 lg:-mx-5 px-2 lg:px-5"
       >
         {recentlyAddedSongs.slice(0, 10).map((song) => (
           <SongCard key={song.id} song={song} />
@@ -59,7 +60,7 @@ export const Home = () => {
         subTitle=""
         route={routes.home} // TODO routes.generated
         params={{ generatedType: "recently-added" }}
-        wrapperClassName="-mx-3 lg:-mx-5 px-3 lg:px-5"
+        wrapperClassName="-mx-2 lg:-mx-5 px-2 lg:px-5"
       >
         {recentlyAddedSongs.slice(0, 10).map((song) => (
           <SongCard key={song.id} song={song} />
@@ -71,7 +72,7 @@ export const Home = () => {
         subTitle=""
         route={routes.home} // TODO routes.generated
         params={{ generatedType: "liked" }}
-        wrapperClassName="-mx-3 lg:-mx-5 px-3 lg:px-5"
+        wrapperClassName="-mx-2 lg:-mx-5 px-2 lg:px-5"
       >
         {likedSongs.slice(0, 10).map((song) => (
           <SongCard key={song.id} song={song} />
