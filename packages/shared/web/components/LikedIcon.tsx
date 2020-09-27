@@ -4,11 +4,12 @@ import classNames from "classnames";
 
 export interface FavoriteIconProps {
   className?: string;
+  iconClassName?: string;
   liked: boolean | undefined;
   setLiked: (value: boolean) => void;
 }
 
-export const LikedIcon = ({ className, liked, setLiked }: FavoriteIconProps) => {
+export const LikedIcon = ({ iconClassName, className, liked, setLiked }: FavoriteIconProps) => {
   return (
     <button
       onClick={(e) => {
@@ -19,7 +20,7 @@ export const LikedIcon = ({ className, liked, setLiked }: FavoriteIconProps) => 
       title="Save to Likes"
       className={classNames(className, "text-purple-500")}
     >
-      {liked ? <FaHeart /> : <FaRegHeart />}
+      {liked ? <FaHeart className={iconClassName} /> : <FaRegHeart className={iconClassName} />}
     </button>
   );
 };

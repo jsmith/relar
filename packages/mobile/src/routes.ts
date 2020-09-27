@@ -110,7 +110,7 @@ export const routes = createRoutes({
     component: Songs,
     showBack: true,
     title: "Songs",
-    showTabs: false,
+    showTabs: true,
     protected: true,
   },
   albums: {
@@ -142,7 +142,7 @@ export const routes = createRoutes({
   },
   artist: {
     id: "artist",
-    path: "/library/albums/:albumId",
+    path: "/library/artists/:artistName",
     component: Artists,
     showBack: true,
     title: "Artist",

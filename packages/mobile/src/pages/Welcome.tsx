@@ -7,7 +7,7 @@ import classNames from "classnames";
 
 export const Welcome = () => {
   return (
-    <div className="flex flex-col items-center bg-gray-900 text-gray-200 py-8 h-full">
+    <div className="flex flex-col items-center bg-gray-900 text-gray-200 py-8 w-full">
       <div className="flex-grow flex items-center">
         <header className="flex items-center justify-center space-x-4 mt-6">
           <h1 className="text-5xl md:text-6xl">RELAR</h1>

@@ -2,7 +2,6 @@ import React from "react";
 
 export interface AirplaneIconProps {
   className?: string;
-  // TODO
   wingsClassName?: string;
   spineClassName?: string;
   trailClassName?: string;

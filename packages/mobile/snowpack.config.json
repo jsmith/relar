@@ -1,6 +1,5 @@
 {
   "extends": "@snowpack/app-scripts-react",
-  "plugins": ["@snowpack/plugin-dotenv"],
   "install": [
     "firebase/app",
     "firebase/auth",

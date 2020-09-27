@@ -2,7 +2,7 @@ import React, { useContext, useState, useCallback, useRef, useEffect } from "rea
 import { createContext } from "react";
 import type { Song } from "../universal/types";
 import { tryToGetSongDownloadUrlOrLog } from "./queries/songs";
-import usePortalImport from "react-useportal";
+import usePortal from "react-useportal";
 import { useUser } from "./auth";
 import {
   useLocalStorage,
@@ -15,8 +15,6 @@ import { updateCachedWithSnapshot } from "./watcher";
 import { useHotkeys } from "react-hotkeys-hook";
 import { createEmitter } from "./events";
 import * as uuid from "uuid";
-
-const usePortal: typeof usePortalImport = (usePortalImport as any).default;
 
 type SongSnapshot = firebase.firestore.QueryDocumentSnapshot<Song>;
 
@@ -95,7 +93,7 @@ export const QueueContext = createContext<{
   setVolume: (value: number) => void;
   clear: () => void;
   /** Set the ref. For internal use only. */
-  _setRef: (el: HTMLAudioElement) => void;
+  _setRef: (el: AudioControls | null) => void;
   shuffle: boolean;
   toggleShuffle: () => void;
 }>({
@@ -120,8 +118,18 @@ export const QueueContext = createContext<{
   toggleShuffle: () => {},
 });
 
+export interface AudioControls {
+  pause: () => void;
+  play: () => void;
+  setSrc: (opts: { src: string; songId: string }) => Promise<void>;
+  paused: boolean;
+  getCurrentTime(): Promise<number>;
+  setCurrentTime(currentTime: number): void;
+  setVolume(volume: number): void;
+}
+
 export const QueueProvider = (props: React.Props<{}>) => {
-  const ref = useRef<HTMLAudioElement | null>(null);
+  const ref = useRef<AudioControls | null>(null);
   const [queue, setQueueState] = useState<QueueItem[]>([]);
   const [shuffle, setShuffle] = useLocalStorage<"true" | "false">("player-shuffle", "true");
   const current = useRef<{
@@ -147,6 +155,23 @@ export const QueueProvider = (props: React.Props<{}>) => {
   // ?? just in case parsing fails
   const [volume, setVolumeState] = useState(volumeString ? parseInt(volumeString) ?? 80 : 80);
 
+  // We do this internally since iOS (and maybe android) don't have time update events
+  // So, to resolve this, we use timers while playing and then fetch the time manually
+  // This seems like the easiest cross platform solution
+  useEffect(() => {
+    if (!playing) return;
+
+    const setTimer = () => {
+      return setTimeout(() => {
+        timer = setTimer();
+        ref.current?.getCurrentTime().then(setCurrentTime);
+      }, 1000);
+    };
+
+    let timer = setTimer();
+    return () => clearTimeout(timer);
+  }, [playing]);
+
   const toggleState = useCallback(() => {
     if (playing) ref.current?.pause();
     else ref.current?.play();
@@ -166,6 +191,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
   );
 
   const stopPlaying = useCallback(() => {
+    setPlaying(false);
     setSongInfo(undefined);
     setCurrentTime(0);
     current.current.index = undefined;
@@ -173,18 +199,26 @@ export const QueueProvider = (props: React.Props<{}>) => {
 
   const changeSongIndex = useCallback(
     async (index: number) => {
-      if (!user) return;
+      if (!user) {
+        console.warn("The user is undefined in queue > changeSongIndex");
+        stopPlaying();
+        return;
+      }
 
       current.current.index = index;
       const item: QueueItem | undefined = current.current.queue[index];
 
       // This is just a sanity check as the logic here is probably flawed somehow
       if (!item) {
+        console.info(
+          `Tried to play song at index ${index} which is > queue.length (${current.current.queue.length})`,
+        );
         stopPlaying();
         return;
       }
 
       const { song, source } = item;
+      console.info(`Changing song to index ${index} (title: ${song.data().title}, id: ${song.id})`);
       const downloadUrl = await tryToGetSongDownloadUrlOrLog(user, song);
       if (!downloadUrl) return;
 
@@ -199,12 +233,12 @@ export const QueueProvider = (props: React.Props<{}>) => {
         .then((snapshot) => updateCachedWithSnapshot(snapshot))
         .catch(captureAndLogError);
 
-      if (ref.current) ref.current.src = downloadUrl;
+      if (ref.current) await ref.current.setSrc({ src: downloadUrl, songId: song.id });
 
-      if (ref.current?.paused === false) {
-        ref.current?.play();
-        setPlaying(true);
-      }
+      // if (ref.current?.paused === false) {
+      //   ref.current?.play();
+      //   setPlaying(true);
+      // }
 
       setSongInfo({ song, id: item.id, source });
     },
@@ -217,22 +251,28 @@ export const QueueProvider = (props: React.Props<{}>) => {
    */
   const tryToGoTo = useCallback(
     (index: number, force: boolean) => {
+      const changeSongIndexAndPlay = async (index: number) => {
+        await changeSongIndex(index);
+        ref.current?.play();
+        setPlaying(true);
+      };
+
       if (!force && mode === "repeat-one") {
         // This condition shouldn't happen
         if (current.current.index === undefined) return;
         // If we are just repeating the current song
-        changeSongIndex(current.current.index);
+        changeSongIndexAndPlay(current.current.index);
       } else if (index >= current.current.queue.length) {
         console.info(`The end of the queue has been reached in mode -> ${mode}`);
         // If we are at the last song
         if (mode === "none") stopPlaying();
-        else changeSongIndex(0);
+        else changeSongIndexAndPlay(0);
       } else if (index < 0) {
         if (mode === "none") stopPlaying();
-        else changeSongIndex(current.current.queue.length - 1);
+        else changeSongIndexAndPlay(current.current.queue.length - 1);
       } else {
         // Else we are somewheres in the middle
-        changeSongIndex(index);
+        changeSongIndexAndPlay(index);
       }
     },
     [mode, changeSongIndex, stopPlaying],
@@ -311,29 +351,31 @@ export const QueueProvider = (props: React.Props<{}>) => {
         current.current = { queue: newQueue, index: undefined, mappings: undefined };
       }
 
+      // It's important that we do this before shuffling
       await changeSongIndex(index ?? 0);
 
       if (source.type !== "queue" && shuffle === "true") {
         shuffleSongs();
       }
 
-      setPlaying(true);
       ref.current?.play();
+      setPlaying(true);
     },
     [changeSongIndex, shuffle, shuffleSongs],
   );
 
   // The ?? don't actually matter since we check to see if the index is currently defined in "tryToGoTo" function
   const next = useCallback(() => tryToGoTo((current.current.index ?? 0) + 1, true), [tryToGoTo]);
-  const previous = useCallback(() => {
+  const previous = useCallback(async () => {
     if (!ref.current) return;
-    if (ref.current.currentTime <= 4) {
+    const currentTime = await ref.current.getCurrentTime();
+    if (currentTime <= 4) {
       // If less than 4 seconds, go to the previous song
       tryToGoTo((current.current.index ?? 0) - 1, true);
     } else {
       // If not just restart the song
       setCurrentTime(0);
-      ref.current.currentTime = 0;
+      ref.current.setCurrentTime(0);
     }
   }, [tryToGoTo]);
 
@@ -343,7 +385,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
 
   const seekTime = useCallback((seconds: number) => {
     setCurrentTime(seconds);
-    if (ref.current) ref.current.currentTime = seconds;
+    if (ref.current) ref.current.setCurrentTime(seconds);
   }, []);
 
   const setVolume = useCallback(
@@ -352,15 +394,15 @@ export const QueueProvider = (props: React.Props<{}>) => {
       setVolumeState(value);
       // HTML5 audio.volume is a value between 0 and 1
       // See https://stackoverflow.com/questions/10075909/how-to-set-the-loudness-of-html5-audio
-      if (ref.current) ref.current.volume = value / 100;
+      if (ref.current) ref.current.setVolume(value / 100);
     },
     [setVolumeString],
   );
 
   const _setRef = useCallback(
-    (el: HTMLAudioElement | null) => {
+    (el: AudioControls | null) => {
       ref.current = el;
-      if (el) el.volume = volume / 100;
+      if (el) el.setVolume(volume / 100);
     },
     [volume],
   );
@@ -429,8 +471,21 @@ export const QueueAudio = () => {
   return (
     <Portal>
       <audio
-        ref={_setRef}
-        onTimeUpdate={(e) => setCurrentTime((e.target as HTMLAudioElement).currentTime)}
+        ref={(el) => {
+          if (el === null) _setRef(null);
+          else
+            _setRef(
+              Object.assign(el, {
+                setSrc: async ({ src }: { src: string }) => {
+                  el.src = src;
+                },
+                getCurrentTime: async () => el.currentTime,
+                setVolume: (volume: number) => (el.volume = volume),
+                setCurrentTime: (currentTime: number) => (el.currentTime = currentTime),
+              }),
+            );
+        }}
+        // onTimeUpdate={(e) => setCurrentTime((e.target as HTMLAudioElement).currentTime)}
         onEnded={_nextAutomatic}
       >
         Your browser does not support HTML5 Audio...

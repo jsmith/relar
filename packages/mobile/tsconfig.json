@@ -14,7 +14,13 @@
   //   "src"
   // ]
   "include": ["src", "types"],
-  "exclude": ["node_modules", "src/shared/node"],
+  "exclude": [
+    "node_modules",
+    "src/shared/node",
+    "src/shared/web/watcher.test.ts",
+    "src/shared/web/utils.spec.ts",
+    "src/shared/web/events.spec.ts"
+  ],
   "extends": "@snowpack/app-scripts-react/tsconfig.base.json",
   "compilerOptions": {
     // You can't currently define paths in your 'extends' config,
