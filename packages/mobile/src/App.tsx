@@ -9,6 +9,8 @@ import { ButtonTabs } from "./sections/BottomTabs";
 import { ActionSheet } from "./action-sheet";
 import { FilesystemDirectory, Plugins } from "@capacitor/core";
 import { writeFile } from "capacitor-blob-writer";
+// Import to register plugin
+import "@capacitor-community/native-audio";
 import type { NativeAudioPlugin } from "@capacitor-community/native-audio";
 import { AudioControls, useQueue } from "./shared/web/queue";
 
@@ -109,6 +111,8 @@ export const App = () => {
   useEffect(() => {
     if (!loading && user && route?.protected === false) {
       goTo(routes.home);
+    } else if (!loading && !user && route?.protected === true) {
+      goTo(routes.welcome);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading]);
@@ -119,7 +123,11 @@ export const App = () => {
     return () => remove();
   }, [_nextAutomatic, _setRef]);
 
-  if (loading) {
+  if (
+    loading ||
+    (!loading && route?.protected === true && !user) ||
+    (!loading && route?.protected === false && user)
+  ) {
     return <LoadingSpinner className="h-screen bg-gray-900" />;
   }
 

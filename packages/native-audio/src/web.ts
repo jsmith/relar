@@ -12,6 +12,7 @@ export class NativeAudioWeb extends WebPlugin implements NativeAudioPlugin {
   }
 
   load() {
+    super.load();
     document.body.appendChild(this.audioElement);
 
     this.audioElement.onended = () => {

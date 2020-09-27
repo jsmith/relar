@@ -1,3 +1,9 @@
+install:
+	cd packages/app && npm install
+	cd packages/functions && npm install
+	cd packages/mobile && npm install
+	cd packages/native-audio && npm install
+
 install-ci:
 	cd packages/app && npm ci
 	cd packages/functions && npm ci

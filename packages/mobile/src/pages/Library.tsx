@@ -23,17 +23,17 @@ export const Library = () => {
     {
       icon: AiOutlineUser,
       label: "Artists",
-      route: routes.songs,
+      route: routes.artists,
     },
     {
       icon: RiAlbumLine,
       label: "Albums",
-      route: routes.songs,
+      route: routes.albums,
     },
     {
       icon: RiPlayList2Fill,
       label: "Playlists",
-      route: routes.songs,
+      route: routes.playlists,
     },
   ];
 

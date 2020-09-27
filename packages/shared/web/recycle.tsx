@@ -1,4 +1,5 @@
-import React, { forwardRef } from "react";
+import { useMotionValue } from "framer-motion";
+import React, { forwardRef, useEffect } from "react";
 import { useMemo, useCallback, useState, useRef } from "react";
 
 export interface RecycleProps {
@@ -21,26 +22,47 @@ export const useRecycle = ({
   const table = useRef<HTMLTableElement | null>(null);
   const observer = useRef<IntersectionObserver>();
   const intersecting = useRef<Record<number, boolean>>({});
-  const [{ minCursor, maxCursor }, setMinMaxCursor] = useState<{
-    minCursor: number;
-    maxCursor: number;
-  }>({ minCursor: 0, maxCursor: 0 });
+  const placeholderBottomHeight = useMotionValue(0);
+  const placeholderTopHeight = useMotionValue(0);
+  const [{ start, end }, setStartEnd] = useState({ start: 0, end: 0 });
+
+  const calculate = useCallback(
+    ({ minCursor, maxCursor }: { minCursor: number; maxCursor: number }) => {
+      // The start is always the smallest index of the observed sentinel elements - 1
+      // If not - 1, we would be missing some of the bottom elements
+      const newStart = Math.max(minCursor - 1, 0) * rowsPerBlock;
+
+      // Add 1 because we render start up to but not including the end element
+      // And then similar to above, if we don't add another 1, we would be missing elements at the bottom
+      // Furthermore, we wouldn't actually display the entire table.
+      // Imagine we first display on the 0th sentinel element. minCursor == 0 and maxCursor == 0.
+      // If we only added 1 to maxCursor, we would only ever show a single sentinel element.
+      // Since we add 2, we actually show the first two sentinel elements, which triggers the observer
+      // callback which triggers us to render the first, second and third sentinel elements (and so on).
+      const newEnd = Math.min((maxCursor + 2) * rowsPerBlock, rowCount);
+      const newPlaceholderTopHeight = newStart * rowHeight;
+      const newPlaceholderBottomHeight = (rowCount - newEnd) * rowHeight;
+
+      if (start !== newStart || end !== newEnd) setStartEnd({ start: newStart, end: newEnd });
+      placeholderBottomHeight.set(newPlaceholderBottomHeight);
+      placeholderTopHeight.set(newPlaceholderTopHeight);
+    },
+    [start, end, rowCount, rowHeight, rowsPerBlock],
+  );
+
+  // Only run when the basics change
+  useEffect(() => calculate({ minCursor: 0, maxCursor: 0 }), [rowCount, rowHeight, rowsPerBlock]);
 
   const handleSentinel = useCallback(
     (span: HTMLSpanElement | null) => {
-      if (!span) return;
+      if (!span) return () => {};
 
       if (!observer.current) {
         observer.current = new IntersectionObserver(
-          (entries, o) => {
+          (entries) => {
             entries.forEach((e) => {
               const index = +e.target.getAttribute("index")!;
               const cursorIndex = index / rowsPerBlock;
-              // if (e.isIntersecting) {
-              //   console.log("START INTERSECT", cursorIndex, e.target);
-              // } else {
-              //   console.log("END INTERSECT", cursorIndex, e.target);
-              // }
 
               if (e.isIntersecting) {
                 intersecting.current[cursorIndex] = true;
@@ -61,7 +83,7 @@ export const useRecycle = ({
                 maxCursor = Math.max(+index, maxCursor);
               }
 
-              setMinMaxCursor({
+              calculate({
                 minCursor: minCursor === Infinity ? 0 : minCursor,
                 maxCursor: maxCursor === -Infinity ? 0 : maxCursor,
               });
@@ -75,33 +97,13 @@ export const useRecycle = ({
         );
       }
 
+      console.log(`Observing ${span} (${span.getAttribute("index")})`);
       observer.current.observe(span);
+      const local = observer.current;
+      return () => local.unobserve(span);
     },
-    [container, intersecting, rootMargin, rowsPerBlock],
+    [container, intersecting, rootMargin, rowsPerBlock, calculate],
   );
-
-  const { start, end, placeholderBottomHeight, placeholderTopHeight } = useMemo(() => {
-    // The start is always the smallest index of the observed sentinel elements - 1
-    // If not - 1, we would be missing some of the bottom elements
-    const start = Math.max(minCursor - 1, 0) * rowsPerBlock;
-    // Add 1 because we render start up to but not including the end element
-    // And then similar to above, if we don't add another 1, we would be missing elements at the bottom
-    // Furthermore, we wouldn't actually display the entire table.
-    // Imagine we first display on the 0th sentinel element. minCursor == 0 and maxCursor == 0.
-    // If we only added 1 to maxCursor, we would only ever show a single sentinel element.
-    // Since we add 2, we actually show the first two sentinel elements, which triggers the observer
-    // callback which triggers us to render the first, second and third sentinel elements (and so on).
-    const end = Math.min((maxCursor + 2) * rowsPerBlock, rowCount);
-    const placeholderTopHeight = start * rowHeight;
-    const placeholderBottomHeight = (rowCount - end) * rowHeight;
-
-    return {
-      start,
-      end,
-      placeholderTopHeight,
-      placeholderBottomHeight,
-    };
-  }, [maxCursor, minCursor, rowCount, rowHeight, rowsPerBlock]);
 
   return {
     table,
@@ -114,12 +116,20 @@ export const useRecycle = ({
 };
 
 // eslint-disable-next-line react/display-name
-export const SentinelBlock = forwardRef<HTMLSpanElement, { index: number; rowsPerBlock?: number }>(
-  ({ index, rowsPerBlock = 5 }, ref) => {
-    if (index % rowsPerBlock !== 0) return null;
-    // `index` is not a valid attribute
-    // But we're using it to pass information to the IntersectionObserver callback.
-    // @ts-ignore
-    return <span index={index} ref={ref} />;
-  },
-);
+export const SentinelBlock = ({
+  index,
+  rowsPerBlock = 5,
+  handleSentinel,
+}: {
+  index: number;
+  rowsPerBlock?: number;
+  handleSentinel: (span: HTMLSpanElement | null) => () => void;
+}) => {
+  const ref = useRef<HTMLSpanElement | null>(null);
+  useEffect(() => handleSentinel(ref.current));
+  if (index % rowsPerBlock !== 0) return null;
+  // `index` is not a valid attribute
+  // But we're using it to pass information to the IntersectionObserver callback.
+  // @ts-ignore
+  return <span index={index} ref={ref} />;
+};

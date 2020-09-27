@@ -2,11 +2,7 @@ import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import type { IconType } from "react-icons/lib";
 import { createEmitter } from "./shared/web/events";
-import { AiOutlineUser } from "react-icons/ai";
-import { RiAlbumLine } from "react-icons/ri";
 import classNames from "classnames";
-import { routes } from "./routes";
-import { HiTrash } from "react-icons/hi";
 import type { RouterStateType, RouteType } from "@graywolfai/react-tiniest-router";
 import { Link } from "./shared/web/components/Link";
 
