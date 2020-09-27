@@ -27,6 +27,7 @@ import { env } from "./env";
 import "./firebase";
 import "./shared/web/common.css";
 import "./shared/web/tailwind.css";
+import "./shared/web/meta";
 
 setBaseUrls(env);
 

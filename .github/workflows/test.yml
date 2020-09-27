@@ -17,9 +17,14 @@ jobs:
           GPG_PASSWORD: ${{ secrets.GPG_PASSWORD }}
           GOOGLE_KEY_GPG_PASS: ${{ secrets.GOOGLE_KEY_GPG_PASS }}
 
-      - run: npm install --no-package-lock
+      - run: npm install
       - run: npm run bootstrap
+      - run: npm run build
+        working-directory: packages/native-audio
       - run: npx patch-package
+        working-directory: packages/app
+      - run: npx patch-package
+        working-directory: packages/functions
       - run: npm run check:formatting
       - run: npm run check:lint
       - run: npm run check:types
