@@ -8,10 +8,8 @@ export const Search = () => {
   return (
     <div className="flex flex-col items-center justify-center space-y-5">
       <PuttingThingsTogether className="mx-5 max-w-xs" />
-      {/* TODO */}
       <p className="text-gray-700 mx-5 max-w-lg text-center text-sm lg:text-base">
-        The search functionality is currently in progress. Make sure to check
-        out our{" "}
+        The search functionality is currently in progress. Make sure to check out our{" "}
         <a
           className={link()}
           rel="noreferrer"

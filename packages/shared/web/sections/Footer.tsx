@@ -33,7 +33,6 @@ export const Footer = () => {
             Roadmap
           </a>
           <span>•</span>
-          {/* TODO */}
           {/* <Link className="text-xs" route={routes.hero} label="Blog" />
           <span>•</span> */}
           <Link className="text-xs" route={routes.privacy} label="Privacy" />

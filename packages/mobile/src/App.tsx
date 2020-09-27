@@ -88,7 +88,6 @@ class Controls implements AudioControls {
   }
 
   setCurrentTime(currentTime: number) {
-    // TODO implement iOS
     NativeAudio.setCurrentTime({ currentTime });
   }
 
