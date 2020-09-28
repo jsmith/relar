@@ -5,6 +5,7 @@ import { createEmitter } from "./shared/web/events";
 import classNames from "classnames";
 import type { RouterStateType, RouteType } from "@graywolfai/react-tiniest-router";
 import { Link } from "./shared/web/components/Link";
+import { isDefined } from "./shared/universal/utils";
 
 export type ActionSheetItem = {
   label: string;
@@ -21,9 +22,9 @@ export type ActionSheetItem = {
     }
 );
 
-const emitter = createEmitter<{ show: [ActionSheetItem[]] }>();
+const emitter = createEmitter<{ show: [Array<ActionSheetItem | undefined>] }>();
 
-export const openActionSheet = (items: ActionSheetItem[]) => {
+export const openActionSheet = (items: Array<ActionSheetItem | undefined>) => {
   emitter.emit("show", items);
 };
 
@@ -32,7 +33,7 @@ export const ActionSheet = () => {
 
   useEffect(() => {
     emitter.on("show", (items) => {
-      setItems(items);
+      setItems(items.filter(isDefined));
     });
   }, []);
 
@@ -43,6 +44,9 @@ export const ActionSheet = () => {
         animate={items ? "showMenu" : "hideMenu"}
         variants={{ showMenu: { opacity: 0.5 }, hideMenu: { opacity: 0.25 } }}
         onClick={() => setItems(undefined)}
+        onAnimationComplete={() => {
+          console.log("ANIMATION COMPLETE");
+        }}
       />
       <motion.div
         variants={{
@@ -66,7 +70,8 @@ export const ActionSheet = () => {
               className="flex px-2 py-3 space-x-3"
               onClick={() => {
                 setItems(undefined);
-                item.onClick();
+                // TODO wait until animation finished and then fire handler
+                // item.onClick();
               }}
             >
               {children}

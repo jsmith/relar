@@ -1,12 +1,7 @@
-import React, { RefObject, useCallback, useEffect, useRef, useState } from "react";
-import { MdMoreVert } from "react-icons/md";
-import { Thumbnail } from "../shared/web/components/Thumbnail";
-import { useSongs } from "../shared/web/queries/songs";
-import { addEventListener, fmtMSS } from "../shared/web/utils";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getCachedOr } from "../shared/web/watcher";
 import classNames from "classnames";
-import { useQueue } from "../shared/web/queue";
-import { SentinelBlock, useRecycle } from "../shared/web/recycle";
+import { useRecycle } from "../shared/web/recycle";
 import { motion } from "framer-motion";
 
 const letters = [
@@ -38,24 +33,27 @@ const letters = [
   "z",
 ];
 
+export interface ListContainerRowProps<T> {
+  snapshot: firebase.firestore.QueryDocumentSnapshot<T>;
+  item: T;
+  index: number;
+  absoluteIndex: number;
+  handleSentinel: (span: HTMLSpanElement | null) => () => void;
+  snapshots: Array<firebase.firestore.QueryDocumentSnapshot<T>>;
+}
+
 export interface ListContainerProps<T, K extends keyof T> {
   height: number;
   items: Array<firebase.firestore.QueryDocumentSnapshot<T>> | undefined;
   sortKey: K;
-  buildRow: (
-    snapshot: firebase.firestore.QueryDocumentSnapshot<T>,
-    item: T,
-    index: number,
-    absoluteIndex: number,
-    handleSentinel: (span: HTMLSpanElement | null) => void,
-  ) => JSX.Element;
+  row: (props: ListContainerRowProps<T>) => JSX.Element;
 }
 
 export const ListContainer = function <T, K extends keyof T>({
   height,
   items,
   sortKey,
-  buildRow,
+  row: Row,
 }: ListContainerProps<T, K>) {
   const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const timer = useRef<NodeJS.Timeout>();
@@ -109,6 +107,8 @@ export const ListContainer = function <T, K extends keyof T>({
       }
 
       resetTimer();
+
+      console.log(`Scrolling to ${height * index} (${height} * ${index})`);
       container.scrollTop = height * index;
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -130,30 +130,50 @@ export const ListContainer = function <T, K extends keyof T>({
   const [show, setShow] = useState(false);
   const showing = useRef(false);
 
+  const rows = useMemo(
+    () =>
+      items
+        ?.slice(start, end)
+        .map((song, i) => (
+          <Row
+            key={start + i}
+            snapshot={song}
+            item={getCachedOr(song)}
+            index={i}
+            absoluteIndex={start + i}
+            handleSentinel={handleSentinel}
+            snapshots={items}
+          />
+        )),
+    [end, handleSentinel, items, start, Row],
+  );
+
+  console.log("LIST CONTAINER");
   return (
     <div className="overflow-y-scroll w-full" ref={setContainer}>
       <div className="divide-y h-full" ref={ref}>
-        <motion.div style={{ height: placeholderTopHeight }} />
-        {items?.slice(start, end).map((song, i) => {
-          const data = getCachedOr(song);
-          return buildRow(song, data, i, start + i, handleSentinel);
-        })}
-        <motion.div style={{ height: placeholderBottomHeight }} />
+        <div style={{ height: placeholderTopHeight }} />
+        {rows}
+        <div style={{ height: placeholderBottomHeight }} />
       </div>
-      <div className="absolute h-full top-0 right-0 py-1 pr-1">
+      <div
+        className={classNames(
+          "absolute h-full top-0 right-0 py-1 pr-1",
+          !show && "pointer-events-none",
+        )}
+      >
         <div
           className={classNames(
             "sticky h-full rounded-lg bg-gray-800 text-gray-200 p-1 bg-opacity-75  flex flex-col text-xs justify-between ease-in-out duration-500 transform transition-opacity",
-            show ? "opacity-100" : "opacity-0 pointer-events-none",
+            show ? "opacity-100" : "opacity-0",
           )}
         >
           {letters.map((letter) => (
             <button
               key={letter}
               className="uppercase select-none focus:outline-none"
-              onTouchStart={() => {
-                scrollTo(letter);
-              }}
+              onTouchStart={() => scrollTo(letter)}
+              onMouseDown={() => scrollTo(letter)}
               onTouchMove={(e) => {
                 const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
                 const letter = el?.getAttribute("letter");

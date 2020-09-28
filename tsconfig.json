@@ -1,10 +1,15 @@
 {
-  "compilerOptions": {
-    "strict": true,
-    "noImplicitReturns": true,
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "module": "ES6"
-  },
-  "exclude": ["**/*.spec.ts", "**/dist"]
+  "extends": "./tsconfig.base.json",
+  "include": [
+    "packages/app/src/**/*.tsx",
+    "packages/app/src/**/*.ts",
+    "packages/functions/src/**/*.tsx",
+    "packages/functions/src/**/*.ts",
+    // "packages/shared/**/*.tsx",
+    // "packages/shared/**/*.ts",
+    "packages/mobile/src/**/*.tsx",
+    "packages/mobile/src/**/*.ts",
+    "packages/scripts/src/**/*.tsx",
+    "packages/scripts/src/**/*.ts"
+  ]
 }

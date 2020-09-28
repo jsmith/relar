@@ -115,7 +115,7 @@ export const App = () => {
       goTo(routes.welcome);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
+  }, [loading, route?.protected]);
 
   useEffect(() => {
     const { remove } = NativeAudio.addListener("complete", _nextAutomatic);

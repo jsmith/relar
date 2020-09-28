@@ -53,16 +53,8 @@
     "@types/react-transition-group": "^4.4.0",
     "@types/tinycolor2": "^1.4.2",
     "@types/uuid": "^8.3.0",
-    "@typescript-eslint/eslint-plugin": "^3.2.0",
-    "@typescript-eslint/parser": "^3.2.0",
-    "eslint": "^7.2.0",
-    "eslint-config-restricted-globals": "^0.1.0",
-    "eslint-plugin-react": "^7.19.0",
-    "eslint-plugin-react-hooks": "^4.0.8",
     "patch-package": "^6.2.2",
-    "prettier": "^2.0.5",
     "snowpack": "^2.10.3",
-    "tailwindcss": "^1.8.10",
-    "typescript": "^3.9.7"
+    "tailwindcss": "^1.8.10"
   }
 }

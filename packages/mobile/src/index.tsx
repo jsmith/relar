@@ -11,6 +11,7 @@ import { env } from "./env";
 import { QueueProvider } from "./shared/web/queue";
 import "./shared/web/common.css";
 import "./shared/web/tailwind.css";
+import { SlideUpScreenContainer } from "./slide-up-screen";
 
 // Make sure to set the base URLs before the backend is used
 setBaseUrls(env);
@@ -20,7 +21,9 @@ ReactDOM.render(
     <Router routes={routes}>
       <UserProvider>
         <QueueProvider>
-          <App />
+          <SlideUpScreenContainer>
+            <App />
+          </SlideUpScreenContainer>
         </QueueProvider>
       </UserProvider>
     </Router>

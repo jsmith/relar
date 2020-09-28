@@ -10,7 +10,6 @@
     "firebase-admin": "^9.0.0",
     "runtypes": "^4.3.0",
     "ts-node": "^8.10.2",
-    "typescript": "^3.9.7",
     "uuid": "^8.3.0"
   }
 }

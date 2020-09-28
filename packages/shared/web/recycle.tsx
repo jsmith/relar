@@ -1,4 +1,3 @@
-import { useMotionValue } from "framer-motion";
 import React, { forwardRef, useEffect } from "react";
 import { useMemo, useCallback, useState, useRef } from "react";
 
@@ -17,41 +16,15 @@ export const useRecycle = ({
   rowHeight,
   rowCount,
   rootMargin = 30,
-  rowsPerBlock = 5,
+  rowsPerBlock = 10,
 }: RecycleProps) => {
   const table = useRef<HTMLTableElement | null>(null);
   const observer = useRef<IntersectionObserver>();
   const intersecting = useRef<Record<number, boolean>>({});
-  const placeholderBottomHeight = useMotionValue(0);
-  const placeholderTopHeight = useMotionValue(0);
-  const [{ start, end }, setStartEnd] = useState({ start: 0, end: 0 });
-
-  const calculate = useCallback(
-    ({ minCursor, maxCursor }: { minCursor: number; maxCursor: number }) => {
-      // The start is always the smallest index of the observed sentinel elements - 1
-      // If not - 1, we would be missing some of the bottom elements
-      const newStart = Math.max(minCursor - 1, 0) * rowsPerBlock;
-
-      // Add 1 because we render start up to but not including the end element
-      // And then similar to above, if we don't add another 1, we would be missing elements at the bottom
-      // Furthermore, we wouldn't actually display the entire table.
-      // Imagine we first display on the 0th sentinel element. minCursor == 0 and maxCursor == 0.
-      // If we only added 1 to maxCursor, we would only ever show a single sentinel element.
-      // Since we add 2, we actually show the first two sentinel elements, which triggers the observer
-      // callback which triggers us to render the first, second and third sentinel elements (and so on).
-      const newEnd = Math.min((maxCursor + 2) * rowsPerBlock, rowCount);
-      const newPlaceholderTopHeight = newStart * rowHeight;
-      const newPlaceholderBottomHeight = (rowCount - newEnd) * rowHeight;
-
-      if (start !== newStart || end !== newEnd) setStartEnd({ start: newStart, end: newEnd });
-      placeholderBottomHeight.set(newPlaceholderBottomHeight);
-      placeholderTopHeight.set(newPlaceholderTopHeight);
-    },
-    [start, end, rowCount, rowHeight, rowsPerBlock],
-  );
-
-  // Only run when the basics change
-  useEffect(() => calculate({ minCursor: 0, maxCursor: 0 }), [rowCount, rowHeight, rowsPerBlock]);
+  const [{ minCursor, maxCursor }, setMinMaxCursor] = useState<{
+    minCursor: number;
+    maxCursor: number;
+  }>({ minCursor: 0, maxCursor: 0 });
 
   const handleSentinel = useCallback(
     (span: HTMLSpanElement | null) => {
@@ -83,7 +56,7 @@ export const useRecycle = ({
                 maxCursor = Math.max(+index, maxCursor);
               }
 
-              calculate({
+              setMinMaxCursor({
                 minCursor: minCursor === Infinity ? 0 : minCursor,
                 maxCursor: maxCursor === -Infinity ? 0 : maxCursor,
               });
@@ -97,13 +70,35 @@ export const useRecycle = ({
         );
       }
 
-      console.log(`Observing ${span} (${span.getAttribute("index")})`);
-      observer.current.observe(span);
       const local = observer.current;
+      local.observe(span);
       return () => local.unobserve(span);
     },
-    [container, intersecting, rootMargin, rowsPerBlock, calculate],
+    [container, intersecting, rootMargin, rowsPerBlock],
   );
+
+  const { start, end, placeholderBottomHeight, placeholderTopHeight } = useMemo(() => {
+    // The start is always the smallest index of the observed sentinel elements - 1
+    // If not - 1, we would be missing some of the bottom elements
+    const start = Math.max(minCursor - 1, 0) * rowsPerBlock;
+    // Add 1 because we render start up to but not including the end element
+    // And then similar to above, if we don't add another 1, we would be missing elements at the bottom
+    // Furthermore, we wouldn't actually display the entire table.
+    // Imagine we first display on the 0th sentinel element. minCursor == 0 and maxCursor == 0.
+    // If we only added 1 to maxCursor, we would only ever show a single sentinel element.
+    // Since we add 2, we actually show the first two sentinel elements, which triggers the observer
+    // callback which triggers us to render the first, second and third sentinel elements (and so on).
+    const end = Math.min((maxCursor + 2) * rowsPerBlock, rowCount);
+    const placeholderTopHeight = start * rowHeight;
+    const placeholderBottomHeight = (rowCount - end) * rowHeight;
+
+    return {
+      start,
+      end,
+      placeholderTopHeight,
+      placeholderBottomHeight,
+    };
+  }, [maxCursor, minCursor, rowCount, rowHeight, rowsPerBlock]);
 
   return {
     table,
@@ -115,7 +110,6 @@ export const useRecycle = ({
   };
 };
 
-// eslint-disable-next-line react/display-name
 export const SentinelBlock = ({
   index,
   rowsPerBlock = 5,
@@ -125,6 +119,7 @@ export const SentinelBlock = ({
   rowsPerBlock?: number;
   handleSentinel: (span: HTMLSpanElement | null) => () => void;
 }) => {
+  console.log("SENTINAL");
   const ref = useRef<HTMLSpanElement | null>(null);
   useEffect(() => handleSentinel(ref.current));
   if (index % rowsPerBlock !== 0) return null;
