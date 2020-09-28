@@ -119,9 +119,8 @@ export const SentinelBlock = ({
   rowsPerBlock?: number;
   handleSentinel: (span: HTMLSpanElement | null) => () => void;
 }) => {
-  console.log("SENTINAL");
   const ref = useRef<HTMLSpanElement | null>(null);
-  useEffect(() => handleSentinel(ref.current));
+  useEffect(() => handleSentinel(ref.current), [handleSentinel]);
   if (index % rowsPerBlock !== 0) return null;
   // `index` is not a valid attribute
   // But we're using it to pass information to the IntersectionObserver callback.

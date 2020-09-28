@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { getCachedOr } from "../shared/web/watcher";
 import classNames from "classnames";
 import { useRecycle } from "../shared/web/recycle";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useTransform } from "framer-motion";
 
 const letters = [
   "a",
@@ -55,7 +55,7 @@ export const ListContainer = function <T, K extends keyof T>({
   sortKey,
   row: Row,
 }: ListContainerProps<T, K>) {
-  const [container, setContainer] = useState<HTMLDivElement | null>(null);
+  const container = useRef<HTMLDivElement | null>(null);
   const timer = useRef<NodeJS.Timeout>();
   const {
     start,
@@ -65,10 +65,12 @@ export const ListContainer = function <T, K extends keyof T>({
     table: ref,
     handleSentinel,
   } = useRecycle({
-    container,
+    container: container.current,
     rowCount: items?.length ?? 0,
     rowHeight: height,
   });
+  const opacity = useMotionValue(0);
+  const pointerEvents = useTransform(opacity, (value) => (value === 0 ? "none" : ""));
 
   const clearTimer = useCallback(() => {
     if (timer.current === undefined) return;
@@ -76,17 +78,15 @@ export const ListContainer = function <T, K extends keyof T>({
   }, []);
 
   const resetTimer = useCallback(() => {
-    if (!showing.current) {
-      setShow(true);
-      showing.current = true;
+    if (opacity.get() === 0) {
+      opacity.set(1);
     }
 
     // Always clear. You never know 💁
     clearTimer();
 
     timer.current = setTimeout(() => {
-      setShow(false);
-      showing.current = false;
+      opacity.set(0);
     }, 1000);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -94,7 +94,7 @@ export const ListContainer = function <T, K extends keyof T>({
   const scrollTo = useCallback(
     (letter: string) => {
       if (!items) return;
-      if (!container) return;
+      if (!container.current) return;
       letter = letter.toLowerCase();
       let index = items.length - 1;
       for (const [i, song] of items.entries()) {
@@ -109,26 +109,21 @@ export const ListContainer = function <T, K extends keyof T>({
       resetTimer();
 
       console.log(`Scrolling to ${height * index} (${height} * ${index})`);
-      container.scrollTop = height * index;
+      container.current.scrollTop = height * index;
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [container, items],
+    [height, items, resetTimer, sortKey],
   );
 
   useEffect(() => {
-    if (!container) return;
+    if (!container.current) return;
+    const local = container.current;
 
-    container.addEventListener("scroll", resetTimer);
+    local.addEventListener("scroll", resetTimer);
     return () => {
-      container.removeEventListener("scroll", resetTimer);
+      local.removeEventListener("scroll", resetTimer);
       clearTimer();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [container]);
-
-  // showing and show should always have the save value
-  const [show, setShow] = useState(false);
-  const showing = useRef(false);
+  }, [clearTimer, resetTimer]);
 
   const rows = useMemo(
     () =>
@@ -148,25 +143,22 @@ export const ListContainer = function <T, K extends keyof T>({
     [end, handleSentinel, items, start, Row],
   );
 
-  console.log("LIST CONTAINER");
   return (
-    <div className="overflow-y-scroll w-full" ref={setContainer}>
+    <div className="overflow-y-scroll w-full" ref={container}>
       <div className="divide-y h-full" ref={ref}>
         <div style={{ height: placeholderTopHeight }} />
         {rows}
         <div style={{ height: placeholderBottomHeight }} />
       </div>
-      <div
-        className={classNames(
-          "absolute h-full top-0 right-0 py-1 pr-1",
-          !show && "pointer-events-none",
-        )}
+      <motion.div
+        className={classNames("absolute h-full top-0 right-0 py-1 pr-1")}
+        style={{ pointerEvents }}
       >
-        <div
+        <motion.div
           className={classNames(
-            "sticky h-full rounded-lg bg-gray-800 text-gray-200 p-1 bg-opacity-75  flex flex-col text-xs justify-between ease-in-out duration-500 transform transition-opacity",
-            show ? "opacity-100" : "opacity-0",
+            "sticky h-full rounded-lg bg-gray-800 text-gray-200 p-1 bg-opacity-75  flex flex-col text-2xs justify-between ease-in-out duration-500 transform transition-opacity",
           )}
+          style={{ opacity }}
         >
           {letters.map((letter) => (
             <button
@@ -186,8 +178,8 @@ export const ListContainer = function <T, K extends keyof T>({
               {letter}
             </button>
           ))}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };

@@ -2,7 +2,7 @@ import React from "react";
 import { MdAddToQueue, MdMoreVert, MdPlaylistAdd } from "react-icons/md";
 import { Thumbnail } from "../shared/web/components/Thumbnail";
 import { useDeleteSong, useSongs } from "../shared/web/queries/songs";
-import { fmtMSS } from "../shared/web/utils";
+import { fmtMSS, fmtToDate } from "../shared/web/utils";
 import { useQueue } from "../shared/web/queue";
 import { ListContainer, ListContainerRowProps } from "../components/ListContainer";
 import { SentinelBlock } from "../shared/web/recycle";
@@ -11,14 +11,35 @@ import { AiOutlineUser } from "react-icons/ai";
 import { RiAlbumLine } from "react-icons/ri";
 import { routes } from "../routes";
 import type { Song } from "../shared/universal/types";
-import { HiTrash } from "react-icons/hi";
+import { HiPlus, HiTrash } from "react-icons/hi";
 import { Modals } from "@capacitor/core";
 import { useSlideUpScreen } from "../slide-up-screen";
 import { Button } from "../shared/web/components/Button";
+import { usePlaylistCreate } from "../shared/web/queries/playlists";
+import { AddToPlaylistList } from "../shared/web/sections/AddToPlaylistList";
 
 export interface SongListProps {
   songs: Array<firebase.firestore.QueryDocumentSnapshot<Song>> | undefined;
 }
+
+const AddToPlaylistMenu = ({
+  song,
+  hide,
+}: {
+  song: firebase.firestore.QueryDocumentSnapshot<Song>;
+  hide: () => void;
+}) => {
+  return (
+    <div className="flex flex-col py-2">
+      <AddToPlaylistList
+        song={song}
+        setLoading={() => {}}
+        setError={(error) => error && Modals.alert({ title: "Error", message: error })}
+        close={hide}
+      />
+    </div>
+  );
+};
 
 const SongListRow = ({
   item: data,
@@ -30,11 +51,31 @@ const SongListRow = ({
 }: ListContainerRowProps<Song>) => {
   const [deleteSong] = useDeleteSong();
   const { setQueue, enqueue } = useQueue();
-  const { show, hide } = useSlideUpScreen("Add to Playlist", () => (
-    <div>
-      <Button label="Create Button" />
-    </div>
-  ));
+  const [createPlaylist] = usePlaylistCreate();
+  const { show } = useSlideUpScreen(
+    "Add to Playlist",
+    AddToPlaylistMenu,
+    { song },
+    {
+      title: "Add New Playlist",
+      icon: HiPlus,
+      onClick: async () => {
+        const { value, cancelled } = await Modals.prompt({
+          message: "What do you want to name your new playlist?",
+          title: "Playlist Name",
+        });
+
+        if (cancelled) return;
+        createPlaylist(value, {
+          onError: () =>
+            Modals.alert({
+              title: "Error",
+              message: "There was an unknown error creating playlist.",
+            }),
+        });
+      },
+    },
+  );
 
   return (
     <div
@@ -68,10 +109,7 @@ const SongListRow = ({
               label: "Add To Playlist",
               icon: MdPlaylistAdd,
               type: "click",
-              onClick: () => {
-                // TODO
-                // showAddPlaylistModal();
-              },
+              onClick: show,
             },
             data.artist
               ? {
@@ -102,6 +140,7 @@ const SongListRow = ({
                 }).then(({ value }) => {
                   if (value) {
                     deleteSong(song.id);
+                    // TODO notification
                   }
                 });
               },

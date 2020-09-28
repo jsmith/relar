@@ -5,11 +5,8 @@ import { ErrorTemplate } from "../components/ErrorTemplate";
 import { usePlaylists, usePlaylistCreate, usePlaylistAdd } from "../queries/playlists";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { Modal } from "../components/Modal";
-import { SearchMagnifyingGlass } from "../illustrations/SearchMagnifyingGlass";
 import { BlockAlert } from "../components/BlockAlert";
-import { pluralSongs, fmtToDate } from "../utils";
-import { HiChevronRight } from "react-icons/hi";
-import { getCachedOr } from "../watcher";
+import { AddToPlaylistList } from "../sections/AddToPlaylistList";
 
 export interface MetadataEditorProps {
   setDisplay: (display: boolean) => void;
@@ -17,12 +14,11 @@ export interface MetadataEditorProps {
 }
 
 export const AddToPlaylistEditor = ({ song, setDisplay }: MetadataEditorProps) => {
-  const playlists = usePlaylists();
   const [newPlaylistName, setNewPlaylistName] = useState("");
+  const playlists = usePlaylists();
   const [loading, setLoading] = useState(false);
   const [createPlaylist] = usePlaylistCreate();
   const [error, setError] = useState("");
-  const [addToPlaylist] = usePlaylistAdd();
   const [playlistAddError, setPlaylistAddError] = useState("");
 
   const createNewPlaylist = async () => {
@@ -34,7 +30,7 @@ export const AddToPlaylistEditor = ({ song, setDisplay }: MetadataEditorProps) =
         setNewPlaylistName("");
         setLoading(false);
       },
-      onError: () => setError("Unable to create playlist :( We've been notified."),
+      onError: () => setError("Unable to create playlist :("),
     });
   };
 
@@ -69,59 +65,12 @@ export const AddToPlaylistEditor = ({ song, setDisplay }: MetadataEditorProps) =
         </div>
       )}
       {error && <BlockAlert type="error">{error}</BlockAlert>}
-      {playlists.status === "error" ? (
-        <ErrorTemplate />
-      ) : !playlists.data ? (
-        <LoadingSpinner />
-      ) : playlists.data.length === 0 ? (
-        <div className="flex flex-col items-center space-y-2">
-          <SearchMagnifyingGlass className="h-24" />
-          <div className="text-gray-600">No playlists found...</div>
-        </div>
-      ) : playlists.data.length > 0 ? (
-        <div className="rounded overflow-hidden">
-          {playlists.data.map((playlist) => {
-            const data = getCachedOr(playlist);
-            return (
-              <div
-                key={playlist.id}
-                className="hover:bg-gray-300 py-2 px-2 cursor-pointer flex justify-between items-center"
-                tabIndex={0}
-                role="button"
-                onClick={() => {
-                  setPlaylistAddError("");
-                  setLoading(true);
-                  addToPlaylist(
-                    {
-                      playlistId: playlist.id,
-                      songId: song.id,
-                    },
-                    {
-                      onSettled: () => setLoading(false),
-                      onSuccess: () => setDisplay(false),
-                      onError: () =>
-                        setPlaylistAddError(
-                          "Unable to add song to playlist?? We're working on it!",
-                        ),
-                    },
-                  );
-                }}
-              >
-                <div>
-                  <div className="text-purple-700">{data.name}</div>
-                  <div className="text-gray-600 text-sm">
-                    {`${data.songs?.length ?? 0} ${pluralSongs(
-                      data.songs?.length,
-                    )} • Created on ${fmtToDate(data.createdAt)}`}
-                  </div>
-                </div>
-
-                <HiChevronRight className="w-5 h-5 text-gray-600" />
-              </div>
-            );
-          })}
-        </div>
-      ) : undefined}
+      <AddToPlaylistList
+        song={song}
+        setLoading={setLoading}
+        setError={setPlaylistAddError}
+        close={() => setDisplay(false)}
+      />
       {playlistAddError && <BlockAlert type="error">{playlistAddError}</BlockAlert>}
     </Modal>
   );

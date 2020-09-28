@@ -44,18 +44,15 @@ export const ActionSheet = () => {
         animate={items ? "showMenu" : "hideMenu"}
         variants={{ showMenu: { opacity: 0.5 }, hideMenu: { opacity: 0.25 } }}
         onClick={() => setItems(undefined)}
-        onAnimationComplete={() => {
-          console.log("ANIMATION COMPLETE");
-        }}
       />
       <motion.div
         variants={{
-          showMenu: { height: "fit-content", transition: { type: "tween", ease: "easeOut" } },
-          hideMenu: { height: 0, transition: { type: "tween", ease: "easeOut" } },
+          showMenu: { height: "fit-content", transition: { type: "tween", ease: "easeInOut" } },
+          hideMenu: { height: 0, transition: { type: "tween", ease: "easeInOut" } },
         }}
         initial={false}
         animate={items ? "showMenu" : "hideMenu"}
-        className="absolute bg-gray-200 shadow bottom-0 left-0 right-0 z-30 divide-y rounded-t-lg"
+        className="absolute bg-gray-100 shadow bottom-0 left-0 right-0 z-30 divide-y rounded-t-lg"
       >
         {items?.map((item) => {
           const children = (
@@ -70,8 +67,7 @@ export const ActionSheet = () => {
               className="flex px-2 py-3 space-x-3"
               onClick={() => {
                 setItems(undefined);
-                // TODO wait until animation finished and then fire handler
-                // item.onClick();
+                item.onClick();
               }}
             >
               {children}
