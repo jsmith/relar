@@ -110,6 +110,8 @@ export const useRecycle = ({
   };
 };
 
+export type SentinelBlockHandler = (span: HTMLSpanElement | null) => () => void;
+
 export const SentinelBlock = ({
   index,
   rowsPerBlock = 5,
@@ -117,7 +119,7 @@ export const SentinelBlock = ({
 }: {
   index: number;
   rowsPerBlock?: number;
-  handleSentinel: (span: HTMLSpanElement | null) => () => void;
+  handleSentinel: SentinelBlockHandler;
 }) => {
   const ref = useRef<HTMLSpanElement | null>(null);
   useEffect(() => handleSentinel(ref.current), [handleSentinel]);

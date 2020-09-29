@@ -23,7 +23,7 @@ import { fmtMSS } from "../shared/web/utils";
 import { Link } from "../shared/web/components/Link";
 import { routes } from "../routes";
 import { link } from "../shared/web/classes";
-import { AddToPlaylistEditor } from "../shared/web/sections/AddToPlaylistModal";
+import { AddToPlaylistEditor } from "./AddToPlaylistModal";
 import { Skeleton } from "../shared/web/components/Skeleton";
 import { useQueue, SetQueueSource, SongInfo, isSongInfo } from "../shared/web/queue";
 import { useRecycle, SentinelBlock } from "../shared/web/recycle";
@@ -414,7 +414,7 @@ export const SongTable = ({
           paused={!notPaused}
           includeDateAdded={includeDateAdded}
         >
-          <SentinelBlock index={start + i} ref={handleSentinel} />
+          <SentinelBlock index={start + i} handleSentinel={handleSentinel} />
         </SongTableRow>
       );
     });

@@ -14,7 +14,7 @@ export const SongCard = ({ song }: { song: firebase.firestore.QueryDocumentSnaps
       title={data.title}
       subtitle={data.artist}
       // TODO
-      onClick={() => goTo(routes.album, { albumId: data.albumId })}
+      onClick={() => goTo(routes.album, { albumId: data.albumId ?? "" })}
       // play={() =>
       //   setQueue({
       //     songs: songs,

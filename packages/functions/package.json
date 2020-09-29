@@ -1,6 +1,5 @@
 {
   "name": "functions",
-  "version": "0.5.0",
   "scripts": {
     "build": "rm -rf lib && tsc",
     "test": "./test.sh",

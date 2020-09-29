@@ -17,6 +17,7 @@ import { useSlideUpScreen } from "../slide-up-screen";
 import { Button } from "../shared/web/components/Button";
 import { usePlaylistCreate } from "../shared/web/queries/playlists";
 import { AddToPlaylistList } from "../shared/web/sections/AddToPlaylistList";
+import { MusicListItem } from "./MusicListItem";
 
 export interface SongListProps {
   songs: Array<firebase.firestore.QueryDocumentSnapshot<Song>> | undefined;
@@ -78,8 +79,55 @@ const SongListRow = ({
   );
 
   return (
-    <div
-      className="flex items-center p-1 space-x-1"
+    <MusicListItem
+      actionItems={[
+        {
+          type: "click",
+          icon: MdAddToQueue,
+          label: "Add To Queue",
+          onClick: () => enqueue(song),
+        },
+        {
+          label: "Add To Playlist",
+          icon: MdPlaylistAdd,
+          type: "click",
+          onClick: show,
+        },
+        data.artist
+          ? {
+              label: "Go To Artist",
+              icon: AiOutlineUser,
+              route: routes.artist,
+              type: "link",
+              params: { artistName: data.artist },
+            }
+          : undefined,
+        data.albumId
+          ? {
+              label: "Go to Album",
+              icon: RiAlbumLine,
+              route: routes.album,
+              type: "link",
+              params: { albumId: data.albumId },
+            }
+          : undefined,
+        {
+          label: "Delete",
+          icon: HiTrash,
+          type: "click",
+          onClick: () => {
+            Modals.confirm({
+              title: "Delete Song",
+              message: `Are you sure you want to delete ${data.title}?`,
+            }).then(({ value }) => {
+              if (value) {
+                deleteSong(song.id);
+                // TODO notification
+              }
+            });
+          },
+        },
+      ]}
       onClick={() =>
         setQueue({
           source: { type: "library" },
@@ -87,72 +135,12 @@ const SongListRow = ({
           index,
         })
       }
-    >
-      <Thumbnail snapshot={song} className="w-12 h-12 flex-shrink-0" size="64" />
-      <div className="flex flex-col justify-center min-w-0 flex-grow">
-        <SentinelBlock index={absoluteIndex} handleSentinel={handleSentinel} />
-        <div className="text-xs truncate">{data.title}</div>
-        <div className="text-2xs">{`${data.artist} • ${fmtMSS(data.duration / 1000)}`}</div>
-      </div>
-      <button
-        className="p-1"
-        onClick={(e) => {
-          e.stopPropagation();
-          openActionSheet([
-            {
-              type: "click",
-              icon: MdAddToQueue,
-              label: "Add To Queue",
-              onClick: () => enqueue(song),
-            },
-            {
-              label: "Add To Playlist",
-              icon: MdPlaylistAdd,
-              type: "click",
-              onClick: show,
-            },
-            data.artist
-              ? {
-                  label: "Go To Artist",
-                  icon: AiOutlineUser,
-                  route: routes.artist,
-                  type: "link",
-                  params: { artistName: data.artist },
-                }
-              : undefined,
-            data.albumId
-              ? {
-                  label: "Go to Album",
-                  icon: RiAlbumLine,
-                  route: routes.album,
-                  type: "link",
-                  params: { albumId: data.albumId },
-                }
-              : undefined,
-            {
-              label: "Delete",
-              icon: HiTrash,
-              type: "click",
-              onClick: () => {
-                Modals.confirm({
-                  title: "Delete Song",
-                  message: `Are you sure you want to delete ${data.title}?`,
-                }).then(({ value }) => {
-                  if (value) {
-                    deleteSong(song.id);
-                    // TODO notification
-                  }
-                });
-              },
-            },
-          ]);
-
-          // because it's so hard to read with all of the brackets, this is the end of the function
-        }}
-      >
-        <MdMoreVert />
-      </button>
-    </div>
+      title={data.title}
+      subTitle={`${data.artist} • ${fmtMSS(data.duration / 1000)}`}
+      handleSentinel={handleSentinel}
+      absoluteIndex={absoluteIndex}
+      snapshot={song}
+    />
   );
 };
 

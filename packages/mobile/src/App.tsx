@@ -13,6 +13,7 @@ import { writeFile } from "capacitor-blob-writer";
 import "@capacitor-community/native-audio";
 import type { NativeAudioPlugin } from "@capacitor-community/native-audio";
 import { AudioControls, useQueue } from "./shared/web/queue";
+import { BackButton } from "./components/BackButton";
 
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 
@@ -146,9 +147,7 @@ export const App = () => {
             </div>
 
             {route.showBack ? (
-              <button className="z-10" onClick={() => window.history.back()}>
-                <HiChevronLeft className="w-6 h-6" />
-              </button>
+              <BackButton className="z-10" />
             ) : (
               <div className="text-xl font-bold">
                 RELAR <GiSwordSpin className="inline-block -mt-1 -ml-1" />

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getCachedOr } from "../shared/web/watcher";
 import classNames from "classnames";
-import { useRecycle } from "../shared/web/recycle";
+import { SentinelBlockHandler, useRecycle } from "../shared/web/recycle";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 
 const letters = [
@@ -38,7 +38,7 @@ export interface ListContainerRowProps<T> {
   item: T;
   index: number;
   absoluteIndex: number;
-  handleSentinel: (span: HTMLSpanElement | null) => () => void;
+  handleSentinel: SentinelBlockHandler;
   snapshots: Array<firebase.firestore.QueryDocumentSnapshot<T>>;
 }
 
@@ -145,9 +145,9 @@ export const ListContainer = function <T, K extends keyof T>({
 
   return (
     <div className="overflow-y-scroll w-full" ref={container}>
-      <div className="divide-y h-full" ref={ref}>
+      <div className="h-full" ref={ref}>
         <div style={{ height: placeholderTopHeight }} />
-        {rows}
+        <div className="divide-y">{rows}</div>
         <div style={{ height: placeholderBottomHeight }} />
       </div>
       <motion.div

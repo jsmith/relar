@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import type { Song } from "../../universal/types";
-import { Input } from "../components/Input";
-import { ErrorTemplate } from "../components/ErrorTemplate";
-import { usePlaylists, usePlaylistCreate, usePlaylistAdd } from "../queries/playlists";
-import { LoadingSpinner } from "../components/LoadingSpinner";
-import { Modal } from "../components/Modal";
-import { BlockAlert } from "../components/BlockAlert";
-import { AddToPlaylistList } from "../sections/AddToPlaylistList";
+import type { Song } from "../shared/universal/types";
+import { Input } from "../shared/web/components/Input";
+import { ErrorTemplate } from "../shared/web/components/ErrorTemplate";
+import { usePlaylists, usePlaylistCreate, usePlaylistAdd } from "../shared/web/queries/playlists";
+import { LoadingSpinner } from "../shared/web/components/LoadingSpinner";
+import { Modal } from "../shared/web/components/Modal";
+import { BlockAlert } from "../shared/web/components/BlockAlert";
+import { AddToPlaylistList } from "../shared/web/sections/AddToPlaylistList";
 
 export interface MetadataEditorProps {
   setDisplay: (display: boolean) => void;

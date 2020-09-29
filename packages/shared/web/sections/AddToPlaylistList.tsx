@@ -52,7 +52,8 @@ export const AddToPlaylistList = ({
                 {
                   onSettled: () => setLoading(false),
                   onSuccess: close,
-                  onError: () => setError("Unable to add song to playlist?? We're working on it!"),
+                  onError: () =>
+                    setError("We couldn't add the song to the playlist... we're working on it!"),
                 },
               );
             }}

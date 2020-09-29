@@ -263,9 +263,11 @@ export function fmtMSS(s: number) {
 
 export const pluralSongs = (count: number | undefined) => (count === 1 ? "song" : "songs");
 
+export const songsCount = (count: number | undefined) => `${count ?? 0} ${pluralSongs(count)}`;
+
 export const fmtToDate = (timestamp: firebase.firestore.Timestamp) =>
   new Date(timestamp.toMillis()).toLocaleDateString("en", {
-    month: "long",
+    month: "short",
     day: "numeric",
     year: "numeric",
   });

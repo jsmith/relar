@@ -8,8 +8,8 @@ export interface LinkProps {
   className?: string;
   route: RouteType;
   label?: React.ReactNode;
-  queryParams?: Record<string, string | number>;
-  params?: RouterStateType["queryParams"];
+  queryParams?: RouterStateType["queryParams"];
+  params?: RouterStateType["params"];
   onGo?: () => void;
 }
 
@@ -20,7 +20,7 @@ export const Link = ({ route, label, className, params, queryParams, onGo }: Lin
     let href = route.path;
     Object.entries(params ?? {}).forEach(([key, value]) => {
       // the ?? is just to satisfy
-      href = href.replace(`:${key}`, value);
+      href = href.replace(`:${key}`, typeof value === "string" ? value : value.join("/"));
     });
 
     if (queryParams) {
