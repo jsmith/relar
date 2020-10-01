@@ -13,6 +13,9 @@ const {
   Array<firebase.firestore.QueryDocumentSnapshot<Album>>
 >();
 
+// Just for TS
+const album: keyof Album = "album";
+
 export const useAlbums = () => {
   const userData = useUserData();
 
@@ -22,6 +25,7 @@ export const useAlbums = () => {
       () =>
         userData
           .albums()
+          .orderBy(album)
           .get()
           .then((result) => result.docs),
       "loading_albums",

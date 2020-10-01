@@ -27,6 +27,8 @@ import { useWindowSize } from "../shared/web/utils";
 import { openActionSheet } from "../action-sheet";
 import { AiOutlineUser } from "react-icons/ai";
 import { RiAlbumLine } from "react-icons/ri";
+import { DragBar } from "../components/DragBar";
+import { TextRotation } from "../components/TextRotation";
 
 export const Tab = ({
   label,
@@ -70,12 +72,13 @@ export const ButtonTabs = () => {
     previous,
     next,
   } = useQueue();
-  const height = useMotionValue(MINIFIED_HEIGHT);
+  const height = useMotionValue(0);
   const [data] = useFirebaseUpdater(songInfo?.song);
   const tabsHeight = useTransform(
     height,
     (height) =>
-      TABS_HEIGHT - TABS_HEIGHT * ((height - MINIFIED_HEIGHT) / (SCREEN_HEIGHT - MINIFIED_HEIGHT)),
+      TABS_HEIGHT -
+      Math.max(TABS_HEIGHT * ((height - MINIFIED_HEIGHT) / (SCREEN_HEIGHT - MINIFIED_HEIGHT)), 0),
   );
   const minifiedOpacity = useTransform(height, (height) =>
     Math.max(1 - (height - MINIFIED_HEIGHT) / TABS_HEIGHT, 0),
@@ -83,6 +86,7 @@ export const ButtonTabs = () => {
   const opacity = useTransform(height, (height) =>
     Math.max((height - MINIFIED_HEIGHT - TABS_HEIGHT) / (SCREEN_HEIGHT - TABS_HEIGHT), 0),
   );
+  const heightShadow = useTransform(height, (value) => Math.min(value, MINIFIED_HEIGHT));
 
   const containerVariants = useMemo(
     (): Variants => ({
@@ -98,6 +102,9 @@ export const ButtonTabs = () => {
 
   return (
     <>
+      {/* This div is force things to go upwards when the minified player is created */}
+      {/* Note that it doesn't get bigger than the minified height */}
+      <motion.div style={{ height: heightShadow }} className="flex-shrink-0" />
       <motion.div
         initial={false}
         animate={!songInfo ? "invisible" : up ? "up" : "down"}
@@ -105,9 +112,9 @@ export const ButtonTabs = () => {
         onPan={(_, info) => {
           height.set(height.get() - info.delta.y);
         }}
+        onClick={() => !up && setUp(true)}
         onPanEnd={(_, info) => {
           if (info.offset.y === 0) {
-            if (!up) setUp(true);
             return;
           }
 
@@ -133,12 +140,12 @@ export const ButtonTabs = () => {
             className="flex-shrink-0"
           />
           <div className="flex flex-col justify-center flex-grow">
-            <div className="flex-grow text-gray-100">{data?.title}</div>
+            <div className="flex-grow text-gray-100 clamp-2 text-sm">{data?.title}</div>
             <div className="flex-grow text-xs text-gray-300">{data?.artist}</div>
           </div>
 
           <button
-            className="p-3"
+            className="p-3 focus:outline-none"
             onClick={(e) => {
               e.stopPropagation();
               toggleState();
@@ -156,24 +163,30 @@ export const ButtonTabs = () => {
           style={{ opacity }}
           className="flex flex-col flex-grow justify-around items-center"
         >
-          <div className="flex justify-center w-full absolute top-0 m-3">
-            <button className="h-1 rounded-full w-10 bg-gray-300 bg-opacity-50" />
-          </div>
-
+          <DragBar className="absolute top-0" buttonClassName="bg-gray-300" />
           <Thumbnail snapshot={songInfo?.song} size="256" className="w-48 h-48 flex-shrink-0" />
 
           <div className="w-full px-8 space-y-5">
             <div>
-              <div className="text-gray-100 font-bold text-xl">{data?.title}</div>
+              {/* TODO */}
+              <TextRotation
+                text={data?.title ?? ""}
+                className="text-xl text-gray-100 font-bold"
+                on={up}
+              />
+              {/* <div className="text-gray-100 font-bold text-xl overflow-hidden whitespace-no-wrap space-x-3 flex">
+                <span style={{ transitionDu }}>{data?.title}</span>
+                <span>{data?.title}</span>
+              </div> */}
               <div className="text-gray-300 text-opacity-75">{data?.artist}</div>
             </div>
             <SongTimeSlider duration={data?.duration} />
             <div className="flex justify-around items-center">
               <Repeat mode={mode} setMode={setMode} iconClassName="w-8 h-8" />
-              <button onClick={previous}>
+              <button onClick={previous} className="focus:outline-none">
                 <MdSkipPrevious className="text-gray-200 w-12 h-12" />
               </button>
-              <button onClick={toggleState}>
+              <button onClick={toggleState} className="focus:outline-none">
                 {playing ? (
                   <MdPauseCircleFilled className="text-gray-200 w-16 h-16" />
                 ) : (
@@ -181,16 +194,22 @@ export const ButtonTabs = () => {
                 )}
               </button>
 
-              <button onClick={next}>
+              <button onClick={next} className="focus:outline-none">
                 <MdSkipNext className="text-gray-200 w-12 h-12" />
               </button>
               <Shuffle iconClassName="w-8 h-8" shuffle={shuffle} toggleShuffle={toggleShuffle} />
             </div>
             <div className="flex justify-between">
-              <LikedIcon liked={data?.liked} setLiked={() => {}} iconClassName="w-6 h-6" />
+              <LikedIcon
+                liked={data?.liked}
+                setLiked={() => {}}
+                iconClassName="w-6 h-6"
+                className="focus:outline-none"
+              />
               <div className="flex space-x-3">
                 <MdQueueMusic className="w-6 h-6 text-gray-200" />
                 <button
+                  className="focus:outline-none"
                   onClick={() =>
                     openActionSheet([
                       {

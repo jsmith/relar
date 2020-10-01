@@ -13,21 +13,17 @@ First, you'll have to make sure you have `Node` and `npm` installed correctly (s
 
 ## Installing Dependencies
 
-First, install [`lerna`](https://github.com/lerna/lerna)!
+The following command installs the dependencies in _all_ the repositories.
 
 ```
-npm i --no-package-lock
+make install
 ```
 
-Next, install all of the actual dependencies using `lerna`. This installs _everything_ for the entire repository.
-
-```
-npm run bootstrap
-```
+> Alternatively, just run `npm install` in whichever package you want to use.
 
 ## Structure
 
-As you saw above, we use `lerna` to manage this monorepo. All packages are located in `packages/` and all contain their own `package.json` file (`packages/` also contains lots of other useful files/folders).
+As you can see, this is a monorepo. All packages are located in `packages/` and all contain their own `package.json` file (`packages/` also contains lots of other useful files/folders).
 
 ### packages/app
 

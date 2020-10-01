@@ -15,6 +15,7 @@ import { updateCachedWithSnapshot } from "./watcher";
 import { useHotkeys } from "react-hotkeys-hook";
 import { createEmitter } from "./events";
 import * as uuid from "uuid";
+import { captureException } from "@sentry/browser";
 
 type SongSnapshot = firebase.firestore.QueryDocumentSnapshot<Song>;
 
@@ -51,6 +52,18 @@ export interface SongInfo {
 export const isSongInfo = (value: any): value is SongInfo => {
   return value.id && value.song && value.song.id;
 };
+
+export const checkSourcesEqual = (a: SetQueueSource | undefined, b: SetQueueSource | undefined) =>
+  // If either are undefined
+  a === undefined || b === undefined
+    ? // Check if they are both undefined
+      a === b
+    : // If they are both defined, check if "a" has an ID
+    a.type === "album" || a.type === "artist" || a.type === "playlist" || a.type === "generated"
+    ? // If we check if "b" is the same type and then check the ID
+      a.type === b.type && a.id === b.id
+    : // If "a" doesn't have an ID, just check the type
+      a.type === b.type;
 
 export type SetQueueSource =
   | { type: "album" | "artist" | "playlist" | "generated"; id: string; sourceHumanName: string }
@@ -233,7 +246,14 @@ export const QueueProvider = (props: React.Props<{}>) => {
         .then((snapshot) => updateCachedWithSnapshot(snapshot))
         .catch(captureAndLogError);
 
-      if (ref.current) await ref.current.setSrc({ src: downloadUrl, songId: song.id });
+      if (ref.current) {
+        try {
+          await ref.current.setSrc({ src: downloadUrl, songId: song.id });
+        } catch (e) {
+          captureException(e);
+          console.error(e);
+        }
+      }
 
       // if (ref.current?.paused === false) {
       //   ref.current?.play();

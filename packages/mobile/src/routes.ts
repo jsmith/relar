@@ -13,6 +13,10 @@ import { Songs } from "./pages/Songs";
 import { Albums } from "./pages/Albums";
 import { Artists } from "./pages/Artists";
 import { Playlists } from "./pages/Playlists";
+import { AlbumOverview } from "./pages/AlbumOverview";
+import { ArtistOverview } from "./pages/ArtistOverview";
+import { PlaylistOverview } from "./pages/PlaylistOverview";
+import Generated from "./pages/Generated";
 
 type Route<ID extends string> = {
   id: ID;
@@ -119,16 +123,15 @@ export const routes = createRoutes({
     component: Albums,
     showBack: true,
     title: "Albums",
-    showTabs: false,
+    showTabs: true,
     protected: true,
   },
   album: {
     id: "album",
     path: "/library/albums/:albumId",
-    component: Albums,
-    showBack: true,
-    title: "Album",
-    showTabs: false,
+    component: AlbumOverview,
+    title: false,
+    showTabs: true,
     protected: true,
   },
   artists: {
@@ -137,16 +140,15 @@ export const routes = createRoutes({
     component: Artists,
     showBack: true,
     title: "Artists",
-    showTabs: false,
+    showTabs: true,
     protected: true,
   },
   artist: {
     id: "artist",
     path: "/library/artists/:artistName",
-    component: Artists,
-    showBack: true,
-    title: "Artist",
-    showTabs: false,
+    component: ArtistOverview,
+    title: false,
+    showTabs: true,
     protected: true,
   },
   playlists: {
@@ -155,23 +157,25 @@ export const routes = createRoutes({
     component: Playlists,
     showBack: true,
     title: "Playlists",
-    showTabs: false,
+    showTabs: true,
     protected: true,
   },
   playlist: {
     id: "playlist",
     path: "/library/playlists/:playlistId",
-    component: Playlists,
-    showBack: true,
-    title: "Playlist",
-    showTabs: false,
+    component: PlaylistOverview,
+    title: false,
+    showTabs: true,
     protected: true,
   },
-  // songs: {
-  //   id: "songs",
-  //   path: "/library/songs",
-  //   component: Songs,
-  // },
+  generated: {
+    id: "generated",
+    path: "/library/generated/:generatedType",
+    component: Generated,
+    title: false,
+    showTabs: true,
+    protected: true,
+  },
   privacy: {
     id: "privacy",
     path: "/privacy",

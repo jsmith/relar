@@ -10,6 +10,7 @@ import {
 } from "react";
 import * as Sentry from "@sentry/browser";
 import tiny from "tinycolor2";
+import { ALBUM_ID_DIVIDER } from "../universal/utils";
 
 export interface Disposer {
   dispose: () => void;
@@ -263,9 +264,11 @@ export function fmtMSS(s: number) {
 
 export const pluralSongs = (count: number | undefined) => (count === 1 ? "song" : "songs");
 
+export const songsCount = (count: number | undefined) => `${count ?? 0} ${pluralSongs(count)}`;
+
 export const fmtToDate = (timestamp: firebase.firestore.Timestamp) =>
   new Date(timestamp.toMillis()).toLocaleDateString("en", {
-    month: "long",
+    month: "short",
     day: "numeric",
     year: "numeric",
   });
@@ -517,3 +520,20 @@ export function useWindowSize() {
 
   return windowSize;
 }
+
+/** Get the display album artist name */
+export const getAlbumArtistName = (
+  albumArtist: string | undefined,
+  albumId: string | undefined,
+) => {
+  return albumArtist
+    ? albumArtist
+    : albumId?.split(ALBUM_ID_DIVIDER)[0]
+    ? albumId.split(ALBUM_ID_DIVIDER)[0]
+    : "Unknown Artist";
+};
+
+/** Get the display album name */
+export const getAlbumName = (name: string | undefined) => {
+  return name ? name : "Unknown Album";
+};

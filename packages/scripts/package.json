@@ -1,7 +1,4 @@
 {
-  "name": "scripts",
-  "version": "0.5.0",
-  "description": "Helper scripts for managing... things",
   "dependencies": {
     "@sendgrid/mail": "^7.2.1",
     "@types/uuid": "^8.0.0",
@@ -10,7 +7,6 @@
     "firebase-admin": "^9.0.0",
     "runtypes": "^4.3.0",
     "ts-node": "^8.10.2",
-    "typescript": "^3.9.7",
     "uuid": "^8.3.0"
   }
 }

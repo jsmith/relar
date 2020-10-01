@@ -5,9 +5,7 @@ on:
     tags:
       - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
 
-# TODO change bootstrap
-# TODO remove lerna
-# TODO add tailwind build
+# TODO refactor
 jobs:
   deploy:
     runs-on: ubuntu-latest

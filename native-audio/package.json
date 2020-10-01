@@ -10,7 +10,6 @@
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",
     "prepublishOnly": "npm run build",
-    "prepare": "npm run build",
     "npm-publish": "np"
   },
   "author": "Priyank Patel <priyank.patel@stackspace.ca>",
@@ -23,11 +22,9 @@
     "@capacitor/ios": "latest",
     "husky": "^4.2.5",
     "np": "^6.2.4",
-    "prettier": "^2.0.5",
     "prettier-plugin-java": "^0.8.0",
     "pretty-quick": "^2.0.1",
-    "rimraf": "^3.0.2",
-    "typescript": "^3.9.5"
+    "rimraf": "^3.0.2"
   },
   "husky": {
     "hooks": {

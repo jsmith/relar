@@ -45,7 +45,7 @@ export const Home = () => {
       <HomeTopic
         title="Recently Played"
         subTitle=""
-        route={routes.home} // TODO routes.generated
+        route={routes.generated}
         // TODO add support for recently-played
         params={{ generatedType: "recently-played" }}
         wrapperClassName="-mx-2 lg:-mx-5 px-2 lg:px-5"
@@ -58,7 +58,7 @@ export const Home = () => {
       <HomeTopic
         title="Recently Added"
         subTitle=""
-        route={routes.home} // TODO routes.generated
+        route={routes.generated}
         params={{ generatedType: "recently-added" }}
         wrapperClassName="-mx-2 lg:-mx-5 px-2 lg:px-5"
       >
@@ -70,7 +70,7 @@ export const Home = () => {
       <HomeTopic
         title="Liked Songs"
         subTitle=""
-        route={routes.home} // TODO routes.generated
+        route={routes.generated}
         params={{ generatedType: "liked" }}
         wrapperClassName="-mx-2 lg:-mx-5 px-2 lg:px-5"
       >

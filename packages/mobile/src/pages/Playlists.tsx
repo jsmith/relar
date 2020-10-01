@@ -1,9 +1,39 @@
-import React from "react";
+import { useRouter } from "@graywolfai/react-tiniest-router";
+import React, { useMemo } from "react";
+import { ListContainer, ListContainerRowProps } from "../components/ListContainer";
+import { routes } from "../routes";
+import { MusicListItem } from "../sections/MusicListItem";
+import type { Playlist } from "../shared/universal/types";
+import { usePlaylists, usePlaylistSongs } from "../shared/web/queries/playlists";
+import { fmtToDate, pluralSongs } from "../shared/web/utils";
+import { getCachedOr } from "../shared/web/watcher";
+
+const PlaylistRow = ({
+  absoluteIndex,
+  snapshot: playlist,
+  item: data,
+  handleSentinel,
+}: ListContainerRowProps<Playlist>) => {
+  const { goTo } = useRouter();
+  const songs = usePlaylistSongs(data);
+  // FIXME this is fine for now
+  const song = useMemo(() => songs.find(({ song }) => getCachedOr(song).artwork)?.song, [songs]);
+
+  return (
+    <MusicListItem
+      title={data.name}
+      subTitle={`${songs.length} ${pluralSongs(songs.length)} • Created on ${fmtToDate(
+        data.createdAt,
+      )}`}
+      handleSentinel={handleSentinel}
+      absoluteIndex={absoluteIndex}
+      snapshot={song}
+      onClick={() => goTo(routes.playlist, { playlistId: playlist.id })}
+    />
+  );
+};
 
 export const Playlists = () => {
-  return (
-    <div>
-      <div>Playlists</div>
-    </div>
-  );
+  const artists = usePlaylists();
+  return <ListContainer height={57} items={artists.data} sortKey="name" row={PlaylistRow} />;
 };
