@@ -16,6 +16,7 @@ import { Playlists } from "./pages/Playlists";
 import { AlbumOverview } from "./pages/AlbumOverview";
 import { ArtistOverview } from "./pages/ArtistOverview";
 import { PlaylistOverview } from "./pages/PlaylistOverview";
+import Generated from "./pages/Generated";
 
 type Route<ID extends string> = {
   id: ID;
@@ -167,12 +168,14 @@ export const routes = createRoutes({
     showTabs: true,
     protected: true,
   },
-  // songs: {
-  //   id: "songs",
-  //   path: "/library/songs",
-  //   component: Songs,
-  // },
-  // TODO link to these
+  generated: {
+    id: "generated",
+    path: "/library/generated/:generatedType",
+    component: Generated,
+    title: false,
+    showTabs: true,
+    protected: true,
+  },
   privacy: {
     id: "privacy",
     path: "/privacy",
