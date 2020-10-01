@@ -4,6 +4,8 @@ import classNames from "classnames";
 import { SentinelBlockHandler, useRecycle } from "../shared/web/recycle";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 
+export type ListContainerMode = "regular" | "condensed";
+
 const letters = [
   "a",
   "b",
@@ -40,6 +42,7 @@ export interface ListContainerRowProps<T> {
   absoluteIndex: number;
   handleSentinel: SentinelBlockHandler;
   snapshots: Array<firebase.firestore.QueryDocumentSnapshot<T>>;
+  mode: ListContainerMode;
 }
 
 export interface ListContainerProps<T, K extends keyof T> {
@@ -47,6 +50,8 @@ export interface ListContainerProps<T, K extends keyof T> {
   items: Array<firebase.firestore.QueryDocumentSnapshot<T>> | undefined;
   sortKey: K;
   row: (props: ListContainerRowProps<T>) => JSX.Element;
+  mode?: ListContainerMode;
+  className?: string;
 }
 
 export const ListContainer = function <T, K extends keyof T>({
@@ -54,6 +59,8 @@ export const ListContainer = function <T, K extends keyof T>({
   items,
   sortKey,
   row: Row,
+  mode = "regular",
+  className,
 }: ListContainerProps<T, K>) {
   const container = useRef<HTMLDivElement | null>(null);
   const timer = useRef<NodeJS.Timeout>();
@@ -138,16 +145,17 @@ export const ListContainer = function <T, K extends keyof T>({
             absoluteIndex={start + i}
             handleSentinel={handleSentinel}
             snapshots={items}
+            mode={mode}
           />
         )),
-    [end, handleSentinel, items, start, Row],
+    [items, start, end, Row, handleSentinel, mode],
   );
 
   return (
-    <div className="overflow-y-scroll w-full" ref={container}>
+    <div className={classNames("overflow-y-scroll w-full", className)} ref={container}>
       <div className="h-full" ref={ref}>
         <div style={{ height: placeholderTopHeight }} />
-        <div className="divide-y">{rows}</div>
+        <div className={mode === "regular" ? "divide-y" : ""}>{rows}</div>
         <div style={{ height: placeholderBottomHeight }} />
       </div>
       <motion.div

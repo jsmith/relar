@@ -13,6 +13,7 @@ const ArtistRow = ({
   snapshot: artist,
   item: data,
   handleSentinel,
+  mode,
 }: ListContainerRowProps<Artist>) => {
   const { goTo } = useRouter();
   const songs = useArtistSongs(data.name);
@@ -26,6 +27,7 @@ const ArtistRow = ({
       absoluteIndex={absoluteIndex}
       snapshot={song}
       onClick={() => goTo(routes.artist, { artistName: artist.id })}
+      mode={mode}
     />
   );
 };

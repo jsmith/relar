@@ -215,14 +215,21 @@ export const ButtonTabs = () => {
           </div>
 
           {/* TODO clamp between like 500px and the height of the photo */}
-          <div className="flex-grow relative w-full">
-            <motion.div layout className="absolute top-0 inset-x-0">
-              <SongList
-                songs={songs}
-                // TODO
-                // source={{ type: "queue" }}
-              />
-            </motion.div>
+          <div className="flex-grow w-full relative overflow-hidden">
+            <div className="absolute inset-x bottom-0 h-full">
+              <motion.div
+                animate={{ y: openQueue ? "0px" : "100%", transition: { type: "tween" } }}
+                className="h-full"
+              >
+                <SongList
+                  songs={songs}
+                  mode="condensed"
+                  className="text-gray-200 h-full"
+                  // TODO
+                  // source={{ type: "queue" }}
+                />
+              </motion.div>
+            </div>
           </div>
 
           {/* <motion.div layout className={classNames("relative w-full overflow-hidden", "flex-grow")}>

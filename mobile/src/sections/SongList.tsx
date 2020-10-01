@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { MdAddToQueue, MdPlaylistAdd } from "react-icons/md";
 import { useDeleteSong } from "../shared/web/queries/songs";
 import { fmtMSS } from "../shared/web/utils";
 import { useQueue } from "../shared/web/queue";
-import { ListContainer, ListContainerRowProps } from "../components/ListContainer";
+import {
+  ListContainer,
+  ListContainerMode,
+  ListContainerRowProps,
+} from "../components/ListContainer";
 import { AiOutlineUser } from "react-icons/ai";
 import { RiAlbumLine } from "react-icons/ri";
 import { routes } from "../routes";
@@ -17,6 +21,8 @@ import { MusicListItem } from "./MusicListItem";
 
 export interface SongListProps {
   songs: Array<firebase.firestore.QueryDocumentSnapshot<Song>> | undefined;
+  mode?: ListContainerMode;
+  className?: string;
 }
 
 const AddToPlaylistMenu = ({
@@ -45,6 +51,7 @@ const SongListRow = ({
   snapshot: song,
   snapshots: songs,
   absoluteIndex,
+  mode,
 }: ListContainerRowProps<Song>) => {
   const [deleteSong] = useDeleteSong();
   const { setQueue, enqueue } = useQueue();
@@ -136,10 +143,34 @@ const SongListRow = ({
       handleSentinel={handleSentinel}
       absoluteIndex={absoluteIndex}
       snapshot={song}
+      mode={mode}
     />
   );
 };
 
-export const SongList = ({ songs }: SongListProps) => {
-  return <ListContainer height={57} items={songs} sortKey="title" row={SongListRow} />;
+// const usePartial = function <P extends {}>(
+//   Component: (props: P) => JSX.Element,
+//   initial: Partial<P>,
+// ) {
+//   const WithPartial = useMemo(() => {
+//     // eslint-disable-next-line react/display-name
+//     return (props: P) => <Component {...props} {...initial} />;
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, [Component, ...Object.keys(initial), ...Object.values(initial)]);
+
+//   return WithPartial;
+// };
+
+export const SongList = ({ songs, mode, className }: SongListProps) => {
+  // const Row = usePartial(SongListRow, { mode });
+  return (
+    <ListContainer
+      height={57}
+      items={songs}
+      sortKey="title"
+      row={SongListRow}
+      mode={mode}
+      className={className}
+    />
+  );
 };

@@ -13,6 +13,7 @@ const PlaylistRow = ({
   snapshot: playlist,
   item: data,
   handleSentinel,
+  mode,
 }: ListContainerRowProps<Playlist>) => {
   const { goTo } = useRouter();
   const songs = usePlaylistSongs(data);
@@ -29,6 +30,7 @@ const PlaylistRow = ({
       absoluteIndex={absoluteIndex}
       snapshot={song}
       onClick={() => goTo(routes.playlist, { playlistId: playlist.id })}
+      mode={mode}
     />
   );
 };

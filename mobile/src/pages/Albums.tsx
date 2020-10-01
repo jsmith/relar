@@ -12,6 +12,7 @@ const AlbumRow = ({
   snapshot: album,
   item: data,
   handleSentinel,
+  mode,
 }: ListContainerRowProps<Album>) => {
   const { goTo } = useRouter();
 
@@ -23,6 +24,7 @@ const AlbumRow = ({
       absoluteIndex={absoluteIndex}
       snapshot={album}
       onClick={() => goTo(routes.album, { albumId: album.id })}
+      mode={mode}
     />
   );
 };
