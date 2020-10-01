@@ -153,7 +153,8 @@ export const usePlaylistSongs = (playlist: Playlist | undefined): SongInfo[] => 
       playlist?.songs
         ?.map(({ songId, id }) => ({ id, song: lookup[songId] }))
         // Since lookup could be empty if the songs haven't loaded yet
-        // Or for a variety of reasons
+        // Or if a song has been deleted (we don't remove songs from playlists automatically yet)
+        // Or for a variety of other possible reasons that I haven't thought of yet
         .filter(({ song }) => !!song) ?? []
     );
   }, [playlist?.songs, lookup]);

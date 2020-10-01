@@ -1,4 +1,4 @@
-import React, { forwardRef } from "react";
+import React, { forwardRef, useEffect } from "react";
 import { useMemo, useCallback, useState, useRef } from "react";
 
 export interface RecycleProps {
@@ -16,7 +16,7 @@ export const useRecycle = ({
   rowHeight,
   rowCount,
   rootMargin = 30,
-  rowsPerBlock = 5,
+  rowsPerBlock = 10,
 }: RecycleProps) => {
   const table = useRef<HTMLTableElement | null>(null);
   const observer = useRef<IntersectionObserver>();
@@ -28,19 +28,14 @@ export const useRecycle = ({
 
   const handleSentinel = useCallback(
     (span: HTMLSpanElement | null) => {
-      if (!span) return;
+      if (!span) return () => {};
 
       if (!observer.current) {
         observer.current = new IntersectionObserver(
-          (entries, o) => {
+          (entries) => {
             entries.forEach((e) => {
               const index = +e.target.getAttribute("index")!;
               const cursorIndex = index / rowsPerBlock;
-              // if (e.isIntersecting) {
-              //   console.log("START INTERSECT", cursorIndex, e.target);
-              // } else {
-              //   console.log("END INTERSECT", cursorIndex, e.target);
-              // }
 
               if (e.isIntersecting) {
                 intersecting.current[cursorIndex] = true;
@@ -75,7 +70,9 @@ export const useRecycle = ({
         );
       }
 
-      observer.current.observe(span);
+      const local = observer.current;
+      local.observe(span);
+      return () => local.unobserve(span);
     },
     [container, intersecting, rootMargin, rowsPerBlock],
   );
@@ -113,13 +110,22 @@ export const useRecycle = ({
   };
 };
 
-// eslint-disable-next-line react/display-name
-export const SentinelBlock = forwardRef<HTMLSpanElement, { index: number; rowsPerBlock?: number }>(
-  ({ index, rowsPerBlock = 5 }, ref) => {
-    if (index % rowsPerBlock !== 0) return null;
-    // `index` is not a valid attribute
-    // But we're using it to pass information to the IntersectionObserver callback.
-    // @ts-ignore
-    return <span index={index} ref={ref} />;
-  },
-);
+export type SentinelBlockHandler = (span: HTMLSpanElement | null) => () => void;
+
+export const SentinelBlock = ({
+  index,
+  rowsPerBlock = 5,
+  handleSentinel,
+}: {
+  index: number;
+  rowsPerBlock?: number;
+  handleSentinel: SentinelBlockHandler;
+}) => {
+  const ref = useRef<HTMLSpanElement | null>(null);
+  useEffect(() => handleSentinel(ref.current), [handleSentinel]);
+  if (index % rowsPerBlock !== 0) return null;
+  // `index` is not a valid attribute
+  // But we're using it to pass information to the IntersectionObserver callback.
+  // @ts-ignore
+  return <span index={index} ref={ref} />;
+};

@@ -27,3 +27,19 @@ input[type="radio"]:focus + label {
 body {
   font-family: "FiraMono";
 }
+
+.clamp\-2 {
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+}
+
+.clamp\-3 {
+  text-overflow: ellipsis;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+}

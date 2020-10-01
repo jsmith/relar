@@ -19,7 +19,7 @@ import { UserProvider } from "./shared/web/auth";
 import { QueueProvider } from "./shared/web/queue";
 import { ConfirmActionProvider } from "./confirm-actions";
 import { ConfirmPasswordProvider } from "./confirm-password";
-import { ReactQueryConfigProvider, ReactQueryProviderConfig } from "react-query";
+import { ReactQueryConfigProvider, ReactQueryConfig } from "react-query";
 import { captureAndLog } from "./shared/web/utils";
 import { ModalProvider } from "react-modal-hook";
 import { setBaseUrls } from "./shared/web/backend";
@@ -27,11 +27,10 @@ import { env } from "./env";
 import "./firebase";
 import "./shared/web/common.css";
 import "./shared/web/tailwind.css";
-import "./shared/web/meta";
 
 setBaseUrls(env);
 
-const config: ReactQueryProviderConfig = {
+const config: ReactQueryConfig = {
   queries: {
     // 5 minutes
     staleTime: 5 * 60 * 1000,
