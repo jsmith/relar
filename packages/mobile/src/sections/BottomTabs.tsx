@@ -102,7 +102,8 @@ export const ButtonTabs = () => {
 
   return (
     <>
-      {/* TODO explain */}
+      {/* This div is force things to go upwards when the minified player is created */}
+      {/* Note that it doesn't get bigger than the minified height */}
       <motion.div style={{ height: heightShadow }} className="flex-shrink-0" />
       <motion.div
         initial={false}

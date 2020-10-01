@@ -1,18 +1,15 @@
 install:
-	cd packages/app && npm install
+	npm install
 	cd packages/functions && npm install
-	cd packages/mobile && npm install
-	cd packages/native-audio && npm install
+	cd native-audio && npm install
 
 install-ci:
-	cd packages/app && npm ci
+	npm ci
 	cd packages/functions && npm ci
-	cd packages/mobile && npm ci
-	cd packages/native-audio && npm ci
+	cd native-audio && npm ci
 
 patch:
-	cd packages/app && npx patch-package
-	cd packages/functions && npx patch-package
+	npx patch-package
 
 checks:
 	cd packages/app && npm run check:formatting && npm run check:lint && npm run check:types && npm run test
