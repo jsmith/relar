@@ -6,3 +6,6 @@ serviceAccountKey*
 # See https://firebase.google.com/docs/functions/local-emulator
 .runtimeconfig.json
 .DS_Store
+.firebase
+scripts/.env
+*.log
