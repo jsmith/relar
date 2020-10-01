@@ -3,24 +3,9 @@ const fs = require("fs");
 const { argv } = require("process");
 const { assert } = require("console");
 const root = path.dirname(__dirname);
-const package = path.join(root, "packages", "mobile", "package.json");
-const ios = path.join(
-  root,
-  "packages",
-  "mobile",
-  "ios",
-  "App",
-  "App",
-  "Info.plist"
-);
-const android = path.join(
-  root,
-  "packages",
-  "mobile",
-  "android",
-  "app",
-  "build.gradle"
-);
+const package = path.join(root, "mobile", "package.json");
+const ios = path.join(root, "mobile", "ios", "App", "App", "Info.plist");
+const android = path.join(root, "mobile", "android", "app", "build.gradle");
 
 const packageContents = JSON.parse(fs.readFileSync(package).toString());
 
