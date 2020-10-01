@@ -19,8 +19,6 @@ export const TextRotation = ({ text, className, speed = 80, on = false }: TextRo
     | { animate: false }
     | { animate: true; state: "to" | "from"; to: CSSProperties; from: CSSProperties }
   >({
-    // transitionDuration: `4s`,
-    // transform: `translateX(-100%) translateX(-30px)`,
     animate: false,
   });
 
@@ -63,14 +61,6 @@ export const TextRotation = ({ text, className, speed = 80, on = false }: TextRo
 
   const style = useMemo(() => (state.animate ? state[state.state] : {}), [state]);
 
-  useEffect(() => {
-    console.log("STATE CHANGE", state);
-  }, [state]);
-
-  useEffect(() => {
-    console.log("STYLE CHANGE", style);
-  }, [style]);
-
   return (
     <div
       className={classNames("flex overflow-hidden whitespace-no-wrap", className)}
@@ -84,8 +74,7 @@ export const TextRotation = ({ text, className, speed = 80, on = false }: TextRo
           ...style,
         }}
         ref={span}
-        onTransitionEnd={(e) => {
-          console.log("onTransitionEnd");
+        onTransitionEnd={() => {
           state.animate && state.state === "to" && setState({ ...state, state: "from" });
         }}
       >

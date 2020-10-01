@@ -32,7 +32,7 @@ export const ActionSheet = () => {
   const [items, setItems] = useState<ActionSheetItem[]>();
 
   useEffect(() => {
-    emitter.on("show", (items) => {
+    return emitter.on("show", (items) => {
       const filtered = items.filter(isDefined);
       if (filtered.length === 0) return;
       setItems(filtered);

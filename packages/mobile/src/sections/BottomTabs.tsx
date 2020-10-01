@@ -103,7 +103,7 @@ export const ButtonTabs = () => {
   return (
     <>
       {/* TODO explain */}
-      <motion.div style={{ height: heightShadow }} />
+      <motion.div style={{ height: heightShadow }} className="flex-shrink-0" />
       <motion.div
         initial={false}
         animate={!songInfo ? "invisible" : up ? "up" : "down"}
@@ -111,9 +111,9 @@ export const ButtonTabs = () => {
         onPan={(_, info) => {
           height.set(height.get() - info.delta.y);
         }}
+        onClick={() => !up && setUp(true)}
         onPanEnd={(_, info) => {
           if (info.offset.y === 0) {
-            if (!up) setUp(true);
             return;
           }
 
@@ -144,7 +144,7 @@ export const ButtonTabs = () => {
           </div>
 
           <button
-            className="p-3"
+            className="p-3 focus:outline-none"
             onClick={(e) => {
               e.stopPropagation();
               toggleState();
@@ -182,10 +182,10 @@ export const ButtonTabs = () => {
             <SongTimeSlider duration={data?.duration} />
             <div className="flex justify-around items-center">
               <Repeat mode={mode} setMode={setMode} iconClassName="w-8 h-8" />
-              <button onClick={previous}>
+              <button onClick={previous} className="focus:outline-none">
                 <MdSkipPrevious className="text-gray-200 w-12 h-12" />
               </button>
-              <button onClick={toggleState}>
+              <button onClick={toggleState} className="focus:outline-none">
                 {playing ? (
                   <MdPauseCircleFilled className="text-gray-200 w-16 h-16" />
                 ) : (
@@ -193,16 +193,22 @@ export const ButtonTabs = () => {
                 )}
               </button>
 
-              <button onClick={next}>
+              <button onClick={next} className="focus:outline-none">
                 <MdSkipNext className="text-gray-200 w-12 h-12" />
               </button>
               <Shuffle iconClassName="w-8 h-8" shuffle={shuffle} toggleShuffle={toggleShuffle} />
             </div>
             <div className="flex justify-between">
-              <LikedIcon liked={data?.liked} setLiked={() => {}} iconClassName="w-6 h-6" />
+              <LikedIcon
+                liked={data?.liked}
+                setLiked={() => {}}
+                iconClassName="w-6 h-6"
+                className="focus:outline-none"
+              />
               <div className="flex space-x-3">
                 <MdQueueMusic className="w-6 h-6 text-gray-200" />
                 <button
+                  className="focus:outline-none"
                   onClick={() =>
                     openActionSheet([
                       {

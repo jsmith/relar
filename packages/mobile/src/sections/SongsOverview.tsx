@@ -164,7 +164,6 @@ export const SongsOverview = ({
       <div className="border-t m-3" />
 
       <SongList songs={songs} />
-      <div className="h-3 w-full" />
     </motion.div>
   );
 };

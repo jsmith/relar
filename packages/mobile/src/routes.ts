@@ -172,6 +172,7 @@ export const routes = createRoutes({
   //   path: "/library/songs",
   //   component: Songs,
   // },
+  // TODO link to these
   privacy: {
     id: "privacy",
     path: "/privacy",

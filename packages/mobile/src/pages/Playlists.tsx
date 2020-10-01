@@ -22,9 +22,9 @@ const PlaylistRow = ({
   return (
     <MusicListItem
       title={data.name}
-      subTitle={`${data.songs?.length ?? 0} ${pluralSongs(
-        data.songs?.length,
-      )} • Created on ${fmtToDate(data.createdAt)}`}
+      subTitle={`${songs.length} ${pluralSongs(songs.length)} • Created on ${fmtToDate(
+        data.createdAt,
+      )}`}
       handleSentinel={handleSentinel}
       absoluteIndex={absoluteIndex}
       snapshot={song}
