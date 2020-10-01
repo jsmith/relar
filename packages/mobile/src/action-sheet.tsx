@@ -33,7 +33,9 @@ export const ActionSheet = () => {
 
   useEffect(() => {
     emitter.on("show", (items) => {
-      setItems(items.filter(isDefined));
+      const filtered = items.filter(isDefined);
+      if (filtered.length === 0) return;
+      setItems(filtered);
     });
   }, []);
 

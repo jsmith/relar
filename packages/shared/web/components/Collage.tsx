@@ -4,11 +4,14 @@ import { Thumbnail } from "./Thumbnail";
 import type { ThumbnailSize } from "../queries/thumbnail";
 import classNames from "classnames";
 
+export type CollageSnapshot = firebase.firestore.DocumentSnapshot<{
+  id: string;
+  artwork: Artwork | undefined;
+}>;
+
 export interface CollageProps {
   size: "128" | "256";
-  snapshots: Array<
-    firebase.firestore.DocumentSnapshot<{ id: string; artwork: Artwork | undefined }>
-  >;
+  snapshots: Array<CollageSnapshot> | CollageSnapshot | undefined;
   className?: string;
   setAverageColor?: (color: string) => void;
 }
@@ -16,7 +19,10 @@ export interface CollageProps {
 export const Collage = ({ setAverageColor, size, snapshots, className }: CollageProps) => {
   // Remove any snapshots that don't have artwork, limit to 4 pieces of art, and only show unique
   const filtered = useMemo(() => {
-    const defined = snapshots.filter((snapshot) => snapshot.data()?.artwork);
+    if (!snapshots) return [];
+    let local = snapshots;
+    if (!Array.isArray(local)) local = [local];
+    const defined = local.filter((snapshot) => snapshot.data()?.artwork);
 
     const seen = new Set<string>();
     const unique: typeof snapshots = [];

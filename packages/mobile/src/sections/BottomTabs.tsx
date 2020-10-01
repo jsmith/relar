@@ -28,6 +28,7 @@ import { openActionSheet } from "../action-sheet";
 import { AiOutlineUser } from "react-icons/ai";
 import { RiAlbumLine } from "react-icons/ri";
 import { DragBar } from "../components/DragBar";
+import { TextRotation } from "../components/TextRotation";
 
 export const Tab = ({
   label,
@@ -71,7 +72,7 @@ export const ButtonTabs = () => {
     previous,
     next,
   } = useQueue();
-  const height = useMotionValue(MINIFIED_HEIGHT);
+  const height = useMotionValue(0);
   const [data] = useFirebaseUpdater(songInfo?.song);
   const tabsHeight = useTransform(
     height,
@@ -85,6 +86,7 @@ export const ButtonTabs = () => {
   const opacity = useTransform(height, (height) =>
     Math.max((height - MINIFIED_HEIGHT - TABS_HEIGHT) / (SCREEN_HEIGHT - TABS_HEIGHT), 0),
   );
+  const heightShadow = useTransform(height, (value) => Math.min(value, MINIFIED_HEIGHT));
 
   const containerVariants = useMemo(
     (): Variants => ({
@@ -100,6 +102,8 @@ export const ButtonTabs = () => {
 
   return (
     <>
+      {/* TODO explain */}
+      <motion.div style={{ height: heightShadow }} />
       <motion.div
         initial={false}
         animate={!songInfo ? "invisible" : up ? "up" : "down"}
@@ -135,7 +139,7 @@ export const ButtonTabs = () => {
             className="flex-shrink-0"
           />
           <div className="flex flex-col justify-center flex-grow">
-            <div className="flex-grow text-gray-100">{data?.title}</div>
+            <div className="flex-grow text-gray-100 clamp-2 text-sm">{data?.title}</div>
             <div className="flex-grow text-xs text-gray-300">{data?.artist}</div>
           </div>
 
@@ -163,7 +167,16 @@ export const ButtonTabs = () => {
 
           <div className="w-full px-8 space-y-5">
             <div>
-              <div className="text-gray-100 font-bold text-xl">{data?.title}</div>
+              {/* TODO */}
+              <TextRotation
+                text={data?.title ?? ""}
+                className="text-xl text-gray-100 font-bold"
+                on={up}
+              />
+              {/* <div className="text-gray-100 font-bold text-xl overflow-hidden whitespace-no-wrap space-x-3 flex">
+                <span style={{ transitionDu }}>{data?.title}</span>
+                <span>{data?.title}</span>
+              </div> */}
               <div className="text-gray-300 text-opacity-75">{data?.artist}</div>
             </div>
             <SongTimeSlider duration={data?.duration} />

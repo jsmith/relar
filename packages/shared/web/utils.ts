@@ -10,6 +10,7 @@ import {
 } from "react";
 import * as Sentry from "@sentry/browser";
 import tiny from "tinycolor2";
+import { ALBUM_ID_DIVIDER } from "../universal/utils";
 
 export interface Disposer {
   dispose: () => void;
@@ -519,3 +520,20 @@ export function useWindowSize() {
 
   return windowSize;
 }
+
+/** Get the display album artist name */
+export const getAlbumArtistName = (
+  albumArtist: string | undefined,
+  albumId: string | undefined,
+) => {
+  return albumArtist
+    ? albumArtist
+    : albumId?.split(ALBUM_ID_DIVIDER)[0]
+    ? albumId.split(ALBUM_ID_DIVIDER)[0]
+    : "Unknown Artist";
+};
+
+/** Get the display album name */
+export const getAlbumName = (name: string | undefined) => {
+  return name ? name : "Unknown Album";
+};
