@@ -35,6 +35,13 @@ const ArtistRow = ({
 export const Artists = () => {
   const artists = useArtists();
   return (
-    <ListContainer height={57} items={artists.data} sortKey="name" row={ArtistRow} extra={{}} />
+    <ListContainer
+      height={57}
+      items={artists.data}
+      sortKey="name"
+      row={ArtistRow}
+      extra={{}}
+      className="w-full"
+    />
   );
 };
