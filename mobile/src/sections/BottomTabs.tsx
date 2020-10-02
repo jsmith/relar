@@ -62,6 +62,7 @@ export const ButtonTabs = () => {
   const { height: SCREEN_HEIGHT } = useWindowSize();
   const [up, setUp] = useState(false);
   const [openQueue, setOpenQueue] = useState(false);
+  const disabledPan = useRef(false);
   const {
     mode,
     setMode,
@@ -75,8 +76,10 @@ export const ButtonTabs = () => {
     next,
     queue,
   } = useQueue();
-  const songs = useMemo(() => queue.map(({ song, id }) => song), [queue]);
-  const height = useMotionValue(0);
+  const songs = useMemo(() => queue.map(({ song }) => song), [queue]);
+  // This if else if just for hot reload
+  // It should always init to 0 for the end users
+  const height = useMotionValue(up ? MINIFIED_HEIGHT : 0);
   const [data] = useFirebaseUpdater(songInfo?.song);
   const tabsHeight = useTransform(
     height,
@@ -122,11 +125,13 @@ export const ButtonTabs = () => {
         animate={!songInfo ? "invisible" : up ? "up" : "down"}
         variants={containerVariants}
         onPan={(_, info) => {
+          if (disabledPan.current) return;
           height.set(height.get() - info.delta.y);
         }}
         onClick={() => !up && setUp(true)}
         onPanEnd={(_, info) => {
-          if (info.offset.y === 0) {
+          if (disabledPan.current || info.offset.y === 0) {
+            disabledPan.current = false;
             return;
           }
 
@@ -144,7 +149,7 @@ export const ButtonTabs = () => {
         {/* This is the minified version of the player */}
         <motion.div
           style={{ opacity: minifiedOpacity }}
-          className="flex items-center space-x-2 flex-shrink-0 absolute"
+          className="flex items-center space-x-2 flex-shrink-0 absolute w-full z-10"
         >
           <Thumbnail
             snapshot={songInfo?.song}
@@ -186,7 +191,7 @@ export const ButtonTabs = () => {
               initial={false}
               animate={openQueue ? "open" : "closed"}
               variants={{
-                open: { opacity: [0.2, 0.5, 1], y: 0, transition: { type: "tween" } },
+                open: { opacity: [0.2, 1], y: 0, transition: { type: "tween" } },
                 closed: { opacity: 0, y: 50, transition: { type: "tween" } },
               }}
             >
@@ -214,44 +219,43 @@ export const ButtonTabs = () => {
             </motion.div>
           </div>
 
-          {/* TODO clamp between like 500px and the height of the photo */}
+          {/* FIXME clamp between like 500px and the height of the photo */}
           <div className="flex-grow w-full relative overflow-hidden">
-            <div className="absolute inset-x bottom-0 h-full">
-              <motion.div
-                animate={{ y: openQueue ? "0px" : "100%", transition: { type: "tween" } }}
-                className="h-full"
-              >
-                <SongList
-                  songs={songs}
-                  mode="condensed"
-                  className="text-gray-200 h-full"
-                  // TODO
-                  // source={{ type: "queue" }}
-                />
-              </motion.div>
-            </div>
-          </div>
-
-          {/* <motion.div layout className={classNames("relative w-full overflow-hidden", "flex-grow")}>
-            <div className="absolute top-0 inset-x-0">
+            <motion.div
+              animate={{ y: openQueue ? 0 : "100%", transition: { type: "tween" } }}
+              className="h-full absolute bottom-0 left-0 right-0 px-8 flex flex-col"
+              onPointerDown={() => {
+                // Hack to disable pan events from triggering causing the start of an animation
+                disabledPan.current = true;
+              }}
+            >
+              <div className="mt-3 text-gray-200 font-bold text-sm">Playing Next</div>
               <SongList
                 songs={songs}
-                // TODO
-                // source={{ type: "queue" }}
+                mode="condensed"
+                className="text-gray-200 flex-grow"
+                disableNavigator
+                source={{ type: "queue" }}
               />
-            </div>
-          </motion.div> */}
+            </motion.div>
+          </div>
 
-          {/* relative and bg-gray-800 are super important as they hide the queue */}
-          <div className="w-full px-8 space-y-5 pb-4 flex-shrink-0 relative bg-gray-800">
-            <div>
+          <div className="w-full px-8 space-y-5 pb-4 flex-shrink-0">
+            <motion.div
+              animate={{
+                height: openQueue ? 0 : "fit-content",
+                opacity: openQueue ? 0 : 1,
+                transition: { type: "tween" },
+              }}
+              className="overflow-hidden"
+            >
               <TextRotation
                 text={data?.title ?? ""}
                 className="text-xl text-gray-100 font-bold"
                 on={up}
               />
               <div className="text-gray-300 text-opacity-75">{data?.artist}</div>
-            </div>
+            </motion.div>
             <SongTimeSlider duration={data?.duration} />
             <div className="flex justify-around items-center">
               <Repeat mode={mode} setMode={setMode} iconClassName="w-8 h-8" />

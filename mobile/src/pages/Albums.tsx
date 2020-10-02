@@ -1,6 +1,5 @@
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import React from "react";
-import { MdMoreVert } from "react-icons/md";
 import { ListContainer, ListContainerRowProps } from "../components/ListContainer";
 import { routes } from "../routes";
 import { MusicListItem } from "../sections/MusicListItem";
@@ -31,5 +30,7 @@ const AlbumRow = ({
 
 export const Albums = () => {
   const albums = useAlbums();
-  return <ListContainer height={57} items={albums.data} sortKey="album" row={AlbumRow} />;
+  return (
+    <ListContainer height={57} items={albums.data} sortKey="album" row={AlbumRow} extra={{}} />
+  );
 };

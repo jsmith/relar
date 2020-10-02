@@ -34,6 +34,10 @@ export const useCurrentTime = () => {
   return currentTime;
 };
 
+export type SetQueueSource =
+  | { type: "album" | "artist" | "playlist" | "generated"; id: string; sourceHumanName: string }
+  | { type: "library" | "manuel" | "queue" };
+
 export interface QueueItem {
   song: SongSnapshot;
   source: SetQueueSource;
@@ -65,9 +69,28 @@ export const checkSourcesEqual = (a: SetQueueSource | undefined, b: SetQueueSour
     : // If "a" doesn't have an ID, just check the type
       a.type === b.type;
 
-export type SetQueueSource =
-  | { type: "album" | "artist" | "playlist" | "generated"; id: string; sourceHumanName: string }
-  | { type: "library" | "manuel" | "queue" };
+export const checkQueueItemsEqual = (
+  a: QueueItem | undefined,
+  b: QueueItem | undefined,
+): boolean => {
+  if (a === undefined || b === undefined) return false;
+  if (a.id !== b.id) return false;
+
+  // Check the source since these IDs are only unique within a source!!
+  switch (a.source.type) {
+    case "album":
+    case "artist":
+    case "generated":
+    case "playlist":
+      return a.source.type === b.source.type && a.source.id === b.source.id;
+    case "queue":
+      return true;
+    case "library":
+      return b.source.type === a.source.type;
+    case "manuel":
+      throw Error("????????");
+  }
+};
 
 export type SetQueueOptions = {
   songs: Array<SongInfo | SongSnapshot>;

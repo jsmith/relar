@@ -2,7 +2,14 @@ import React, { useMemo } from "react";
 import { MdAddToQueue, MdPlaylistAdd } from "react-icons/md";
 import { useDeleteSong } from "../shared/web/queries/songs";
 import { fmtMSS } from "../shared/web/utils";
-import { useQueue } from "../shared/web/queue";
+import {
+  checkQueueItemsEqual,
+  checkSourcesEqual,
+  isSongInfo,
+  SetQueueSource,
+  SongInfo,
+  useQueue,
+} from "../shared/web/queue";
 import {
   ListContainer,
   ListContainerMode,
@@ -17,12 +24,14 @@ import { Modals } from "@capacitor/core";
 import { useSlideUpScreen } from "../slide-up-screen";
 import { usePlaylistCreate } from "../shared/web/queries/playlists";
 import { AddToPlaylistList } from "../shared/web/sections/AddToPlaylistList";
-import { MusicListItem } from "./MusicListItem";
+import { MusicListItem, MusicListItemState } from "./MusicListItem";
 
 export interface SongListProps {
-  songs: Array<firebase.firestore.QueryDocumentSnapshot<Song>> | undefined;
+  songs: Array<firebase.firestore.QueryDocumentSnapshot<Song> | SongInfo> | undefined;
   mode?: ListContainerMode;
   className?: string;
+  disableNavigator?: boolean;
+  source: SetQueueSource;
 }
 
 const AddToPlaylistMenu = ({
@@ -52,9 +61,14 @@ const SongListRow = ({
   snapshots: songs,
   absoluteIndex,
   mode,
-}: ListContainerRowProps<Song>) => {
+  source,
+  songsMixed,
+}: ListContainerRowProps<Song> & {
+  source: SetQueueSource;
+  songsMixed: Array<firebase.firestore.QueryDocumentSnapshot<Song> | SongInfo> | undefined;
+}) => {
   const [deleteSong] = useDeleteSong();
-  const { setQueue, enqueue } = useQueue();
+  const { setQueue, enqueue, songInfo, playing } = useQueue();
   const [createPlaylist] = usePlaylistCreate();
   const { show } = useSlideUpScreen(
     "Add to Playlist",
@@ -80,6 +94,13 @@ const SongListRow = ({
       },
     },
   );
+
+  const state = useMemo((): MusicListItemState => {
+    if (!songsMixed) return "not-playing";
+    const id = songsMixed[absoluteIndex].id;
+    if (!checkQueueItemsEqual({ song, id, source }, songInfo)) return "not-playing";
+    return playing ? "playing" : "paused";
+  }, [absoluteIndex, playing, song, songInfo, songsMixed, source]);
 
   return (
     <MusicListItem
@@ -133,9 +154,9 @@ const SongListRow = ({
       ]}
       onClick={() =>
         setQueue({
-          source: { type: "library" },
+          source,
           songs: songs!,
-          index,
+          index: absoluteIndex,
         })
       }
       title={data.title}
@@ -144,25 +165,23 @@ const SongListRow = ({
       absoluteIndex={absoluteIndex}
       snapshot={song}
       mode={mode}
+      state={state}
     />
   );
 };
 
-// const usePartial = function <P extends {}>(
-//   Component: (props: P) => JSX.Element,
-//   initial: Partial<P>,
-// ) {
-//   const WithPartial = useMemo(() => {
-//     // eslint-disable-next-line react/display-name
-//     return (props: P) => <Component {...props} {...initial} />;
-//     // eslint-disable-next-line react-hooks/exhaustive-deps
-//   }, [Component, ...Object.keys(initial), ...Object.values(initial)]);
+export const SongList = ({
+  songs: songsMixed,
+  mode,
+  className,
+  disableNavigator,
+  source,
+}: SongListProps) => {
+  // FIXME duplication
+  const songs = useMemo(() => songsMixed?.map((item) => (isSongInfo(item) ? item.song : item)), [
+    songsMixed,
+  ]);
 
-//   return WithPartial;
-// };
-
-export const SongList = ({ songs, mode, className }: SongListProps) => {
-  // const Row = usePartial(SongListRow, { mode });
   return (
     <ListContainer
       height={57}
@@ -171,6 +190,8 @@ export const SongList = ({ songs, mode, className }: SongListProps) => {
       row={SongListRow}
       mode={mode}
       className={className}
+      disableNavigator={disableNavigator}
+      extra={{ source, songsMixed }}
     />
   );
 };
