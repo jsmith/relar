@@ -31,6 +31,13 @@ const AlbumRow = ({
 export const Albums = () => {
   const albums = useAlbums();
   return (
-    <ListContainer height={57} items={albums.data} sortKey="album" row={AlbumRow} extra={{}} />
+    <ListContainer
+      height={57}
+      items={albums.data}
+      sortKey="album"
+      row={AlbumRow}
+      extra={{}}
+      className="w-full"
+    />
   );
 };

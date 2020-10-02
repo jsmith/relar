@@ -1,6 +1,6 @@
 {
   "name": "relar",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "dependencies": {
     "@capacitor-community/native-audio": "file:native-audio",
     "@graywolfai/react-tiniest-router": "^0.3.1",
