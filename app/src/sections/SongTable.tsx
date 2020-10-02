@@ -25,7 +25,13 @@ import { routes } from "../routes";
 import { link } from "../shared/web/classes";
 import { AddToPlaylistEditor } from "./AddToPlaylistModal";
 import { Skeleton } from "../shared/web/components/Skeleton";
-import { useQueue, SetQueueSource, SongInfo, isSongInfo } from "../shared/web/queue";
+import {
+  useQueue,
+  SetQueueSource,
+  SongInfo,
+  isSongInfo,
+  checkQueueItemsEqual,
+} from "../shared/web/queue";
 import { useRecycle, SentinelBlock } from "../shared/web/recycle";
 import { Audio } from "@jsmith21/svg-loaders-react";
 
@@ -373,33 +379,7 @@ export const SongTable = ({
         ));
     }
     return songs.slice(start, end).map(({ song, id }, i) => {
-      // Default not playing
-      let playing = false;
-
-      // But if they do have the same ID...
-      if (id === songInfo?.id) {
-        // Check the source since these IDs are only unique within a source!!
-        switch (source.type) {
-          case "album":
-          case "artist":
-          case "generated":
-          case "playlist":
-            playing = source.type === songInfo.source.type && source.id === songInfo.source.id;
-            break;
-          case "queue":
-            playing = true;
-            break;
-          case "library":
-            playing = songInfo.source.type === source.type;
-            break;
-          case "manuel":
-            throw Error("????????");
-          // It should never reach this point...
-        }
-        console.log(
-          `Source -> ${source.type} vs. ${songInfo.source.type} ({ start: ${start}, end: ${end}})`,
-        );
-      }
+      const playing = checkQueueItemsEqual({ song, id, source }, songInfo);
 
       // The key is the index rather than the song ID as the song could > 1
       return (

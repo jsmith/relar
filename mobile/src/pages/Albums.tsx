@@ -1,6 +1,5 @@
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import React from "react";
-import { MdMoreVert } from "react-icons/md";
 import { ListContainer, ListContainerRowProps } from "../components/ListContainer";
 import { routes } from "../routes";
 import { MusicListItem } from "../sections/MusicListItem";
@@ -12,6 +11,7 @@ const AlbumRow = ({
   snapshot: album,
   item: data,
   handleSentinel,
+  mode,
 }: ListContainerRowProps<Album>) => {
   const { goTo } = useRouter();
 
@@ -23,11 +23,14 @@ const AlbumRow = ({
       absoluteIndex={absoluteIndex}
       snapshot={album}
       onClick={() => goTo(routes.album, { albumId: album.id })}
+      mode={mode}
     />
   );
 };
 
 export const Albums = () => {
   const albums = useAlbums();
-  return <ListContainer height={57} items={albums.data} sortKey="album" row={AlbumRow} />;
+  return (
+    <ListContainer height={57} items={albums.data} sortKey="album" row={AlbumRow} extra={{}} />
+  );
 };

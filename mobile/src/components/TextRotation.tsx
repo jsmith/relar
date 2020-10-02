@@ -1,7 +1,5 @@
 import React, { CSSProperties, useEffect, useMemo, useRef, useState } from "react";
 import classNames from "classnames";
-import { motion, useAnimation, useMotionValue } from "framer-motion";
-import { useHotkeys } from "react-hotkeys-hook";
 
 export interface TextRotationProps {
   text: string;
@@ -11,7 +9,7 @@ export interface TextRotationProps {
   on?: boolean;
 }
 
-export const TextRotation = ({ text, className, speed = 80, on = false }: TextRotationProps) => {
+export const TextRotation = ({ text, className, speed = 60, on = false }: TextRotationProps) => {
   const container = useRef<HTMLDivElement | null>(null);
   const span = useRef<HTMLSpanElement | null>(null);
   // const state = useRef<"initial" | "transition">("initial");

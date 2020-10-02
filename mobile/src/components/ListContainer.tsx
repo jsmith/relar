@@ -3,6 +3,9 @@ import { getCachedOr } from "../shared/web/watcher";
 import classNames from "classnames";
 import { SentinelBlockHandler, useRecycle } from "../shared/web/recycle";
 import { motion, useMotionValue, useTransform } from "framer-motion";
+import type { SetQueueSource } from "../shared/web/queue";
+
+export type ListContainerMode = "regular" | "condensed";
 
 const letters = [
   "a",
@@ -40,21 +43,30 @@ export interface ListContainerRowProps<T> {
   absoluteIndex: number;
   handleSentinel: SentinelBlockHandler;
   snapshots: Array<firebase.firestore.QueryDocumentSnapshot<T>>;
+  mode: ListContainerMode;
 }
 
-export interface ListContainerProps<T, K extends keyof T> {
+export interface ListContainerProps<T, K extends keyof T, E> {
   height: number;
   items: Array<firebase.firestore.QueryDocumentSnapshot<T>> | undefined;
   sortKey: K;
-  row: (props: ListContainerRowProps<T>) => JSX.Element;
+  row: (props: ListContainerRowProps<T> & E) => JSX.Element;
+  mode?: ListContainerMode;
+  className?: string;
+  disableNavigator?: boolean;
+  extra: E;
 }
 
-export const ListContainer = function <T, K extends keyof T>({
+export const ListContainer = function <T, K extends keyof T, E>({
   height,
   items,
   sortKey,
   row: Row,
-}: ListContainerProps<T, K>) {
+  mode = "regular",
+  className,
+  disableNavigator,
+  extra,
+}: ListContainerProps<T, K, E>) {
   const container = useRef<HTMLDivElement | null>(null);
   const timer = useRef<NodeJS.Timeout>();
   const {
@@ -115,7 +127,7 @@ export const ListContainer = function <T, K extends keyof T>({
   );
 
   useEffect(() => {
-    if (!container.current) return;
+    if (!container.current || disableNavigator) return;
     const local = container.current;
 
     local.addEventListener("scroll", resetTimer);
@@ -123,7 +135,7 @@ export const ListContainer = function <T, K extends keyof T>({
       local.removeEventListener("scroll", resetTimer);
       clearTimer();
     };
-  }, [clearTimer, resetTimer]);
+  }, [clearTimer, disableNavigator, resetTimer]);
 
   const rows = useMemo(
     () =>
@@ -138,48 +150,56 @@ export const ListContainer = function <T, K extends keyof T>({
             absoluteIndex={start + i}
             handleSentinel={handleSentinel}
             snapshots={items}
+            mode={mode}
+            {...extra}
           />
         )),
-    [end, handleSentinel, items, start, Row],
+    [items, start, end, Row, handleSentinel, mode, extra],
   );
 
   return (
-    <div className="overflow-y-scroll w-full" ref={container}>
+    <div
+      className={classNames("overflow-y-scroll", className)}
+      ref={container}
+      onPointerDown={() => console.log("HERE")}
+    >
       <div className="h-full" ref={ref}>
         <div style={{ height: placeholderTopHeight }} />
-        <div className="divide-y">{rows}</div>
+        <div className={mode === "regular" ? "divide-y" : ""}>{rows}</div>
         <div style={{ height: placeholderBottomHeight }} />
       </div>
-      <motion.div
-        className={classNames("absolute h-full top-0 right-0 py-1 pr-1")}
-        style={{ pointerEvents }}
-      >
+      {!disableNavigator && (
         <motion.div
-          className={classNames(
-            "sticky h-full rounded-lg bg-gray-800 text-gray-200 p-1 bg-opacity-75  flex flex-col text-2xs justify-between ease-in-out duration-500 transform transition-opacity",
-          )}
-          style={{ opacity }}
+          className={classNames("absolute h-full top-0 right-0 py-1 pr-1")}
+          style={{ pointerEvents }}
         >
-          {letters.map((letter) => (
-            <button
-              key={letter}
-              className="uppercase select-none focus:outline-none"
-              onTouchStart={() => scrollTo(letter)}
-              onMouseDown={() => scrollTo(letter)}
-              onTouchMove={(e) => {
-                const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
-                const letter = el?.getAttribute("letter");
-                if (letter) scrollTo(letter);
-              }}
-              onDragStart={(e) => e.preventDefault()}
-              // @ts-ignore
-              letter={letter}
-            >
-              {letter}
-            </button>
-          ))}
+          <motion.div
+            className={classNames(
+              "sticky h-full rounded-lg bg-gray-800 text-gray-200 p-1 bg-opacity-75  flex flex-col text-2xs justify-between ease-in-out duration-500 transform transition-opacity",
+            )}
+            style={{ opacity }}
+          >
+            {letters.map((letter) => (
+              <button
+                key={letter}
+                className="uppercase select-none focus:outline-none"
+                onTouchStart={() => scrollTo(letter)}
+                onMouseDown={() => scrollTo(letter)}
+                onTouchMove={(e) => {
+                  const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+                  const letter = el?.getAttribute("letter");
+                  if (letter) scrollTo(letter);
+                }}
+                onDragStart={(e) => e.preventDefault()}
+                // @ts-ignore
+                letter={letter}
+              >
+                {letter}
+              </button>
+            ))}
+          </motion.div>
         </motion.div>
-      </motion.div>
+      )}
     </div>
   );
 };

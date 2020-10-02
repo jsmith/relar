@@ -163,7 +163,7 @@ export const App = () => {
         )}
         {/* Why do I have flex here? It's because of how Safari handles % in flex situations (I'd typically using h-full) */}
         {/* See https://stackoverflow.com/questions/33636796/chrome-safari-not-filling-100-height-of-flex-parent */}
-        <div className="flex-grow min-h-0 relative flex">
+        <div className="flex-grow min-h-0 relative flex flex-col">
           <route.component />
         </div>
         {route.showTabs && <ButtonTabs />}
