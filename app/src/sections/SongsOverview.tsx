@@ -154,7 +154,7 @@ export const SongsOverview = ({
             <ErrorTemplate />
           ) : (
             <SongTable
-              songs={status === "loading" ? undefined : songs}
+              songs={status === "loading" ? undefined : songsMixed}
               container={container}
               actions={songActions}
               source={source}

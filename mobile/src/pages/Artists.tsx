@@ -13,6 +13,7 @@ const ArtistRow = ({
   snapshot: artist,
   item: data,
   handleSentinel,
+  mode,
 }: ListContainerRowProps<Artist>) => {
   const { goTo } = useRouter();
   const songs = useArtistSongs(data.name);
@@ -26,11 +27,14 @@ const ArtistRow = ({
       absoluteIndex={absoluteIndex}
       snapshot={song}
       onClick={() => goTo(routes.artist, { artistName: artist.id })}
+      mode={mode}
     />
   );
 };
 
 export const Artists = () => {
   const artists = useArtists();
-  return <ListContainer height={57} items={artists.data} sortKey="name" row={ArtistRow} />;
+  return (
+    <ListContainer height={57} items={artists.data} sortKey="name" row={ArtistRow} extra={{}} />
+  );
 };

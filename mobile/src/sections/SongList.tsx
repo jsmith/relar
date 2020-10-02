@@ -1,12 +1,20 @@
-import React from "react";
-import { MdAddToQueue, MdMoreVert, MdPlaylistAdd } from "react-icons/md";
-import { Thumbnail } from "../shared/web/components/Thumbnail";
-import { useDeleteSong, useSongs } from "../shared/web/queries/songs";
-import { fmtMSS, fmtToDate } from "../shared/web/utils";
-import { useQueue } from "../shared/web/queue";
-import { ListContainer, ListContainerRowProps } from "../components/ListContainer";
-import { SentinelBlock } from "../shared/web/recycle";
-import { openActionSheet } from "../action-sheet";
+import React, { useMemo } from "react";
+import { MdAddToQueue, MdPlaylistAdd } from "react-icons/md";
+import { useDeleteSong } from "../shared/web/queries/songs";
+import { fmtMSS } from "../shared/web/utils";
+import {
+  checkQueueItemsEqual,
+  checkSourcesEqual,
+  isSongInfo,
+  SetQueueSource,
+  SongInfo,
+  useQueue,
+} from "../shared/web/queue";
+import {
+  ListContainer,
+  ListContainerMode,
+  ListContainerRowProps,
+} from "../components/ListContainer";
 import { AiOutlineUser } from "react-icons/ai";
 import { RiAlbumLine } from "react-icons/ri";
 import { routes } from "../routes";
@@ -14,13 +22,16 @@ import type { Song } from "../shared/universal/types";
 import { HiPlus, HiTrash } from "react-icons/hi";
 import { Modals } from "@capacitor/core";
 import { useSlideUpScreen } from "../slide-up-screen";
-import { Button } from "../shared/web/components/Button";
 import { usePlaylistCreate } from "../shared/web/queries/playlists";
 import { AddToPlaylistList } from "../shared/web/sections/AddToPlaylistList";
-import { MusicListItem } from "./MusicListItem";
+import { MusicListItem, MusicListItemState } from "./MusicListItem";
 
 export interface SongListProps {
-  songs: Array<firebase.firestore.QueryDocumentSnapshot<Song>> | undefined;
+  songs: Array<firebase.firestore.QueryDocumentSnapshot<Song> | SongInfo> | undefined;
+  mode?: ListContainerMode;
+  className?: string;
+  disableNavigator?: boolean;
+  source: SetQueueSource;
 }
 
 const AddToPlaylistMenu = ({
@@ -49,9 +60,15 @@ const SongListRow = ({
   snapshot: song,
   snapshots: songs,
   absoluteIndex,
-}: ListContainerRowProps<Song>) => {
+  mode,
+  source,
+  songsMixed,
+}: ListContainerRowProps<Song> & {
+  source: SetQueueSource;
+  songsMixed: Array<firebase.firestore.QueryDocumentSnapshot<Song> | SongInfo> | undefined;
+}) => {
   const [deleteSong] = useDeleteSong();
-  const { setQueue, enqueue } = useQueue();
+  const { setQueue, enqueue, songInfo, playing } = useQueue();
   const [createPlaylist] = usePlaylistCreate();
   const { show } = useSlideUpScreen(
     "Add to Playlist",
@@ -77,6 +94,13 @@ const SongListRow = ({
       },
     },
   );
+
+  const state = useMemo((): MusicListItemState => {
+    if (!songsMixed) return "not-playing";
+    const id = songsMixed[absoluteIndex].id;
+    if (!checkQueueItemsEqual({ song, id, source }, songInfo)) return "not-playing";
+    return playing ? "playing" : "paused";
+  }, [absoluteIndex, playing, song, songInfo, songsMixed, source]);
 
   return (
     <MusicListItem
@@ -130,9 +154,9 @@ const SongListRow = ({
       ]}
       onClick={() =>
         setQueue({
-          source: { type: "library" },
+          source,
           songs: songs!,
-          index,
+          index: absoluteIndex,
         })
       }
       title={data.title}
@@ -140,10 +164,34 @@ const SongListRow = ({
       handleSentinel={handleSentinel}
       absoluteIndex={absoluteIndex}
       snapshot={song}
+      mode={mode}
+      state={state}
     />
   );
 };
 
-export const SongList = ({ songs }: SongListProps) => {
-  return <ListContainer height={57} items={songs} sortKey="title" row={SongListRow} />;
+export const SongList = ({
+  songs: songsMixed,
+  mode,
+  className,
+  disableNavigator,
+  source,
+}: SongListProps) => {
+  // FIXME duplication
+  const songs = useMemo(() => songsMixed?.map((item) => (isSongInfo(item) ? item.song : item)), [
+    songsMixed,
+  ]);
+
+  return (
+    <ListContainer
+      height={57}
+      items={songs}
+      sortKey="title"
+      row={SongListRow}
+      mode={mode}
+      className={className}
+      disableNavigator={disableNavigator}
+      extra={{ source, songsMixed }}
+    />
+  );
 };

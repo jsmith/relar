@@ -17,7 +17,6 @@ import {
 import { motion, useMotionValue, useTransform, Variants } from "framer-motion";
 import { Thumbnail } from "../shared/web/components/Thumbnail";
 import { Repeat } from "../shared/web/components/Repeat";
-import { useSongs } from "../shared/web/queries/songs";
 import { useFirebaseUpdater } from "../shared/web/watcher";
 import { SongTimeSlider } from "../shared/web/sections/SongTimeSlider";
 import { LikedIcon } from "../shared/web/components/LikedIcon";
@@ -29,6 +28,8 @@ import { AiOutlineUser } from "react-icons/ai";
 import { RiAlbumLine } from "react-icons/ri";
 import { DragBar } from "../components/DragBar";
 import { TextRotation } from "../components/TextRotation";
+import classNames from "classnames";
+import { SongList } from "./SongList";
 
 export const Tab = ({
   label,
@@ -60,6 +61,8 @@ const TABS_HEIGHT = 69;
 export const ButtonTabs = () => {
   const { height: SCREEN_HEIGHT } = useWindowSize();
   const [up, setUp] = useState(false);
+  const [openQueue, setOpenQueue] = useState(false);
+  const disabledPan = useRef(false);
   const {
     mode,
     setMode,
@@ -71,8 +74,12 @@ export const ButtonTabs = () => {
     songInfo,
     previous,
     next,
+    queue,
   } = useQueue();
-  const height = useMotionValue(0);
+  const songs = useMemo(() => queue.map(({ song }) => song), [queue]);
+  // This if else if just for hot reload
+  // It should always init to 0 for the end users
+  const height = useMotionValue(up ? MINIFIED_HEIGHT : 0);
   const [data] = useFirebaseUpdater(songInfo?.song);
   const tabsHeight = useTransform(
     height,
@@ -84,9 +91,17 @@ export const ButtonTabs = () => {
     Math.max(1 - (height - MINIFIED_HEIGHT) / TABS_HEIGHT, 0),
   );
   const opacity = useTransform(height, (height) =>
-    Math.max((height - MINIFIED_HEIGHT - TABS_HEIGHT) / (SCREEN_HEIGHT - TABS_HEIGHT), 0),
+    Math.max(
+      (height - MINIFIED_HEIGHT - TABS_HEIGHT) / (SCREEN_HEIGHT - TABS_HEIGHT - MINIFIED_HEIGHT),
+      0,
+    ),
   );
-  const heightShadow = useTransform(height, (value) => Math.min(value, MINIFIED_HEIGHT));
+
+  // add TABS_HEIGHT - tabsHeight so the main content doesn't move during the animation
+  // Remove + TABS_HEIGHT - tabsHeight.get() and you'll see what I mean
+  const heightShadow = useTransform(height, (value) =>
+    Math.min(value, MINIFIED_HEIGHT + TABS_HEIGHT - tabsHeight.get()),
+  );
 
   const containerVariants = useMemo(
     (): Variants => ({
@@ -110,11 +125,13 @@ export const ButtonTabs = () => {
         animate={!songInfo ? "invisible" : up ? "up" : "down"}
         variants={containerVariants}
         onPan={(_, info) => {
+          if (disabledPan.current) return;
           height.set(height.get() - info.delta.y);
         }}
         onClick={() => !up && setUp(true)}
         onPanEnd={(_, info) => {
-          if (info.offset.y === 0) {
+          if (disabledPan.current || info.offset.y === 0) {
+            disabledPan.current = false;
             return;
           }
 
@@ -129,9 +146,10 @@ export const ButtonTabs = () => {
         style={{ height, bottom: tabsHeight, touchAction: "none" }}
         className="bg-gray-800 flex flex-col absolute left-0 right-0 overflow-hidden z-20"
       >
+        {/* This is the minified version of the player */}
         <motion.div
           style={{ opacity: minifiedOpacity }}
-          className="flex items-center space-x-2 flex-shrink-0"
+          className="flex items-center space-x-2 flex-shrink-0 absolute w-full z-10"
         >
           <Thumbnail
             snapshot={songInfo?.song}
@@ -159,27 +177,85 @@ export const ButtonTabs = () => {
           </button>
         </motion.div>
 
-        <motion.div
-          style={{ opacity }}
-          className="flex flex-col flex-grow justify-around items-center"
-        >
-          <DragBar className="absolute top-0" buttonClassName="bg-gray-300" />
-          <Thumbnail snapshot={songInfo?.song} size="256" className="w-48 h-48 flex-shrink-0" />
+        {/* And this is the big player */}
+        <motion.div style={{ opacity }} className="flex flex-col flex-grow items-center">
+          <DragBar className="flex-shrink-0 absolute" buttonClassName="bg-gray-300" />
 
-          <div className="w-full px-8 space-y-5">
-            <div>
-              {/* TODO */}
+          {/* This text only appears when the queue is showing */}
+          <div className="flex absolute px-8 top-0 left-0 right-0 mt-8 space-x-2">
+            {/* Mimicking the photo below */}
+            <div className="h-16 w-16 flex-shrink-0"></div>
+            <motion.div
+              layout
+              className={"min-w-0 flex flex-col justify-center"}
+              initial={false}
+              animate={openQueue ? "open" : "closed"}
+              variants={{
+                open: { opacity: [0.2, 1], y: 0, transition: { type: "tween" } },
+                closed: { opacity: 0, y: 50, transition: { type: "tween" } },
+              }}
+            >
+              <TextRotation
+                text={data?.title ?? ""}
+                className="text-gray-100 font-bold leading-none"
+                on={up && openQueue}
+              />
+              <div className="text-gray-300 text-opacity-75">{data?.artist}</div>
+            </motion.div>
+          </div>
+
+          <div
+            className={classNames(
+              "flex w-full px-8 mt-8",
+              !openQueue && "items-center justify-center",
+            )}
+            style={{ flexGrow: openQueue ? 0 : 9999 }}
+          >
+            <motion.div
+              className={classNames("flex-shrink-0", openQueue ? "w-16 h-16" : "w-48 h-48")}
+              layout
+            >
+              <Thumbnail snapshot={songInfo?.song} size="256" className="w-full h-full" />
+            </motion.div>
+          </div>
+
+          {/* FIXME clamp between like 500px and the height of the photo */}
+          <div className="flex-grow w-full relative overflow-hidden">
+            <motion.div
+              animate={{ y: openQueue ? 0 : "100%", transition: { type: "tween" } }}
+              className="h-full absolute bottom-0 left-0 right-0 px-8 flex flex-col"
+              onPointerDown={() => {
+                // Hack to disable pan events from triggering causing the start of an animation
+                disabledPan.current = true;
+              }}
+            >
+              <div className="mt-3 text-gray-200 font-bold text-sm">Playing Next</div>
+              <SongList
+                songs={songs}
+                mode="condensed"
+                className="text-gray-200 flex-grow"
+                disableNavigator
+                source={{ type: "queue" }}
+              />
+            </motion.div>
+          </div>
+
+          <div className="w-full px-8 space-y-5 pb-4 flex-shrink-0">
+            <motion.div
+              animate={{
+                height: openQueue ? 0 : "fit-content",
+                opacity: openQueue ? 0 : 1,
+                transition: { type: "tween" },
+              }}
+              className="overflow-hidden"
+            >
               <TextRotation
                 text={data?.title ?? ""}
                 className="text-xl text-gray-100 font-bold"
                 on={up}
               />
-              {/* <div className="text-gray-100 font-bold text-xl overflow-hidden whitespace-no-wrap space-x-3 flex">
-                <span style={{ transitionDu }}>{data?.title}</span>
-                <span>{data?.title}</span>
-              </div> */}
               <div className="text-gray-300 text-opacity-75">{data?.artist}</div>
-            </div>
+            </motion.div>
             <SongTimeSlider duration={data?.duration} />
             <div className="flex justify-around items-center">
               <Repeat mode={mode} setMode={setMode} iconClassName="w-8 h-8" />
@@ -207,7 +283,15 @@ export const ButtonTabs = () => {
                 className="focus:outline-none"
               />
               <div className="flex space-x-3">
-                <MdQueueMusic className="w-6 h-6 text-gray-200" />
+                {/* // bg-gray-400 bg-opacity-25 */}
+                <button className="focus:outline-none" onClick={() => setOpenQueue(!openQueue)}>
+                  <MdQueueMusic
+                    className={classNames(
+                      "w-6 h-6 text-gray-200 rounded",
+                      openQueue && "bg-gray-400 bg-opacity-25",
+                    )}
+                  />
+                </button>
                 <button
                   className="focus:outline-none"
                   onClick={() =>
