@@ -4,6 +4,7 @@
   "extends": "@snowpack/app-scripts-react/tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": "./",
-    "paths": { "*": ["web_modules/.types/*"] }
+    "paths": { "*": ["web_modules/.types/*"] },
+    "importsNotUsedAsValues": "remove"
   }
 }
