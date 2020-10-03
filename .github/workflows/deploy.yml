@@ -52,13 +52,6 @@ jobs:
         run: firebase deploy --only storage --project production
         env: { FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}" }
 
-      - if: steps.android_changes.outputs.any_changed == 'true'
-        run: |
-          npm run build
-          firebase deploy --only hosting --project production
-        env: { FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}" }
-        working-directory: mobile
-
   deploy_mobile:
     # Make this separate since it has to use macOS which costs 10x as much as ubuntu
     runs-on: macOS-latest

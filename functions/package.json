@@ -3,9 +3,9 @@
   "scripts": {
     "build": "rm -rf lib && tsc",
     "test": "./test.sh",
-    "check:lint": "eslint \"**/*.{ts,tsx}\"",
-    "check:formatting": "prettier --list-different \"**/*.{ts,tsx,js}\"",
-    "check:types": "tsc --noEmit"
+    "check:lint": "../node_modules/.bin/eslint \"**/*.{ts,tsx}\"",
+    "check:formatting": "../node_modules/.bin/prettier --list-different \"**/*.{ts,tsx,js}\"",
+    "check:types": "../node_modules/.bin/tsc --noEmit"
   },
   "engines": {
     "node": "10"

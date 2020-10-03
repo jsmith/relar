@@ -1,3 +1,5 @@
 *.md
 dist
 build
+android
+ios

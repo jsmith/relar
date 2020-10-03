@@ -1,6 +1,17 @@
-.build
-build
-node_modules
+# See https://github.com/ionic-team/capacitor/discussions/1478#discussioncomment-24256
+capacitor.config.json
+
+*.zip
+*.ipa
+
+**/fastlane/report.xml
+**/fastlane/Preview.html
+**/fastlane/screenshots
+**/fastlane/test_output
+
 dist
-.parcel-cache
-.cache
+# TODO
+build
+build
+
+google-api-key.json
