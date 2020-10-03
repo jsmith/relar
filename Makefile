@@ -13,5 +13,4 @@ patch:
 
 checks:
 	cd app && npm run check:formatting && npm run check:lint && npm run check:types && npm run test
-	cd mobile && npm run check:formatting && npm run check:lint && npm run check:types && npm run test
 	cd functions && npm run check:formatting && npm run check:lint && npm run check:types && npm run test
