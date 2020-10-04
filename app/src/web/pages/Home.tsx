@@ -31,12 +31,14 @@ export const Home = () => {
   }
 
   return (
-    <div className="space-y-5 px-5">
+    <div className="space-y-5 w-full">
       <HomeTopic
         title="Recently Added"
         subTitle="Your recently uploaded songs will appear here."
         route={routes.generated}
         params={{ generatedType: "recently-added" }}
+        wrapperClassName="px-5"
+        textClassName="px-5"
       >
         {recentlyAddedSongs.slice(0, 10).map((song) => (
           <SongCard key={song.id} song={song} />
@@ -48,6 +50,8 @@ export const Home = () => {
         subTitle="All of your liked songs will come here <3"
         route={routes.generated}
         params={{ generatedType: "liked" }}
+        wrapperClassName="px-5"
+        textClassName="px-5"
       >
         {likedSongs.slice(0, 10).map((song) => (
           <SongCard key={song.id} song={song} />

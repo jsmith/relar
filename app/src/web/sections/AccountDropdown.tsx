@@ -17,6 +17,7 @@ export interface AccountDropdownProps {
 }
 
 export const AccountDropdown = ({ className }: AccountDropdownProps) => {
+  // TODO use headless UI
   const { goTo } = useRouter();
   const user = useDefinedUser();
   const [show, close] = useModal(() => <Feedback onExit={close} />);

@@ -162,11 +162,11 @@ export const App = (_: React.Props<{}>) => {
                 ))}
               </ul>
             )}
-            <React.Suspense fallback={<LoadingSpinner />}>
-              <div className={classNames(route.className, "flex-grow")}>
+            <div className={classNames(route.className, "flex-grow flex")}>
+              <React.Suspense fallback={<LoadingSpinner />}>
                 <route.component container={container} />
-              </div>
-            </React.Suspense>
+              </React.Suspense>
+            </div>
           </div>
 
           <FocusTrap active={queueDisplay} focusTrapOptions={{ clickOutsideDeactivates: true }}>
@@ -225,7 +225,7 @@ export const App = (_: React.Props<{}>) => {
         )}
       </div>
       <SkipNavContent />
-      <React.Suspense fallback={<LoadingSpinner />}>{content}</React.Suspense>
+      <React.Suspense fallback={<LoadingSpinner className="flex-grow" />}>{content}</React.Suspense>
       {user && <QueueAudio />}
       <ReactQueryDevtools.ReactQueryDevtools initialIsOpen={false} />
     </div>

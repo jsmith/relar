@@ -151,13 +151,19 @@ export const AlbumType = Record({
 
 export type Album = Static<typeof AlbumType>;
 
+export const BetaDeviceType = Literal("ios").Or(Literal("android")).Or(Literal("none"));
+
+export type BetaDevice = Static<typeof BetaDeviceType>;
+
 export const BetaSignupType = Record({
   email: String,
+  firstName: String,
+  device: BetaDeviceType,
+  /** When the user signed up. */
+  createdAt: Timestamp,
 }).And(
   Partial({
     token: String,
-    /** When the user signed up. */
-    createdAt: Timestamp,
   }),
 );
 
@@ -229,11 +235,19 @@ export type BetaAPI = {
   "/beta-signup": {
     POST: {
       body: {
+        firstName: string;
+        device: BetaDevice;
         email: string;
       };
       response:
         | Success
-        | KnownError<"already-on-list" | "invalid-email" | "already-have-account">
+        | KnownError<
+            | "already-on-list"
+            | "invalid-email"
+            | "already-have-account"
+            | "invalid-name"
+            | "invalid-device"
+          >
         | UnknownError;
     };
   };
