@@ -6,7 +6,7 @@ import { noOp } from "./test-utils";
 import { admin } from "./admin";
 
 import { app } from "./auth";
-import { BetaSignup } from "./shared/universal/types";
+import { BetaAPI, BetaSignup } from "./shared/universal/types";
 import { test } from "uvu";
 import assert from "uvu/assert";
 
@@ -24,31 +24,80 @@ test.before.each(async () => {
   }
 });
 
+const createBody = (
+  body?: Partial<BetaAPI["/beta-signup"]["POST"]["body"]>,
+): BetaAPI["/beta-signup"]["POST"]["body"] => {
+  return {
+    firstName: body?.firstName ?? "Tester",
+    email: body?.email ?? "test@user.com",
+    device: body?.device ?? "ios",
+  };
+};
+
 // describe.only("auth", () => {
 test("can successfully sign up a user by email", async () => {
-  await supertest(app).post("/beta-signup").send({ email: "test@user.com" }).expect(200, {
+  await supertest(app).post("/beta-signup").send(createBody()).expect(200, {
     type: "success",
   });
+
+  await betaSignups(firestore)
+    .doc("test@user.com")
+    .get()
+    .then((data) =>
+      assert.equal(data.data(), {
+        firstName: "Tester",
+        email: "test@user.com",
+        createdAt: data.data().createdAt,
+        device: "ios",
+      }),
+    );
 });
 
 test("prevents two signups", async () => {
-  await supertest(app).post("/beta-signup").send({ email: "test@user.com" });
-  await supertest(app).post("/beta-signup").send({ email: "test@user.com" }).expect(200, {
+  await supertest(app).post("/beta-signup").send(createBody());
+  await supertest(app).post("/beta-signup").send(createBody()).expect(200, {
     type: "error",
     code: "already-on-list",
   });
 });
 
 test("prevents bad emails", async () => {
-  await supertest(app).post("/beta-signup").send({ email: "@user.com" }).expect(200, {
-    type: "error",
-    code: "invalid-email",
-  });
+  await supertest(app)
+    .post("/beta-signup")
+    .send(createBody({ email: "@user.com" }))
+    .expect(200, {
+      type: "error",
+      code: "invalid-email",
+    });
 
-  await supertest(app).post("/beta-signup").expect(200, {
-    type: "error",
-    code: "invalid-email",
-  });
+  await supertest(app)
+    .post("/beta-signup")
+    .send(createBody({ email: "" }))
+    .expect(200, {
+      type: "error",
+      code: "invalid-email",
+    });
+});
+
+test("prevents bad names", async () => {
+  await supertest(app)
+    .post("/beta-signup")
+    .send(createBody({ firstName: "" }))
+    .expect(200, {
+      type: "error",
+      code: "invalid-name",
+    });
+});
+
+test("prevents bad devices", async () => {
+  await supertest(app)
+    .post("/beta-signup")
+    // @ts-expect-error
+    .send(createBody({ device: "sldsks" }))
+    .expect(200, {
+      type: "error",
+      code: "invalid-device",
+    });
 });
 
 test("prevents a user with an account from signing up", async () => {
@@ -60,12 +109,18 @@ test("prevents a user with an account from signing up", async () => {
 
   await supertest(app)
     .post("/beta-signup")
-    .send({ email: "test@user.com" })
+    .send(createBody())
     .expect(200, { type: "error", code: "already-have-account" });
 });
 
 test("can create an account", async () => {
-  const data: BetaSignup = { email: "test@user.com", token: "1234" };
+  const data: BetaSignup = {
+    email: "test@user.com",
+    token: "1234",
+    firstName: "Tester",
+    device: "android",
+    createdAt: 0 as any,
+  };
   await betaSignups(firestore).doc("test@user.com").set(data);
 
   await supertest(app)
@@ -108,7 +163,13 @@ test("disallows tokens that don't exist", async () => {
 });
 
 test("disallows users who already have accounts", async () => {
-  const data: BetaSignup = { email: "test@user.com", token: "1234" };
+  const data: BetaSignup = {
+    email: "test@user.com",
+    token: "1234",
+    device: "ios",
+    firstName: "Tester",
+    createdAt: 0 as any,
+  };
   await betaSignups(firestore).doc("test@user.com").set(data);
 
   await auth.createUser({

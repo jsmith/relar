@@ -11,6 +11,7 @@ export interface HomeTopicProps {
   params?: RouterStateType["params"];
   queryParams?: RouterStateType["queryParams"];
   wrapperClassName?: string;
+  textClassName?: string;
 }
 
 export const HomeTopic = ({
@@ -21,10 +22,11 @@ export const HomeTopic = ({
   params,
   queryParams,
   wrapperClassName,
+  textClassName,
 }: HomeTopicProps) => {
   return (
     <div className="space-y-1 lg:space-y-3">
-      <div className="flex justify-between items-center">
+      <div className={classNames("flex justify-between items-center", textClassName)}>
         <div>
           <div className="text-gray-800 text-base md:text-2xl leading-tight">{title}</div>
           <div className="text-gray-600 text-xs">{subTitle}</div>

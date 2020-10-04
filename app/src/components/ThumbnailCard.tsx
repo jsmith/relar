@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Thumbnail } from "./Thumbnail";
 import { MdPlayCircleFilled } from "react-icons/md";
 import classNames from "classnames";
@@ -24,23 +24,24 @@ export const ThumbnailCard = ({
   play,
 }: ThumbnailCardProps) => {
   const [focused, setFocused] = useState(false);
+  const height = "h-24 lg:h-32";
 
   return (
     <div
       className={classNames(
-        "lg:bg-gray-800 flex flex-col lg:px-3 lg:py-4 rounded-md cursor-pointer relative group lg:shadow-xl",
+        "flex flex-col rounded-md cursor-pointer relative group",
         "text-xs lg:text-sm w-24 lg:w-32",
         className,
       )}
       onClick={onClick}
     >
       {Array.isArray(snapshot) ? (
-        <Collage className="h-24 lg:h-32" snapshots={snapshot} size="128" />
+        <Collage className={height} snapshots={snapshot} size="128" />
       ) : (
-        <Thumbnail className="h-24 lg:h-32" snapshot={snapshot} size="128" />
+        <Thumbnail className={height} snapshot={snapshot} size="128" />
       )}
       <div
-        className="truncate mt-1 lg:mt-2 text-gray-900 font-bold lg:text-gray-200"
+        className="truncate mt-1 lg:mt-2 text-gray-900 font-bold"
         tabIndex={0}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
@@ -49,10 +50,11 @@ export const ThumbnailCard = ({
         {title}
       </div>
       {/* FIXME do we want this to truncate? */}
-      <div className="truncate lg:mt-1 text-gray-600 lg:text-gray-400">{subtitle}</div>
+      <div className="truncate lg:mt-1 text-gray-600">{subtitle}</div>
       <div
         className={classNames(
-          "right-0 bottom-0 absolute opacity-0 group-hover:opacity-100 m-6 p-1",
+          "absolute top-0 right-0 left-0 group-hover:opacity-100 m-6 p-1",
+          height,
           focused ? "opacity-100" : "opacity-0",
         )}
       >
