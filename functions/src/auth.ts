@@ -67,6 +67,20 @@ router.post("/beta-signup", async (req) => {
     };
   }
 
+  if (!req.body.firstName) {
+    return {
+      type: "error",
+      code: "invalid-name",
+    };
+  }
+
+  if (!["none", "ios", "android"].includes(req.body.device)) {
+    return {
+      type: "error",
+      code: "invalid-device",
+    };
+  }
+
   if (!validateEmail(req.body.email)) {
     return {
       type: "error",
@@ -100,6 +114,8 @@ router.post("/beta-signup", async (req) => {
 
     const betaSignUp: BetaSignup = {
       email: req.body.email,
+      firstName: req.body.firstName,
+      device: req.body.device,
       createdAt: (admin.firestore.FieldValue.serverTimestamp() as unknown) as admin.firestore.Timestamp,
     };
 
@@ -189,14 +205,17 @@ export const authApp = functions.https.onRequest(app);
 
 export const onBetaSignup = functions.firestore.document("beta_signups/{email}").onCreate(
   wrapAndReport(async (object) => {
-    const { email } = decode(object.data(), BetaSignupType)._unsafeUnwrap();
+    const { email, firstName } = decode(object.data(), BetaSignupType)._unsafeUnwrap();
     setSentryUser({ email });
     await sgMail.send({
       from: "contact@relar.app",
       to: email,
       subject: "RELAR Beta Signup",
-      text:
-        "You have successfully signed up for RELAR beta! We hope to be rolling things out by the end of 2020. Once everything is ready, we will contact you with with a signup link :)",
+      text: `
+Hey ${firstName},
+
+You have successfully signed up for RELAR beta! We hope to be rolling things out by the end of 2020. Once everything is ready, we will contact you with with a signup link :)
+`.trim(),
     });
 
     if (!env.mail.notification_email) return;

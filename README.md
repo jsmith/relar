@@ -25,11 +25,7 @@ As you can see, this is a monorepo. All packages are located in different folder
 
 ### app
 
-This is the web application deployed at [https://relar.app](https://relar.app). [`vite`](https://github.com/vitejs/vite) is used for the dev environment and to build the app for deployment.
-
-### mobile
-
-This is the mobile application that's yet to be deployed to the Android and iOS app stores. [`snowpack`](https://www.snowpack.dev/) along with [`Capacitor`](https://capacitorjs.com/) are used for the Dev environment and to package the app into iOS and Android formats.
+This is the web application deployed at [https://relar.app](https://relar.app) _and_ the mobile app that is yet to be deployed to App Stores. [`snowpack`](https://www.snowpack.dev/) along with [`Capacitor`](https://capacitorjs.com/) are used for the Dev environment and to package the app into iOS and Android formats.
 
 ### functions
 

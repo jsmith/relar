@@ -6,7 +6,7 @@ export const Search = () => {
   // FIXME search analytics event
   // See https://support.google.com/firebase/answer/6317498?hl=en&ref_topic=6317484
   return (
-    <div className="flex flex-col items-center justify-center space-y-5">
+    <div className="flex flex-col items-center justify-center space-y-5 w-full">
       <PuttingThingsTogether className="mx-5 max-w-xs" />
       <p className="text-gray-700 mx-5 max-w-lg text-center text-sm lg:text-base">
         The search functionality is currently in progress. Make sure to check out our{" "}
