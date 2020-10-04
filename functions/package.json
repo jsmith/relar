@@ -1,7 +1,8 @@
 {
   "name": "functions",
+  "version": "0.5.1",
   "scripts": {
-    "build": "rm -rf lib && tsc",
+    "build": "rm -rf lib && ../node_modules/.bin/tsc",
     "test": "./test.sh",
     "check:lint": "../node_modules/.bin/eslint \"**/*.{ts,tsx}\"",
     "check:formatting": "../node_modules/.bin/prettier --list-different \"**/*.{ts,tsx,js}\"",

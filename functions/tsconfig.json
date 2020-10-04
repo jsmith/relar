@@ -10,6 +10,5 @@
     "skipLibCheck": true,
     "rootDir": "src"
   },
-  "include": ["src"],
-  "exclude": ["src/shared/web/**"]
+  "include": ["src"]
 }
