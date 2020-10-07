@@ -363,6 +363,8 @@ export const createSong = f.storage.object().onFinalize(
                   // If this is a new album, initialize the artwork hash the the hash
                   // of the artwork for this song. Note that this value may be undefined.
                   artwork,
+                  updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+                  deleted: false,
                 };
 
                 transaction.set(albumSnap.ref, album);
@@ -370,7 +372,12 @@ export const createSong = f.storage.object().onFinalize(
 
               let artist = artistSnap?.data();
               if (!artist && artistSnap && id3Tag?.artist) {
-                artist = { name: id3Tag.artist };
+                artist = {
+                  id: id3Tag.artist,
+                  name: id3Tag.artist,
+                  updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+                  deleted: false,
+                };
                 transaction.set(artistSnap.ref, artist);
               }
 
@@ -384,8 +391,8 @@ export const createSong = f.storage.object().onFinalize(
                 title: id3Tag?.title ?? defaultTitle,
                 artist: artist?.name,
                 albumName: album?.album,
-                albumArtist: album.albumArtist,
-                albumId: album.id,
+                albumArtist: album?.albumArtist,
+                albumId: album?.id,
                 year: id3Tag?.year,
                 liked: false,
                 whenLiked: undefined,
@@ -394,7 +401,9 @@ export const createSong = f.storage.object().onFinalize(
                 lastPlayed: undefined,
                 artwork,
                 duration,
-                createdAt: (admin.firestore.FieldValue.serverTimestamp() as unknown) as admin.firestore.Timestamp,
+                createdAt: admin.firestore.FieldValue.serverTimestamp() as admin.firestore.Timestamp,
+                updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+                deleted: false,
               };
 
               // Update the user information (ie. the # of songs)

@@ -537,3 +537,18 @@ export const getAlbumArtistName = (
 export const getAlbumName = (name: string | undefined) => {
   return name ? name : "Unknown Album";
 };
+
+export const onConditions = async <T>(
+  f: () => Promise<T>,
+  onSuccess: (result: T) => void,
+  onError?: (e: unknown) => void,
+  onSettled?: () => void,
+) => {
+  try {
+    onSuccess(await f());
+  } catch (e) {
+    onError && onError(e);
+  } finally {
+    onSettled && onSettled();
+  }
+};

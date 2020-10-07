@@ -1,13 +1,17 @@
-import { createQueryCache } from "./cache";
-import type { UserData } from "../shared/universal/types";
 import { useUserData } from "../firestore";
+import { useEffect, useMemo, useState } from "react";
 
-const {
-  useQuery: useUserDataQuery,
-  // queryCache: albumsQueryCache,
-} = createQueryCache<["user", string], firebase.firestore.DocumentSnapshot<UserData>>();
+const useFirebaseDocument = <T>(doc: firebase.firestore.DocumentReference<T>) => {
+  const [data, setData] = useState<T>();
+
+  useEffect(() => {
+    return doc.onSnapshot((snapshot) => setData(snapshot.data()));
+  }, [doc]);
+
+  return data;
+};
 
 export const useUserDataDoc = () => {
   const userData = useUserData();
-  return useUserDataQuery(["user", userData.userId], () => userData.doc().get());
+  return useFirebaseDocument(useMemo(() => userData.doc(), [userData]));
 };

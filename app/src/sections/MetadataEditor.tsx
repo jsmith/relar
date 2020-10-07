@@ -2,19 +2,20 @@ import React, { useState, useEffect } from "react";
 import type { Song, MetadataAPI } from "../shared/universal/types";
 import { OkCancelModal } from "../components/OkCancelModal";
 import { Input } from "../components/Input";
-import { useFirebaseUpdater } from "../watcher";
 import { metadataBackend, getOrUnknownError } from "../backend";
 import { useDefinedUser } from "../auth";
 import { BlockAlert } from "../components/BlockAlert";
+import { useSongRef } from "../firestore";
 
 export interface MetadataEditorProps {
   setDisplay: (display: boolean) => void;
-  song: firebase.firestore.QueryDocumentSnapshot<Song>;
+  song: Song;
   onSuccess: (song: Song) => void;
 }
 
 export const MetadataEditor = ({ song, setDisplay, onSuccess }: MetadataEditorProps) => {
   const user = useDefinedUser();
+  const ref = useSongRef(song);
   const [title, setTitle] = useState("");
   const [artist, setArtist] = useState("");
   const [albumArtist, setAlbumArtist] = useState("");
@@ -22,16 +23,15 @@ export const MetadataEditor = ({ song, setDisplay, onSuccess }: MetadataEditorPr
   const [genre, setGenre] = useState("");
   const [year, setYear] = useState("");
   const [error, setError] = useState("");
-  const [data, setData] = useFirebaseUpdater(song);
 
   useEffect(() => {
-    setTitle(data.title ?? "");
-    setArtist(data.artist ?? "");
-    setAlbumArtist(data.albumArtist ?? "");
-    setAlbumName(data.albumName ?? "");
-    setGenre(data.genre ?? "");
-    setYear(data.year ?? "");
-  }, [data]);
+    setTitle(song.title ?? "");
+    setArtist(song.artist ?? "");
+    setAlbumArtist(song.albumArtist ?? "");
+    setAlbumName(song.albumName ?? "");
+    setGenre(song.genre ?? "");
+    setYear(song.year ?? "");
+  }, [song]);
 
   const submit = async () => {
     setError("");
@@ -57,10 +57,11 @@ export const MetadataEditor = ({ song, setDisplay, onSuccess }: MetadataEditorPr
     if (result.data.type === "success") {
       setDisplay(false);
 
-      song.ref.get().then((snapshot) => {
+      ref.get().then((snapshot) => {
         const data = snapshot.data();
         if (data) {
-          setData(data);
+          // TODO
+          // setData(data);
           onSuccess(data);
         }
       });

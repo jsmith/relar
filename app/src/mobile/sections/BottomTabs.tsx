@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import type { IconType } from "react-icons/lib";
 import type { RouteType } from "@graywolfai/react-tiniest-router";
 import { Link } from "../../components/Link";
@@ -17,7 +17,6 @@ import {
 import { motion, useMotionValue, useTransform, Variants } from "framer-motion";
 import { Thumbnail } from "../../components/Thumbnail";
 import { Repeat } from "../../components/Repeat";
-import { useFirebaseUpdater } from "../../watcher";
 import { SongTimeSlider } from "../../sections/SongTimeSlider";
 import { LikedIcon } from "../../components/LikedIcon";
 import { useQueue } from "../../queue";
@@ -80,7 +79,6 @@ export const ButtonTabs = () => {
   // This if else if just for hot reload
   // It should always init to 0 for the end users
   const height = useMotionValue(up ? MINIFIED_HEIGHT : 0);
-  const [data] = useFirebaseUpdater(songInfo?.song);
   const tabsHeight = useTransform(
     height,
     (height) =>
@@ -152,14 +150,15 @@ export const ButtonTabs = () => {
           className="flex items-center space-x-2 flex-shrink-0 absolute w-full z-10"
         >
           <Thumbnail
-            snapshot={songInfo?.song}
+            type="song"
+            object={songInfo?.song}
             size="256"
             style={{ height: `${MINIFIED_HEIGHT}px`, width: `${MINIFIED_HEIGHT}px` }}
             className="flex-shrink-0"
           />
           <div className="flex flex-col justify-center flex-grow">
-            <div className="flex-grow text-gray-100 clamp-2 text-sm">{data?.title}</div>
-            <div className="flex-grow text-xs text-gray-300">{data?.artist}</div>
+            <div className="flex-grow text-gray-100 clamp-2 text-sm">{songInfo?.song.title}</div>
+            <div className="flex-grow text-xs text-gray-300">{songInfo?.song.artist}</div>
           </div>
 
           <button
@@ -196,11 +195,11 @@ export const ButtonTabs = () => {
               }}
             >
               <TextRotation
-                text={data?.title ?? ""}
+                text={songInfo?.song.title ?? ""}
                 className="text-gray-100 font-bold leading-none"
                 on={up && openQueue}
               />
-              <div className="text-gray-300 text-opacity-75">{data?.artist}</div>
+              <div className="text-gray-300 text-opacity-75">{songInfo?.song.artist}</div>
             </motion.div>
           </div>
 
@@ -215,7 +214,7 @@ export const ButtonTabs = () => {
               className={classNames("flex-shrink-0", openQueue ? "w-16 h-16" : "w-48 h-48")}
               layout
             >
-              <Thumbnail snapshot={songInfo?.song} size="256" className="w-full h-full" />
+              <Thumbnail object={songInfo?.song} type="song" size="256" className="w-full h-full" />
             </motion.div>
           </div>
 
@@ -250,13 +249,13 @@ export const ButtonTabs = () => {
               className="overflow-hidden"
             >
               <TextRotation
-                text={data?.title ?? ""}
+                text={songInfo?.song.title ?? ""}
                 className="text-xl text-gray-100 font-bold"
                 on={up}
               />
-              <div className="text-gray-300 text-opacity-75">{data?.artist}</div>
+              <div className="text-gray-300 text-opacity-75">{songInfo?.song.artist}</div>
             </motion.div>
-            <SongTimeSlider duration={data?.duration} />
+            <SongTimeSlider duration={songInfo?.song.duration} />
             <div className="flex justify-around items-center">
               <Repeat mode={mode} setMode={setMode} iconClassName="w-8 h-8" />
               <button onClick={previous} className="focus:outline-none">
@@ -277,7 +276,7 @@ export const ButtonTabs = () => {
             </div>
             <div className="flex justify-between">
               <LikedIcon
-                liked={data?.liked}
+                liked={songInfo?.song.liked}
                 setLiked={() => {}}
                 iconClassName="w-6 h-6"
                 className="focus:outline-none"
@@ -302,7 +301,7 @@ export const ButtonTabs = () => {
                         route: routes.artist,
                         type: "link",
                         // FIXME
-                        params: { artistName: data?.artist ?? "" },
+                        params: { artistName: songInfo?.song.artist ?? "" },
                       },
                       {
                         label: "Go to Album",
@@ -310,7 +309,7 @@ export const ButtonTabs = () => {
                         route: routes.album,
                         type: "link",
                         // FIXME
-                        params: { albumId: data?.albumId ?? "" },
+                        params: { albumId: songInfo?.song.albumId ?? "" },
                       },
                       { label: "Clear Queue", icon: HiTrash, onClick: clear, type: "click" },
                     ])

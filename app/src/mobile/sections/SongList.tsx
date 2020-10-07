@@ -2,14 +2,7 @@ import React, { useMemo } from "react";
 import { MdAddToQueue, MdPlaylistAdd } from "react-icons/md";
 import { useDeleteSong } from "../../queries/songs";
 import { fmtMSS } from "../../utils";
-import {
-  checkQueueItemsEqual,
-  checkSourcesEqual,
-  isSongInfo,
-  SetQueueSource,
-  SongInfo,
-  useQueue,
-} from "../../queue";
+import { checkQueueItemsEqual, SetQueueSource, SongInfo, useQueue } from "../../queue";
 import {
   ListContainer,
   ListContainerMode,
@@ -22,25 +15,19 @@ import type { Song } from "../../shared/universal/types";
 import { HiPlus, HiTrash } from "react-icons/hi";
 import { Modals } from "@capacitor/core";
 import { useSlideUpScreen } from "../slide-up-screen";
-import { usePlaylistCreate } from "../../queries/playlists";
+import { usePlaylistCreate, usePlaylistRemoveSong } from "../../queries/playlists";
 import { AddToPlaylistList } from "../../sections/AddToPlaylistList";
 import { MusicListItem, MusicListItemState } from "./MusicListItem";
 
 export interface SongListProps {
-  songs: Array<firebase.firestore.QueryDocumentSnapshot<Song> | SongInfo> | undefined;
+  songs: SongInfo[] | undefined;
   mode?: ListContainerMode;
   className?: string;
   disableNavigator?: boolean;
   source: SetQueueSource;
 }
 
-const AddToPlaylistMenu = ({
-  song,
-  hide,
-}: {
-  song: firebase.firestore.QueryDocumentSnapshot<Song>;
-  hide: () => void;
-}) => {
+const AddToPlaylistMenu = ({ song, hide }: { song: Song; hide: () => void }) => {
   return (
     <div className="flex flex-col py-2">
       <AddToPlaylistList
@@ -54,22 +41,19 @@ const AddToPlaylistMenu = ({
 };
 
 const SongListRow = ({
-  item: data,
+  item: song,
   handleSentinel,
-  index,
-  snapshot: song,
-  snapshots: songs,
+  items: songs,
   absoluteIndex,
   mode,
   source,
-  songsMixed,
-}: ListContainerRowProps<Song> & {
+}: ListContainerRowProps<SongInfo> & {
   source: SetQueueSource;
-  songsMixed: Array<firebase.firestore.QueryDocumentSnapshot<Song> | SongInfo> | undefined;
 }) => {
-  const [deleteSong] = useDeleteSong();
+  const deleteSong = useDeleteSong();
   const { setQueue, enqueue, songInfo, playing } = useQueue();
-  const [createPlaylist] = usePlaylistCreate();
+  const createPlaylist = usePlaylistCreate();
+  const removeSong = usePlaylistRemoveSong(source.type === "playlist" ? source.id : undefined);
   const { show } = useSlideUpScreen(
     "Add to Playlist",
     AddToPlaylistMenu,
@@ -84,23 +68,16 @@ const SongListRow = ({
         });
 
         if (cancelled) return;
-        createPlaylist(value, {
-          onError: () =>
-            Modals.alert({
-              title: "Error",
-              message: "There was an unknown error creating playlist.",
-            }),
-        });
+        createPlaylist(value);
       },
     },
   );
 
   const state = useMemo((): MusicListItemState => {
-    if (!songsMixed) return "not-playing";
-    const id = songsMixed[absoluteIndex].id;
+    const id = songs[absoluteIndex].playlistId ?? songs[absoluteIndex].id;
     if (!checkQueueItemsEqual({ song, id, source }, songInfo)) return "not-playing";
     return playing ? "playing" : "paused";
-  }, [absoluteIndex, playing, song, songInfo, songsMixed, source]);
+  }, [absoluteIndex, playing, song, songInfo, songs, source]);
 
   return (
     <MusicListItem
@@ -117,22 +94,30 @@ const SongListRow = ({
           type: "click",
           onClick: show,
         },
-        data.artist
+        song.playlistId
+          ? {
+              label: "Remove From Playlist",
+              icon: MdPlaylistAdd,
+              type: "click",
+              onClick: () => removeSong(song.playlistId!),
+            }
+          : undefined,
+        song.artist
           ? {
               label: "Go To Artist",
               icon: AiOutlineUser,
               route: routes.artist,
               type: "link",
-              params: { artistName: data.artist },
+              params: { artistName: song.artist },
             }
           : undefined,
-        data.albumId
+        song.albumId
           ? {
               label: "Go to Album",
               icon: RiAlbumLine,
               route: routes.album,
               type: "link",
-              params: { albumId: data.albumId },
+              params: { albumId: song.albumId },
             }
           : undefined,
         {
@@ -142,7 +127,7 @@ const SongListRow = ({
           onClick: () => {
             Modals.confirm({
               title: "Delete Song",
-              message: `Are you sure you want to delete ${data.title}?`,
+              message: `Are you sure you want to delete ${song.title}?`,
             }).then(({ value }) => {
               if (value) {
                 deleteSong(song.id);
@@ -159,29 +144,19 @@ const SongListRow = ({
           index: absoluteIndex,
         })
       }
-      title={data.title}
-      subTitle={`${data.artist} • ${fmtMSS(data.duration / 1000)}`}
+      title={song.title}
+      subTitle={`${song.artist} • ${fmtMSS(song.duration / 1000)}`}
       handleSentinel={handleSentinel}
       absoluteIndex={absoluteIndex}
-      snapshot={song}
+      object={song}
       mode={mode}
       state={state}
+      type="song"
     />
   );
 };
 
-export const SongList = ({
-  songs: songsMixed,
-  mode,
-  className,
-  disableNavigator,
-  source,
-}: SongListProps) => {
-  // FIXME duplication
-  const songs = useMemo(() => songsMixed?.map((item) => (isSongInfo(item) ? item.song : item)), [
-    songsMixed,
-  ]);
-
+export const SongList = ({ songs, mode, className, disableNavigator, source }: SongListProps) => {
   return (
     <ListContainer
       height={57}
@@ -191,7 +166,7 @@ export const SongList = ({
       mode={mode}
       className={className}
       disableNavigator={disableNavigator}
-      extra={{ source, songsMixed }}
+      extra={{ source }}
     />
   );
 };

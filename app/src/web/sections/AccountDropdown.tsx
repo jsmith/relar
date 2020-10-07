@@ -9,8 +9,9 @@ import { useDefinedUser } from "../../auth";
 import { useModal } from "react-modal-hook";
 import { Feedback } from "../../sections/Feedback";
 import firebase from "firebase/app";
+import { deleteDB } from "idb";
 
-const ITEMS = ["Account" as const, "Feedback" as const, "Log Out" as const];
+const ITEMS = ["Account" as const, "Clear Cache" as const, "Feedback" as const, "Log Out" as const];
 
 export interface AccountDropdownProps {
   className?: string;
@@ -29,6 +30,10 @@ export const AccountDropdown = ({ className }: AccountDropdownProps) => {
       switch (j.selectedItem) {
         case "Account":
           goTo(routes.account);
+          break;
+        case "Clear Cache":
+          // TODO rename
+          deleteDB("test").then(() => window.location.reload());
           break;
         case "Log Out":
           firebase.analytics().logEvent("logout");

@@ -11,7 +11,7 @@ import {
   songTwoArtist,
   createAndUploadTestSong,
   assertExists,
-  assertDoesNotExists,
+  assertDeleted,
 } from "./test-utils";
 import { admin } from "./admin";
 
@@ -97,8 +97,8 @@ test("deletes old album and artist", async () => {
   await supertest(app).post("/edit").send(body).expect(200, {
     type: "success",
   });
-  await assertDoesNotExists(db.album(songTwo.albumId));
-  await assertDoesNotExists(db.artist(songTwo.artist));
+  assertDeleted(db.album(songTwo.albumId));
+  assertDeleted(db.artist(songTwo.artist));
 });
 
 test("doesn't delete old album and artist", async () => {

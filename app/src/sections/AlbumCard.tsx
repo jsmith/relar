@@ -4,32 +4,25 @@ import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import { routes } from "../routes";
 import { useAlbumSongs } from "../queries/album";
-import { useFirebaseUpdater } from "../watcher";
 import { useQueue } from "../queue";
 
-export const AlbumCard = ({
-  album,
-  className,
-}: {
-  album: firebase.firestore.QueryDocumentSnapshot<Album>;
-  className?: string;
-}) => {
+export const AlbumCard = ({ album, className }: { album: Album; className?: string }) => {
   const { setQueue } = useQueue();
-  const [data] = useFirebaseUpdater(album);
   const { goTo } = useRouter();
-  const songs = useAlbumSongs(data.id);
+  const songs = useAlbumSongs(album.id);
 
   return (
     <ThumbnailCard
-      snapshot={album}
-      title={data.album ?? ""}
-      subtitle={data.albumArtist}
+      type="album"
+      objects={album}
+      title={album.album ?? ""}
+      subtitle={album.albumArtist}
       onClick={() => goTo(routes.album, { albumId: album.id })}
       className={className}
       play={() =>
         setQueue({
-          songs: songs.data,
-          source: { type: "album", id: data.id, sourceHumanName: data.album ?? "Unknown Album" },
+          songs: songs,
+          source: { type: "album", id: album.id, sourceHumanName: album.album ?? "Unknown Album" },
         })
       }
     />

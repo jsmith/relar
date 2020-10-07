@@ -2,12 +2,14 @@ import { useRouter } from "@graywolfai/react-tiniest-router";
 import { useCallback, useEffect } from "react";
 import { useUser, useUserChange } from "./auth";
 import firebase from "firebase/app";
-import { clearCache } from "./watcher";
 import * as Sentry from "@sentry/browser";
+import { useCoolDB } from "./db";
 
 export const useStartupHooks = () => {
   const { routeId } = useRouter();
   const { loading } = useUser();
+
+  useCoolDB();
 
   useEffect(() => {
     if (loading) return;
@@ -22,9 +24,6 @@ export const useStartupHooks = () => {
     // See https://firebase.googleblog.com/2020/08/google-analytics-manual-screen-view.html
     firebase.analytics().logEvent("screen_view", { app_name: "RELAR", screen_name: routeId });
   }, [routeId]);
-
-  // We need to reset the cache every time the user changes
-  useUserChange(clearCache);
 
   useUserChange(
     useCallback((user) => {

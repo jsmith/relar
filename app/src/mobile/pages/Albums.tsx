@@ -3,13 +3,12 @@ import React from "react";
 import { ListContainer, ListContainerRowProps } from "../components/ListContainer";
 import { routes } from "../../routes";
 import { MusicListItem } from "../sections/MusicListItem";
-import type { Album } from "../../shared/universal/types";
-import { useAlbums } from "../../queries/album";
+import { Album } from "../../shared/universal/types";
+import { useCoolAlbums } from "../../db";
 
 const AlbumRow = ({
   absoluteIndex,
-  snapshot: album,
-  item: data,
+  item: album,
   handleSentinel,
   mode,
 }: ListContainerRowProps<Album>) => {
@@ -17,11 +16,12 @@ const AlbumRow = ({
 
   return (
     <MusicListItem
-      title={data.album ? data.album : "Unknown Album"}
-      subTitle={data.albumArtist ? data.albumArtist : "Unknown Artist"}
+      title={album.album ? album.album : "Unknown Album"}
+      subTitle={album.albumArtist ? album.albumArtist : "Unknown Artist"}
       handleSentinel={handleSentinel}
       absoluteIndex={absoluteIndex}
-      snapshot={album}
+      object={album}
+      type="album"
       onClick={() => goTo(routes.album, { albumId: album.id })}
       mode={mode}
     />
@@ -29,11 +29,11 @@ const AlbumRow = ({
 };
 
 export const Albums = () => {
-  const albums = useAlbums();
+  const albums = useCoolAlbums();
   return (
     <ListContainer
       height={57}
-      items={albums.data}
+      items={albums}
       sortKey="album"
       row={AlbumRow}
       extra={{}}

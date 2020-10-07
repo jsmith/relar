@@ -23,7 +23,7 @@ export interface QueueProps {
 export const Queue = forwardRef<HTMLDivElement, QueueProps>(
   ({ visible, close, exclude }, forwarded) => {
     const { queue, songInfo, clear } = useQueue();
-    const songs = useMemo(() => queue.map(({ song, id }) => ({ song, id })), [queue]);
+    const songs = useMemo(() => queue.map(({ song }) => song), [queue]);
     const [container, setContainer] = useState<HTMLDivElement | null>(null);
     const ref = useRef<HTMLDivElement | null>(null);
     const combined = useCombinedRefs(ref, forwarded);

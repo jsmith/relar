@@ -1,5 +1,4 @@
 import React, { useMemo, useState, CSSProperties } from "react";
-import type { Song } from "../../shared/universal/types";
 import classNames from "classnames";
 import {
   MdMusicNote,
@@ -18,14 +17,13 @@ import { IconButton } from "../../components/IconButton";
 import { ContextMenu, ContextMenuItem } from "../../components/ContextMenu";
 import { useConfirmAction } from "../../confirm-actions";
 import { useLikeSong, useDeleteSong } from "../../queries/songs";
-import { useFirebaseUpdater } from "../../watcher";
 import { fmtMSS } from "../../utils";
 import { Link } from "../../components/Link";
 import { routes } from "../../routes";
 import { link } from "../../classes";
 import { AddToPlaylistEditor } from "./AddToPlaylistModal";
 import Skeleton from "react-loading-skeleton";
-import { useQueue, SetQueueSource, SongInfo, isSongInfo, checkQueueItemsEqual } from "../../queue";
+import { useQueue, SetQueueSource, SongInfo, checkQueueItemsEqual } from "../../queue";
 import { useRecycle, SentinelBlock } from "../../recycle";
 import { Audio } from "@jsmith21/svg-loaders-react";
 
@@ -98,17 +96,18 @@ export const TextCell = ({
   );
 };
 
-export interface SongTableItem extends Omit<ContextMenuItem, "onClick" | "props"> {
-  onClick: (song: firebase.firestore.QueryDocumentSnapshot<Song>, index: number) => void;
+export interface SongTableItem<T extends SongInfo>
+  extends Omit<ContextMenuItem, "onClick" | "props"> {
+  onClick: (song: T, index: number) => void;
 }
 
-export interface SongTableRowProps {
+export interface SongTableRowProps<T extends SongInfo> {
   /**
    * The song. `undefined` means it is loading.
    */
-  song: firebase.firestore.QueryDocumentSnapshot<Song>;
-  setSong: (song: firebase.firestore.QueryDocumentSnapshot<Song>) => void;
-  actions: SongTableItem[] | undefined;
+  song: T;
+  setSong: (song: T) => void;
+  actions: SongTableItem<T>[] | undefined;
   mode: "regular" | "condensed";
   playing: boolean;
   paused: boolean;
@@ -117,7 +116,7 @@ export interface SongTableRowProps {
   index: number;
 }
 
-export const SongTableRow = ({
+export const SongTableRow = <T extends SongInfo>({
   song,
   setSong,
   actions,
@@ -127,7 +126,7 @@ export const SongTableRow = ({
   children,
   includeDateAdded,
   index,
-}: SongTableRowProps) => {
+}: SongTableRowProps<T>) => {
   const [focusedPlay, setFocusedPlay] = useState(false);
   const [showEditorModal, hideEditorModal] = useModal(() => (
     <MetadataEditor setDisplay={() => hideEditorModal()} song={song} onSuccess={() => {}} />
@@ -136,9 +135,8 @@ export const SongTableRow = ({
     <AddToPlaylistEditor setDisplay={() => hideAddPlaylistModal()} song={song} />
   ));
   const { confirmAction } = useConfirmAction();
-  const [setLiked] = useLikeSong(song);
-  const [data] = useFirebaseUpdater(song);
-  const [deleteSong] = useDeleteSong();
+  const setLiked = useLikeSong(song);
+  const deleteSong = useDeleteSong();
 
   const contextMenuItems = useMemo(() => {
     const extraItems: ContextMenuItem[] =
@@ -169,7 +167,7 @@ export const SongTableRow = ({
         icon: MdDelete,
         onClick: async () => {
           const confirmed = await confirmAction({
-            title: `Delete ${data.title}`,
+            title: `Delete ${song.title}`,
             subtitle: "Are you sure you want to delete this song?",
             confirmText: "Delete Song",
           });
@@ -181,32 +179,23 @@ export const SongTableRow = ({
       },
       ...extraItems,
     ];
-  }, [
-    actions,
-    confirmAction,
-    data.title,
-    deleteSong,
-    index,
-    showAddPlaylistModal,
-    showEditorModal,
-    song,
-  ]);
+  }, [actions, confirmAction, deleteSong, index, showAddPlaylistModal, showEditorModal, song]);
 
-  const artist = data.artist && (
+  const artist = song.artist && (
     <Link
       className={classNames(link({ color: "" }), mode === "condensed" && "text-2xs")}
-      label={data.artist}
+      label={song.artist}
       route={routes.artist}
-      params={{ artistName: data.artist }}
+      params={{ artistName: song.artist }}
     />
   );
 
-  const album = data.albumId && (
+  const album = song.albumId && (
     <Link
       className={classNames(link({ color: "" }), mode === "condensed" && "text-2xs")}
-      label={data.albumName}
+      label={song.albumName}
       route={routes.album}
-      params={{ albumId: data.albumId }}
+      params={{ albumId: song.albumId }}
     />
   );
 
@@ -229,7 +218,7 @@ export const SongTableRow = ({
                 )}
               />
               <button
-                title={`Play ${data.title}`}
+                title={`Play ${song.title}`}
                 className="focus:opacity-100 group-hover:opacity-100 opacity-0"
                 onFocus={() => setFocusedPlay(true)}
                 onBlur={() => setFocusedPlay(false)}
@@ -245,10 +234,10 @@ export const SongTableRow = ({
         {/* Got the tip from https://stackoverflow.com/questions/45813304/text-overflow-ellipsis-on-flex-child-not-working */}
         <div className="flex-grow min-w-0">
           <div
-            title={data.title}
+            title={song.title}
             className={classNames("truncate", mode === "condensed" && "text-xs")}
           >
-            {data.title}
+            {song.title}
           </div>
           {mode === "condensed" && (
             <div className="flex space-x-2 text-gray-600">
@@ -274,36 +263,36 @@ export const SongTableRow = ({
         />
       </Cell>
       {mode === "regular" && (
-        <TextCell title={data.artist} text={artist} className="h-12 truncate" />
+        <TextCell title={song.artist} text={artist} className="h-12 truncate" />
       )}
       {mode === "regular" && (
-        <TextCell title={data.albumName} text={album} className="h-12 truncate" />
+        <TextCell title={song.albumName} text={album} className="h-12 truncate" />
       )}
-      <TextCell text={`${data.played ?? ""}`} className="h-12 truncate" />
+      <TextCell text={`${song.played ?? ""}`} className="h-12 truncate" />
       {includeDateAdded && (
         <TextCell
-          title={data.createdAt.toDate().toLocaleDateString()}
-          text={data.createdAt.toDate().toLocaleDateString()}
+          title={song.createdAt.toDate().toLocaleDateString()}
+          text={song.createdAt.toDate().toLocaleDateString()}
           className="h-12 truncate"
         />
       )}
-      <TextCell text={fmtMSS(data.duration / 1000)} className="h-12 truncate" />
+      <TextCell text={fmtMSS(song.duration / 1000)} className="h-12 truncate" />
       <Cell className="h-12 truncate">
-        <LikedIcon liked={data.liked} setLiked={setLiked} />
+        <LikedIcon liked={song.liked} setLiked={setLiked} />
         {children}
       </Cell>
     </tr>
   );
 };
 
-export interface SongTableProps {
+export interface SongTableProps<T extends SongInfo> {
   /**
    * The songs. Passing in `undefined` indicates that the songs are still loading.
    */
-  songs?: Array<firebase.firestore.QueryDocumentSnapshot<Song> | SongInfo>;
+  songs?: T[];
   loadingRows?: number;
   container: HTMLElement | null;
-  actions?: SongTableItem[];
+  actions?: SongTableItem<T>[];
 
   includeDateAdded?: boolean;
 
@@ -313,19 +302,16 @@ export interface SongTableProps {
   mode?: "regular" | "condensed";
 }
 
-export const SongTable = ({
-  songs: songsMixed,
+// TODO JACOB REMOVE SONG INFO
+export const SongTable = function <T extends SongInfo>({
+  songs,
   loadingRows = 5,
   container,
   actions,
   source,
   mode = "regular",
   includeDateAdded,
-}: SongTableProps) => {
-  const songs = useMemo(
-    () => songsMixed?.map((song) => (isSongInfo(song) ? song : { song, id: song.id })),
-    [songsMixed],
-  );
+}: SongTableProps<T>) {
   const { setQueue, playing: notPaused, dequeue, enqueue, songInfo } = useQueue();
   const rowCount = useMemo(() => songs?.length ?? 0, [songs]);
   const {
@@ -372,8 +358,11 @@ export const SongTable = ({
           </tr>
         ));
     }
-    return songs.slice(start, end).map(({ song, id }, i) => {
-      const playing = checkQueueItemsEqual({ song, id, source }, songInfo);
+    return songs.slice(start, end).map((song, i) => {
+      const playing = checkQueueItemsEqual(
+        { song, id: song.playlistId ?? song.id, source },
+        songInfo,
+      );
 
       // The key is the index rather than the song ID as the song could > 1
       return (

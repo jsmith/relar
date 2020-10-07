@@ -1,6 +1,6 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useRouter } from "@graywolfai/react-tiniest-router";
-import { fmtToDate } from "../../utils";
+import { fmtToDate, onConditions } from "../../utils";
 import {
   usePlaylist,
   usePlaylistRemoveSong,
@@ -9,7 +9,6 @@ import {
   usePlaylistDelete,
 } from "../../queries/playlists";
 import { HiOutlineTrash } from "react-icons/hi";
-import { useFirebaseUpdater } from "../../watcher";
 import { useConfirmAction } from "../../confirm-actions";
 import { routes } from "../../routes";
 import { SongsOverview } from "../sections/SongsOverview";
@@ -18,51 +17,50 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
   const { params, goTo } = useRouter();
   // FIXME validation
   const { playlistId } = params as { playlistId: string };
-  const { playlist, status } = usePlaylist(playlistId);
-  const [data] = useFirebaseUpdater(playlist);
-  const playlistSongs = usePlaylistSongs(data);
-  const [removeSong] = usePlaylistRemoveSong(playlistId);
-  const [rename] = usePlaylistRename(playlistId);
-  const [deletePlaylist] = usePlaylistDelete(playlistId);
+  const playlist = usePlaylist(playlistId);
+  const playlistSongs = usePlaylistSongs(playlist);
+  const removeSong = usePlaylistRemoveSong(playlistId);
+  const rename = usePlaylistRename(playlistId);
+  const deletePlaylist = usePlaylistDelete(playlistId);
   const { confirmAction } = useConfirmAction();
 
   return (
     <SongsOverview
-      status={status}
       songs={playlistSongs}
       container={container}
-      title={data?.name}
-      source={{ type: "playlist", id: playlistId, sourceHumanName: data?.name ?? "" }}
-      infoPoints={data ? [`Created on ${fmtToDate(data.createdAt)}`] : []}
+      title={playlist?.name}
+      source={{ type: "playlist", id: playlistId, sourceHumanName: playlist?.name ?? "" }}
+      infoPoints={playlist ? [`Created on ${fmtToDate(playlist.createdAt)}`] : []}
       songActions={[
         {
           label: "Remove From Playlist",
           icon: HiOutlineTrash,
-          onClick: (song) => removeSong(song.id),
+          onClick: (song) => removeSong(song.playlistId),
         },
       ]}
       onRename={(name) => {
         return new Promise((resolve) =>
-          rename(name, {
-            onSuccess: () => resolve(true),
+          onConditions(
+            () => rename(name),
+            () => resolve(true),
             // FIXME error notification
-            onError: () => resolve(false),
-          }),
+            () => resolve(false),
+          ),
         );
       }}
       onDelete={async () => {
-        if (!data) return;
+        if (!playlist) return;
         const confirmed = await confirmAction({
           title: "Delete Playlist",
-          subtitle: `Are you sure you want to delete ${data.name}?`,
+          subtitle: `Are you sure you want to delete ${playlist.name}?`,
           confirmText: "Delete",
         });
 
         if (confirmed) {
-          deletePlaylist(undefined, {
-            // FIXME notif on error
-            onSuccess: () => goTo(routes.playlists),
-          });
+          onConditions(
+            () => deletePlaylist(),
+            () => goTo(routes.playlists),
+          );
         }
       }}
     />

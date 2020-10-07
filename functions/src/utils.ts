@@ -1,6 +1,7 @@
 import * as admin from "firebase-admin";
 import { GetFilesResponse } from "@google-cloud/storage";
 import { adminDb } from "./shared/node/utils";
+import { Album, Artist } from "./shared/universal/types";
 
 export const deleteCollection = async (
   collection: FirebaseFirestore.CollectionReference<unknown>,
@@ -67,7 +68,12 @@ export const deleteAlbumIfSingleSong = async ({
 
   // This album is now EMPTY!
   if (songs.docs.length === 1) {
-    return () => transaction.delete(userData.album(albumId));
+    const update: Partial<Album> = {
+      updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+      deleted: true,
+    };
+
+    return () => transaction.update(userData.album(albumId), update);
   }
 
   return;
@@ -88,7 +94,13 @@ export const deleteArtistSingleSong = async ({
   const songs = await transaction.get(userData.findArtistSongs(artist));
 
   if (songs.docs.length === 1) {
-    return () => transaction.delete(userData.artist(artist));
+    const update: Partial<Artist> = {
+      // TODO simplify
+      updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+      deleted: true,
+    };
+
+    return () => transaction.update(userData.artist(artist), update);
   }
 
   return;

@@ -1,12 +1,11 @@
-import React, { useMemo, useState } from "react";
-import { Thumbnail } from "./Thumbnail";
+import React, { useState } from "react";
 import { MdPlayCircleFilled } from "react-icons/md";
 import classNames from "classnames";
-import { Collage } from "./Collage";
-import type { ThumbnailObjectSnapshot } from "../queries/thumbnail";
+import { Collage, CollageProps } from "./Collage";
 
 export interface ThumbnailCardProps {
-  snapshot: ThumbnailObjectSnapshot | ThumbnailObjectSnapshot[];
+  objects: CollageProps["objects"];
+  type: CollageProps["type"];
   title: string;
   subtitle: string | undefined;
   onClick?: () => void;
@@ -16,12 +15,13 @@ export interface ThumbnailCardProps {
 
 // TODO refactor to small design
 export const ThumbnailCard = ({
-  snapshot,
+  objects,
   title,
   subtitle,
   onClick,
   className,
   play,
+  type,
 }: ThumbnailCardProps) => {
   const [focused, setFocused] = useState(false);
   const height = "h-24 lg:h-32";
@@ -35,11 +35,7 @@ export const ThumbnailCard = ({
       )}
       onClick={onClick}
     >
-      {Array.isArray(snapshot) ? (
-        <Collage className={height} snapshots={snapshot} size="128" />
-      ) : (
-        <Thumbnail className={height} snapshot={snapshot} size="128" />
-      )}
+      <Collage className={height} objects={objects} type={type} size="128" />
       <div
         className="truncate mt-1 lg:mt-2 text-gray-900 font-bold"
         tabIndex={0}

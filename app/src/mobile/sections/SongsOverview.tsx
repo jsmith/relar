@@ -8,8 +8,7 @@ import { BackButton } from "../components/BackButton";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { ActionSheetItem, openActionSheet } from "../action-sheet";
 import { Collage, CollageProps } from "../../components/Collage";
-import type { Song } from "../../shared/universal/types";
-import { isSongInfo, SetQueueSource, SongInfo, useQueue, checkSourcesEqual } from "../../queue";
+import { SetQueueSource, SongInfo, useQueue, checkSourcesEqual } from "../../queue";
 import { Modals } from "@capacitor/core";
 import { Audio } from "@jsmith21/svg-loaders-react";
 
@@ -18,28 +17,27 @@ export interface SongsOverviewProps {
   subTitle?: string;
   infoPoints?: string[];
   onDelete?: () => Promise<void>;
-  snapshots?: CollageProps["snapshots"];
-  songs: Array<SongInfo | firebase.firestore.QueryDocumentSnapshot<Song>>;
+  objects?: CollageProps["objects"];
+  songs: SongInfo[] | undefined;
   source: SetQueueSource;
   onRename?: (newValue: string) => void;
+  type?: CollageProps["type"];
 }
 
 export const SongsOverview = ({
   title,
   subTitle,
   infoPoints,
-  snapshots,
-  songs: songsMixed,
+  objects,
+  songs,
   source,
   onRename,
   onDelete,
+  type = "song",
 }: SongsOverviewProps) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const { width } = useWindowSize();
   const { setQueue, songInfo, playing, toggleState } = useQueue();
-  const songs = useMemo(() => songsMixed.map((item) => (isSongInfo(item) ? item.song : item)), [
-    songsMixed,
-  ]);
   const songDuration = useSongsDuration(songs);
   const scrollY = useMotionValue(0);
   const topImage = useTransform(scrollY, (value) => Math.round(value * 0.2));
@@ -60,8 +58,8 @@ export const SongsOverview = ({
 
   const infoPointsString = useMemo(
     () =>
-      [songsCount(songs.length), fmtMSS(songDuration / 1000), ...(infoPoints ?? [])].join(" • "),
-    [infoPoints, songDuration, songs.length],
+      [songsCount(songs?.length), fmtMSS(songDuration / 1000), ...(infoPoints ?? [])].join(" • "),
+    [infoPoints, songDuration, songs?.length],
   );
 
   const actionItems = useMemo(() => {
@@ -103,7 +101,7 @@ export const SongsOverview = ({
 
       <div style={{ width, height: width }} className="relative overflow-hidden">
         <motion.div className="absolute" style={{ width, height: width, top: topImage }}>
-          <Collage snapshots={snapshots ?? songs} size="256" className="h-full" />
+          <Collage objects={objects ?? songs} size="256" className="h-full" type={type} />
         </motion.div>
       </div>
 
@@ -111,6 +109,8 @@ export const SongsOverview = ({
         <button
           className="absolute top-0 right-0 mr-6 transform -translate-y-1/2 rounded-full bg-purple-500 w-12 h-12 flex items-center justify-center"
           onClick={() => {
+            if (!songs) return;
+
             if (sourcesEqual) {
               toggleState();
             } else {
@@ -157,7 +157,7 @@ export const SongsOverview = ({
 
       <div className="border-t m-3" />
 
-      <SongList songs={songsMixed} source={source} />
+      <SongList songs={songs} source={source} />
     </motion.div>
   );
 };
