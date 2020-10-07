@@ -12,8 +12,6 @@ import {
   Array,
 } from "runtypes";
 
-// TODO update updatedAt timestamps
-
 export const Timestamp = Unknown.withGuard((x): x is firebase.firestore.Timestamp => true);
 
 export const UserDataType = Record({

@@ -88,7 +88,7 @@ export const SongsOverview = <T extends SongInfo>({
           size="256"
           objects={songs}
           type="song"
-          className="w-64 h-64"
+          className="w-48 h-48 lg:w-64 lg:h-64"
           setAverageColor={setAverageColor}
         />
 
@@ -96,6 +96,7 @@ export const SongsOverview = <T extends SongInfo>({
           <div className="flex items-center">
             {title ? (
               <ContentEditable
+                title={title}
                 initial={title}
                 cancelEditing={() => setEditingName(false)}
                 editable={editingName}
@@ -103,22 +104,24 @@ export const SongsOverview = <T extends SongInfo>({
                   if (!onRename) return false;
                   return onRename(name);
                 }}
-                className="font-bold text-5xl"
+                className="font-bold text-3xl lg:text-5xl"
               />
             ) : (
               <Skeleton className="opacity-25 w-48 h-10 my-4" />
             )}
 
-            <ContextMenu
-              button={(props) => (
-                <button {...props} className="ml-3">
-                  <HiDotsHorizontal className="w-8 h-8" />
-                </button>
-              )}
-              items={options}
-              className="transform -translate-x-4"
-              menuClassName="w-48"
-            />
+            {options.length > 0 && (
+              <ContextMenu
+                button={(props) => (
+                  <button {...props} className="ml-3">
+                    <HiDotsHorizontal className="w-8 h-8" />
+                  </button>
+                )}
+                items={options}
+                className="transform -translate-x-4"
+                menuClassName="w-48"
+              />
+            )}
             <button
               onClick={() =>
                 setQueue({

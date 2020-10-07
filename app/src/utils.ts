@@ -1,16 +1,17 @@
 import {
-  useEffect,
   useRef,
-  useState,
   useMemo,
   useCallback,
   RefCallback,
   Ref,
   MutableRefObject,
+  useState,
+  useEffect,
 } from "react";
 import * as Sentry from "@sentry/browser";
 import tiny from "tinycolor2";
 import { ALBUM_ID_DIVIDER } from "./shared/universal/utils";
+import { useSnackbar } from "react-simple-snackbar";
 
 export interface Disposer {
   dispose: () => void;
@@ -551,4 +552,38 @@ export const onConditions = async <T>(
   } finally {
     onSettled && onSettled();
   }
+};
+
+function getOnlineStatus() {
+  return typeof window.navigator !== "undefined" && typeof window.navigator.onLine === "boolean"
+    ? window.navigator.onLine
+    : true;
+}
+
+export function useOnlineStatus() {
+  const [onlineStatus, setOnlineStatus] = useState(getOnlineStatus());
+
+  const goOnline = () => setOnlineStatus(true);
+
+  const goOffline = () => setOnlineStatus(false);
+
+  useEffect(() => {
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, []);
+
+  return onlineStatus;
+}
+
+export const useMySnackbar = () => {
+  const mobile = useIsMobile();
+  const [open] = useSnackbar(
+    mobile ? {} : { position: "top-right", style: { transform: "translateY(60px)" } },
+  );
+  return open;
 };

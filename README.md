@@ -109,3 +109,8 @@ firebase deploy --only storage:rules
 ```
 gsutil cors set storage.json gs://relar-staging.appspot.com # or gs://toga-4e3f5.appspot.com
 ```
+
+## Resources
+
+- https://medium.com/firebase-developers/the-secrets-of-firestore-fieldvalue-servertimestamp-revealed-29dd7a38a82b
+- https://stackoverflow.com/questions/46806860/how-to-query-cloud-firestore-for-non-existing-keys-of-documents

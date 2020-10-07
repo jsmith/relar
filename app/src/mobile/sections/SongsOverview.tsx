@@ -124,7 +124,6 @@ export const SongsOverview = ({
           {sourcesEqual ? (
             <Audio className="w-6 h-4 text-white" fill="currentColor" disabled={!playing} />
           ) : (
-            // <MdPlayCircleFilled className="text-white w-12 h-12 relative" />
             <MdPlayArrow className="text-white w-8 h-8 relative" />
           )}
         </button>

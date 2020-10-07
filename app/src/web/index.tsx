@@ -19,13 +19,13 @@ import { UserProvider } from "../auth";
 import { QueueProvider } from "../queue";
 import { ConfirmActionProvider } from "../confirm-actions";
 import { ConfirmPasswordProvider } from "../confirm-password";
-import { captureAndLog } from "../utils";
 import { ModalProvider } from "react-modal-hook";
 import { setBaseUrls } from "../backend";
 import { env } from "../env";
 import "../firebase";
 import "../common.css";
 import "../tailwind.css";
+import SnackbarProvider from "react-simple-snackbar";
 
 setBaseUrls(env);
 ReactDOM.render(
@@ -37,7 +37,9 @@ ReactDOM.render(
             {/* <SkeletonTheme color="rgb(255, 255, 255, 0.05)" highlightColor="rgb(255, 255, 255, 0.15)"> */}
             <ConfirmActionProvider>
               <ConfirmPasswordProvider>
-                <App />
+                <SnackbarProvider>
+                  <App />
+                </SnackbarProvider>
               </ConfirmPasswordProvider>
             </ConfirmActionProvider>
             {/* </SkeletonTheme> */}

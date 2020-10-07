@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { MdAddToQueue, MdPlaylistAdd } from "react-icons/md";
 import { useDeleteSong } from "../../queries/songs";
-import { fmtMSS } from "../../utils";
+import { fmtMSS, useMySnackbar } from "../../utils";
 import { checkQueueItemsEqual, SetQueueSource, SongInfo, useQueue } from "../../queue";
 import {
   ListContainer,
@@ -54,6 +54,7 @@ const SongListRow = ({
   const { setQueue, enqueue, songInfo, playing } = useQueue();
   const createPlaylist = usePlaylistCreate();
   const removeSong = usePlaylistRemoveSong(source.type === "playlist" ? source.id : undefined);
+  const open = useMySnackbar();
   const { show } = useSlideUpScreen(
     "Add to Playlist",
     AddToPlaylistMenu,
@@ -131,7 +132,7 @@ const SongListRow = ({
             }).then(({ value }) => {
               if (value) {
                 deleteSong(song.id);
-                // TODO notification
+                open(`Successfully deleted ${song.title}`);
               }
             });
           },

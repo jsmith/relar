@@ -60,7 +60,6 @@ export const MetadataEditor = ({ song, setDisplay, onSuccess }: MetadataEditorPr
       ref.get().then((snapshot) => {
         const data = snapshot.data();
         if (data) {
-          // TODO
           // setData(data);
           onSuccess(data);
         }

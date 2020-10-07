@@ -4,10 +4,6 @@ require("./firebase");
 import { test } from "uvu";
 import { IndexedDb } from "./db";
 import * as assert from "uvu/assert";
-import { clientDb } from "./shared/universal/utils";
-import { Song } from "./shared/universal/types";
-import { deleteDB } from "idb";
-import { useEffect, useState } from "react";
 
 test("test IndexedDB basic operations", async () => {
   const db = new IndexedDb("test");

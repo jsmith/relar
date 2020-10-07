@@ -10,6 +10,7 @@ import { useModal } from "react-modal-hook";
 import { Feedback } from "../../sections/Feedback";
 import firebase from "firebase/app";
 import { deleteDB } from "idb";
+import { DATABASE_NAME } from "../../db";
 
 const ITEMS = ["Account" as const, "Clear Cache" as const, "Feedback" as const, "Log Out" as const];
 
@@ -18,7 +19,7 @@ export interface AccountDropdownProps {
 }
 
 export const AccountDropdown = ({ className }: AccountDropdownProps) => {
-  // TODO use headless UI
+  // FIXME use headless UI
   const { goTo } = useRouter();
   const user = useDefinedUser();
   const [show, close] = useModal(() => <Feedback onExit={close} />);
@@ -32,8 +33,7 @@ export const AccountDropdown = ({ className }: AccountDropdownProps) => {
           goTo(routes.account);
           break;
         case "Clear Cache":
-          // TODO rename
-          deleteDB("test").then(() => window.location.reload());
+          deleteDB(DATABASE_NAME, { blocked: () => window.location.reload() });
           break;
         case "Log Out":
           firebase.analytics().logEvent("logout");

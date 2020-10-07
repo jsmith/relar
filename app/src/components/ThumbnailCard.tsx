@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MdPlayCircleFilled } from "react-icons/md";
+import { MdPlayArrow, MdPlayCircleFilled } from "react-icons/md";
 import classNames from "classnames";
 import { Collage, CollageProps } from "./Collage";
 
@@ -13,7 +13,6 @@ export interface ThumbnailCardProps {
   className?: string;
 }
 
-// TODO refactor to small design
 export const ThumbnailCard = ({
   objects,
   title,
@@ -30,7 +29,7 @@ export const ThumbnailCard = ({
     <div
       className={classNames(
         "flex flex-col rounded-md cursor-pointer relative group",
-        "text-xs lg:text-sm w-24 lg:w-32",
+        "text-xs lg:text-sm w-24 lg:w-32 flex-shrink-0",
         className,
       )}
       onClick={onClick}
@@ -49,7 +48,7 @@ export const ThumbnailCard = ({
       <div className="truncate lg:mt-1 text-gray-600">{subtitle}</div>
       <div
         className={classNames(
-          "absolute top-0 right-0 left-0 group-hover:opacity-100 m-6 p-1",
+          "absolute inset-0 group-hover:opacity-100 flex items-center justify-center",
           height,
           focused ? "opacity-100" : "opacity-0",
         )}
@@ -61,11 +60,9 @@ export const ThumbnailCard = ({
             e.stopPropagation();
             play && play();
           }}
-          className="transform translate-x-1/2 translate-y-1/2"
+          className="bg-purple-500 text-white rounded-full p-1 hover:scale-110 transform"
         >
-          <MdPlayCircleFilled
-            className={classNames("w-10 h-10 focus:w-12 focus:h-12 hover:w-12 hover:h-12")}
-          />
+          <MdPlayArrow className={classNames("w-8 h-8")} />
         </button>
       </div>
     </div>

@@ -1,11 +1,11 @@
 import { getDownloadURL } from "../storage";
 import { useDefinedUser } from "../auth";
-import { Album, Artwork, Song, Timestamp } from "../shared/universal/types";
+import { Album, Artwork, Song } from "../shared/universal/types";
 import { clientStorage } from "../shared/universal/utils";
 import * as Sentry from "@sentry/browser";
 import { useEffect, useState, useMemo } from "react";
 import firebase from "firebase/app";
-import { getUserDataOrError } from "../firestore";
+import { getUserDataOrError, serverTimestamp } from "../firestore";
 import { captureAndLog } from "../utils";
 
 export type ThumbnailType = "song" | "album";
@@ -88,7 +88,7 @@ export const tryToGetDownloadUrlOrLog = async (
 
   const update: Partial<Album & Song> = {
     artwork,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+    updatedAt: serverTimestamp(),
   };
 
   const ref =

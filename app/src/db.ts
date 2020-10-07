@@ -6,7 +6,27 @@ import { clientDb } from "./shared/universal/utils";
 import firebase from "firebase/app";
 import { createEmitter } from "./events";
 
-// TODO order other songs and add performance and analytics!!!!!!!!
+export const DATABASE_NAME = "firebase-collections";
+
+const withPerformanceAndAnalytics = async <T>(
+  cb: () => Promise<T[]>,
+  name: string,
+): Promise<T[]> => {
+  const eventName = `${name}_initial_load`;
+  const trace = firebase.performance().trace(eventName);
+  trace.start();
+
+  const result = await cb();
+
+  // If result errors out, the trace is never ended and nothing actually happens
+  trace.stop();
+  trace.putMetric("count", result.length);
+  firebase.analytics().logEvent(eventName, {
+    value: result.length,
+  });
+
+  return result;
+};
 
 let cache: { [path: string]: unknown[] | undefined } = {};
 const watchers = createEmitter<Record<string, [unknown]>>();
@@ -141,7 +161,7 @@ export const useCoolDB = () => {
     const init = async () => {
       if (!user) return;
       cache = {};
-      const db = new IndexedDb("test");
+      const db = new IndexedDb(DATABASE_NAME);
       await db.createObjectStore([]);
       const songs = clientDb(user.uid).songs();
       const artists = clientDb(user.uid).artists();
@@ -167,10 +187,14 @@ export const useCoolDB = () => {
 
           // Ensure we initially read only items where "deleted" != true
           // If we didn't do this, users would get old data that would never go away
-          items = await collection
-            .where("deleted", "==", false)
-            .get()
-            .then((r) => r.docs.map((doc) => doc.data()));
+          items = await withPerformanceAndAnalytics(
+            () =>
+              collection
+                .where("deleted", "==", false)
+                .get()
+                .then((r) => r.docs.map((doc) => doc.data())),
+            model,
+          );
 
           console.log(`[${model}] Success! Got ${items.length} items from collection.`);
           await db.putBulkValue(model, items);
@@ -226,14 +250,24 @@ export const useCoolDB = () => {
             hour12: true,
           })})`,
         );
+
         return (
           collection
             .orderBy("updatedAt", "asc")
             .where("updatedAt", ">=", lastUpdatedDate)
             // When a document that currently exists in the snapshot is modified, two events are
             // emitted! The first is a "removed" event and the second is an "added" event
-            .onSnapshot(async (snapshot) => {
+            .onSnapshot({}, async (snapshot) => {
+              const eventName = `${model}_snapshot`;
+              const trace = firebase.performance().trace(eventName);
+              trace.start();
+
               const changes = snapshot.docChanges();
+
+              firebase.analytics().logEvent(eventName, {
+                value: changes.length,
+              });
+
               if (changes.length === 0) return;
               console.log(
                 `[${model}] Got ${model} snapshot with ${changes.length} changes!`,
@@ -288,13 +322,6 @@ export const useCoolDB = () => {
                 copy[index] = data;
               };
 
-              // const remove = (change: firebase.firestore.DocumentChange<IndexDBTypeMap[M]>) => {
-              //   console.log(
-              //     `[${model}] Removing document "${change.doc.id}" from the ${model} collection`,
-              //   );
-              //   copy = copy.filter((item) => item.id !== change.doc.id);
-              // };
-
               const changedSongs: Item[] = [];
               changes.forEach((change) => {
                 changedSongs.push(change.doc.data());
@@ -304,7 +331,6 @@ export const useCoolDB = () => {
                   // will only happen if it was previously in the snapshot range
                   // Furthermore, this event is triggered when a document currently in the snapshot
                   // is mutated which... kinda makes no sense but oh well
-                  // remove(change);
                 } else if (change.type === "added") {
                   // We can't trust this event to give us songs that we don't have for numerous reasons
                   // First being the reason I described above and secondly because we just can't be sure
@@ -333,6 +359,9 @@ export const useCoolDB = () => {
               // Or will do snapshots ever arrive out of order?
               // I add 1 since we've already
               await db.putValue("lastUpdated", { name: model, value: maxUpdatedAt + 1 });
+
+              trace.stop();
+              trace.putMetric("count", changes.length);
             })
         );
       };

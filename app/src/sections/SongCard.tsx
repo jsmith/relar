@@ -13,8 +13,8 @@ export const SongCard = ({ song }: { song: Song }) => {
       type="song"
       title={song.title}
       subtitle={song.artist}
-      // TODO
       onClick={() => goTo(routes.album, { albumId: song.albumId ?? "" })}
+      // FIXME
       // play={() =>
       //   setQueue({
       //     songs: songs,

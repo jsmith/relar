@@ -1,6 +1,6 @@
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import React from "react";
-import { getAlbumName, onConditions } from "../../utils";
+import { getAlbumName, onConditions, useMySnackbar } from "../../utils";
 import { SongsOverview } from "../sections/SongsOverview";
 import {
   usePlaylist,
@@ -10,7 +10,6 @@ import {
 } from "../../queries/playlists";
 import { Modals } from "@capacitor/core";
 import { routes } from "../../routes";
-import { useSnackbar } from "react-simple-snackbar";
 
 export const PlaylistOverview = () => {
   const { params, goTo } = useRouter();
@@ -19,7 +18,7 @@ export const PlaylistOverview = () => {
   const rename = usePlaylistRename(playlistId);
   const deletePlaylist = usePlaylistDelete(playlistId);
   const songs = usePlaylistSongs(playlist);
-  const [open] = useSnackbar();
+  const open = useMySnackbar();
 
   return (
     <SongsOverview

@@ -1,8 +1,8 @@
-import firebase from "firebase/app";
 import { useMemo } from "react";
 import { getGlobalUser, useDefinedUser } from "./auth";
 import { Song } from "./shared/universal/types";
 import { clientDb } from "./shared/universal/utils";
+import firebase from "firebase/app";
 
 export const useUserData = () => {
   const user = useDefinedUser();
@@ -20,7 +20,5 @@ export const getUserDataOrError = () => {
   return clientDb(user.uid);
 };
 
-// TODO
-// export const serverTimestamp = firebase.firestore.FieldValue.serverTimestamp.bind(
-//   firebase.firestore.FieldValue,
-// ) as () => firebase.firestore.Timestamp;
+export const serverTimestamp = () =>
+  firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp;

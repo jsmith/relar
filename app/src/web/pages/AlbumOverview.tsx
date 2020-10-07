@@ -13,9 +13,9 @@ export const AlbumOverview = ({ container }: { container: HTMLElement | null }) 
     <SongsOverview
       songs={songs}
       container={container}
-      title={album?.album}
+      title={album?.album ?? "Unknown Album"}
       source={{ type: "album", id: albumId, sourceHumanName: album?.album ?? "" }}
-      infoPoints={[album?.albumArtist]}
+      infoPoints={[album?.albumArtist ?? "Unknown Artist"]}
     />
   );
 };

@@ -15,7 +15,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { createEmitter } from "./events";
 import * as uuid from "uuid";
 import { captureException } from "@sentry/browser";
-import { getUserDataOrError } from "./firestore";
+import { getUserDataOrError, serverTimestamp } from "./firestore";
 
 const emitter = createEmitter<{ updateCurrentTime: [number] }>();
 
@@ -253,8 +253,8 @@ export const QueueProvider = (props: React.Props<{}>) => {
       if (!downloadUrl) return;
 
       const update: Partial<Song> = {
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
-        lastPlayed: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+        updatedAt: serverTimestamp(),
+        lastPlayed: serverTimestamp(),
         played: (firebase.firestore.FieldValue.increment(1) as unknown) as number,
       };
 

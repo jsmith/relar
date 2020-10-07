@@ -1,14 +1,11 @@
 import type { Playlist } from "../shared/universal/types";
-import { useUserData } from "../firestore";
+import { serverTimestamp, useUserData } from "../firestore";
 import * as uuid from "uuid";
 import { useCallback, useMemo } from "react";
 import { useSongLookup } from "./songs";
 import type { SongInfo } from "../queue";
 import firebase from "firebase/app";
 import { useCoolPlaylists } from "../db";
-
-// TODO how can we catch all errors and send notifications?
-// What about specific mutations?
 
 export const usePlaylistCreate = () => {
   const userData = useUserData();
@@ -25,8 +22,8 @@ export const usePlaylistCreate = () => {
         id: playlist.id,
         name,
         songs: [],
-        createdAt: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
         deleted: false,
       });
     },
@@ -50,7 +47,7 @@ export const usePlaylistAdd = () => {
         const newItem = { songId, id: uuid.v4() };
         const songs: Playlist["songs"] = data.songs ? [...data.songs, newItem] : [newItem];
         const update: Partial<Playlist> = {
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+          updatedAt: serverTimestamp(),
           songs,
         };
 
@@ -96,7 +93,6 @@ export const usePlaylistSongs = (playlist: Playlist | undefined) => {
 export const usePlaylistRemoveSong = (playlistId: string | undefined) => {
   const userData = useUserData();
   return useCallback(
-    // TODO ensure I'm doing this correctly
     /**
      * @param targetId The ID of the playlist element. This is *not* the ID of the song.
      */
@@ -120,7 +116,7 @@ export const usePlaylistRemoveSong = (playlistId: string | undefined) => {
         data.songs.splice(indexToDelete, 1);
         const update: Partial<Playlist> = {
           songs: data.songs,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+          updatedAt: serverTimestamp(),
         };
 
         transaction.update(ref, update);
@@ -140,7 +136,7 @@ export const usePlaylistRename = (playlistId: string | undefined) => {
       if (!playlist.exists) return;
       const update: Partial<Playlist> = {
         name,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+        updatedAt: serverTimestamp(),
       };
 
       await playlist.ref.update(update);
@@ -155,7 +151,7 @@ export const usePlaylistDelete = (playlistId: string | undefined) => {
     if (playlistId === undefined) return;
     const update: Partial<Playlist> = {
       deleted: true,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+      updatedAt: serverTimestamp(),
     };
 
     await userData.playlist(playlistId).update(update);

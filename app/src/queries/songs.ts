@@ -3,7 +3,7 @@ import { clientStorage } from "../shared/universal/utils";
 import { Song } from "../shared/universal/types";
 import { getDownloadURL } from "../storage";
 import { captureAndLogError, captureAndLog } from "../utils";
-import { useUserData } from "../firestore";
+import { serverTimestamp, useUserData } from "../firestore";
 import { useCallback, useMemo } from "react";
 import { useCoolSongs } from "../db";
 
@@ -47,7 +47,7 @@ export const useDeleteSong = () => {
     async (songId: string) => {
       const update: Partial<Song> = {
         deleted: true,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+        updatedAt: serverTimestamp(),
       };
 
       await userData.song(songId).update(update);
@@ -73,7 +73,7 @@ export const tryToGetSongDownloadUrlOrLog = async (
     data.downloadUrl = result.value;
     const update: Partial<Song> = {
       downloadUrl: result.value,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+      updatedAt: serverTimestamp(),
     };
 
     await ref.update(update);
@@ -96,8 +96,8 @@ export const useLikeSong = (song: Song | undefined) => {
 
       const update: Partial<Song> = {
         liked,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
-        whenLiked: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+        updatedAt: serverTimestamp(),
+        whenLiked: serverTimestamp(),
       };
 
       await userData.song(song.id).update(update).catch(captureAndLog);

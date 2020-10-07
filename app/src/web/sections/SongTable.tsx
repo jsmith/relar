@@ -302,7 +302,6 @@ export interface SongTableProps<T extends SongInfo> {
   mode?: "regular" | "condensed";
 }
 
-// TODO JACOB REMOVE SONG INFO
 export const SongTable = function <T extends SongInfo>({
   songs,
   loadingRows = 5,

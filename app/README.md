@@ -3,11 +3,14 @@
 The RELAR mobile app and website.
 
 ## Development
-
-<!-- TODO -->
-
+### Web
 ```
-npm run dev
+npm run dev-web
+```
+
+### Mobile
+```
+npm run dev-mobile
 ```
 
 ## iOS Preview
