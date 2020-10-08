@@ -1,12 +1,11 @@
 import React from "react";
 import { Song } from "../shared/universal/types";
-import { usePlaylistAdd, usePlaylists } from "../queries/playlists";
+import { usePlaylistAdd } from "../queries/playlists";
 import { SearchMagnifyingGlass } from "../illustrations/SearchMagnifyingGlass";
-import { pluralSongs, fmtToDate } from "../utils";
+import { pluralSongs, fmtToDate, onConditions } from "../utils";
 import { HiChevronRight } from "react-icons/hi";
-import { getCachedOr } from "../watcher";
 import { LoadingSpinner } from "../components/LoadingSpinner";
-import { ErrorTemplate } from "../components/ErrorTemplate";
+import { useCoolPlaylists } from "../db";
 
 export const AddToPlaylistList = ({
   song,
@@ -14,27 +13,24 @@ export const AddToPlaylistList = ({
   setError,
   close,
 }: {
-  song: firebase.firestore.QueryDocumentSnapshot<Song>;
+  song: Song;
   setLoading: (value: boolean) => void;
   setError: (value: string) => void;
   close: () => void;
 }) => {
-  const playlists = usePlaylists();
-  const [addToPlaylist] = usePlaylistAdd();
+  const playlists = useCoolPlaylists();
+  const addToPlaylist = usePlaylistAdd();
 
-  return playlists.status === "error" ? (
-    <ErrorTemplate />
-  ) : !playlists.data ? (
+  return !playlists ? (
     <LoadingSpinner />
-  ) : playlists.data.length === 0 ? (
+  ) : playlists.length === 0 ? (
     <div className="flex flex-col items-center space-y-2">
       <SearchMagnifyingGlass className="h-24" />
       <div className="text-gray-600">No playlists found...</div>
     </div>
   ) : (
     <div className="rounded overflow-hidden">
-      {playlists.data.map((playlist) => {
-        const data = getCachedOr(playlist);
+      {playlists.map((playlist) => {
         return (
           <div
             key={playlist.id}
@@ -44,26 +40,24 @@ export const AddToPlaylistList = ({
             onClick={() => {
               setError("");
               setLoading(true);
-              addToPlaylist(
-                {
-                  playlistId: playlist.id,
-                  songId: song.id,
-                },
-                {
-                  onSettled: () => setLoading(false),
-                  onSuccess: close,
-                  onError: () =>
-                    setError("We couldn't add the song to the playlist... we're working on it!"),
-                },
+              onConditions(
+                () =>
+                  addToPlaylist({
+                    playlistId: playlist.id,
+                    songId: song.id,
+                  }),
+                close,
+                () => setError("We couldn't add the song to the playlist... we're working on it!"),
+                () => setLoading(false),
               );
             }}
           >
             <div>
-              <div className="text-purple-700">{data.name}</div>
+              <div className="text-purple-700">{playlist.name}</div>
               <div className="text-gray-600 text-2xs md:text-base">
-                {`${data.songs?.length ?? 0} ${pluralSongs(
-                  data.songs?.length,
-                )} • Created on ${fmtToDate(data.createdAt)}`}
+                {`${playlist.songs?.length ?? 0} ${pluralSongs(
+                  playlist.songs?.length,
+                )} • Created on ${fmtToDate(playlist.createdAt)}`}
               </div>
             </div>
 

@@ -11,12 +11,17 @@ export interface UserContextInterface {
 
 export const UserContext = createContext<UserContextInterface>({ user: undefined, loading: true });
 
+let globalUser: firebase.User | undefined;
+
+export const getGlobalUser = () => globalUser;
+
 export const UserProvider = (props: React.Props<{}>) => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<firebase.User>();
 
   const checkUser = useCallback(
     (newUser: firebase.User | null) => {
+      globalUser = newUser ?? undefined;
       setUser(newUser ?? undefined);
 
       if (loading) {

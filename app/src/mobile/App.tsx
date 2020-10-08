@@ -15,6 +15,7 @@ import type { NativeAudioPlugin } from "@capacitor-community/native-audio";
 import { AudioControls, useQueue } from "../queue";
 import { BackButton } from "./components/BackButton";
 import { useStartupHooks } from "../startup";
+import { useCoolDB } from "../db";
 
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 

@@ -141,12 +141,10 @@ export const Account = () => {
               <div className="flex items-baseline">
                 <h2>Songs</h2>
                 <div className="flex-grow" />
-                <div className="text-xs">{`${
-                  userData.data?.data()?.songCount ?? 0
-                } / ${500} Uploaded`}</div>
+                <div className="text-xs">{`${userData?.songCount ?? 0} / ${500} Uploaded`}</div>
               </div>
               <ProgressBar
-                value={userData.data?.data()?.songCount ?? 0}
+                value={userData?.songCount ?? 0}
                 maxValue={500}
                 foregroundClassName="bg-purple-700"
               />

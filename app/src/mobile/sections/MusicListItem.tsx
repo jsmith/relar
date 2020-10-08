@@ -15,15 +15,17 @@ export const MusicListItem = ({
   onClick,
   title,
   subTitle,
-  snapshot,
+  object,
   handleSentinel,
   mode,
+  type,
   state = "not-playing",
 }: {
   absoluteIndex: number;
   title: string;
   subTitle?: string;
-  snapshot: ThumbnailProps["snapshot"];
+  object: ThumbnailProps["object"];
+  type: ThumbnailProps["type"];
   actionItems?: Array<ActionSheetItem | undefined>;
   onClick: () => void;
   handleSentinel: SentinelBlockHandler;
@@ -56,7 +58,7 @@ export const MusicListItem = ({
             disabled={state === "paused"}
           />
         ) : (
-          <Thumbnail snapshot={snapshot} className="w-full h-full" size="64" />
+          <Thumbnail object={object} className="w-full h-full" size="64" type={type} />
         )}
       </div>
       <div className="flex flex-col min-w-0 flex-grow text-left justify-center">

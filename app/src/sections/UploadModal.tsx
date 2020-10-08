@@ -99,10 +99,10 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
           />
           {/* https://tailwindcomponents.com/component/file-upload-with-drop-on-and-preview */}
           {/* https://tailwindui.com/components/application-ui/overlays/modals */}
-          <div className="border-2 border-dashed border-purple-400 h-full rounded px-1 py-3">
+          <div className="border-2 border-dashed border-purple-400 h-full rounded px-1 py-3 overflow-y-scroll">
             {files.length > 0 ? (
               <div className="space-y-2">
-                <div className="flex flex-col max-w-2xl m-auto divide-y divide-gray-400">
+                <div className="flex flex-col max-w-4xl m-auto divide-y divide-gray-400">
                   {files.map(({ file, task }, i) => (
                     <UploadRow
                       key={i}
@@ -114,7 +114,7 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
                     />
                   ))}
                 </div>
-                <div className="text-center text-sm text-gray-700">
+                <div className="text-center text-sm text-gray-700 pb-3">
                   Still want to add more? Click{" "}
                   <button
                     id="upload-music-button"

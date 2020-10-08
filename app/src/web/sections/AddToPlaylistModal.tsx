@@ -1,37 +1,38 @@
 import React, { useState } from "react";
 import type { Song } from "../../shared/universal/types";
 import { Input } from "../../components/Input";
-import { ErrorTemplate } from "../../components/ErrorTemplate";
-import { usePlaylists, usePlaylistCreate, usePlaylistAdd } from "../../queries/playlists";
-import { LoadingSpinner } from "../../components/LoadingSpinner";
+import { usePlaylistCreate } from "../../queries/playlists";
 import { Modal } from "../../components/Modal";
 import { BlockAlert } from "../../components/BlockAlert";
 import { AddToPlaylistList } from "../../sections/AddToPlaylistList";
+import { onConditions } from "../../utils";
+import { useCoolPlaylists } from "../../db";
 
 export interface MetadataEditorProps {
   setDisplay: (display: boolean) => void;
-  song: firebase.firestore.QueryDocumentSnapshot<Song>;
+  song: Song;
 }
 
 export const AddToPlaylistEditor = ({ song, setDisplay }: MetadataEditorProps) => {
   const [newPlaylistName, setNewPlaylistName] = useState("");
-  const playlists = usePlaylists();
+  const playlists = useCoolPlaylists();
   const [loading, setLoading] = useState(false);
-  const [createPlaylist] = usePlaylistCreate();
+  const createPlaylist = usePlaylistCreate();
   const [error, setError] = useState("");
   const [playlistAddError, setPlaylistAddError] = useState("");
 
-  const createNewPlaylist = async () => {
+  const createNewPlaylist = () => {
     setLoading(true);
     setError("");
-    await createPlaylist(newPlaylistName, {
-      onSettled: () => setLoading(false),
-      onSuccess: () => {
+    onConditions(
+      () => createPlaylist(newPlaylistName),
+      () => {
         setNewPlaylistName("");
         setLoading(false);
       },
-      onError: () => setError("Unable to create playlist :("),
-    });
+      () => setError("Unable to create playlist :("),
+      () => setLoading(false),
+    );
   };
 
   return (
@@ -43,7 +44,7 @@ export const AddToPlaylistEditor = ({ song, setDisplay }: MetadataEditorProps) =
       loading={loading}
     >
       <h1 className="text-xl">Add To Playlist</h1>
-      {playlists.data && (
+      {playlists && (
         <div className="relative">
           <Input
             inputId="playlist-add-input"

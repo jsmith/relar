@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as uuid from "uuid";
 import { argv, admin } from "./admin";
-import { adminStorage } from "./shared/admin-utils";
+import { adminStorage } from "./shared/node/utils";
 
 const main = async () => {
   const userId = argv[2];

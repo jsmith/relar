@@ -6,11 +6,10 @@ import classNames from "classnames";
 import { IdeaIcon } from "../illustrations/IdeaIcon";
 import { MoreVerticalIcon } from "../illustrations/MoreVerticalIcon";
 import { Button } from "../components/Button";
-import { useUserData } from "../firestore";
+import { serverTimestamp, useUserData } from "../firestore";
 import * as uuid from "uuid";
 import { BlockAlert } from "../components/BlockAlert";
 import { AirplaneIcon } from "../illustrations/AirplaneIcon";
-import firebase from "firebase/app";
 
 export interface FeedbackProps {
   onExit: () => void;
@@ -47,7 +46,6 @@ const IconInput = ({
           className={classNames(
             "transform duration-150 hover:scale-110 flex flex-col items-center",
             checked ? "scale-110" : !disableOpacity && "opacity-50",
-            // TODO overlay when disabled
           )}
         >
           {icon("h-20 w-20")}
@@ -79,7 +77,7 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
       await ref.set({
         id,
         feedback,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+        createdAt: serverTimestamp(),
         type,
       });
     } catch (e) {

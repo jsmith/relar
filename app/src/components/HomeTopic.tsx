@@ -12,6 +12,7 @@ export interface HomeTopicProps {
   queryParams?: RouterStateType["queryParams"];
   wrapperClassName?: string;
   textClassName?: string;
+  emptyText?: React.ReactNode;
 }
 
 export const HomeTopic = ({
@@ -23,6 +24,7 @@ export const HomeTopic = ({
   queryParams,
   wrapperClassName,
   textClassName,
+  emptyText,
 }: HomeTopicProps) => {
   return (
     <div className="space-y-1 lg:space-y-3">
@@ -41,7 +43,7 @@ export const HomeTopic = ({
       </div>
 
       <div className={classNames("flex space-x-3 overflow-x-auto", wrapperClassName)}>
-        {children.length === 0 ? <div>NOTHING</div> : children}
+        {children.length === 0 ? emptyText : children}
         {/* This is so the items don't end right at the edge of the screen */}
         {/* This pushes the items out just a bit more */}
         <div className="w-1 flex-shrink-0" />

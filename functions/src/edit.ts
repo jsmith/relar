@@ -65,6 +65,7 @@ router.post("/edit", async (req) => {
     albumArtist: body.update.albumArtist,
     artist: body.update.artist,
     albumId: createAlbumId(body.update),
+    updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
   };
 
   console.log(`Update for ${body.songId} -> ${JSON.stringify(update)}`);
@@ -108,6 +109,8 @@ router.post("/edit", async (req) => {
           albumArtist: body.update.albumArtist,
           album: body.update.albumName,
           artwork: song.artwork,
+          updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+          deleted: false,
         });
 
         console.log(`Creating new album (${JSON.stringify(localCopy)})`);
@@ -133,7 +136,10 @@ router.post("/edit", async (req) => {
 
         if (!newArtist) {
           const localCopy = (newArtist = {
+            id: newArtistName,
             name: newArtistName,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+            deleted: false,
           });
 
           console.info(`Creating new artist (${newArtistName})`);
