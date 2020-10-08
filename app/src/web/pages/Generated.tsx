@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import { SongsOverview } from "../sections/SongsOverview";
-import { useRecentlyAddedSongs, useSongs, useLikedSongs } from "../../queries/songs";
+import { useRecentlyAddedSongs, useLikedSongs } from "../../queries/songs";
+import { useCoolSongs } from "../../db";
 
 export const Generated = ({ container }: { container: HTMLElement | null }) => {
   const { params } = useRouter();
   // FIXME validation
   const { generatedType } = params as { generatedType: string };
-  const { status } = useSongs();
   const recentlyAddedSongs = useRecentlyAddedSongs();
   const likedSongs = useLikedSongs();
 
@@ -27,8 +27,7 @@ export const Generated = ({ container }: { container: HTMLElement | null }) => {
 
   return (
     <SongsOverview
-      status={status}
-      songs={songs ?? []}
+      songs={songs}
       container={container}
       title={title}
       includeDateAdded={generatedType === "recently-added"}

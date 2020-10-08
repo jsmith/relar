@@ -5,7 +5,6 @@ import { SongCard } from "../../sections/SongCard";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
 import { routes } from "../../routes";
 import { MusicalNote } from "../../illustrations/MusicalNote";
-import { MdAddCircle } from "react-icons/md";
 
 export const Home = () => {
   const recentlyAddedSongs = useRecentlyAddedSongs();
@@ -21,16 +20,16 @@ export const Home = () => {
   }
 
   // Show a nice welcome page when the user opens the app :)
-  // TODO adapt for mobile
   if (recentlyAddedSongs.length === 0) {
     return (
       <div className="flex flex-col justify-center items-center space-y-3">
         <MusicalNote />
         <h1 className="text-3xl text-gray-700">Welcome to RELAR</h1>
         <p className="text-gray-600">
-          Click the {`"`}
+          Open the web app to upload music! Don{`'`}t worry, things will update here automatically.
+          {/* Click the {`"`}
           <MdAddCircle className="w-5 h-5 inline -mt-1" /> Upload Music{`"`} button over to your
-          left to get started!
+          left to get started! */}
         </p>
       </div>
     );
@@ -42,7 +41,6 @@ export const Home = () => {
         title="Recently Played"
         subTitle=""
         route={routes.generated}
-        // TODO add support for recently-played
         params={{ generatedType: "recently-played" }}
         wrapperClassName="-mx-2 lg:-mx-5 px-2 lg:px-5"
       >

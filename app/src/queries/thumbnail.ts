@@ -1,33 +1,36 @@
 import { getDownloadURL } from "../storage";
 import { useDefinedUser } from "../auth";
-import type { Artwork } from "../shared/universal/types";
+import { Album, Artwork, Song } from "../shared/universal/types";
 import { clientStorage } from "../shared/universal/utils";
 import * as Sentry from "@sentry/browser";
 import { useEffect, useState, useMemo } from "react";
 import firebase from "firebase/app";
+import { getUserDataOrError, serverTimestamp } from "../firestore";
+import { captureAndLog } from "../utils";
+
+export type ThumbnailType = "song" | "album";
 
 export type ThumbnailSize = "32" | "64" | "128" | "256";
 
 export interface ThumbnailObject {
   id: string;
   artwork: Artwork | undefined;
+  updatedAt: firebase.firestore.Timestamp;
 }
 
-export type ThumbnailObjectSnapshot = firebase.firestore.DocumentSnapshot<ThumbnailObject>;
-
 export const useThumbnail = (
-  snapshot: ThumbnailObjectSnapshot | undefined,
+  object: ThumbnailObject | undefined,
+  type: ThumbnailType,
   size: ThumbnailSize = "32",
 ) => {
-  const snapshots = useMemo(() => (snapshot ? [snapshot] : []), [snapshot]);
-  const thumbnails = useThumbnails(snapshots, size);
+  const objects = useMemo(() => (object ? [object] : []), [object]);
+  const thumbnails = useThumbnails(objects, type, size);
   return thumbnails[0];
 };
 
 export const useThumbnails = (
-  snapshots: Array<
-    firebase.firestore.DocumentSnapshot<{ id: string; artwork: Artwork | undefined }>
-  >,
+  objects: Array<ThumbnailObject>,
+  type: ThumbnailType,
   size: ThumbnailSize = "32",
 ) => {
   const user = useDefinedUser();
@@ -35,12 +38,12 @@ export const useThumbnails = (
 
   useEffect(() => {
     let ignore = false;
-    const thumbnails = snapshots.map((snapshot) => tryToGetDownloadUrlOrLog(user, snapshot, size));
+    const thumbnails = objects.map((object) => tryToGetDownloadUrlOrLog(user, object, type, size));
     Promise.all(thumbnails).then((thumbnails) => !ignore && setThumbnails(thumbnails));
     return () => {
       ignore = true;
     };
-  }, [user, snapshots, size]);
+  }, [user, objects, size, type]);
 
   return thumbnails;
 };
@@ -60,11 +63,10 @@ const keyLookup = {
  */
 export const tryToGetDownloadUrlOrLog = async (
   user: firebase.User,
-  snapshot: firebase.firestore.DocumentSnapshot<{ artwork: Artwork | undefined }>,
+  data: ThumbnailObject,
+  type: ThumbnailType,
   size: ThumbnailSize,
 ): Promise<string | undefined> => {
-  const ref = snapshot.ref;
-  const data = snapshot.data();
   if (!data || !data.artwork) {
     return;
   }
@@ -84,10 +86,18 @@ export const tryToGetDownloadUrlOrLog = async (
     clientStorage(firebase.storage(), user.uid).artworks(artwork.hash, artwork.type)[size](),
   );
 
+  const update: Partial<Album & Song> = {
+    artwork,
+    updatedAt: serverTimestamp(),
+  };
+
+  const ref =
+    type === "album" ? getUserDataOrError().album(data.id) : getUserDataOrError().song(data.id);
+
   if (result.isOk()) {
     artwork[key] = result.value;
     // we are explicitly not awaiting this since we don't care when it finishes
-    ref.update({ artwork });
+    ref.update(update);
     return result.value;
   }
 
@@ -95,7 +105,7 @@ export const tryToGetDownloadUrlOrLog = async (
     // This means that there isn't any artwork
     artwork[key] = null;
     // again, we are not awaiting
-    ref.update({ artwork });
+    ref.update(update).catch(captureAndLog);
     return;
   }
 

@@ -3,26 +3,28 @@ import classNames from "classnames";
 import { FiDisc } from "react-icons/fi";
 import * as Sentry from "@sentry/browser";
 import FastAverageColor from "fast-average-color";
-import { ThumbnailObjectSnapshot, useThumbnail, ThumbnailSize } from "../queries/thumbnail";
+import { ThumbnailObject, useThumbnail, ThumbnailSize, ThumbnailType } from "../queries/thumbnail";
 
 const fac = new FastAverageColor();
 
 export interface ThumbnailProps {
-  snapshot: ThumbnailObjectSnapshot | undefined;
+  object: ThumbnailObject | undefined;
   className?: string;
   style?: React.CSSProperties;
   setAverageColor?: (color: string) => void;
   size: ThumbnailSize;
+  type: ThumbnailType;
 }
 
 export const Thumbnail = ({
-  snapshot,
+  object,
   className,
   style,
   setAverageColor,
+  type,
   size,
 }: ThumbnailProps) => {
-  const thumbnail = useThumbnail(snapshot, size);
+  const thumbnail = useThumbnail(object, type, size);
   return (
     <div
       className={classNames(
@@ -49,7 +51,7 @@ export const Thumbnail = ({
             Sentry.captureMessage(`Error loading image from "${thumbnail}"`, {
               level: Sentry.Severity.Error,
               extra: {
-                artwork: snapshot?.data()?.artwork,
+                artwork: object?.artwork,
               },
             });
           }}

@@ -1,43 +1,42 @@
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import React, { useMemo } from "react";
-import { MdMoreVert } from "react-icons/md";
 import { ListContainer, ListContainerRowProps } from "../components/ListContainer";
 import { routes } from "../../routes";
 import { MusicListItem } from "../sections/MusicListItem";
-import type { Artist } from "../../shared/universal/types";
-import { useArtists, useArtistSongs } from "../../queries/artist";
-import { getCachedOr } from "../../watcher";
+import { Artist } from "../../shared/universal/types";
+import { useArtistSongs } from "../../queries/artist";
+import { useCoolArtists } from "../../db";
 
 const ArtistRow = ({
   absoluteIndex,
-  snapshot: artist,
-  item: data,
+  item: artist,
   handleSentinel,
   mode,
 }: ListContainerRowProps<Artist>) => {
   const { goTo } = useRouter();
-  const songs = useArtistSongs(data.name);
+  const songs = useArtistSongs(artist.name);
   // FIXME this is fine for now
-  const song = useMemo(() => songs.data.find((song) => !!getCachedOr(song).artwork), [songs.data]);
+  const song = useMemo(() => songs.find((song) => !!song.artwork), [songs]);
 
   return (
     <MusicListItem
-      title={data.name}
+      title={artist.name}
       handleSentinel={handleSentinel}
       absoluteIndex={absoluteIndex}
-      snapshot={song}
-      onClick={() => goTo(routes.artist, { artistName: artist.id })}
+      object={song}
+      type="song"
+      onClick={() => goTo(routes.artist, { artistName: artist.name })}
       mode={mode}
     />
   );
 };
 
 export const Artists = () => {
-  const artists = useArtists();
+  const artists = useCoolArtists();
   return (
     <ListContainer
       height={57}
-      items={artists.data}
+      items={artists}
       sortKey="name"
       row={ArtistRow}
       extra={{}}

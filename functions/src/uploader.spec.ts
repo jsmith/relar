@@ -131,6 +131,7 @@ test("works when uploading a valid song with just a title", async () => {
       genre: "",
       albumName: "",
       duration: 13087,
+      updatedAt: song?.updatedAt,
     }),
   );
 });
@@ -164,6 +165,7 @@ test("works when uploading a valid song with a title, artist and album", async (
     artist: "Hendrik Broekman",
     createdAt: song.createdAt,
     duration: 13087,
+    updatedAt: song.updatedAt,
   });
 
   assert.equal(song, testSong);
@@ -174,7 +176,10 @@ test("works when uploading a valid song with a title, artist and album", async (
   const album = await getAlbum(albumId);
 
   const expectedArtist: Artist = {
+    id: "Hendrik Broekman",
     name: "Hendrik Broekman",
+    updatedAt: artist.updatedAt,
+    deleted: false,
   };
 
   const expectedAlbum: Album = removeUndefined({
@@ -182,6 +187,8 @@ test("works when uploading a valid song with a title, artist and album", async (
     album: "Web Samples",
     albumArtist: "Web Samples",
     artwork: undefined,
+    updatedAt: album.updatedAt,
+    deleted: false,
   });
 
   assert.equal(artist, expectedArtist);

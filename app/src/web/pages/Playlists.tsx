@@ -1,22 +1,22 @@
 import React from "react";
-import { usePlaylists, usePlaylistAdd } from "../../queries/playlists";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
 import { PlaylistCard } from "../../sections/PlaylistCard";
+import { useCoolPlaylists } from "../../db";
 
 export const Playlists = () => {
-  const playlists = usePlaylists();
-  if (playlists.status === "error") {
-    return <div>ERROR</div>;
-  }
-
-  if (!playlists.data) {
+  const playlists = useCoolPlaylists();
+  if (!playlists) {
     return <LoadingSpinner />;
   }
 
   return (
     <div className="flex flex-wrap px-5">
-      {playlists.data.map((playlist) => (
-        <PlaylistCard className="mx-1" playlist={playlist} key={playlist.id} />
+      {playlists.map((playlist) => (
+        <PlaylistCard
+          className="mx-1"
+          playlist={playlist}
+          key={`${playlist.id}/${playlist.updatedAt.toMillis()}`}
+        />
       ))}
     </div>
   );

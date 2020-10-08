@@ -5,6 +5,7 @@ export interface ContentEditableProps {
   initial: string;
   className?: string;
   editable: boolean;
+  title?: string;
   cancelEditing: () => void;
   /**
    * Returns whether or not the save was successful.
@@ -22,6 +23,7 @@ export const ContentEditable = ({
   editable,
   cancelEditing,
   onSave,
+  title,
 }: ContentEditableProps) => {
   const [value, setValue] = useState("");
   const ref = useRef<null | HTMLInputElement>(null);
@@ -29,7 +31,7 @@ export const ContentEditable = ({
   const saved = useRef("");
   const style = useMemo(
     () => ({
-      width: `${value.length + 0.4}ch`,
+      width: `${value.length + 0.6}ch`,
     }),
     [value.length],
   );
@@ -47,6 +49,7 @@ export const ContentEditable = ({
 
   return (
     <input
+      title={title}
       ref={ref}
       value={value}
       onChange={(e) => setValue(e.target.value)}

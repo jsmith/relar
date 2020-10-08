@@ -1,23 +1,18 @@
 import React from "react";
 import { AlbumCard } from "../../sections/AlbumCard";
-import { useAlbums } from "../../queries/album";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
-import { ErrorTemplate } from "../../components/ErrorTemplate";
+import { useCoolAlbums } from "../../db";
 
 export const Albums = () => {
-  const albums = useAlbums();
+  const albums = useCoolAlbums();
 
-  if (albums.status === "loading") {
+  if (!albums) {
     return <LoadingSpinner />;
-  }
-
-  if (albums.status === "error") {
-    return <ErrorTemplate />;
   }
 
   return (
     <div className="flex flex-wrap px-5">
-      {albums.data?.map((album) => (
+      {albums.map((album) => (
         <AlbumCard className="mx-1" key={album.id} album={album} />
       ))}
     </div>

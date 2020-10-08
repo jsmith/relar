@@ -1,9 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getCachedOr } from "../../watcher";
 import classNames from "classnames";
 import { SentinelBlockHandler, useRecycle } from "../../recycle";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import type { SetQueueSource } from "../../queue";
 
 export type ListContainerMode = "regular" | "condensed";
 
@@ -37,18 +35,17 @@ const letters = [
 ];
 
 export interface ListContainerRowProps<T> {
-  snapshot: firebase.firestore.QueryDocumentSnapshot<T>;
   item: T;
   index: number;
   absoluteIndex: number;
   handleSentinel: SentinelBlockHandler;
-  snapshots: Array<firebase.firestore.QueryDocumentSnapshot<T>>;
+  items: Array<T>;
   mode: ListContainerMode;
 }
 
 export interface ListContainerProps<T, K extends keyof T, E> {
   height: number;
-  items: Array<firebase.firestore.QueryDocumentSnapshot<T>> | undefined;
+  items: Array<T> | undefined;
   sortKey: K;
   row: (props: ListContainerRowProps<T> & E) => JSX.Element;
   mode?: ListContainerMode;
@@ -109,9 +106,8 @@ export const ListContainer = function <T, K extends keyof T, E>({
       if (!container.current) return;
       letter = letter.toLowerCase();
       let index = items.length - 1;
-      for (const [i, song] of items.entries()) {
-        const data = getCachedOr(song);
-        const value = data[sortKey];
+      for (const [i, item] of items.entries()) {
+        const value = item[sortKey];
         if (typeof value === "string" && value[0].toLowerCase() >= letter[0]) {
           index = i;
           break;
@@ -145,11 +141,11 @@ export const ListContainer = function <T, K extends keyof T, E>({
           <Row
             key={start + i}
             snapshot={song}
-            item={getCachedOr(song)}
+            item={song}
             index={i}
             absoluteIndex={start + i}
             handleSentinel={handleSentinel}
-            snapshots={items}
+            items={items}
             mode={mode}
             {...extra}
           />

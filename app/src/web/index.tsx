@@ -19,29 +19,15 @@ import { UserProvider } from "../auth";
 import { QueueProvider } from "../queue";
 import { ConfirmActionProvider } from "../confirm-actions";
 import { ConfirmPasswordProvider } from "../confirm-password";
-import { ReactQueryConfigProvider, ReactQueryConfig } from "react-query";
-import { captureAndLog } from "../utils";
 import { ModalProvider } from "react-modal-hook";
 import { setBaseUrls } from "../backend";
 import { env } from "../env";
 import "../firebase";
 import "../common.css";
 import "../tailwind.css";
+import SnackbarProvider from "react-simple-snackbar";
 
 setBaseUrls(env);
-
-const config: ReactQueryConfig = {
-  queries: {
-    // 5 minutes
-    staleTime: 5 * 60 * 1000,
-    retry: false,
-    onError: (e) => captureAndLog(e),
-  },
-  mutations: {
-    onError: (e) => captureAndLog(e),
-  },
-};
-
 ReactDOM.render(
   <React.StrictMode>
     <UserProvider>
@@ -51,9 +37,9 @@ ReactDOM.render(
             {/* <SkeletonTheme color="rgb(255, 255, 255, 0.05)" highlightColor="rgb(255, 255, 255, 0.15)"> */}
             <ConfirmActionProvider>
               <ConfirmPasswordProvider>
-                <ReactQueryConfigProvider config={config}>
+                <SnackbarProvider>
                   <App />
-                </ReactQueryConfigProvider>
+                </SnackbarProvider>
               </ConfirmPasswordProvider>
             </ConfirmActionProvider>
             {/* </SkeletonTheme> */}

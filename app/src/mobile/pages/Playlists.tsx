@@ -4,31 +4,29 @@ import { ListContainer, ListContainerRowProps } from "../components/ListContaine
 import { routes } from "../../routes";
 import { MusicListItem } from "../sections/MusicListItem";
 import type { Playlist } from "../../shared/universal/types";
-import { usePlaylists, usePlaylistSongs } from "../../queries/playlists";
-import { fmtToDate, pluralSongs } from "../../utils";
-import { getCachedOr } from "../../watcher";
+import { usePlaylistSongs } from "../../queries/playlists";
+import { fmtToDate, songsCount } from "../../utils";
+import { useCoolPlaylists } from "../../db";
 
 const PlaylistRow = ({
   absoluteIndex,
-  snapshot: playlist,
-  item: data,
+  item: playlist,
   handleSentinel,
   mode,
 }: ListContainerRowProps<Playlist>) => {
   const { goTo } = useRouter();
-  const songs = usePlaylistSongs(data);
+  const songs = usePlaylistSongs(playlist);
   // FIXME this is fine for now
-  const song = useMemo(() => songs.find(({ song }) => getCachedOr(song).artwork)?.song, [songs]);
+  const song = useMemo(() => songs?.find((song) => song.artwork), [songs]);
 
   return (
     <MusicListItem
-      title={data.name}
-      subTitle={`${songs.length} ${pluralSongs(songs.length)} • Created on ${fmtToDate(
-        data.createdAt,
-      )}`}
+      title={playlist.name}
+      subTitle={`${songsCount(songs?.length)} • Created on ${fmtToDate(playlist.createdAt)}`}
       handleSentinel={handleSentinel}
       absoluteIndex={absoluteIndex}
-      snapshot={song}
+      object={song}
+      type="song"
       onClick={() => goTo(routes.playlist, { playlistId: playlist.id })}
       mode={mode}
     />
@@ -36,11 +34,11 @@ const PlaylistRow = ({
 };
 
 export const Playlists = () => {
-  const artists = usePlaylists();
+  const playlists = useCoolPlaylists();
   return (
     <ListContainer
       height={57}
-      items={artists.data}
+      items={playlists}
       sortKey="name"
       row={PlaylistRow}
       extra={{}}

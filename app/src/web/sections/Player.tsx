@@ -5,7 +5,6 @@ import {
   MdSkipPrevious,
   MdPlayCircleOutline,
   MdSkipNext,
-  MdShuffle,
   MdPauseCircleOutline,
 } from "react-icons/md";
 import { Slider } from "../../components/Slider";
@@ -15,7 +14,6 @@ import { Thumbnail } from "../../components/Thumbnail";
 import { LikedIcon } from "../../components/LikedIcon";
 import { useLikeSong } from "../../queries/songs";
 import { SongTimeSlider } from "../../sections/SongTimeSlider";
-import { useFirebaseUpdater } from "../../watcher";
 import { useQueue } from "../../queue";
 
 export interface PlayerProps {
@@ -38,27 +36,31 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
     shuffle,
     toggleShuffle,
   } = useQueue();
-  const [songData] = useFirebaseUpdater(songInfo?.song);
-  const [setLiked] = useLikeSong(songInfo?.song);
+  const setLiked = useLikeSong(songInfo?.song);
 
   return (
     <div className="h-20 bg-gray-800 flex items-center px-4 z-10" ref={refFunc}>
       <div className="flex items-center" style={{ width: "30%" }}>
-        {songData && (
-          <Thumbnail className="w-12 h-12 flex-shrink-0" snapshot={songInfo?.song} size="64" />
+        {songInfo?.song && (
+          <Thumbnail
+            className="w-12 h-12 flex-shrink-0"
+            object={songInfo?.song}
+            type="song"
+            size="64"
+          />
         )}
-        {songData && (
+        {songInfo?.song && (
           <div className="ml-3 min-w-0">
-            <div className="text-gray-100 text-sm" title={songData.title}>
-              {songData.title}
+            <div className="text-gray-100 text-sm" title={songInfo?.song.title}>
+              {songInfo?.song.title}
             </div>
-            <div className="text-gray-300 text-xs">{songData.artist}</div>
+            <div className="text-gray-300 text-xs">{songInfo?.song.artist}</div>
           </div>
         )}
-        {songData && (
+        {songInfo?.song && (
           <LikedIcon
             className="ml-6 text-gray-300 hover:text-gray-100"
-            liked={songData.liked}
+            liked={songInfo?.song.liked}
             setLiked={setLiked}
           />
         )}
@@ -102,7 +104,7 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
           </button>
           <Shuffle shuffle={shuffle} toggleShuffle={toggleShuffle} iconClassName="w-6 h-6" />
         </div>
-        <SongTimeSlider disabled={!songInfo} duration={songData?.duration} />
+        <SongTimeSlider disabled={!songInfo} duration={songInfo?.song?.duration} />
       </div>
       <div className="flex justify-end" style={{ width: "30%" }}>
         <div className="text-gray-300 hover:text-gray-100 ml-3">
