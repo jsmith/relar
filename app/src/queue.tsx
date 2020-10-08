@@ -11,13 +11,11 @@ import {
   removeElementFromShuffled,
 } from "./utils";
 import firebase from "firebase/app";
-import { updateCachedWithSnapshot } from "./watcher";
 import { useHotkeys } from "react-hotkeys-hook";
 import { createEmitter } from "./events";
 import * as uuid from "uuid";
 import { captureException } from "@sentry/browser";
-
-type SongSnapshot = firebase.firestore.QueryDocumentSnapshot<Song>;
+import { getUserDataOrError, serverTimestamp } from "./firestore";
 
 const emitter = createEmitter<{ updateCurrentTime: [number] }>();
 
@@ -39,22 +37,17 @@ export type SetQueueSource =
   | { type: "library" | "manuel" | "queue" };
 
 export interface QueueItem {
-  song: SongSnapshot;
+  song: Song;
   source: SetQueueSource;
   /** The temporary song ID. */
   id: string;
 }
 
-export interface SongInfo {
-  song: SongSnapshot;
+export type SongInfo = Song & {
   /**
    * This is a temporary ID for the song.
    */
-  id: string;
-}
-
-export const isSongInfo = (value: any): value is SongInfo => {
-  return value.id && value.song && value.song.id;
+  playlistId?: string;
 };
 
 export const checkSourcesEqual = (a: SetQueueSource | undefined, b: SetQueueSource | undefined) =>
@@ -93,7 +86,7 @@ export const checkQueueItemsEqual = (
 };
 
 export type SetQueueOptions = {
-  songs: Array<SongInfo | SongSnapshot>;
+  songs: SongInfo[];
   index?: number;
   source: SetQueueSource;
 };
@@ -103,7 +96,7 @@ export type QueuePlayMode = "repeat" | "repeat-one" | "none";
 export const QueueContext = createContext<{
   queue: QueueItem[];
   setQueue: (options: SetQueueOptions) => Promise<void>;
-  enqueue: (song: SongSnapshot) => void;
+  enqueue: (song: Song) => void;
   /**
    * Dequeue the given index. This will be the queue song index (meaning the index may be the
    * shuffled index).
@@ -254,20 +247,18 @@ export const QueueProvider = (props: React.Props<{}>) => {
       }
 
       const { song, source } = item;
-      console.info(`Changing song to index ${index} (title: ${song.data().title}, id: ${song.id})`);
-      const downloadUrl = await tryToGetSongDownloadUrlOrLog(user, song);
+      const userData = getUserDataOrError();
+      console.info(`Changing song to index ${index} (title: ${song.title}, id: ${song.id})`);
+      const downloadUrl = await tryToGetSongDownloadUrlOrLog(user, userData.song(song.id), song);
       if (!downloadUrl) return;
 
       const update: Partial<Song> = {
-        lastPlayed: firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+        updatedAt: serverTimestamp(),
+        lastPlayed: serverTimestamp(),
         played: (firebase.firestore.FieldValue.increment(1) as unknown) as number,
       };
 
-      song.ref
-        .update(update)
-        .then(() => song.ref.get())
-        .then((snapshot) => updateCachedWithSnapshot(snapshot))
-        .catch(captureAndLogError);
+      userData.song(song.id).update(update).catch(captureAndLogError);
 
       if (ref.current) {
         try {
@@ -321,7 +312,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
     [mode, changeSongIndex, stopPlaying],
   );
 
-  const enqueue = useCallback((song: SongSnapshot) => {
+  const enqueue = useCallback((song: Song) => {
     const newQueue: QueueItem[] = [
       ...current.current.queue,
       { song, source: { type: "manuel" }, id: uuid.v4() },
@@ -387,9 +378,11 @@ export const QueueProvider = (props: React.Props<{}>) => {
       // Only set if the type isn't "queue"
       // If it is "queue", just change the index
       if (source.type !== "queue") {
-        const newQueue: QueueItem[] = songs.map((item) =>
-          isSongInfo(item) ? { ...item, source } : { song: item, source, id: item.id },
-        );
+        const newQueue: QueueItem[] = songs.map((song) => ({
+          song,
+          source: source,
+          id: song.playlistId ?? song.id,
+        }));
         setQueueState(newQueue);
         current.current = { queue: newQueue, index: undefined, mappings: undefined };
       }

@@ -3,34 +3,33 @@ import type { Playlist } from "../shared/universal/types";
 import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import { routes } from "../routes";
-import { useFirebaseUpdater } from "../watcher";
 import { usePlaylistSongs } from "../queries/playlists";
 import { useQueue } from "../queue";
+import { songsCount } from "../utils";
 
 export const PlaylistCard = ({
   playlist,
   className,
 }: {
-  playlist: firebase.firestore.QueryDocumentSnapshot<Playlist>;
+  playlist: Playlist;
   className?: string;
 }) => {
-  const [data] = useFirebaseUpdater(playlist);
-  const playlistSongs = usePlaylistSongs(data);
+  const playlistSongs = usePlaylistSongs(playlist);
   const { goTo } = useRouter();
   const { setQueue } = useQueue();
-  const snapshots = useMemo(() => playlistSongs.map(({ song }) => song), [playlistSongs]);
 
   return (
     <ThumbnailCard
-      snapshot={snapshots}
-      title={data.name}
-      subtitle={""}
+      objects={playlistSongs}
+      type="song"
+      title={playlist.name}
+      subtitle={songsCount(playlist.songs?.length)}
       onClick={() => goTo(routes.playlist, { playlistId: playlist.id })}
       className={className}
       play={() =>
         setQueue({
-          songs: playlistSongs,
-          source: { type: "playlist", id: data.id, sourceHumanName: data.name },
+          songs: playlistSongs ?? [],
+          source: { type: "playlist", id: playlist.id, sourceHumanName: playlist.name },
         })
       }
     />

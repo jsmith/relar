@@ -1,50 +1,41 @@
 import firebase from "firebase/app";
 import { clientStorage } from "../shared/universal/utils";
-import { createQueryCache } from "./cache";
 import { Song } from "../shared/universal/types";
-import { withPerformanceAndAnalytics } from "../performance";
 import { getDownloadURL } from "../storage";
 import { captureAndLogError, captureAndLog } from "../utils";
-import { useUserData } from "../firestore";
-import { useMutation } from "react-query";
-import { useMemo } from "react";
-import { updateCachedWithSnapshot, useFirebaseMemo, getCachedOr } from "../watcher";
+import { serverTimestamp, useUserData } from "../firestore";
+import { useCallback, useMemo } from "react";
+import { useCoolSongs } from "../db";
 
 export const useRecentlyPlayedSongs = () => {
-  const songs = useSongs();
+  const songs = useCoolSongs();
 
   return useMemo(
     () =>
-      songs.data
+      songs
         ?.slice(0, 1000)
-        .filter((song) => song.data().lastPlayed !== undefined)
-        .sort((a, b) => (b.data().lastPlayed?.seconds ?? 0) - (a.data().lastPlayed?.seconds ?? 0)),
+        .filter((song) => song.lastPlayed !== undefined)
+        .sort((a, b) => (b.lastPlayed?.seconds ?? 0) - (a.lastPlayed?.seconds ?? 0)),
     [songs],
   );
 };
 
 export const useRecentlyAddedSongs = () => {
-  const songs = useSongs();
+  const songs = useCoolSongs();
 
   return useMemo(
-    () =>
-      songs.data
-        ?.slice(0, 1000)
-        .sort((a, b) => b.data().createdAt.seconds - a.data().createdAt.seconds),
+    () => songs?.slice(0, 1000).sort((a, b) => b.createdAt.seconds - a.createdAt.seconds),
     [songs],
   );
 };
 
 export const useLikedSongs = () => {
-  const songs = useSongs();
-  return useFirebaseMemo(
+  const songs = useCoolSongs();
+  return useMemo(
     () =>
-      songs.data
-        ?.filter((song) => getCachedOr(song).liked)
-        .sort(
-          (a, b) =>
-            (getCachedOr(b).whenLiked?.seconds ?? 0) - (getCachedOr(a).whenLiked?.seconds ?? 0),
-        ),
+      songs
+        ?.filter((song) => song.liked)
+        .sort((a, b) => (b.whenLiked?.seconds ?? 0) - (a.whenLiked?.seconds ?? 0)),
     [songs],
   );
 };
@@ -52,63 +43,24 @@ export const useLikedSongs = () => {
 export const useDeleteSong = () => {
   const userData = useUserData();
 
-  return useMutation(
+  return useCallback(
     async (songId: string) => {
-      await userData.song(songId).delete();
+      const update: Partial<Song> = {
+        deleted: true,
+        updatedAt: serverTimestamp(),
+      };
+
+      await userData.song(songId).update(update);
     },
-    {
-      onSuccess: (_, songId) => {
-        let data = songsQueryCache.getQueryData(["songs", { uid: userData.userId }]);
-        if (!data) return;
-        data = data.filter((song) => song.id !== songId);
-        songsQueryCache.setQueryData(["songs", { uid: userData.userId }], data);
-      },
-    },
-  );
-};
-
-const { useQuery: useSongsQuery, queryCache: songsQueryCache } = createQueryCache<
-  ["songs", { uid: string }],
-  Array<firebase.firestore.QueryDocumentSnapshot<Song>>
->();
-
-// Just for TS
-const title: keyof Song = "title";
-
-export const useSongs = () => {
-  const userData = useUserData();
-
-  return useSongsQuery(
-    ["songs", { uid: userData.userId }],
-    withPerformanceAndAnalytics(
-      () =>
-        userData
-          .songs()
-          .orderBy(title)
-          .get()
-          .then((r) => r.docs),
-      "loading_songs",
-    ),
-
-    {
-      // Super important
-      // See https://github.com/jsmith/relar/issues/7
-      // Keep this fresh for the duration of the app
-      staleTime: Infinity,
-    },
+    [userData],
   );
 };
 
 export const tryToGetSongDownloadUrlOrLog = async (
   user: firebase.User,
-  snapshot: firebase.firestore.DocumentSnapshot<Song>,
+  ref: firebase.firestore.DocumentReference<Song>,
+  data: Song,
 ): Promise<string | undefined> => {
-  const ref = snapshot.ref;
-  const data = snapshot.data();
-  if (!data) {
-    return;
-  }
-
   if (data.downloadUrl) {
     return data.downloadUrl;
   }
@@ -119,7 +71,12 @@ export const tryToGetSongDownloadUrlOrLog = async (
 
   if (result.isOk()) {
     data.downloadUrl = result.value;
-    await ref.update({ downloadUrl: result.value });
+    const update: Partial<Song> = {
+      downloadUrl: result.value,
+      updatedAt: serverTimestamp(),
+    };
+
+    await ref.update(update);
     return result.value;
   }
 
@@ -128,42 +85,42 @@ export const tryToGetSongDownloadUrlOrLog = async (
   );
 };
 
-export const useLikeSong = (song: firebase.firestore.DocumentSnapshot<Song> | undefined) => {
-  return useMutation(async (liked: boolean) => {
-    if (!song) {
-      return;
-    }
+export const useLikeSong = (song: Song | undefined) => {
+  const userData = useUserData();
 
-    await song.ref
-      .update({
+  return useCallback(
+    async (liked: boolean) => {
+      if (!song) {
+        return;
+      }
+
+      const update: Partial<Song> = {
         liked,
-        whenLiked: firebase.firestore.FieldValue.serverTimestamp(),
-      })
-      .then(() => song.ref.get())
-      .then(updateCachedWithSnapshot)
-      .catch(captureAndLog);
-  });
+        updatedAt: serverTimestamp(),
+        whenLiked: serverTimestamp(),
+      };
+
+      await userData.song(song.id).update(update).catch(captureAndLog);
+    },
+    [song, userData],
+  );
 };
 
-export const useSongsDuration = (
-  songs: firebase.firestore.QueryDocumentSnapshot<Song>[] | undefined,
-) => {
+export const useSongsDuration = (songs: Song[] | undefined) => {
   return useMemo(
     () =>
-      songs
-        ? songs.map((song) => song.data().duration).reduce((sum, duration) => sum + duration, 0)
-        : 0,
+      songs ? songs.map((song) => song.duration).reduce((sum, duration) => sum + duration, 0) : 0,
     [songs],
   );
 };
 
 export const useSongLookup = () => {
-  const songs = useSongs();
+  const songs = useCoolSongs();
 
   return useMemo(() => {
-    const lookup: { [id: string]: firebase.firestore.QueryDocumentSnapshot<Song> } = {};
-    if (!songs.data) return lookup;
-    songs.data.forEach((song) => (lookup[song.id] = song));
+    const lookup: { [id: string]: Song } = {};
+    if (!songs) return lookup;
+    songs.forEach((song) => (lookup[song.id] = song));
     return lookup;
-  }, [songs.data]);
+  }, [songs]);
 };

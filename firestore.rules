@@ -18,11 +18,13 @@ service cloud.firestore {
         // restricted this so that users can't just write willy nilly
       	allow read: if isUser()
       }
+
+      // TODO enforce createdAt
       
       match /songs/{songId} {
 				function validUpdate() {
           // artwork is slightly insecure since we really only want to allow updates to "artwork.artworkDownloadUrl32"
-          return affectedKeys().hasOnly(['lastPlayed', 'played', 'liked', 'downloadUrl', 'artwork', 'whenLiked'])
+          return affectedKeys().hasOnly(['lastPlayed', 'played', 'liked', 'downloadUrl', 'artwork', 'whenLiked', 'updatedAt', 'deleted']) && affectedKeys().hasAll(['updatedAt'])
         }
 
         // function conformsToSchema() {
@@ -31,21 +33,19 @@ service cloud.firestore {
         // }
         
       	allow update: if isUser() && validUpdate()
-        allow delete: if isUser()
       }
 
       match /albums/{albumId} {
         function validUpdate() {
-          return affectedKeys().hasOnly(['artwork'])
+          return affectedKeys().hasOnly(['artwork']) && affectedKeys().hasAll(['updatedAt'])
         }
 
         allow update: if isUser() && validUpdate()
       }
 
       match /playlists/{playlistId} {
-        allow update: if isUser() && affectedKeys().hasOnly(['name', 'songs'])
-        allow create: if isUser() && newKeys().hasAll(['name', 'createdAt', 'id', 'songs'])
-        allow delete: if isUser()
+        allow update: if isUser() && affectedKeys().hasOnly(['name', 'songs', 'deleted', 'updatedAt']) && affectedKeys().hasAll(['updatedAt'])
+        allow create: if isUser() && newKeys().hasAll(['name', 'createdAt', 'id', 'songs', 'updatedAt', 'deleted'])
       }
 
       match /feedback/{feedbackId} {

@@ -84,7 +84,9 @@ export const UploadRow = ({ file, task }: UploadRowProps) => {
           className="text-purple-700 w-6 h-4 flex-shrink-0"
         />
       )}
-      <div className="flex-shrink-0 text-sm">{file.name}</div>
+      <div className="min-w-0 truncate text-sm" title={file.name}>
+        {file.name}
+      </div>
 
       <div className="flex-grow" />
       <div className="space-y-1 flex-shrink-0">

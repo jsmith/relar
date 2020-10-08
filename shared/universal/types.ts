@@ -133,6 +133,11 @@ export const SongType = Record({
    * The hash of the song artwork.
    */
   artwork: ArtworkType.Or(Undefined),
+
+  /** When the song was last updated. */
+  updatedAt: Timestamp,
+
+  deleted: Boolean,
 });
 
 export type Song = Static<typeof SongType>;
@@ -147,6 +152,11 @@ export const AlbumType = Record({
   albumArtist: String.Or(Undefined),
   album: String.Or(Undefined),
   artwork: ArtworkType.Or(Undefined),
+
+  /** When the album was last updated. */
+  updatedAt: Timestamp,
+
+  deleted: Boolean,
 });
 
 export type Album = Static<typeof AlbumType>;
@@ -170,10 +180,18 @@ export const BetaSignupType = Record({
 export type BetaSignup = Static<typeof BetaSignupType>;
 
 export const ArtistType = Record({
+  /** The id of the artist. Just the name for now. */
+  id: String,
+
   /**
    * The name of the artist. This is also the ID since artist names must be unique.
    */
   name: String,
+
+  /** When the artist was last updated. */
+  updatedAt: Timestamp,
+
+  deleted: Boolean,
 });
 
 export type Artist = Static<typeof ArtistType>;
@@ -202,6 +220,11 @@ export const PlaylistType = Record({
 
   /** When the playlist was created. */
   createdAt: Timestamp,
+
+  /** When the playlist was last updated. */
+  updatedAt: Timestamp,
+
+  deleted: Boolean,
 });
 
 export type Playlist = Static<typeof PlaylistType>;

@@ -1,3 +1,4 @@
+import firebase from "firebase/app";
 import type { Song, Album, Artist, UserData, Playlist, UserFeedback } from "./types";
 import type { Runtype, Static, Success, Failure } from "runtypes";
 
@@ -48,7 +49,8 @@ export const isDefinedSnapshot = <T>(
   snapshot: firebase.firestore.DocumentSnapshot<T>,
 ): snapshot is firebase.firestore.QueryDocumentSnapshot<T> => snapshot.exists;
 
-export const clientDb = (db: firebase.firestore.Firestore, userId: string) => {
+export const clientDb = (userId: string) => {
+  const db = firebase.firestore();
   const path = createPath().append("user_data").append(userId);
 
   return {

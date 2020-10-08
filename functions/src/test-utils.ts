@@ -32,6 +32,8 @@ export const createTestSong = (song: Partial<Song>): Song => {
     lastPlayed: undefined,
     artwork: undefined,
     createdAt: admin.firestore.Timestamp.fromDate(new Date()),
+    updatedAt: admin.firestore.Timestamp.fromDate(new Date()),
+    deleted: false,
     ...song,
   });
 };
@@ -91,14 +93,19 @@ export const songTwoAlbum: Album = {
   album: songTwo.albumName,
   albumArtist: songTwo.albumArtist,
   artwork: undefined,
+  updatedAt: 0 as any,
+  deleted: false,
 };
 
 export const songTwoArtist: Artist = {
+  id: songTwoAlbumId,
   name: songTwoAlbumId,
+  updatedAt: 0 as any,
+  deleted: false,
 };
 
 export const createAndUploadTestSong = async (songId: string, options: Partial<Song>) => {
-  const song = createTestSong(options);
+  const song = createTestSong({ ...options, id: songId });
   const ref = await adminDb(admin.firestore(), "testUser").song(songId);
   await ref.set(song);
   return ref;
@@ -113,6 +120,8 @@ export const createAndUploadPlaylist = async (
     name,
     songs: songs.map((snapshot) => ({ songId: snapshot.id, id: uuid.v4() })),
     createdAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+    deleted: false,
   };
 
   const ref = await adminDb(admin.firestore(), "testUser").playlist(playlist.id);
@@ -126,4 +135,10 @@ export const assertExists = async (ref: FirebaseFirestore.DocumentReference<unkn
 
 export const assertDoesNotExists = async (ref: FirebaseFirestore.DocumentReference<unknown>) => {
   assert.not((await ref.get()).exists);
+};
+
+export const assertDeleted = async (
+  ref: FirebaseFirestore.DocumentReference<{ deleted: boolean }>,
+) => {
+  assert.ok(await ref.get().then((snap) => snap.data()?.deleted));
 };

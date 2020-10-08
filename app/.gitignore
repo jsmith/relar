@@ -10,8 +10,6 @@ capacitor.config.json
 **/fastlane/test_output
 
 dist
-# TODO
-build
 build
 
 google-api-key.json

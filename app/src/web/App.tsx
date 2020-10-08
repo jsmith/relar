@@ -8,7 +8,6 @@ import { GiSwordSpin } from "react-icons/gi";
 import classNames from "classnames";
 import { Player } from "./sections/Player";
 import { MdLibraryMusic, MdSearch, MdAddCircle, MdMusicNote } from "react-icons/md";
-import ReactQueryDevtools from "react-query-devtools";
 import { AccountDropdown } from "./sections/AccountDropdown";
 import { useDocumentTitle } from "../utils";
 import { Link } from "../components/Link";
@@ -21,6 +20,7 @@ import { QueueAudio } from "../queue";
 import { Queue } from "./sections/Queue";
 import FocusTrap from "focus-trap-react";
 import { useStartupHooks } from "../startup";
+import { useCoolSongs } from "../db";
 
 export interface SideBarItem {
   label: string;
@@ -227,7 +227,6 @@ export const App = (_: React.Props<{}>) => {
       <SkipNavContent />
       <React.Suspense fallback={<LoadingSpinner className="flex-grow" />}>{content}</React.Suspense>
       {user && <QueueAudio />}
-      <ReactQueryDevtools.ReactQueryDevtools initialIsOpen={false} />
     </div>
   );
 };
