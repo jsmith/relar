@@ -5,6 +5,7 @@ import { Album, Artist, Playlist, Song } from "./shared/universal/types";
 import { clientDb } from "./shared/universal/utils";
 import firebase from "firebase/app";
 import { createEmitter } from "./events";
+import { captureMessage, Severity } from "@sentry/browser";
 
 export const DATABASE_NAME = "firebase-collections";
 
@@ -201,7 +202,7 @@ export const useCoolDB = () => {
           console.log(`[${model}] Success! Wrote ${items.length} items to IndexedDB`);
 
           const maxUpdatedAt = getMaxUpdatedAt(items);
-          lastUpdated = { name: model, value: maxUpdatedAt + 1 };
+          lastUpdated = { name: model, value: maxUpdatedAt };
           await db.putValue("lastUpdated", lastUpdated);
         } else {
           items = await db.getAllValue(model).then((items: Item[]) =>
@@ -251,6 +252,8 @@ export const useCoolDB = () => {
           })})`,
         );
 
+        // Keep an in memory version of the last updated time
+        let latestLastUpdated = lastUpdated.value;
         return (
           collection
             .orderBy("updatedAt", "asc")
@@ -349,16 +352,21 @@ export const useCoolDB = () => {
               const maxUpdatedAt = getMaxUpdatedAt(changedSongs);
               await updateItems(copy);
 
+              if (maxUpdatedAt < latestLastUpdated) {
+                const warning = `The snapshot (${maxUpdatedAt}) received was out-of-order. The previous snapshot time was ${latestLastUpdated}.`;
+                captureMessage(warning, Severity.Warning);
+                console.warn(warning);
+              }
+
               console.log(
-                `[${model}] The previous last updated time was ${maxUpdatedAt}. Setting to ${
-                  maxUpdatedAt + 1
-                }.`,
+                `[${model}] The previous last updated time was ${latestLastUpdated}. Setting to ${maxUpdatedAt}.`,
               );
               // This should be fine but like... it all depends on how firebase manages snapshots
               // Like, am I guaranteed to get all snapshots that occurred on or before a particular time?
               // Or will do snapshots ever arrive out of order?
               // I add 1 since we've already
-              await db.putValue("lastUpdated", { name: model, value: maxUpdatedAt + 1 });
+              await db.putValue("lastUpdated", { name: model, value: maxUpdatedAt });
+              latestLastUpdated = maxUpdatedAt;
 
               trace.stop();
               trace.putMetric("count", changes.length);

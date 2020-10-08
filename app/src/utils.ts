@@ -539,20 +539,61 @@ export const getAlbumName = (name: string | undefined) => {
   return name ? name : "Unknown Album";
 };
 
-export const onConditions = async <T>(
+let defaultErrorHandlers: Array<(error: unknown) => void> = [];
+const onConditionsFunction = <T>(
   f: () => Promise<T>,
-  onSuccess: (result: T) => void,
+  onSuccess?: (result: T) => void,
   onError?: (e: unknown) => void,
   onSettled?: () => void,
 ) => {
-  try {
-    onSuccess(await f());
-  } catch (e) {
-    onError && onError(e);
-  } finally {
-    onSettled && onSettled();
-  }
+  const successCallback: Array<(result: T) => void> = [];
+  const errorCallbacks: Array<(error: unknown) => void> = [];
+  const settledCallbacks: Array<() => void> = [];
+
+  onSuccess && successCallback.push(onSuccess);
+  onError && errorCallbacks.push(onError);
+  onSettled && settledCallbacks.push(onSettled);
+
+  const promise = f()
+    .then((result) => {
+      successCallback.forEach((cb) => cb(result));
+      settledCallbacks.forEach((cb) => cb());
+      return result;
+    })
+    .catch((e) => {
+      defaultErrorHandlers.forEach((cb) => cb(e));
+      errorCallbacks.forEach((cb) => cb(e));
+      settledCallbacks.forEach((cb) => cb());
+      return undefined;
+    });
+
+  const chains = {
+    onError: (cb: (e: unknown) => void) => {
+      errorCallbacks.push(cb);
+      return promiseAndChains;
+    },
+    onSuccess: (cb: (result: T) => void) => {
+      successCallback.push(cb);
+      return promiseAndChains;
+    },
+    onSettled: (cb: () => void) => {
+      settledCallbacks.push(cb);
+      return promiseAndChains;
+    },
+  };
+
+  const promiseAndChains = Object.assign(promise, chains);
+  return promiseAndChains;
 };
+
+export const onConditions = Object.assign(onConditionsFunction, {
+  registerDefaultErrorHandler: (cb: (error: unknown) => void) => {
+    defaultErrorHandlers.push(cb);
+    return () => {
+      defaultErrorHandlers = defaultErrorHandlers.filter((handler) => handler !== cb);
+    };
+  },
+});
 
 function getOnlineStatus() {
   return typeof window.navigator !== "undefined" && typeof window.navigator.onLine === "boolean"

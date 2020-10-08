@@ -178,7 +178,7 @@ export const ListContainer = function <T, K extends keyof T, E>({
             {letters.map((letter) => (
               <button
                 key={letter}
-                className="uppercase select-none focus:outline-none"
+                className="uppercase select-none focus:outline-none text-lg"
                 onTouchStart={() => scrollTo(letter)}
                 onMouseDown={() => scrollTo(letter)}
                 onTouchMove={(e) => {

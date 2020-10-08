@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { MdAddToQueue, MdPlaylistAdd } from "react-icons/md";
 import { useDeleteSong } from "../../queries/songs";
-import { fmtMSS, useMySnackbar } from "../../utils";
+import { fmtMSS, onConditions, useMySnackbar } from "../../utils";
 import { checkQueueItemsEqual, SetQueueSource, SongInfo, useQueue } from "../../queue";
 import {
   ListContainer,
@@ -18,6 +18,7 @@ import { useSlideUpScreen } from "../slide-up-screen";
 import { usePlaylistCreate, usePlaylistRemoveSong } from "../../queries/playlists";
 import { AddToPlaylistList } from "../../sections/AddToPlaylistList";
 import { MusicListItem, MusicListItemState } from "./MusicListItem";
+import { captureException } from "@sentry/browser";
 
 export interface SongListProps {
   songs: SongInfo[] | undefined;
@@ -69,7 +70,13 @@ const SongListRow = ({
         });
 
         if (cancelled) return;
-        createPlaylist(value);
+        onConditions(() => createPlaylist(value)).onError((e) => {
+          captureException(e);
+          Modals.alert({
+            title: "Error",
+            message: "There was an unknown error creating playlist.",
+          });
+        });
       },
     },
   );

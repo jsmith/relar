@@ -7,7 +7,7 @@ import { HiOutlineCog } from "react-icons/hi";
 import { GiSwordSpin } from "react-icons/gi";
 import { ButtonTabs } from "./sections/BottomTabs";
 import { ActionSheet } from "./action-sheet";
-import { FilesystemDirectory, Plugins } from "@capacitor/core";
+import { FilesystemDirectory, Plugins, StatusBarStyle } from "@capacitor/core";
 import { writeFile } from "capacitor-blob-writer";
 // Import to register plugin
 import "@capacitor-community/native-audio";
@@ -15,23 +15,28 @@ import type { NativeAudioPlugin } from "@capacitor-community/native-audio";
 import { AudioControls, useQueue } from "../queue";
 import { BackButton } from "./components/BackButton";
 import { useStartupHooks } from "../startup";
-import { useCoolDB } from "../db";
+import classNames from "classnames";
 
+const { StatusBar } = Plugins;
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 
 class Controls implements AudioControls {
-  private _paused = false;
+  private _paused: boolean;
   private _volume: number | undefined;
 
-  pause = () => {
+  constructor() {
+    this._paused = false;
+  }
+
+  pause() {
     this._paused = true;
     NativeAudio.pause();
-  };
+  }
 
-  play = () => {
+  play() {
     this._paused = false;
     NativeAudio.play();
-  };
+  }
 
   get paused() {
     return this._paused;
@@ -114,6 +119,14 @@ export const App = () => {
   }, [routeId]);
 
   useEffect(() => {
+    if (route?.dark) {
+      StatusBar.setStyle({ style: StatusBarStyle.Dark });
+    } else {
+      StatusBar.setStyle({ style: StatusBarStyle.Light });
+    }
+  }, [route?.dark]);
+
+  useEffect(() => {
     if (!loading && user && route?.protected === false) {
       goTo(routes.home);
     } else if (!loading && !user && route?.protected === true) {
@@ -141,24 +154,30 @@ export const App = () => {
 
   return (
     <>
-      <div className="flex flex-col h-screen overflow-hidden text-gray-700">
+      <div
+        className={classNames(
+          "flex flex-col h-screen overflow-hidden text-gray-700 safe-top",
+          route.mobileClassName,
+          !route.showTabs && "safe-bottom",
+        )}
+      >
         {route.title && (
           // h-10 makes it so the hight stays constant depending on whether we are showing the back button
-          <div className="flex justify-between items-center px-2 mt-5 py-1 relative border-b h-10 flex-shrink-0">
+          <div className="text-2xl flex justify-between items-center px-3 mt-0 pb-1 relative border-b h-10 flex-shrink-0">
             <div className="absolute inset-0 flex items-center justify-center">
               <div>{route.title}</div>
             </div>
 
             {route.showBack ? (
-              <BackButton className="z-10" />
+              <BackButton className="z-10 p-1" />
             ) : (
-              <div className="text-xl font-bold">
+              <div className="font-bold">
                 RELAR <GiSwordSpin className="inline-block -mt-1 -ml-1" />
               </div>
             )}
 
             {route.id !== "settings" && (
-              <button className="z-10" onClick={() => goTo(routes.settings)}>
+              <button className="z-10 p-1" onClick={() => goTo(routes.settings)}>
                 <HiOutlineCog className="w-6 h-6" />
               </button>
             )}

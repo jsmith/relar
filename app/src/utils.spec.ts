@@ -1,6 +1,7 @@
 import { test } from "uvu";
-import { preventAndCall, shuffleArray, removeElementFromShuffled } from "./utils";
+import { preventAndCall, shuffleArray, removeElementFromShuffled, onConditions } from "./utils";
 import * as assert from "uvu/assert";
+import { err } from "neverthrow";
 
 test("preventAndCall calls preventDefault", () => {
   let calledPreventDefault = false;
@@ -56,6 +57,37 @@ test("removeElementFromShuffled correctly removes from maps", () => {
   assert.equal(shuffled, [0, 1, 2, 3, 4, 6, 7, 8, 9]);
   assert.equal(mappingTo, { 0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8 });
   assert.equal(mappingFrom, { 0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8 });
+});
+
+test("onConditions works", async () => {
+  let successCalled = false;
+  let errorCalled = false;
+  let settledCalled = false;
+  let defaultCalled = false;
+
+  onConditions.registerDefaultErrorHandler(() => (defaultCalled = true));
+
+  const result = await onConditions(async () => 5 * 5)
+    .onSuccess(() => (successCalled = true))
+    .onError(() => (errorCalled = true))
+    .onSuccess(() => (settledCalled = true));
+
+  assert.ok(successCalled);
+  assert.ok(settledCalled);
+  assert.not(errorCalled);
+  assert.not(defaultCalled);
+  assert.equal(result, 25);
+
+  const error = await onConditions(async () => {
+    (undefined as any).wow();
+  })
+    .onSuccess(() => (successCalled = true))
+    .onError(() => (errorCalled = true))
+    .onSuccess(() => (settledCalled = true));
+
+  assert.ok(errorCalled);
+  assert.ok(defaultCalled);
+  assert.equal(error, undefined);
 });
 
 test.run();

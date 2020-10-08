@@ -52,7 +52,7 @@ export const Tab = ({
 );
 
 const MINIFIED_HEIGHT = 80;
-const TABS_HEIGHT = 69;
+const TABS_HEIGHT = 80;
 
 // References
 // Framer Animation Types -> https://www.framer.com/api/animation/
@@ -325,7 +325,7 @@ export const ButtonTabs = () => {
 
       <motion.div
         style={{ height: tabsHeight }}
-        className="pb-4 bg-gray-900 flex justify-around text-white flex-shrink-0"
+        className="safe-bottom bg-gray-900 flex justify-around text-white flex-shrink-0"
       >
         <Tab label="Home" route={routes.home} icon={HiHome} />
         <Tab label="Search" route={routes.search} icon={HiSearch} />

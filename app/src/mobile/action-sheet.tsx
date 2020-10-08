@@ -49,8 +49,16 @@ export const ActionSheet = () => {
       />
       <motion.div
         variants={{
-          showMenu: { height: "fit-content", transition: { type: "tween", ease: "easeInOut" } },
-          hideMenu: { height: 0, transition: { type: "tween", ease: "easeInOut" } },
+          showMenu: {
+            height: "auto",
+            paddingBottom: "env(safe-area-inset-bottom)",
+            transition: { type: "tween", ease: "easeInOut" },
+          },
+          hideMenu: {
+            height: 0,
+            paddingBottom: 0,
+            transition: { type: "tween", ease: "easeInOut" },
+          },
         }}
         initial={false}
         animate={items ? "showMenu" : "hideMenu"}

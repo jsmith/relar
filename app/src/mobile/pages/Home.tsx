@@ -36,7 +36,7 @@ export const Home = () => {
   }
 
   return (
-    <div className="space-y-4 px-2 lg:px-5 py-1 overflow-y-scroll">
+    <div className="space-y-4 px-3 lg:px-5 py-1 overflow-y-scroll">
       <HomeTopic
         title="Recently Played"
         subTitle=""
