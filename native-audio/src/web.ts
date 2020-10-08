@@ -33,10 +33,6 @@ export class NativeAudioWeb extends WebPlugin implements NativeAudioPlugin {
     return this.audioElement.play();
   }
 
-  async stop(): Promise<void> {
-    // Nothing to do I think
-  }
-
   async setVolume({ volume }: { volume: number }): Promise<void> {
     this.audioElement.volume = volume;
   }

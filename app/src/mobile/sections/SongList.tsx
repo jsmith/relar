@@ -153,7 +153,7 @@ const SongListRow = ({
         })
       }
       title={song.title}
-      subTitle={`${song.artist} • ${fmtMSS(song.duration / 1000)}`}
+      subTitle={`${song.artist ?? "Unknown Artist"} • ${fmtMSS(song.duration / 1000)}`}
       handleSentinel={handleSentinel}
       absoluteIndex={absoluteIndex}
       object={song}

@@ -10,7 +10,6 @@ export interface NativeAudioPlugin {
   preload(options: PreloadOptions): Promise<void>;
   play(): Promise<void>;
   pause(): Promise<void>;
-  stop(): Promise<void>;
   setVolume(options: { volume: number }): Promise<void>;
   getCurrentTime(): Promise<{ currentTime: number }>;
   setCurrentTime(opts: { currentTime: number }): Promise<void>;

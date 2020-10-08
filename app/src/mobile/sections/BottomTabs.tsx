@@ -181,7 +181,7 @@ export const ButtonTabs = () => {
           <DragBar className="flex-shrink-0 absolute" buttonClassName="bg-gray-300" />
 
           {/* This text only appears when the queue is showing */}
-          <div className="flex absolute px-8 top-0 left-0 right-0 mt-8 space-x-2">
+          <div className="flex absolute px-8 top-0 left-0 right-0 safe-top space-x-2">
             {/* Mimicking the photo below */}
             <div className="h-16 w-16 flex-shrink-0"></div>
             <motion.div
@@ -205,7 +205,7 @@ export const ButtonTabs = () => {
 
           <div
             className={classNames(
-              "flex w-full px-8 mt-8",
+              "flex w-full px-8 safe-top",
               !openQueue && "items-center justify-center",
             )}
             style={{ flexGrow: openQueue ? 0 : 9999 }}
@@ -228,7 +228,7 @@ export const ButtonTabs = () => {
                 disabledPan.current = true;
               }}
             >
-              <div className="mt-3 text-gray-200 font-bold text-sm">Playing Next</div>
+              <div className="mt-3 text-gray-200 font-bold text-xl">Playing Next</div>
               <SongList
                 songs={songs}
                 mode="condensed"
@@ -239,7 +239,7 @@ export const ButtonTabs = () => {
             </motion.div>
           </div>
 
-          <div className="w-full px-8 space-y-5 pb-4 flex-shrink-0">
+          <div className="w-full px-8 space-y-5 safe-bottom flex-shrink-0">
             <motion.div
               animate={{
                 height: openQueue ? 0 : "fit-content",

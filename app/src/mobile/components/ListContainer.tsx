@@ -154,11 +154,7 @@ export const ListContainer = function <T, K extends keyof T, E>({
   );
 
   return (
-    <div
-      className={classNames("overflow-y-scroll", className)}
-      ref={container}
-      onPointerDown={() => console.log("HERE")}
-    >
+    <div className={classNames("overflow-y-scroll", className)} ref={container}>
       <div className="h-full" ref={ref}>
         <div style={{ height: placeholderTopHeight }} />
         <div className={mode === "regular" ? "divide-y" : ""}>{rows}</div>

@@ -153,16 +153,6 @@ NativeAudio.loop({
 
 /**
  * Platform: Android/iOS
- * This method will stop the audio file during playback.
- * @param assetId - identifier of the asset
- * @returns void
- */
-NativeAudio.stop({
-  assetId: "chime_audio",
-});
-
-/**
- * Platform: Android/iOS
  * This method will pause the audio file during playback.
  * @param assetId - identifier of the asset
  * @returns void

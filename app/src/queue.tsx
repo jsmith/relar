@@ -258,16 +258,17 @@ export const QueueProvider = (props: React.Props<{}>) => {
         played: (firebase.firestore.FieldValue.increment(1) as unknown) as number,
       };
 
-      userData.song(song.id).update(update).catch(captureAndLogError);
-
       if (ref.current) {
         try {
           await ref.current.setSrc({ src: downloadUrl, songId: song.id });
         } catch (e) {
           captureException(e);
-          console.error(e);
+          console.error(e.toString());
+          return;
         }
       }
+
+      userData.song(song.id).update(update).catch(captureAndLogError);
 
       // if (ref.current?.paused === false) {
       //   ref.current?.play();

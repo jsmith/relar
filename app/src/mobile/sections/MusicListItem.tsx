@@ -44,7 +44,7 @@ export const MusicListItem = ({
       <div
         className={classNames(
           "flex items-end rounded bg-purple-200 flex-shrink-0",
-          mode === "regular" ? "w-16 h-16" : "w-8 h-8",
+          mode === "regular" ? "w-16 h-16" : "w-12 h-12",
         )}
         style={{ boxShadow: "rgb(182 149 220) 0px 2px 4px 0px inset" }}
       >

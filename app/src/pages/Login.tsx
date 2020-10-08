@@ -53,7 +53,7 @@ export const Login = () => {
         </div>
       }
     >
-      <form className="space-y-3">
+      <div className="space-y-3">
         <Input
           value={email}
           onChange={setEmail}
@@ -72,7 +72,7 @@ export const Login = () => {
           className="w-full"
           onClick={preventAndCall(login)}
         />
-      </form>
+      </div>
     </CardPage>
   );
 };

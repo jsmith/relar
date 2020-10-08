@@ -58,6 +58,7 @@ class Controls implements AudioControls {
     }
 
     if (uri === null) {
+      console.log(`Fetching ${src}`);
       const blob = await fetch(src).then((res) => res.blob());
 
       uri = await writeFile({
@@ -80,6 +81,8 @@ class Controls implements AudioControls {
           return process.env.NODE_ENV === "production";
         },
       }).then((r) => r.uri);
+
+      console.log(`Successfully downloaded file to ${uri}`);
     }
 
     if (uri === null) {
