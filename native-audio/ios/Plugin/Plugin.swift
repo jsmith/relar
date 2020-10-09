@@ -4,6 +4,13 @@ import Capacitor
 import CoreAudio
 import MediaPlayer
 
+extension Dictionary {
+    mutating func merge(in dict: [Key: Value]){
+        for (k, v) in dict {
+            updateValue(v, forKey: k)
+        }
+    }
+}
 
 /**
  * Please read the Capacitor iOS Plugin Development Guide
@@ -21,6 +28,14 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(AVAudioSession.Category.playback)
             try session.setActive(true)
+            self.setupRemoveTransportControls()
+            
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(self.audioPlayerDidFinishPlaying),
+                name: .AVPlayerItemDidPlayToEndTime,
+                object: nil
+            )
         } catch {
             print("Failed to set AVAudioSession categroy: " + error.localizedDescription)
         }
@@ -31,6 +46,23 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
             call.error("path property is missing")
             return
         }
+
+        guard let title = call.getString("title") else {
+            call.error("title property is missing")
+            return
+        }
+
+        guard let artist = call.getString("artist") else {
+            call.error("artist property is missing")
+            return
+        }
+
+        guard let album = call.getString("album") else {
+            call.error("album property is missing")
+            return
+        }
+        
+        print("GOT ARGS", title, artist, album)
         
         let volume = call.getFloat("volume") ?? 1.0
 
@@ -47,7 +79,7 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
 
             let item = AVPlayerItem(url: url)
             
-            NotificationCenter.default.addObserver(item, selector: #selector(self.audioPlayerDidFinishPlaying(note:)), name: .AVPlayerItemDidPlayToEndTime, object: nil)
+            
 
             if self.aVAudioPlayer != nil {
                 self.aVAudioPlayer?.replaceCurrentItem(with: item)
@@ -62,15 +94,14 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
     
     @objc func play(_ call: CAPPluginCall) {
         print("PLAY")
-//        self.getQueue().async {
+       self.getQueue().async {
             self.aVAudioPlayer?.play()
             if !self.hasPlayed {
                 self.setUpPlayingInfo()
-                self.setupRemoveTransportControls()
                 self.hasPlayed = true
             }
             call.success()
-//        }
+       }
     }
     
     @objc func getDuration(_ call: CAPPluginCall) {
@@ -103,6 +134,17 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
         self.aVAudioPlayer?.volume = volume
         call.success()
     }
+
+    @objc func setAlbumArt(_ call: CAPPluginCall) {
+        guard let string = call.getString("url") else {
+            call.error("url property is missing")
+            return
+        }
+
+        // "https://cdn.arstechnica.net/wp-content/uploads/2018/06/macOS-Mojave-Dynamic-Wallpaper-transition.jpg"
+        let url = URL(string: string)! 
+        downloadImage(from: url)
+    }
     
     func getQueue() -> DispatchQueue {
         return DispatchQueue(label: "com.getcapacitor.community.audio.complex.queue", qos: .userInitiated)
@@ -117,12 +159,6 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
         nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = "Album"
         nowPlayingInfo[MPMediaItemPropertyArtist] = "Artist"
 
-        if let image = UIImage(named: "lockscreen") {
-            nowPlayingInfo[MPMediaItemPropertyArtwork] =
-                MPMediaItemArtwork(boundsSize: image.size) { size in
-                    return image
-            }
-        }
         nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = self.getCurrentTime()
         nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = self.getDuration()
         nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = 1
@@ -136,15 +172,29 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
     private func setupRemoveTransportControls() {
         print("Setting up transport controls...")
         let commandCenter = MPRemoteCommandCenter.shared();
+
         commandCenter.playCommand.isEnabled = true
         commandCenter.playCommand.addTarget { [unowned self] event in
-            self.aVAudioPlayer?.play()
+            self.notifyListeners("play", data: [:])
             return .success
         }
         
         commandCenter.pauseCommand.isEnabled = true
         commandCenter.pauseCommand.addTarget { [unowned self] event in
-            self.aVAudioPlayer?.pause()
+            self.notifyListeners("pause", data: [:])
+            return .success
+        }
+
+        commandCenter.nextTrackCommand.isEnabled = true
+        commandCenter.nextTrackCommand.addTarget { [unowned self] event in
+            self.notifyListeners("next", data: [:])
+            return .success
+        }
+
+
+        commandCenter.previousTrackCommand.isEnabled = true
+        commandCenter.previousTrackCommand.addTarget { [unowned self] event in
+            self.notifyListeners("previous", data: [:])
             return .success
         }
     }
@@ -168,19 +218,7 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
     override public func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         print("OBSERVED")
         var nowPlayingInfo = [String : Any]()
-        nowPlayingInfo[MPMediaItemPropertyTitle] = "Title"
-        nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = "Album"
-        nowPlayingInfo[MPMediaItemPropertyArtist] = "Artist"
-
-        if let image = UIImage(named: "lockscreen") {
-            nowPlayingInfo[MPMediaItemPropertyArtwork] =
-                MPMediaItemArtwork(boundsSize: image.size) { size in
-                    return image
-            }
-        }
         nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = self.getDuration()
-        
-        self.setupRemoveTransportControls()
         
         if object is AVPlayer {
             switch self.aVAudioPlayer?.timeControlStatus {
@@ -200,9 +238,37 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
         }
     }
     
+    private func getData(from url: URL, completion: @escaping (Data?, URLResponse?, Error?) -> ()) {
+        URLSession.shared.dataTask(with: url, completionHandler: completion).resume()
+    }
+
+    private func downloadImage(from url: URL) {
+        print("Download Started")
+        self.getData(from: url) { data, response, error in
+            guard let data = data, error == nil else { return }
+            print(response?.suggestedFilename ?? url.lastPathComponent)
+            print("Download Finished")
+            DispatchQueue.main.async() { [weak self] in
+                if let image = UIImage(data: data) {
+                    self?.updateAttributes(with: [
+                        MPMediaItemPropertyArtwork: MPMediaItemArtwork(boundsSize: image.size) { size in
+                            return image
+                        }
+                    ])
+                }
+            }
+        }
+    }
+
+    private func updateAttributes(with attributes: [String : Any]) {
+        var nowPlayingInfo = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? attributes
+        nowPlayingInfo.merge(in: attributes)
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+    }
+    
     
     @objc public func audioPlayerDidFinishPlaying(note: NSNotification) {
+        print("finished")
         self.notifyListeners("complete", data: [:])
-        print("finished") // It is not working, not printing "finished"
     }
 }

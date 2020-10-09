@@ -1,5 +1,5 @@
 import { getDownloadURL } from "../storage";
-import { useDefinedUser } from "../auth";
+import { useDefinedUser, useUser } from "../auth";
 import { Album, Artwork, Song } from "../shared/universal/types";
 import { clientStorage } from "../shared/universal/utils";
 import * as Sentry from "@sentry/browser";
@@ -33,10 +33,11 @@ export const useThumbnails = (
   type: ThumbnailType,
   size: ThumbnailSize = "32",
 ) => {
-  const user = useDefinedUser();
+  const { user } = useUser();
   const [thumbnails, setThumbnails] = useState<Array<string | undefined>>([]);
 
   useEffect(() => {
+    if (!user) return;
     let ignore = false;
     const thumbnails = objects.map((object) => tryToGetDownloadUrlOrLog(user, object, type, size));
     Promise.all(thumbnails).then((thumbnails) => !ignore && setThumbnails(thumbnails));

@@ -7,7 +7,7 @@
   "types": "dist/esm/index.d.ts",
   "scripts": {
     "build": "npm run clean && tsc",
-    "clean": "rimraf ./dist",
+    "clean": "rm -rf ./dist",
     "watch": "tsc --watch",
     "prepublishOnly": "npm run build",
     "npm-publish": "np"
@@ -24,7 +24,7 @@
     "np": "^6.2.4",
     "prettier-plugin-java": "^0.8.0",
     "pretty-quick": "^2.0.1",
-    "rimraf": "^3.0.2"
+    "typescript": "^4.0.3"
   },
   "husky": {
     "hooks": {

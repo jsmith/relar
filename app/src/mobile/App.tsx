@@ -16,6 +16,8 @@ import { AudioControls, useQueue } from "../queue";
 import { BackButton } from "./components/BackButton";
 import { useStartupHooks } from "../startup";
 import classNames from "classnames";
+import { useThumbnail } from "../queries/thumbnail";
+import { Song } from "../shared/universal/types";
 
 const { StatusBar } = Plugins;
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
@@ -42,9 +44,11 @@ class Controls implements AudioControls {
     return this._paused;
   }
 
-  async setSrc({ src, songId }: { src: string; songId: string }) {
+  async setSrc(opts: { src: string; song: Song } | null) {
+    if (!opts) return; // TODO turn off
+    const { src, song } = opts;
     const directory = FilesystemDirectory.Cache;
-    const pathFromDir = `songs_cache/${songId}.mp3`;
+    const pathFromDir = `songs_cache/${song.id}.mp3`;
     let uri: string | null = null;
     try {
       const stat = await Plugins.Filesystem.stat({ path: pathFromDir, directory });
@@ -93,6 +97,9 @@ class Controls implements AudioControls {
     await NativeAudio.preload({
       path: uri,
       volume: this._volume ?? 1.0,
+      title: song.title,
+      artist: song.artist ?? "Unknown Artist",
+      album: song.albumName ?? "Unknown Album",
     });
   }
 
@@ -110,10 +117,19 @@ class Controls implements AudioControls {
   }
 }
 
+const controls = new Controls();
+
 export const App = () => {
   const { routeId, goTo } = useRouter();
   const { loading, user } = useUser();
-  const { _setRef, _nextAutomatic } = useQueue();
+  const { _setRef, _nextAutomatic, songInfo, toggleState, next, previous } = useQueue();
+  const thumbnail = useThumbnail(songInfo?.song, "song", "128");
+
+  useEffect(() => {
+    if (thumbnail) {
+      NativeAudio.setAlbumArt({ url: thumbnail });
+    }
+  }, [thumbnail]);
 
   useStartupHooks();
 
@@ -138,10 +154,20 @@ export const App = () => {
   }, [goTo, loading, route?.protected, user]);
 
   useEffect(() => {
-    const { remove } = NativeAudio.addListener("complete", _nextAutomatic);
-    _setRef(new Controls());
-    return () => remove();
-  }, [_nextAutomatic, _setRef]);
+    const { remove: dispose1 } = NativeAudio.addListener("complete", _nextAutomatic);
+    const { remove: dispose2 } = NativeAudio.addListener("play", toggleState);
+    const { remove: dispose3 } = NativeAudio.addListener("pause", toggleState);
+    const { remove: dispose4 } = NativeAudio.addListener("next", next);
+    const { remove: dispose5 } = NativeAudio.addListener("previous", previous);
+    _setRef(controls);
+    return () => {
+      dispose1();
+      dispose2();
+      dispose3();
+      dispose4();
+      dispose5();
+    };
+  }, [_nextAutomatic, _setRef, next, previous, toggleState]);
 
   if (
     loading ||

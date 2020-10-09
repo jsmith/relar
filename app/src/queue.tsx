@@ -150,7 +150,7 @@ export const QueueContext = createContext<{
 export interface AudioControls {
   pause: () => void;
   play: () => void;
-  setSrc: (opts: { src: string; songId: string }) => Promise<void>;
+  setSrc: (opts: { src: string; song: Song } | null) => Promise<void>;
   paused: boolean;
   getCurrentTime(): Promise<number>;
   setCurrentTime(currentTime: number): void;
@@ -223,6 +223,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
     setPlaying(false);
     setSongInfo(undefined);
     setCurrentTime(0);
+
     current.current.index = undefined;
   }, []);
 
@@ -260,7 +261,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
 
       if (ref.current) {
         try {
-          await ref.current.setSrc({ src: downloadUrl, songId: song.id });
+          await ref.current.setSrc({ src: downloadUrl, song: song });
         } catch (e) {
           captureException(e);
           console.error(e.toString());
@@ -513,8 +514,10 @@ export const QueueAudio = () => {
           else
             _setRef(
               Object.assign(el, {
-                setSrc: async ({ src }: { src: string }) => {
-                  el.src = src;
+                setSrc: async (opts: { src: string } | null) => {
+                  if (opts) {
+                    el.src = opts.src;
+                  }
                 },
                 getCurrentTime: async () => el.currentTime,
                 setVolume: (volume: number) => (el.volume = volume),

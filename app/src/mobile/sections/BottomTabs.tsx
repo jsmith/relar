@@ -263,9 +263,9 @@ export const ButtonTabs = () => {
               </button>
               <button onClick={toggleState} className="focus:outline-none">
                 {playing ? (
-                  <MdPauseCircleFilled className="text-gray-200 w-16 h-16" />
+                  <MdPauseCircleFilled className="text-gray-200 w-20 h-20" />
                 ) : (
-                  <MdPlayCircleFilled className="text-gray-200 w-16 h-16" />
+                  <MdPlayCircleFilled className="text-gray-200 w-20 h-20" />
                 )}
               </button>
 
