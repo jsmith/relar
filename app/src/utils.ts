@@ -303,7 +303,6 @@ export function useLocalStorage<T extends string>(key: string): [T | undefined, 
 export function useLocalStorage<T extends string>(key: string, defaultValue?: T) {
   const [value, setValue] = useState<T>();
 
-  // TODO make sure this works
   useEffect(() => {
     Storage.get({ key }).then(({ value }) => setValue(value as T | undefined));
   }, [key]);

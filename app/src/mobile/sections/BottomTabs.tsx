@@ -32,8 +32,6 @@ import { SongList } from "./SongList";
 import { useTemporaryStatusBar } from "../status-bar";
 import { StatusBarStyle } from "@capacitor/core";
 
-// TODO home just remove play button
-
 export const Tab = ({
   label,
   icon: Icon,
@@ -118,8 +116,6 @@ export const ButtonTabs = () => {
     }),
     [SCREEN_HEIGHT],
   );
-
-  console.log("RENDER");
 
   return (
     <>

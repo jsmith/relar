@@ -32,7 +32,6 @@ export const MusicListItem = ({
   mode: ListContainerMode;
   state?: MusicListItemState;
 }) => {
-  console.log("RENDER");
   return (
     <div
       className={classNames(

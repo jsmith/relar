@@ -46,7 +46,12 @@ class Controls implements AudioControls {
   }
 
   async setSrc(opts: { src: string; song: Song } | null) {
-    if (!opts) return; // TODO turn off
+    if (!opts) {
+      console.log("STOPPING");
+      NativeAudio.stop();
+      return;
+    }
+
     const { src, song } = opts;
     const directory = FilesystemDirectory.Cache;
     const pathFromDir = `songs_cache/${song.id}.mp3`;
@@ -62,6 +67,7 @@ class Controls implements AudioControls {
       console.info(`Unable to stat ${pathFromDir}: ` + e.message);
     }
 
+    // TODO stream to folder???
     if (uri === null) {
       console.log(`Fetching ${src}`);
       const blob = await fetch(src).then((res) => res.blob());
@@ -153,7 +159,10 @@ export const App = () => {
     const { remove: dispose2 } = NativeAudio.addListener("play", toggleState);
     const { remove: dispose3 } = NativeAudio.addListener("pause", toggleState);
     const { remove: dispose4 } = NativeAudio.addListener("next", next);
-    const { remove: dispose5 } = NativeAudio.addListener("previous", previous);
+    const { remove: dispose5 } = NativeAudio.addListener("previous", () => {
+      console.log("JS PREVIOUS");
+      previous();
+    });
     _setRef(controls);
     return () => {
       dispose1();

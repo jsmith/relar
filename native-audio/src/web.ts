@@ -33,6 +33,10 @@ export class NativeAudioWeb extends WebPlugin implements NativeAudioPlugin {
     // Nothing to do
   }
 
+  async stop() {
+    // Nothing to do
+  }
+
   play(): Promise<void> {
     return this.audioElement.play();
   }

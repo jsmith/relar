@@ -9,6 +9,7 @@ import {
   captureAndLogError,
   shuffleArray,
   removeElementFromShuffled,
+  useIsMobile,
 } from "./utils";
 import firebase from "firebase/app";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -194,7 +195,11 @@ export const QueueProvider = (props: React.Props<{}>) => {
   /** The volume from 0 to 100 */
   const [volumeString, setVolumeString] = useLocalStorage("player-volume");
   // ?? just in case parsing fails
-  const [volume, setVolumeState] = useState(volumeString ? parseInt(volumeString) ?? 80 : 80);
+  const isMobile = useIsMobile();
+  const defaultVolume = isMobile ? 100 : 80;
+  const [volume, setVolumeState] = useState(
+    volumeString ? parseInt(volumeString) ?? defaultVolume : defaultVolume,
+  );
 
   // We do this internally since iOS (and maybe android) don't have time update events
   // So, to resolve this, we use timers while playing and then fetch the time manually
@@ -235,7 +240,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
     setPlaying(false);
     setSongInfo(undefined);
     setCurrentTime(0);
-
+    ref.current?.setSrc(null);
     current.current.index = undefined;
   }, []);
 

@@ -134,15 +134,28 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
     
     @objc func setCurrentTime(_ call: CAPPluginCall) {
         if let currentTime = call.getDouble("currentTime") {
-            self.aVAudioPlayer?.seek(to: CMTime(seconds: currentTime, preferredTimescale: 600))
+            self.aVAudioPlayer?.seek(to: CMTime(seconds: currentTime, preferredTimescale: 600)) { (isComplete) in
+                if let player = self.aVAudioPlayer {
+                    var nowPlayingInfo = [String : Any]()
+                    nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = CMTimeGetSeconds(player.currentTime())
+                    self.updateAttributes(with: nowPlayingInfo)
+                }
+                
+            }
         }
     }
     
     @objc func pause(_ call: CAPPluginCall) {
         self.aVAudioPlayer?.pause()
-//        var nowPlayingInfo = [String : Any]()
-//        nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = 0.0
-//        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+    }
+
+    @objc func stop(_ call: CAPPluginCall) {
+        self.aVAudioPlayer?.pause()
+        
+        // TODO ensure controls are disabled too
+        let nowPlayingInfo = [String : Any]()
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+
     }
     
     @objc func setVolume(_ call: CAPPluginCall) {
@@ -210,6 +223,7 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
 
         commandCenter.previousTrackCommand.isEnabled = true
         commandCenter.previousTrackCommand.addTarget { [unowned self] event in
+            print("JACOB PREVIOUS")
             self.notifyListeners("previous", data: [:])
             return .success
         }
@@ -232,7 +246,6 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
     }
     
     override public func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        print("OBSERVED")
         var nowPlayingInfo = [String : Any]()
         
         if object is AVPlayer {
