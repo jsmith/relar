@@ -157,7 +157,7 @@ export const ListContainer = function <T, K extends keyof T, E>({
     <div className={classNames("overflow-y-scroll", className)} ref={container}>
       <div className="h-full" ref={ref}>
         <div style={{ height: placeholderTopHeight }} />
-        <div className={mode === "regular" ? "divide-y" : ""}>{rows}</div>
+        {rows}
         <div style={{ height: placeholderBottomHeight }} />
       </div>
       {!disableNavigator && (

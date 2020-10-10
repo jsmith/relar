@@ -52,7 +52,7 @@ type Route<ID extends string> = {
   className: string;
   mobileClassName: string;
   sidebar: boolean;
-  title: string;
+  title: string | false;
   showBack: boolean;
   /** What screen color the background is (mobile only). */
   dark?: boolean;
@@ -128,7 +128,7 @@ export const routes = createRoutes({
     className: "py-2",
     mobileClassName: "",
     title: "Forgot Password",
-    showBack: false,
+    showBack: true,
     showTabs: false,
   },
   forgotPasswordSuccess: {
@@ -248,7 +248,7 @@ export const routes = createRoutes({
     className: "py-2",
     mobileClassName: "",
     title: "Playlists",
-    showBack: false,
+    showBack: true,
     showTabs: true,
   },
   playlist: {

@@ -167,7 +167,8 @@ const SongListRow = ({
 export const SongList = ({ songs, mode, className, disableNavigator, source }: SongListProps) => {
   return (
     <ListContainer
-      height={57}
+      // FIXME this might not work in non condensed mode
+      height={73}
       items={songs}
       sortKey="title"
       row={SongListRow}

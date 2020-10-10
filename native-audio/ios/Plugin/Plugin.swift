@@ -78,14 +78,31 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
             }
 
             let item = AVPlayerItem(url: url)
-            
-            
 
             if self.aVAudioPlayer != nil {
                 self.aVAudioPlayer?.replaceCurrentItem(with: item)
             } else {
                 self.aVAudioPlayer = AVPlayer(playerItem: item)
             }
+            
+            // CONTROLS
+            print("Setting up playing controls")
+            
+            // Define Now Playing Info
+            var nowPlayingInfo = [String : Any]()
+            nowPlayingInfo[MPMediaItemPropertyTitle] = title
+            nowPlayingInfo[MPMediaItemPropertyAlbumTitle] = album
+            nowPlayingInfo[MPMediaItemPropertyArtist] = artist
+
+            nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = self.getCurrentTime()
+            nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = self.getDuration()
+            nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = 1
+
+            // Set the metadata
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+            
+            self.aVAudioPlayer?.addObserver(self, forKeyPath: "timeControlStatus", options: [.old, .new], context: nil)
+            
             
             self.aVAudioPlayer?.volume = volume
             call.success()
@@ -97,7 +114,6 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
        self.getQueue().async {
             self.aVAudioPlayer?.play()
             if !self.hasPlayed {
-                self.setUpPlayingInfo()
                 self.hasPlayed = true
             }
             call.success()
@@ -218,24 +234,23 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
     override public func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         print("OBSERVED")
         var nowPlayingInfo = [String : Any]()
-        nowPlayingInfo[MPMediaItemPropertyPlaybackDuration] = self.getDuration()
         
         if object is AVPlayer {
             switch self.aVAudioPlayer?.timeControlStatus {
             case .waitingToPlayAtSpecifiedRate, .paused:
                 nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = self.getCurrentTime()
                 nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = 0
-                MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
             case .playing:
                 nowPlayingInfo[MPNowPlayingInfoPropertyElapsedPlaybackTime] = self.getCurrentTime()
                 nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = 1
-                MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
             case .none:
                 print("NOTHING")
             case .some(_):
                 print("SOMETHING NEW")
             }
         }
+        
+        self.updateAttributes(with: nowPlayingInfo)
     }
     
     private func getData(from url: URL, completion: @escaping (Data?, URLResponse?, Error?) -> ()) {

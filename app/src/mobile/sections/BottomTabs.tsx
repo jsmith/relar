@@ -3,7 +3,7 @@ import type { IconType } from "react-icons/lib";
 import type { RouteType } from "@graywolfai/react-tiniest-router";
 import { Link } from "../../components/Link";
 import { routes } from "../../routes";
-import { HiDotsHorizontal, HiHome, HiSearch, HiTrash, HiUser } from "react-icons/hi";
+import { HiDotsHorizontal, HiHome, HiSearch, HiTrash } from "react-icons/hi";
 import {
   MdLibraryMusic,
   MdPause,
@@ -29,6 +29,10 @@ import { DragBar } from "../components/DragBar";
 import { TextRotation } from "../components/TextRotation";
 import classNames from "classnames";
 import { SongList } from "./SongList";
+import { useTemporaryStatusBar } from "../status-bar";
+import { StatusBarStyle } from "@capacitor/core";
+
+// TODO home just remove play button
 
 export const Tab = ({
   label,
@@ -95,6 +99,8 @@ export const ButtonTabs = () => {
     ),
   );
 
+  useTemporaryStatusBar({ style: StatusBarStyle.Dark, use: up });
+
   // add TABS_HEIGHT - tabsHeight so the main content doesn't move during the animation
   // Remove + TABS_HEIGHT - tabsHeight.get() and you'll see what I mean
   const heightShadow = useTransform(height, (value) =>
@@ -112,6 +118,8 @@ export const ButtonTabs = () => {
     }),
     [SCREEN_HEIGHT],
   );
+
+  console.log("RENDER");
 
   return (
     <>
@@ -178,7 +186,7 @@ export const ButtonTabs = () => {
 
         {/* And this is the big player */}
         <motion.div style={{ opacity }} className="flex flex-col flex-grow items-center">
-          <DragBar className="flex-shrink-0 absolute" buttonClassName="bg-gray-300" />
+          <DragBar className="flex-shrink-0 absolute safe-top" buttonClassName="bg-gray-300" />
 
           {/* This text only appears when the queue is showing */}
           <div className="flex absolute px-8 top-0 left-0 right-0 safe-top space-x-2">

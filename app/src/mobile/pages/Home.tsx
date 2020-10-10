@@ -44,8 +44,8 @@ export const Home = () => {
         params={{ generatedType: "recently-played" }}
         wrapperClassName="-mx-2 lg:-mx-5 px-2 lg:px-5"
       >
-        {recentlyAddedSongs.slice(0, 10).map((song) => (
-          <SongCard key={song.id} song={song} />
+        {recentlyPlayed.slice(0, 10).map((song, i) => (
+          <SongCard key={song.id} song={song} generatedType="recently-played" index={i} />
         ))}
       </HomeTopic>
 
@@ -56,8 +56,8 @@ export const Home = () => {
         params={{ generatedType: "recently-added" }}
         wrapperClassName="-mx-2 lg:-mx-5 px-2 lg:px-5"
       >
-        {recentlyAddedSongs.slice(0, 10).map((song) => (
-          <SongCard key={song.id} song={song} />
+        {recentlyAddedSongs.slice(0, 10).map((song, i) => (
+          <SongCard key={song.id} song={song} generatedType="recently-added" index={i} />
         ))}
       </HomeTopic>
 
@@ -68,8 +68,8 @@ export const Home = () => {
         params={{ generatedType: "liked" }}
         wrapperClassName="-mx-2 lg:-mx-5 px-2 lg:px-5"
       >
-        {likedSongs.slice(0, 10).map((song) => (
-          <SongCard key={song.id} song={song} />
+        {likedSongs.slice(0, 10).map((song, i) => (
+          <SongCard key={song.id} song={song} generatedType="liked" index={i} />
         ))}
       </HomeTopic>
     </div>

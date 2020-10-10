@@ -18,6 +18,7 @@ import { useStartupHooks } from "../startup";
 import classNames from "classnames";
 import { useThumbnail } from "../queries/thumbnail";
 import { Song } from "../shared/universal/types";
+import { useDefaultStatusBar } from "./status-bar";
 
 const { StatusBar } = Plugins;
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
@@ -137,13 +138,7 @@ export const App = () => {
     return Object.values(routes).find((route) => route.id === routeId);
   }, [routeId]);
 
-  useEffect(() => {
-    if (route?.dark) {
-      StatusBar.setStyle({ style: StatusBarStyle.Dark });
-    } else {
-      StatusBar.setStyle({ style: StatusBarStyle.Light });
-    }
-  }, [route?.dark]);
+  useDefaultStatusBar(route?.dark ? StatusBarStyle.Dark : StatusBarStyle.Light);
 
   useEffect(() => {
     if (!loading && user && route?.protected === false) {

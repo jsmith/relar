@@ -1,6 +1,6 @@
 import React from "react";
 import { HomeTopic } from "../../components/HomeTopic";
-import { useRecentlyAddedSongs, useLikedSongs } from "../../queries/songs";
+import { useRecentlyAddedSongs, useLikedSongs, useRecentlyPlayedSongs } from "../../queries/songs";
 import { SongCard } from "../../sections/SongCard";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
 import { routes } from "../../routes";
@@ -12,10 +12,15 @@ import { HiOutlineHeart } from "react-icons/hi";
 export const Home = () => {
   const recentlyAddedSongs = useRecentlyAddedSongs();
   const likedSongs = useLikedSongs();
+  const recentlyPlayed = useRecentlyPlayedSongs();
 
   useCoolSongs();
 
-  if (recentlyAddedSongs === undefined || likedSongs === undefined) {
+  if (
+    recentlyAddedSongs === undefined ||
+    likedSongs === undefined ||
+    recentlyPlayed === undefined
+  ) {
     return <LoadingSpinner />;
   }
 
@@ -37,6 +42,19 @@ export const Home = () => {
   return (
     <div className="space-y-5 w-full">
       <HomeTopic
+        title="Recently Played"
+        subTitle="Your recently played songs will appear here."
+        route={routes.generated}
+        params={{ generatedType: "recently-played" }}
+        wrapperClassName="px-5"
+        textClassName="px-5"
+      >
+        {recentlyPlayed.slice(0, 10).map((song, i) => (
+          <SongCard key={song.id} song={song} generatedType="recently-played" index={i} />
+        ))}
+      </HomeTopic>
+
+      <HomeTopic
         title="Recently Added"
         subTitle="Your recently uploaded songs will appear here."
         route={routes.generated}
@@ -44,8 +62,8 @@ export const Home = () => {
         wrapperClassName="px-5"
         textClassName="px-5"
       >
-        {recentlyAddedSongs.slice(0, 10).map((song) => (
-          <SongCard key={song.id} song={song} />
+        {recentlyAddedSongs.slice(0, 10).map((song, i) => (
+          <SongCard key={song.id} song={song} generatedType="recently-added" index={i} />
         ))}
       </HomeTopic>
 
@@ -63,8 +81,8 @@ export const Home = () => {
           //   </div>
           // }
         >
-          {likedSongs.slice(0, 10).map((song) => (
-            <SongCard key={song.id} song={song} />
+          {likedSongs.slice(0, 10).map((song, i) => (
+            <SongCard key={song.id} song={song} generatedType="liked" index={i} />
           ))}
         </HomeTopic>
       )}

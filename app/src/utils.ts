@@ -12,6 +12,9 @@ import * as Sentry from "@sentry/browser";
 import tiny from "tinycolor2";
 import { ALBUM_ID_DIVIDER } from "./shared/universal/utils";
 import { useSnackbar } from "react-simple-snackbar";
+import { FilesystemDirectory, Plugins, StatusBarStyle } from "@capacitor/core";
+
+const { Storage } = Plugins;
 
 export interface Disposer {
   dispose: () => void;
@@ -298,14 +301,17 @@ export function useLocalStorage<T extends string>(
 ): [T, (value: T) => void];
 export function useLocalStorage<T extends string>(key: string): [T | undefined, (value: T) => void];
 export function useLocalStorage<T extends string>(key: string, defaultValue?: T) {
-  const [value, setValue] = useState<T | undefined>(
-    (localStorage.getItem(key) as T | undefined) ?? defaultValue,
-  );
+  const [value, setValue] = useState<T>();
+
+  // TODO make sure this works
+  useEffect(() => {
+    Storage.get({ key }).then(({ value }) => setValue(value as T | undefined));
+  }, [key]);
 
   const setValueAndStore = useCallback(
     (value: T) => {
       setValue(value);
-      localStorage.setItem(key, value);
+      Storage.set({ key, value });
     },
     [key],
   );

@@ -32,7 +32,7 @@ export const Albums = () => {
   const albums = useCoolAlbums();
   return (
     <ListContainer
-      height={57}
+      height={73}
       items={albums}
       sortKey="album"
       row={AlbumRow}

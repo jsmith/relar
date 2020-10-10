@@ -32,11 +32,12 @@ export const MusicListItem = ({
   mode: ListContainerMode;
   state?: MusicListItemState;
 }) => {
+  console.log("RENDER");
   return (
     <div
       className={classNames(
-        "flex items-center space-x-2 w-full",
-        mode === "regular" ? "p-1" : "py-1",
+        "flex items-center space-x-2 w-full focus:outline-none",
+        mode === "regular" ? "p-1 border-b" : "py-1",
       )}
       tabIndex={0}
       onClick={onClick}
@@ -62,9 +63,9 @@ export const MusicListItem = ({
         )}
       </div>
       <div className="flex flex-col min-w-0 flex-grow text-left justify-center">
-        <SentinelBlock index={absoluteIndex} handleSentinel={handleSentinel} />
         <div className={classNames("truncate", !subTitle && "font-bold")}>{title}</div>
         {subTitle && <div className="text-sm">{subTitle}</div>}
+        <SentinelBlock index={absoluteIndex} handleSentinel={handleSentinel} />
       </div>
       <button
         className="p-1"

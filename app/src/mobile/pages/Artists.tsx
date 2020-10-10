@@ -35,7 +35,7 @@ export const Artists = () => {
   const artists = useCoolArtists();
   return (
     <ListContainer
-      height={57}
+      height={73}
       items={artists}
       sortKey="name"
       row={ArtistRow}

@@ -32,8 +32,20 @@ export const useCurrentTime = () => {
   return currentTime;
 };
 
+export type GeneratedType = "recently-added" | "recently-played" | "liked";
+
+export const generatedTypeToName: { [K in GeneratedType]: string } = {
+  "recently-added": "Recently Added",
+  liked: "Liked Songs",
+  "recently-played": "Recently Played",
+};
+
+export const isGeneratedType = (value: string): value is GeneratedType =>
+  value in generatedTypeToName;
+
 export type SetQueueSource =
-  | { type: "album" | "artist" | "playlist" | "generated"; id: string; sourceHumanName: string }
+  | { type: "album" | "artist" | "playlist"; id: string; sourceHumanName: string }
+  | { type: "generated"; id: GeneratedType }
   | { type: "library" | "manuel" | "queue" };
 
 export interface QueueItem {

@@ -23,6 +23,7 @@ import { QueueProvider } from "../queue";
 import "../common.css";
 import "../tailwind.css";
 import { SlideUpScreenContainer } from "./slide-up-screen";
+import { StatusBarProvider } from "./status-bar";
 import SnackbarProvider from "react-simple-snackbar";
 
 // Make sure to set the base URLs before the backend is used
@@ -35,7 +36,9 @@ ReactDOM.render(
         <QueueProvider>
           <SlideUpScreenContainer>
             <SnackbarProvider>
-              <App />
+              <StatusBarProvider>
+                <App />
+              </StatusBarProvider>
             </SnackbarProvider>
           </SlideUpScreenContainer>
         </QueueProvider>
