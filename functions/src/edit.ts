@@ -4,7 +4,7 @@ import { TypedAsyncRouter } from "@graywolfai/rest-ts-express";
 import { MetadataAPI, Song, Album } from "./shared/universal/types";
 import * as bodyParser from "body-parser";
 import { admin } from "./admin";
-import { deleteAlbumIfSingleSong, deleteArtistSingleSong } from "./utils";
+import { deleteAlbumIfSingleSong, deleteArtistSingleSong, ORIGINS } from "./utils";
 import { adminDb } from "./shared/node/utils";
 import { createAlbumId } from "./shared/universal/utils";
 import * as functions from "firebase-functions";
@@ -15,12 +15,7 @@ app.use(Sentry.Handlers.requestHandler());
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://toga-4e3f5.web.app",
-      "https://relar.app",
-      "https://staging.relar.app",
-    ],
+    origin: ORIGINS,
   }),
 );
 

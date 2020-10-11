@@ -17,6 +17,6 @@
   "exclude": ["**/src/shared/node/**", "**/load-env.ts"],
   "devOptions": {
     "port": 3000,
-    "fallback": "index.mobile.html"
+    "fallback": "mobile/index.html"
   }
 }

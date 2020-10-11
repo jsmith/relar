@@ -46,13 +46,13 @@ export const Library = () => {
           label={
             <>
               <div className="flex items-center space-x-2">
-                <link.icon className="w-5 h-5" />
-                <div>{link.label}</div>
+                <link.icon className="w-6 h-6" />
+                <div className="text-xl">{link.label}</div>
               </div>
               <HiChevronRight />
             </>
           }
-          className="px-4 py-3 flex items-center justify-between border-b"
+          className="px-4 py-4 flex items-center justify-between border-b"
         />
       ))}
     </div>

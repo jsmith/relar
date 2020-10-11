@@ -114,3 +114,4 @@ gsutil cors set storage.json gs://relar-staging.appspot.com # or gs://toga-4e3f5
 
 - https://medium.com/firebase-developers/the-secrets-of-firestore-fieldvalue-servertimestamp-revealed-29dd7a38a82b
 - https://stackoverflow.com/questions/46806860/how-to-query-cloud-firestore-for-non-existing-keys-of-documents
+- https://medium.com/@varundudeja/showing-media-player-system-controls-on-notification-screen-in-ios-swift-4e27fbf73575

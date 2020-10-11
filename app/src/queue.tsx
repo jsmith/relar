@@ -9,6 +9,7 @@ import {
   captureAndLogError,
   shuffleArray,
   removeElementFromShuffled,
+  useIsMobile,
 } from "./utils";
 import firebase from "firebase/app";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -32,8 +33,20 @@ export const useCurrentTime = () => {
   return currentTime;
 };
 
+export type GeneratedType = "recently-added" | "recently-played" | "liked";
+
+export const generatedTypeToName: { [K in GeneratedType]: string } = {
+  "recently-added": "Recently Added",
+  liked: "Liked Songs",
+  "recently-played": "Recently Played",
+};
+
+export const isGeneratedType = (value: string): value is GeneratedType =>
+  value in generatedTypeToName;
+
 export type SetQueueSource =
-  | { type: "album" | "artist" | "playlist" | "generated"; id: string; sourceHumanName: string }
+  | { type: "album" | "artist" | "playlist"; id: string; sourceHumanName: string }
+  | { type: "generated"; id: GeneratedType }
   | { type: "library" | "manuel" | "queue" };
 
 export interface QueueItem {
@@ -150,7 +163,7 @@ export const QueueContext = createContext<{
 export interface AudioControls {
   pause: () => void;
   play: () => void;
-  setSrc: (opts: { src: string; songId: string }) => Promise<void>;
+  setSrc: (opts: { src: string; song: Song } | null) => Promise<void>;
   paused: boolean;
   getCurrentTime(): Promise<number>;
   setCurrentTime(currentTime: number): void;
@@ -182,7 +195,11 @@ export const QueueProvider = (props: React.Props<{}>) => {
   /** The volume from 0 to 100 */
   const [volumeString, setVolumeString] = useLocalStorage("player-volume");
   // ?? just in case parsing fails
-  const [volume, setVolumeState] = useState(volumeString ? parseInt(volumeString) ?? 80 : 80);
+  const isMobile = useIsMobile();
+  const defaultVolume = isMobile ? 100 : 80;
+  const [volume, setVolumeState] = useState(
+    volumeString ? parseInt(volumeString) ?? defaultVolume : defaultVolume,
+  );
 
   // We do this internally since iOS (and maybe android) don't have time update events
   // So, to resolve this, we use timers while playing and then fetch the time manually
@@ -223,6 +240,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
     setPlaying(false);
     setSongInfo(undefined);
     setCurrentTime(0);
+    ref.current?.setSrc(null);
     current.current.index = undefined;
   }, []);
 
@@ -258,16 +276,17 @@ export const QueueProvider = (props: React.Props<{}>) => {
         played: (firebase.firestore.FieldValue.increment(1) as unknown) as number,
       };
 
-      userData.song(song.id).update(update).catch(captureAndLogError);
-
       if (ref.current) {
         try {
-          await ref.current.setSrc({ src: downloadUrl, songId: song.id });
+          await ref.current.setSrc({ src: downloadUrl, song: song });
         } catch (e) {
           captureException(e);
-          console.error(e);
+          console.error(e.toString());
+          return;
         }
       }
+
+      userData.song(song.id).update(update).catch(captureAndLogError);
 
       // if (ref.current?.paused === false) {
       //   ref.current?.play();
@@ -512,8 +531,10 @@ export const QueueAudio = () => {
           else
             _setRef(
               Object.assign(el, {
-                setSrc: async ({ src }: { src: string }) => {
-                  el.src = src;
+                setSrc: async (opts: { src: string } | null) => {
+                  if (opts) {
+                    el.src = opts.src;
+                  }
                 },
                 getCurrentTime: async () => el.currentTime,
                 setVolume: (volume: number) => (el.volume = volume),

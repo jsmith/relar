@@ -3,7 +3,7 @@ import type { IconType } from "react-icons/lib";
 import type { RouteType } from "@graywolfai/react-tiniest-router";
 import { Link } from "../../components/Link";
 import { routes } from "../../routes";
-import { HiDotsHorizontal, HiHome, HiSearch, HiTrash, HiUser } from "react-icons/hi";
+import { HiDotsHorizontal, HiHome, HiSearch, HiTrash } from "react-icons/hi";
 import {
   MdLibraryMusic,
   MdPause,
@@ -29,6 +29,8 @@ import { DragBar } from "../components/DragBar";
 import { TextRotation } from "../components/TextRotation";
 import classNames from "classnames";
 import { SongList } from "./SongList";
+import { useTemporaryStatusBar } from "../status-bar";
+import { StatusBarStyle } from "@capacitor/core";
 
 export const Tab = ({
   label,
@@ -52,7 +54,7 @@ export const Tab = ({
 );
 
 const MINIFIED_HEIGHT = 80;
-const TABS_HEIGHT = 69;
+const TABS_HEIGHT = 80;
 
 // References
 // Framer Animation Types -> https://www.framer.com/api/animation/
@@ -94,6 +96,8 @@ export const ButtonTabs = () => {
       0,
     ),
   );
+
+  useTemporaryStatusBar({ style: StatusBarStyle.Dark, use: up });
 
   // add TABS_HEIGHT - tabsHeight so the main content doesn't move during the animation
   // Remove + TABS_HEIGHT - tabsHeight.get() and you'll see what I mean
@@ -178,10 +182,10 @@ export const ButtonTabs = () => {
 
         {/* And this is the big player */}
         <motion.div style={{ opacity }} className="flex flex-col flex-grow items-center">
-          <DragBar className="flex-shrink-0 absolute" buttonClassName="bg-gray-300" />
+          <DragBar className="flex-shrink-0 absolute safe-top" buttonClassName="bg-gray-300" />
 
           {/* This text only appears when the queue is showing */}
-          <div className="flex absolute px-8 top-0 left-0 right-0 mt-8 space-x-2">
+          <div className="flex absolute px-8 top-0 left-0 right-0 safe-top space-x-2">
             {/* Mimicking the photo below */}
             <div className="h-16 w-16 flex-shrink-0"></div>
             <motion.div
@@ -205,7 +209,7 @@ export const ButtonTabs = () => {
 
           <div
             className={classNames(
-              "flex w-full px-8 mt-8",
+              "flex w-full px-8 safe-top",
               !openQueue && "items-center justify-center",
             )}
             style={{ flexGrow: openQueue ? 0 : 9999 }}
@@ -228,7 +232,7 @@ export const ButtonTabs = () => {
                 disabledPan.current = true;
               }}
             >
-              <div className="mt-3 text-gray-200 font-bold text-sm">Playing Next</div>
+              <div className="mt-3 text-gray-200 font-bold text-xl">Playing Next</div>
               <SongList
                 songs={songs}
                 mode="condensed"
@@ -239,7 +243,7 @@ export const ButtonTabs = () => {
             </motion.div>
           </div>
 
-          <div className="w-full px-8 space-y-5 pb-4 flex-shrink-0">
+          <div className="w-full px-8 space-y-5 safe-bottom flex-shrink-0">
             <motion.div
               animate={{
                 height: openQueue ? 0 : "fit-content",
@@ -263,9 +267,9 @@ export const ButtonTabs = () => {
               </button>
               <button onClick={toggleState} className="focus:outline-none">
                 {playing ? (
-                  <MdPauseCircleFilled className="text-gray-200 w-16 h-16" />
+                  <MdPauseCircleFilled className="text-gray-200 w-20 h-20" />
                 ) : (
-                  <MdPlayCircleFilled className="text-gray-200 w-16 h-16" />
+                  <MdPlayCircleFilled className="text-gray-200 w-20 h-20" />
                 )}
               </button>
 
@@ -325,7 +329,7 @@ export const ButtonTabs = () => {
 
       <motion.div
         style={{ height: tabsHeight }}
-        className="pb-4 bg-gray-900 flex justify-around text-white flex-shrink-0"
+        className="safe-bottom bg-gray-900 flex justify-around text-white flex-shrink-0"
       >
         <Tab label="Home" route={routes.home} icon={HiHome} />
         <Tab label="Search" route={routes.search} icon={HiSearch} />

@@ -1,3 +1,16 @@
+/* This needs to be CSS sadly */
+/* See https://blog.phonegap.com/displaying-a-phonegap-app-correctly-on-the-iphone-x-c4a85664c493 */
+/* And https://developer.mozilla.org/en-US/docs/Web/CSS/env */
+.safe-bottom {
+  padding-bottom: constant(safe-area-inset-bottom); /* iOS 11.0 */
+  padding-bottom: env(safe-area-inset-bottom); /* iOS 11.2 */
+}
+
+.safe-top {
+  padding-top: constant(safe-area-inset-top); /* iOS 11.0 */
+  padding-top: env(safe-area-inset-top); /* iOS 11.2 */
+}
+
 @font-face {
   font-family: "FiraMono";
   /* We need this since we mount src/shared to _dist_/shared */

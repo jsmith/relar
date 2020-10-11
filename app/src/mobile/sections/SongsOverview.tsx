@@ -95,9 +95,9 @@ export const SongsOverview = ({
 
   return (
     <motion.div className="w-full overflow-y-scroll" ref={ref}>
-      <motion.div style={{ opacity, display }} className="z-10 fixed">
+      {/* <motion.div style={{ opacity, display }} className="z-10 fixed">
         <BackButton className="absolute top-0 text-gray-600 m-3" />
-      </motion.div>
+      </motion.div> */}
 
       <div style={{ width, height: width }} className="relative overflow-hidden">
         <motion.div className="absolute" style={{ width, height: width, top: topImage }}>

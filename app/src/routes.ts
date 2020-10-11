@@ -50,9 +50,12 @@ type Route<ID extends string> = {
   showTabs: boolean;
   protected: boolean;
   className: string;
+  mobileClassName: string;
   sidebar: boolean;
-  title: string;
+  title: string | false;
   showBack: boolean;
+  /** What screen color the background is (mobile only). */
+  dark?: boolean;
 };
 
 const createRoutes = <K extends string>(routes: Record<K, Route<K>>) => routes;
@@ -74,9 +77,11 @@ export const routes = createRoutes({
     protected: false,
     sidebar: false,
     className: "py-2",
+    mobileClassName: "bg-gray-900",
     title: "",
     showBack: false,
     showTabs: false,
+    dark: true,
   },
   account: {
     id: "account",
@@ -85,6 +90,7 @@ export const routes = createRoutes({
     protected: true,
     sidebar: false,
     className: "py-2",
+    mobileClassName: "",
     title: "Account",
     showBack: false,
     showTabs: false,
@@ -96,8 +102,9 @@ export const routes = createRoutes({
     protected: false,
     sidebar: false,
     className: "py-2",
+    mobileClassName: "",
     title: "Login",
-    showBack: false,
+    showBack: true,
     showTabs: false,
   },
   signup: {
@@ -107,8 +114,9 @@ export const routes = createRoutes({
     protected: false,
     sidebar: false,
     className: "py-2",
+    mobileClassName: "",
     title: "Sign Up",
-    showBack: false,
+    showBack: true,
     showTabs: false,
   },
   forgotPassword: {
@@ -118,8 +126,9 @@ export const routes = createRoutes({
     protected: false,
     sidebar: false,
     className: "py-2",
+    mobileClassName: "",
     title: "Forgot Password",
-    showBack: false,
+    showBack: true,
     showTabs: false,
   },
   forgotPasswordSuccess: {
@@ -129,6 +138,7 @@ export const routes = createRoutes({
     protected: false,
     sidebar: false,
     className: "py-2",
+    mobileClassName: "",
     title: "Forgot Password Confirmation",
     showBack: false,
     showTabs: false,
@@ -140,6 +150,7 @@ export const routes = createRoutes({
     protected: true,
     sidebar: true,
     className: "py-2",
+    mobileClassName: "",
     title: "Home",
     showBack: false,
     showTabs: true,
@@ -151,6 +162,7 @@ export const routes = createRoutes({
     protected: true,
     sidebar: true,
     className: "py-2",
+    mobileClassName: "",
     title: "Search",
     showBack: false,
     showTabs: true,
@@ -162,6 +174,7 @@ export const routes = createRoutes({
     protected: true,
     sidebar: true,
     className: "py-2",
+    mobileClassName: "",
     title: "Songs",
     showBack: true,
     showTabs: true,
@@ -173,6 +186,7 @@ export const routes = createRoutes({
     protected: true,
     sidebar: true,
     className: "py-2",
+    mobileClassName: "",
     title: "Albums",
     showBack: true,
     showTabs: true,
@@ -184,6 +198,7 @@ export const routes = createRoutes({
     protected: true,
     sidebar: true,
     className: "",
+    mobileClassName: "",
     title: "Album",
     showBack: true,
     showTabs: true,
@@ -195,6 +210,7 @@ export const routes = createRoutes({
     protected: true,
     sidebar: true,
     className: "py-2",
+    mobileClassName: "",
     title: "Artists",
     showBack: true,
     showTabs: true,
@@ -206,6 +222,7 @@ export const routes = createRoutes({
     protected: true,
     sidebar: true,
     className: "",
+    mobileClassName: "",
     title: "Artist",
     showBack: true,
     showTabs: true,
@@ -217,6 +234,7 @@ export const routes = createRoutes({
     protected: false,
     sidebar: false,
     className: "",
+    mobileClassName: "",
     title: "Invite",
     showBack: false,
     showTabs: false,
@@ -228,8 +246,9 @@ export const routes = createRoutes({
     protected: true,
     sidebar: true,
     className: "py-2",
+    mobileClassName: "",
     title: "Playlists",
-    showBack: false,
+    showBack: true,
     showTabs: true,
   },
   playlist: {
@@ -239,6 +258,7 @@ export const routes = createRoutes({
     protected: true,
     sidebar: true,
     className: "",
+    mobileClassName: "",
     title: "Playlist",
     showBack: true,
     showTabs: true,
@@ -250,6 +270,7 @@ export const routes = createRoutes({
     protected: true,
     sidebar: true,
     className: "",
+    mobileClassName: "",
     title: "Generated",
     showBack: true,
     showTabs: true,
@@ -261,6 +282,7 @@ export const routes = createRoutes({
     protected: false,
     sidebar: false,
     className: "",
+    mobileClassName: "",
     title: "Privacy Policy",
     showBack: false,
     showTabs: false,
@@ -272,6 +294,7 @@ export const routes = createRoutes({
     protected: false,
     sidebar: false,
     className: "",
+    mobileClassName: "",
     title: "Terms and Conditions",
     showBack: false,
     showTabs: false,
@@ -283,6 +306,7 @@ export const routes = createRoutes({
     protected: true,
     sidebar: false,
     className: "",
+    mobileClassName: "",
     title: "Settings",
     showBack: true,
     showTabs: false,
@@ -297,5 +321,6 @@ export const routes = createRoutes({
     protected: true,
     sidebar: false,
     className: "",
+    mobileClassName: "",
   },
 });
