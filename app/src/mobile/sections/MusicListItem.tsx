@@ -35,8 +35,8 @@ export const MusicListItem = ({
   return (
     <div
       className={classNames(
-        "flex items-center space-x-2 w-full",
-        mode === "regular" ? "p-1" : "py-1",
+        "flex items-center space-x-2 w-full focus:outline-none",
+        mode === "regular" ? "p-1 border-b" : "py-1",
       )}
       tabIndex={0}
       onClick={onClick}
@@ -44,7 +44,7 @@ export const MusicListItem = ({
       <div
         className={classNames(
           "flex items-end rounded bg-purple-200 flex-shrink-0",
-          mode === "regular" ? "w-12 h-12" : "w-8 h-8",
+          mode === "regular" ? "w-16 h-16" : "w-12 h-12",
         )}
         style={{ boxShadow: "rgb(182 149 220) 0px 2px 4px 0px inset" }}
       >
@@ -62,9 +62,9 @@ export const MusicListItem = ({
         )}
       </div>
       <div className="flex flex-col min-w-0 flex-grow text-left justify-center">
+        <div className={classNames("truncate", !subTitle && "font-bold")}>{title}</div>
+        {subTitle && <div className="text-sm">{subTitle}</div>}
         <SentinelBlock index={absoluteIndex} handleSentinel={handleSentinel} />
-        <div className={classNames("text-xs truncate", !subTitle && "font-bold")}>{title}</div>
-        {subTitle && <div className="text-2xs">{subTitle}</div>}
       </div>
       <button
         className="p-1"
@@ -74,7 +74,7 @@ export const MusicListItem = ({
           openActionSheet(actionItems);
         }}
       >
-        <MdMoreVert />
+        <MdMoreVert className="w-5 h-5" />
       </button>
     </div>
   );

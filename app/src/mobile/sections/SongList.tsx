@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { MdAddToQueue, MdPlaylistAdd } from "react-icons/md";
 import { useDeleteSong } from "../../queries/songs";
-import { fmtMSS, useMySnackbar } from "../../utils";
+import { fmtMSS, onConditions, useMySnackbar } from "../../utils";
 import { checkQueueItemsEqual, SetQueueSource, SongInfo, useQueue } from "../../queue";
 import {
   ListContainer,
@@ -18,6 +18,7 @@ import { useSlideUpScreen } from "../slide-up-screen";
 import { usePlaylistCreate, usePlaylistRemoveSong } from "../../queries/playlists";
 import { AddToPlaylistList } from "../../sections/AddToPlaylistList";
 import { MusicListItem, MusicListItemState } from "./MusicListItem";
+import { captureException } from "@sentry/browser";
 
 export interface SongListProps {
   songs: SongInfo[] | undefined;
@@ -69,7 +70,13 @@ const SongListRow = ({
         });
 
         if (cancelled) return;
-        createPlaylist(value);
+        onConditions(() => createPlaylist(value)).onError((e) => {
+          captureException(e);
+          Modals.alert({
+            title: "Error",
+            message: "There was an unknown error creating playlist.",
+          });
+        });
       },
     },
   );
@@ -146,7 +153,7 @@ const SongListRow = ({
         })
       }
       title={song.title}
-      subTitle={`${song.artist} • ${fmtMSS(song.duration / 1000)}`}
+      subTitle={`${song.artist ?? "Unknown Artist"} • ${fmtMSS(song.duration / 1000)}`}
       handleSentinel={handleSentinel}
       absoluteIndex={absoluteIndex}
       object={song}
@@ -160,7 +167,8 @@ const SongListRow = ({
 export const SongList = ({ songs, mode, className, disableNavigator, source }: SongListProps) => {
   return (
     <ListContainer
-      height={57}
+      // FIXME this might not work in non condensed mode
+      height={73}
       items={songs}
       sortKey="title"
       row={SongListRow}

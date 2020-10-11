@@ -70,15 +70,22 @@ export const Signup = () => {
       {success ? (
         <BlockAlert type="success">Success!! Thank you so much for signing up :)</BlockAlert>
       ) : (
-        <form className="space-y-3">
-          <Input value={firstName} onChange={setFirstName} label="First Name" onEnter={signup} />
+        <div className="space-y-3">
+          <Input
+            value={firstName}
+            onChange={setFirstName}
+            label="First Name*"
+            onEnter={signup}
+            required
+          />
           <Input
             value={email}
             onChange={setEmail}
-            label="Email"
+            label="Email*"
             type="email"
             placeholder="john@example.com"
             onEnter={signup}
+            required
           />
           <Select
             label="Device"
@@ -96,11 +103,12 @@ export const Signup = () => {
             className="w-full"
             loading={loading}
             onClick={(e) => {
+              console.log("CLICK");
               e.preventDefault();
               signup();
             }}
           />
-        </form>
+        </div>
       )}
     </CardPage>
   );

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { MdPlayArrow, MdPlayCircleFilled } from "react-icons/md";
 import classNames from "classnames";
 import { Collage, CollageProps } from "./Collage";
+import { useIsMobile } from "../utils";
 
 export interface ThumbnailCardProps {
   objects: CollageProps["objects"];
@@ -24,6 +25,7 @@ export const ThumbnailCard = ({
 }: ThumbnailCardProps) => {
   const [focused, setFocused] = useState(false);
   const height = "h-24 lg:h-32";
+  const isMobile = useIsMobile();
 
   return (
     <div
@@ -46,25 +48,27 @@ export const ThumbnailCard = ({
       </div>
       {/* FIXME do we want this to truncate? */}
       <div className="truncate lg:mt-1 text-gray-600">{subtitle}</div>
-      <div
-        className={classNames(
-          "absolute inset-0 group-hover:opacity-100 flex items-center justify-center",
-          height,
-          focused ? "opacity-100" : "opacity-0",
-        )}
-      >
-        <button
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
-          onClick={(e) => {
-            e.stopPropagation();
-            play && play();
-          }}
-          className="bg-purple-500 text-white rounded-full p-1 hover:scale-110 transform"
+      {!isMobile && (
+        <div
+          className={classNames(
+            "absolute inset-0 group-hover:opacity-100 flex items-center justify-center",
+            height,
+            focused ? "opacity-100" : "opacity-0",
+          )}
         >
-          <MdPlayArrow className={classNames("w-8 h-8")} />
-        </button>
-      </div>
+          <button
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
+            onClick={(e) => {
+              e.stopPropagation();
+              play && play();
+            }}
+            className="bg-purple-500 text-white rounded-full p-1 hover:scale-110 transform"
+          >
+            <MdPlayArrow className={classNames("w-8 h-8")} />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

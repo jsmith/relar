@@ -6,7 +6,7 @@ import React, {
   forwardRef,
   MutableRefObject,
 } from "react";
-import { useQueue } from "../../queue";
+import { generatedTypeToName, useQueue } from "../../queue";
 import { SongTable } from "./SongTable";
 import { MdQueueMusic, MdMoreVert } from "react-icons/md";
 import { useOnClickOutside, useCombinedRefs } from "../../utils";
@@ -41,8 +41,9 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
         case "album":
         case "artist":
         case "playlist":
-        case "generated":
           return songInfo.source.sourceHumanName;
+        case "generated":
+          return generatedTypeToName[songInfo.source.id];
         case "library":
           return "Library";
         case "manuel":

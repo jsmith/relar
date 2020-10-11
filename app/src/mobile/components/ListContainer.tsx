@@ -154,14 +154,10 @@ export const ListContainer = function <T, K extends keyof T, E>({
   );
 
   return (
-    <div
-      className={classNames("overflow-y-scroll", className)}
-      ref={container}
-      onPointerDown={() => console.log("HERE")}
-    >
+    <div className={classNames("overflow-y-scroll", className)} ref={container}>
       <div className="h-full" ref={ref}>
         <div style={{ height: placeholderTopHeight }} />
-        <div className={mode === "regular" ? "divide-y" : ""}>{rows}</div>
+        {rows}
         <div style={{ height: placeholderBottomHeight }} />
       </div>
       {!disableNavigator && (
@@ -178,7 +174,7 @@ export const ListContainer = function <T, K extends keyof T, E>({
             {letters.map((letter) => (
               <button
                 key={letter}
-                className="uppercase select-none focus:outline-none"
+                className="uppercase select-none focus:outline-none text-lg"
                 onTouchStart={() => scrollTo(letter)}
                 onMouseDown={() => scrollTo(letter)}
                 onTouchMove={(e) => {

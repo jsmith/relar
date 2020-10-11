@@ -11,6 +11,9 @@
   },
   "cordova": {},
   "server": {
-    "url": "http://0.0.0.0:3000"
+    "url": "http://192.168.2.16:3000"
+  },
+  "ios": {
+    "hideLogs": true
   }
 }

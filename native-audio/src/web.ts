@@ -20,6 +20,10 @@ export class NativeAudioWeb extends WebPlugin implements NativeAudioPlugin {
     };
   }
 
+  async clearCache() {
+    // Nothing to do
+  }
+
   async pause(): Promise<void> {
     this.audioElement.pause();
   }
@@ -29,12 +33,16 @@ export class NativeAudioWeb extends WebPlugin implements NativeAudioPlugin {
     this.setVolume({ volume: options.volume ?? 1.0 });
   }
 
-  play(): Promise<void> {
-    return this.audioElement.play();
+  async setAlbumArt() {
+    // Nothing to do
   }
 
-  async stop(): Promise<void> {
-    // Nothing to do I think
+  async stop() {
+    // Nothing to do
+  }
+
+  play(): Promise<void> {
+    return this.audioElement.play();
   }
 
   async setVolume({ volume }: { volume: number }): Promise<void> {

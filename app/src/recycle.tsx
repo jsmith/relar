@@ -16,7 +16,7 @@ export const useRecycle = ({
   rowHeight,
   rowCount,
   rootMargin = 30,
-  rowsPerBlock = 10,
+  rowsPerBlock = 5,
 }: RecycleProps) => {
   const table = useRef<HTMLTableElement | null>(null);
   const observer = useRef<IntersectionObserver>();
@@ -38,9 +38,12 @@ export const useRecycle = ({
               const cursorIndex = index / rowsPerBlock;
 
               if (e.isIntersecting) {
+                // console.log("OBSERVED " + index);
                 intersecting.current[cursorIndex] = true;
                 // setIntersecting(intersecting);
               } else {
+                if (intersecting.current[cursorIndex] === undefined) return;
+                // console.log("UNOBSERVING " + index);
                 delete intersecting.current[cursorIndex];
                 // setIntersecting(intersecting);
               }
@@ -56,6 +59,12 @@ export const useRecycle = ({
                 maxCursor = Math.max(+index, maxCursor);
               }
 
+              // console.log(
+              //   `Setting min/max cursors: {minCursor: ${
+              //     minCursor === Infinity ? 0 : minCursor
+              //   }, maxCursor: ${maxCursor === -Infinity ? 0 : maxCursor}}`,
+              // );
+
               setMinMaxCursor({
                 minCursor: minCursor === Infinity ? 0 : minCursor,
                 maxCursor: maxCursor === -Infinity ? 0 : maxCursor,
@@ -70,6 +79,7 @@ export const useRecycle = ({
         );
       }
 
+      // console.log("START OBSERVING " + span.getAttribute("index"));
       const local = observer.current;
       local.observe(span);
       return () => local.unobserve(span);
@@ -91,6 +101,10 @@ export const useRecycle = ({
     const end = Math.min((maxCursor + 2) * rowsPerBlock, rowCount);
     const placeholderTopHeight = start * rowHeight;
     const placeholderBottomHeight = (rowCount - end) * rowHeight;
+
+    // console.log(
+    //   `CHANGE: {start: ${start}, end: ${end}, placeholderTopHeight: ${placeholderTopHeight}, placeholderBottomHeight: ${placeholderBottomHeight}, rowHeight: ${rowHeight}}`,
+    // );
 
     return {
       start,

@@ -35,6 +35,41 @@ export const Slider = ({
 
   const left = useMemo(() => `${(value / maxValue) * 100}%`, [value, maxValue]);
 
+  const onPress = (source: "touch" | "mouse") => {
+    const move = (clientX: number) => {
+      if (!ref.current) {
+        return;
+      }
+
+      const { left, width } = ref.current.getBoundingClientRect();
+      const newValue = Math.round(clamp((clientX - left) / width, 0, 1) * maxValue);
+      onChange(newValue);
+    };
+
+    if (source === "mouse") {
+      const disposer = addEventListeners({
+        mousemove: (e) => move(e.clientX),
+        mouseup: () => {
+          disposer.dispose();
+        },
+      });
+    } else {
+      console.log("onTouchstart");
+      const disposer = addEventListeners({
+        touchmove: (e) => {
+          console.log("onTouchMove", e.touches[0], e.touches.length);
+          move(e.touches[0].clientX);
+        },
+        touchend: () => {
+          console.log("onTouchEnd");
+          disposer.dispose();
+        },
+      });
+
+      console.log("Added listeners!");
+    }
+  };
+
   return (
     <div ref={ref} className={classNames("flex items-center justify-center group", className)}>
       <div className="py-1 relative min-w-full">
@@ -53,12 +88,12 @@ export const Slider = ({
               // We use opacity since using display none or visibility hidden removes the ability
               // to tab to this element :) See https://stackoverflow.com/a/51408521
               className={classNames(
-                "absolute h-3 w-3 flex items-center justify-center rounded-full bg-purple-400 shadow border border-purple-600 -ml-2 top-0 cursor-pointer group-hover:opacity-100",
+                "absolute h-4 w-4 flex items-center justify-center rounded-full bg-purple-400 shadow border border-purple-600 transform -translate-x-1/2 -translate-y-1/2 cursor-pointer group-hover:opacity-100",
                 hide ? "opacity-0" : "opacity-100",
               )}
               // Whether the user clicks or tabs to this, show it!!
               onFocus={() => setHide(false)}
-              style={{ left: left }}
+              style={{ left: left, marginTop: "-0.1rem" }}
               // Make it tabbable
               tabIndex={0}
               onKeyDown={(e) => {
@@ -78,23 +113,8 @@ export const Slider = ({
                   onChange(clamp(newValue, 0, maxValue));
                 }
               }}
-              onMouseDown={() => {
-                // setHide(false);
-                const disposer = addEventListeners({
-                  mousemove: (e) => {
-                    if (!ref.current) {
-                      return;
-                    }
-
-                    const { left, width } = ref.current.getBoundingClientRect();
-                    const newValue = Math.round(clamp((e.clientX - left) / width, 0, 1) * maxValue);
-                    onChange(newValue);
-                  },
-                  mouseup: () => {
-                    disposer.dispose();
-                  },
-                });
-              }}
+              onMouseDown={() => onPress("mouse")}
+              onTouchStart={() => onPress("touch")}
             ></div>
           )}
         </div>
