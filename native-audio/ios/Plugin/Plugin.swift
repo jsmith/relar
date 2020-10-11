@@ -21,7 +21,7 @@ extension Dictionary {
  * here: https://capacitor.ionicframework.com/docs/plugins/ios
  */
 @objc(NativeAudio)
-public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
+public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate, AVAssetResourceLoaderDelegate {
     private var aVAudioPlayer: AVPlayer?
     
     let diskConfig = DiskConfig(name: "DiskCache", maxSize: 104857600)
@@ -34,6 +34,8 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
             transformer: TransformerFactory.forData()
         )
     }()
+    
+    var asset: AVURLAsset?
     
     public override func load() {
         super.load()
@@ -86,18 +88,25 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
                 return
             }
             
-            
-            let playerItem: CachingPlayerItem
+            var playerItem: AVPlayerItem
             do {
                 let entry = try self.storage!.entry(forKey: url.absoluteString)
                 print("Cache HIT (" + url.absoluteString + ")")
-                playerItem = CachingPlayerItem(data: entry.object, mimeType: "audio/mpeg", fileExtension: "mp3")
+                // This is very important so that we don't cache the previous song
+                // when this song is finished
+                self.asset = nil
+                let temporaryDirectory = FileManager.default.temporaryDirectory
+                let fileURL = temporaryDirectory.appendingPathComponent("play.caf")
+                try! entry.object.write(to: fileURL)
+                print("WROTE \(entry.object.count) TO " + fileURL.absoluteString)
+                playerItem = AVPlayerItem(url: fileURL)
             } catch {
                 print("Cache MISS (" + url.absoluteString + ")")
-                playerItem = CachingPlayerItem(url: url)
+                let asset = AVURLAsset(url: url)
+                self.asset = asset
+                self.asset?.resourceLoader.setDelegate(self, queue: DispatchQueue.main)
+                playerItem = AVPlayerItem(asset: asset)
             }
-            
-            playerItem.delegate = self
 
             if self.aVAudioPlayer != nil {
                 self.aVAudioPlayer?.pause()
@@ -324,31 +333,95 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
     }
     
-    
+    // Notifies the "complete" listeners and caches the file
+    // Caching based off https://stackoverflow.com/questions/37611488/how-to-stream-a-video-with-avurlasset-and-save-to-disk-the-cached-data
+    // And this https://stackoverflow.com/questions/28237412/how-to-convert-avasset-to-nsdata-or-save-it-to-file-manager
     @objc public func audioPlayerDidFinishPlaying(note: NSNotification) {
         print("finished")
         self.notifyListeners("complete", data: [:])
+        
+        guard let asset = self.asset else {
+            return
+        }
+        
+        guard let exporter = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetPassthrough) else {
+            print("Exporter initalizatin failed...")
+            return
+        }
+        
+        let temporaryDirectory = FileManager.default.temporaryDirectory
+        let fileURL = temporaryDirectory.appendingPathComponent("temp.caf")
+        
+        do {
+            // This prevents this error https://stackoverflow.com/questions/45863507/error-nslocalizeddescription-cannot-save
+            try FileManager.default.removeItem(at: fileURL)
+        } catch {
+            // Do nothing is removing the file fails
+        }
+
+        print("Setting outputURL to \(fileURL.absoluteString)")
+        exporter.outputURL = fileURL
+        exporter.outputFileType = AVFileType.caf
+        
+        exporter.exportAsynchronously(completionHandler: {
+            switch exporter.status {
+            case .failed:
+                print("Export failed!!!", exporter.error as Any)
+            case .completed:
+                do {
+                    print("EXPORTED to \(fileURL.absoluteString)")
+                    let data = try Data(contentsOf: fileURL)
+                    print("CACHING TO " + asset.url.absoluteString)
+                    print("Count -> \(data.count)")
+                    self.storage?.async.setObject(data, forKey: asset.url.absoluteString, completion: { _ in })
+                    print("STORED DATA IN CACHE")
+                } catch {
+                    print("Could not get data from " + asset.url.absoluteString)
+
+                }
+            default:
+                print("Export went wrong!! IDK what failed: " + String(exporter.status.rawValue))
+            }
+        })
+//
+//        exporter?.exportAsynchronously(completionHandler: {
+//            let data = Data(contentsOf: <#T##URL#>)
+//        })
+        
+//        do {
+//            let data = try Data(contentsOf: asset.url)
+//            print("GOT DATA FROM " + asset.url.absoluteString)
+//            print("Count -> \(data.count)")
+//            storage?.async.setObject(data, forKey: asset.url.absoluteString, completion: { _ in })
+//            print("STORED DATA IN CACHE")
+//        } catch {
+//            print("Could not get data from " + asset.url.absoluteString)
+//        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 }
 
-// MARK: - CachingPlayerItemDelegate
-extension NativeAudio: CachingPlayerItemDelegate {
-    func playerItem(_ playerItem: CachingPlayerItem, didFinishDownloadingData data: Data) {
-        print("Finishing downloading " + playerItem.url.absoluteString + ", saving to stroage!")
-        // A track is downloaded. Saving it to the cache asynchronously.
-        storage?.async.setObject(data, forKey: playerItem.url.absoluteString, completion: { _ in })
-    }
-    
-    func playerItem(_ playerItem: CachingPlayerItem, didDownloadBytesSoFar bytesDownloaded: Int, outOf bytesExpected: Int) {
-        // print("\(bytesDownloaded)/\(bytesExpected)")
-    }
-    
-    func playerItemPlaybackStalled(_ playerItem: CachingPlayerItem) {
-        print("Not enough data for playback. Probably because of the poor network. Wait a bit and try to play later.")
-    }
-    
-    func playerItem(_ playerItem: CachingPlayerItem, downloadingFailedWith error: Error) {
-        print("ERROR", error)
-    }
-}
+//// MARK: - CachingPlayerItemDelegate
+//extension NativeAudio: CachingPlayerItemDelegate {
+//    func playerItem(_ playerItem: CachingPlayerItem, didFinishDownloadingData data: Data) {
+//        print("Finishing downloading " + playerItem.url.absoluteString + ", saving to stroage!")
+//        // A track is downloaded. Saving it to the cache asynchronously.
+//        storage?.async.setObject(data, forKey: playerItem.url.absoluteString, completion: { _ in })
+//    }
+//
+//    func playerItem(_ playerItem: CachingPlayerItem, didDownloadBytesSoFar bytesDownloaded: Int, outOf bytesExpected: Int) {
+//        // print("\(bytesDownloaded)/\(bytesExpected)")
+//    }
+//
+//    func playerItemPlaybackStalled(_ playerItem: CachingPlayerItem) {
+//        print("Not enough data for playback. Probably because of the poor network. Wait a bit and try to play later.")
+//    }
+//
+//    func playerItem(_ playerItem: CachingPlayerItem, downloadingFailedWith error: Error) {
+//        print("ERROR", error)
+//    }
+//}
 
