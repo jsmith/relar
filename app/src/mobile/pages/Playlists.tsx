@@ -37,7 +37,7 @@ export const Playlists = () => {
   const playlists = useCoolPlaylists();
   return (
     <ListContainer
-      height={57}
+      height={73}
       items={playlists}
       sortKey="name"
       row={PlaylistRow}

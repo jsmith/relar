@@ -5,7 +5,7 @@ import { useUser, useUserChange } from "./auth";
 import firebase from "firebase/app";
 import * as Sentry from "@sentry/browser";
 import { useCoolDB } from "./db";
-import { useMySnackbar, useOnlineStatus } from "./utils";
+import { onConditions, useMySnackbar, useOnlineStatus } from "./utils";
 import { Err } from "neverthrow";
 
 export const useStartupHooks = () => {
@@ -30,6 +30,14 @@ export const useStartupHooks = () => {
   }, [routeId]);
 
   const online = useOnlineStatus();
+
+  useEffect(
+    () =>
+      onConditions.registerDefaultErrorHandler((error) => {
+        Sentry.captureException(error);
+      }),
+    [],
+  );
 
   useEffect(() => {
     if (!online) {

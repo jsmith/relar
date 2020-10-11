@@ -1,6 +1,6 @@
 import React from "react";
 import classNames from "classnames";
-import { Keys } from "../utils";
+import { isMobile, Keys } from "../utils";
 
 export interface InputProps {
   value: string;
@@ -14,6 +14,7 @@ export interface InputProps {
   inputId?: string;
   onEnter?: () => void;
   autoFocus?: boolean;
+  required?: boolean;
 }
 
 export const Input = (props: InputProps) => {
@@ -23,13 +24,17 @@ export const Input = (props: InputProps) => {
         <span className={classNames(props.spanClassName, "mb-1")}>{props.label}</span>
       )}
       <input
+        required={props.required}
         value={props.value}
         type={props.type}
         id={props.inputId}
         className={classNames("form-input w-full", props.inputClassName)}
         placeholder={props.placeholder}
         onChange={(e) => props.onChange(e.target.value)}
-        onKeyDown={(e) => e.keyCode === Keys.Return && props.onEnter && props.onEnter()}
+        // Disable for mobile since users usually just want to exit their keyboard
+        onKeyDown={(e) =>
+          e.keyCode === Keys.Return && !isMobile() && props.onEnter && props.onEnter()
+        }
         autoFocus={props.autoFocus}
       />
     </label>

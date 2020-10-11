@@ -3,9 +3,31 @@ import type { Song } from "../shared/universal/types";
 import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import { routes } from "../routes";
+import { GeneratedType, generatedTypeToName, useQueue } from "../queue";
+import { useIsMobile } from "../utils";
+import { useGeneratedTypeSongs } from "../queries/songs";
 
-export const SongCard = ({ song }: { song: Song }) => {
+export const SongCard = ({
+  song,
+  generatedType,
+  index,
+}: {
+  song: Song;
+  generatedType: GeneratedType;
+  index: number;
+}) => {
   const { goTo } = useRouter();
+  const { setQueue } = useQueue();
+  const isMobile = useIsMobile();
+  const songs = useGeneratedTypeSongs(generatedType);
+
+  const playSong = () => {
+    setQueue({
+      songs: songs ?? [],
+      source: { type: "generated", id: generatedType },
+      index,
+    });
+  };
 
   return (
     <ThumbnailCard
@@ -13,14 +35,9 @@ export const SongCard = ({ song }: { song: Song }) => {
       type="song"
       title={song.title}
       subtitle={song.artist}
-      onClick={() => goTo(routes.album, { albumId: song.albumId ?? "" })}
+      onClick={() => (isMobile ? playSong() : goTo(routes.album, { albumId: song.albumId ?? "" }))}
       // FIXME
-      // play={() =>
-      //   setQueue({
-      //     songs: songs,
-      //     source: { type: "playlist", id: data.id, sourceHumanName: data.name },
-      //   })
-      // }
+      play={playSong}
     />
   );
 };

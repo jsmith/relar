@@ -11,6 +11,7 @@ import { Sentry, wrapAndReport, setSentryUser } from "./sentry";
 import { Result, ok, err } from "neverthrow";
 import * as functions from "firebase-functions";
 import { betaSignups } from "./shared/node/utils";
+import { ORIGINS } from "./utils";
 
 sgMail.setApiKey(env.mail.sendgrid_api_key);
 
@@ -26,12 +27,7 @@ app.use(Sentry.Handlers.requestHandler());
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://toga-4e3f5.web.app",
-      "https://relar.app",
-      "https://staging.relar.app",
-    ],
+    origin: ORIGINS,
   }),
 );
 

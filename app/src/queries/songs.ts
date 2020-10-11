@@ -6,6 +6,7 @@ import { captureAndLogError, captureAndLog } from "../utils";
 import { serverTimestamp, useUserData } from "../firestore";
 import { useCallback, useMemo } from "react";
 import { useCoolSongs } from "../db";
+import { GeneratedType } from "../queue";
 
 export const useRecentlyPlayedSongs = () => {
   const songs = useCoolSongs();
@@ -123,4 +124,22 @@ export const useSongLookup = () => {
     songs.forEach((song) => (lookup[song.id] = song));
     return lookup;
   }, [songs]);
+};
+
+export const useGeneratedTypeSongs = (type: GeneratedType) => {
+  const recentlyAddedSongs = useRecentlyAddedSongs();
+  const likedSongs = useLikedSongs();
+  const recentlyPlayed = useRecentlyPlayedSongs();
+
+  return useMemo(
+    () =>
+      type === "recently-added"
+        ? recentlyAddedSongs ?? []
+        : type === "liked"
+        ? likedSongs
+        : type === "recently-played"
+        ? recentlyPlayed
+        : [],
+    [likedSongs, recentlyAddedSongs, recentlyPlayed, type],
+  );
 };

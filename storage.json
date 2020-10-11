@@ -4,7 +4,8 @@
       "https://relar.app",
       "http://localhost:3000",
       "https://staging.relar.app",
-      "http://0.0.0.0:3000"
+      "http://0.0.0.0:3000",
+      "http://192.168.2.16:3000"
     ],
     "method": ["GET"],
     "maxAgeSeconds": 3600

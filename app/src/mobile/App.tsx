@@ -7,84 +7,104 @@ import { HiOutlineCog } from "react-icons/hi";
 import { GiSwordSpin } from "react-icons/gi";
 import { ButtonTabs } from "./sections/BottomTabs";
 import { ActionSheet } from "./action-sheet";
-import { FilesystemDirectory, Plugins } from "@capacitor/core";
-import { writeFile } from "capacitor-blob-writer";
+import { FilesystemDirectory, Plugins, StatusBarStyle } from "@capacitor/core";
 // Import to register plugin
 import "@capacitor-community/native-audio";
-import type { NativeAudioPlugin } from "@capacitor-community/native-audio";
+import { NativeAudioPlugin } from "@capacitor-community/native-audio";
 import { AudioControls, useQueue } from "../queue";
 import { BackButton } from "./components/BackButton";
 import { useStartupHooks } from "../startup";
-import { useCoolDB } from "../db";
+import classNames from "classnames";
+import { useThumbnail } from "../queries/thumbnail";
+import { Song } from "../shared/universal/types";
+import { useDefaultStatusBar } from "./status-bar";
 
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 
 class Controls implements AudioControls {
-  private _paused = false;
+  private _paused: boolean;
   private _volume: number | undefined;
 
-  pause = () => {
+  constructor() {
+    this._paused = false;
+  }
+
+  pause() {
     this._paused = true;
     NativeAudio.pause();
-  };
+  }
 
-  play = () => {
+  play() {
     this._paused = false;
     NativeAudio.play();
-  };
+  }
 
   get paused() {
     return this._paused;
   }
 
-  async setSrc({ src, songId }: { src: string; songId: string }) {
-    const directory = FilesystemDirectory.Cache;
-    const pathFromDir = `songs_cache/${songId}.mp3`;
-    let uri: string | null = null;
-    try {
-      const stat = await Plugins.Filesystem.stat({ path: pathFromDir, directory });
-      if (stat.type === "NSFileTypeRegular") {
-        uri = stat.uri;
-      } else {
-        console.info(`${pathFromDir} is not a file: ${stat.type}`);
-      }
-    } catch (e) {
-      console.info(`Unable to stat ${pathFromDir}: ` + e.message);
-    }
-
-    if (uri === null) {
-      const blob = await fetch(src).then((res) => res.blob());
-
-      uri = await writeFile({
-        path: pathFromDir,
-        directory,
-
-        // data must be a Blob (creating a Blob which wraps other data types
-        // is trivial)
-        data: blob,
-
-        // create intermediate directories if they don't already exist
-        // default: false
-        recursive: true,
-
-        // fallback to Filesystem.writeFile instead of throwing an error
-        // (you may also specify a unary callback, which takes an Error and returns
-        // a boolean)
-        // default: true
-        fallback: () => {
-          return process.env.NODE_ENV === "production";
-        },
-      }).then((r) => r.uri);
-    }
-
-    if (uri === null) {
-      console.warn(`Download from ${src} was unsuccessful`);
+  async setSrc(opts: { src: string; song: Song } | null) {
+    if (!opts) {
+      console.log("STOPPING");
+      NativeAudio.stop();
       return;
     }
 
+    const { src, song } = opts;
+    // const directory = FilesystemDirectory.Cache;
+    // const pathFromDir = `songs_cache/${song.id}.mp3`;
+    // let uri: string | null = null;
+    // try {
+    //   const stat = await Plugins.Filesystem.stat({ path: pathFromDir, directory });
+    //   if (stat.type === "NSFileTypeRegular") {
+    //     uri = stat.uri;
+    //   } else {
+    //     console.info(`${pathFromDir} is not a file: ${stat.type}`);
+    //   }
+    // } catch (e) {
+    //   console.info(`Unable to stat ${pathFromDir}: ` + e.message);
+    // }
+
+    // TODO stream to folder???
+    // if (uri === null) {
+    // console.log(`Fetching ${src}`);
+    // const blob = await fetch(src).then((res) => res.blob());
+
+    // uri = await writeFile({
+    //   path: pathFromDir,
+    //   directory,
+
+    //   // data must be a Blob (creating a Blob which wraps other data types
+    //   // is trivial)
+    //   data: blob,
+
+    //   // create intermediate directories if they don't already exist
+    //   // default: false
+    //   recursive: true,
+
+    //   // fallback to Filesystem.writeFile instead of throwing an error
+    //   // (you may also specify a unary callback, which takes an Error and returns
+    //   // a boolean)
+    //   // default: true
+    //   fallback: () => {
+    //     return process.env.NODE_ENV === "production";
+    //   },
+    // }).then((r) => r.uri);
+
+    // console.log(`Successfully downloaded file to ${uri}`);
+    // }
+
+    // if (uri === null) {
+    //   console.warn(`Download from ${src} was unsuccessful`);
+    //   return;
+    // }
+
     await NativeAudio.preload({
-      path: uri,
+      path: src,
       volume: this._volume ?? 1.0,
+      title: song.title,
+      artist: song.artist ?? "Unknown Artist",
+      album: song.albumName ?? "Unknown Album",
     });
   }
 
@@ -102,16 +122,27 @@ class Controls implements AudioControls {
   }
 }
 
+const controls = new Controls();
+
 export const App = () => {
   const { routeId, goTo } = useRouter();
   const { loading, user } = useUser();
-  const { _setRef, _nextAutomatic } = useQueue();
+  const { _setRef, _nextAutomatic, songInfo, toggleState, next, previous } = useQueue();
+  const thumbnail = useThumbnail(songInfo?.song, "song", "128");
+
+  useEffect(() => {
+    if (thumbnail) {
+      NativeAudio.setAlbumArt({ url: thumbnail });
+    }
+  }, [thumbnail]);
 
   useStartupHooks();
 
   const route = useMemo(() => {
     return Object.values(routes).find((route) => route.id === routeId);
   }, [routeId]);
+
+  useDefaultStatusBar(route?.dark ? StatusBarStyle.Dark : StatusBarStyle.Light);
 
   useEffect(() => {
     if (!loading && user && route?.protected === false) {
@@ -122,10 +153,23 @@ export const App = () => {
   }, [goTo, loading, route?.protected, user]);
 
   useEffect(() => {
-    const { remove } = NativeAudio.addListener("complete", _nextAutomatic);
-    _setRef(new Controls());
-    return () => remove();
-  }, [_nextAutomatic, _setRef]);
+    const { remove: dispose1 } = NativeAudio.addListener("complete", _nextAutomatic);
+    const { remove: dispose2 } = NativeAudio.addListener("play", toggleState);
+    const { remove: dispose3 } = NativeAudio.addListener("pause", toggleState);
+    const { remove: dispose4 } = NativeAudio.addListener("next", next);
+    const { remove: dispose5 } = NativeAudio.addListener("previous", () => {
+      console.log("JS PREVIOUS");
+      previous();
+    });
+    _setRef(controls);
+    return () => {
+      dispose1();
+      dispose2();
+      dispose3();
+      dispose4();
+      dispose5();
+    };
+  }, [_nextAutomatic, _setRef, next, previous, toggleState]);
 
   if (
     loading ||
@@ -141,24 +185,30 @@ export const App = () => {
 
   return (
     <>
-      <div className="flex flex-col h-screen overflow-hidden text-gray-700">
+      <div
+        className={classNames(
+          "flex flex-col h-screen overflow-hidden text-gray-700 safe-top",
+          route.mobileClassName,
+          !route.showTabs && "safe-bottom",
+        )}
+      >
         {route.title && (
           // h-10 makes it so the hight stays constant depending on whether we are showing the back button
-          <div className="flex justify-between items-center px-2 mt-5 py-1 relative border-b h-10 flex-shrink-0">
+          <div className="text-2xl flex justify-between items-center px-3 mt-0 pb-1 relative border-b h-10 flex-shrink-0">
             <div className="absolute inset-0 flex items-center justify-center">
               <div>{route.title}</div>
             </div>
 
             {route.showBack ? (
-              <BackButton className="z-10" />
+              <BackButton className="z-10 p-1" />
             ) : (
-              <div className="text-xl font-bold">
+              <div className="font-bold">
                 RELAR <GiSwordSpin className="inline-block -mt-1 -ml-1" />
               </div>
             )}
 
             {route.id !== "settings" && (
-              <button className="z-10" onClick={() => goTo(routes.settings)}>
+              <button className="z-10 p-1" onClick={() => goTo(routes.settings)}>
                 <HiOutlineCog className="w-6 h-6" />
               </button>
             )}

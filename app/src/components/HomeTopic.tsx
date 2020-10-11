@@ -27,15 +27,15 @@ export const HomeTopic = ({
   emptyText,
 }: HomeTopicProps) => {
   return (
-    <div className="space-y-1 lg:space-y-3">
+    <div className="space-y-2 lg:space-y-3">
       <div className={classNames("flex justify-between items-center", textClassName)}>
         <div>
-          <div className="text-gray-800 text-base md:text-2xl leading-tight">{title}</div>
+          <div className="text-gray-800 text-xl md:text-2xl leading-tight">{title}</div>
           <div className="text-gray-600 text-xs">{subTitle}</div>
         </div>
         <Link
           label="See All →"
-          className="uppercase text-gray-700 text-sm md:text-base hover:text-purple-700 focus:text-purple-700"
+          className="uppercase text-gray-700 hover:text-purple-700 focus:text-purple-700"
           route={route}
           params={params}
           queryParams={queryParams}
