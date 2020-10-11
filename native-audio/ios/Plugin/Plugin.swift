@@ -3,6 +3,7 @@ import Foundation
 import Capacitor
 import CoreAudio
 import MediaPlayer
+import Cache
 
 extension Dictionary {
     mutating func merge(in dict: [Key: Value]){
@@ -12,6 +13,9 @@ extension Dictionary {
     }
 }
 
+// Caching system based off this article:
+// https://andreygordeev.com/2018/03/31/cache-avplayeritem/
+
 /**
  * Please read the Capacitor iOS Plugin Development Guide
  * here: https://capacitor.ionicframework.com/docs/plugins/ios
@@ -19,7 +23,17 @@ extension Dictionary {
 @objc(NativeAudio)
 public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
     private var aVAudioPlayer: AVPlayer?
-    private var hasPlayed = false
+    
+    let diskConfig = DiskConfig(name: "DiskCache", maxSize: 104857600)
+    let memoryConfig = MemoryConfig(expiry: .never, countLimit: 10, totalCostLimit: 10)
+
+    lazy var storage: Cache.Storage<String, Data>? = {
+        return try? Cache.Storage(
+            diskConfig: diskConfig,
+            memoryConfig: memoryConfig,
+            transformer: TransformerFactory.forData()
+        )
+    }()
     
     public override func load() {
         super.load()
@@ -71,18 +85,26 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
                 call.error("Unable to create URL from " + path)
                 return
             }
-
-            if !FileManager.default.fileExists(atPath: url.path) {
-                call.error(url.path + " does not exist")
-                return
+            
+            
+            let playerItem: CachingPlayerItem
+            do {
+                let entry = try self.storage!.entry(forKey: url.absoluteString)
+                print("Cache HIT (" + url.absoluteString + ")")
+                playerItem = CachingPlayerItem(data: entry.object, mimeType: "audio/mpeg", fileExtension: "mp3")
+            } catch {
+                print("Cache MISS (" + url.absoluteString + ")")
+                playerItem = CachingPlayerItem(url: url)
             }
-
-            let item = AVPlayerItem(url: url)
+            
+            playerItem.delegate = self
 
             if self.aVAudioPlayer != nil {
-                self.aVAudioPlayer?.replaceCurrentItem(with: item)
+                self.aVAudioPlayer?.pause()
+                self.aVAudioPlayer?.replaceCurrentItem(with: playerItem)
             } else {
-                self.aVAudioPlayer = AVPlayer(playerItem: item)
+                self.aVAudioPlayer = AVPlayer(playerItem: playerItem)
+                self.aVAudioPlayer?.automaticallyWaitsToMinimizeStalling = false
             }
             
             // CONTROLS
@@ -102,20 +124,28 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
             MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
             
             self.aVAudioPlayer?.addObserver(self, forKeyPath: "timeControlStatus", options: [.old, .new], context: nil)
-            
-            
             self.aVAudioPlayer?.volume = volume
+            
+            print("Preload completed successfully")
             call.success()
+        }
+    }
+    
+    @objc func clearCache(_ call: CAPPluginCall) {
+        self.getQueue().async {
+            do {
+                try self.storage?.removeAll()
+                call.resolve()
+            } catch {
+                call.error("An error occurred while clearning the cache")
+            }
         }
     }
     
     @objc func play(_ call: CAPPluginCall) {
         print("PLAY")
        self.getQueue().async {
-            self.aVAudioPlayer?.play()
-            if !self.hasPlayed {
-                self.hasPlayed = true
-            }
+            self.aVAudioPlayer!.play()
             call.success()
        }
     }
@@ -146,11 +176,11 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
     }
     
     @objc func pause(_ call: CAPPluginCall) {
-        self.aVAudioPlayer?.pause()
+        self.aVAudioPlayer!.pause()
     }
 
     @objc func stop(_ call: CAPPluginCall) {
-        self.aVAudioPlayer?.pause()
+        self.aVAudioPlayer!.pause()
         
         // TODO ensure controls are disabled too
         let nowPlayingInfo = [String : Any]()
@@ -170,7 +200,7 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
             return
         }
 
-        // "https://cdn.arstechnica.net/wp-content/uploads/2018/06/macOS-Mojave-Dynamic-Wallpaper-transition.jpg"
+        // Instructions here -> "https://cdn.arstechnica.net/wp-content/uploads/2018/06/macOS-Mojave-Dynamic-Wallpaper-transition.jpg"
         let url = URL(string: string)! 
         downloadImage(from: url)
     }
@@ -271,11 +301,11 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
     }
 
     private func downloadImage(from url: URL) {
-        print("Download Started")
+        print("Image download Started")
         self.getData(from: url) { data, response, error in
             guard let data = data, error == nil else { return }
             print(response?.suggestedFilename ?? url.lastPathComponent)
-            print("Download Finished")
+            print("Image download finished")
             DispatchQueue.main.async() { [weak self] in
                 if let image = UIImage(data: data) {
                     self?.updateAttributes(with: [
@@ -300,3 +330,25 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate {
         self.notifyListeners("complete", data: [:])
     }
 }
+
+// MARK: - CachingPlayerItemDelegate
+extension NativeAudio: CachingPlayerItemDelegate {
+    func playerItem(_ playerItem: CachingPlayerItem, didFinishDownloadingData data: Data) {
+        print("Finishing downloading " + playerItem.url.absoluteString + ", saving to stroage!")
+        // A track is downloaded. Saving it to the cache asynchronously.
+        storage?.async.setObject(data, forKey: playerItem.url.absoluteString, completion: { _ in })
+    }
+    
+    func playerItem(_ playerItem: CachingPlayerItem, didDownloadBytesSoFar bytesDownloaded: Int, outOf bytesExpected: Int) {
+        // print("\(bytesDownloaded)/\(bytesExpected)")
+    }
+    
+    func playerItemPlaybackStalled(_ playerItem: CachingPlayerItem) {
+        print("Not enough data for playback. Probably because of the poor network. Wait a bit and try to play later.")
+    }
+    
+    func playerItem(_ playerItem: CachingPlayerItem, downloadingFailedWith error: Error) {
+        print("ERROR", error)
+    }
+}
+

@@ -5,6 +5,12 @@ import { Button } from "../../components/Button";
 import { DATABASE_NAME } from "../../db";
 import { deleteDB } from "idb";
 
+import { Plugins } from "@capacitor/core";
+import { NativeAudioPlugin } from "@capacitor-community/native-audio";
+import { captureException } from "@sentry/browser";
+
+const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
+
 export const Settings = () => {
   const user = useDefinedUser();
   return (
@@ -13,9 +19,16 @@ export const Settings = () => {
       <Button className="w-full" label="Logout" invert onClick={() => firebase.auth().signOut()} />
       <Button
         className="w-full"
-        label="Clear Cache"
+        label="Clear Songs Cache"
         invert
         onClick={() => deleteDB(DATABASE_NAME, { blocked: () => window.location.reload() })}
+      />
+
+      <Button
+        className="w-full"
+        label="Clear File System Cache"
+        invert
+        onClick={() => NativeAudio.clearCache().catch(captureException)}
       />
       {import.meta.env.MODE !== "production" && (
         <Button

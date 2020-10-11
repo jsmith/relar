@@ -20,6 +20,10 @@ export class NativeAudioWeb extends WebPlugin implements NativeAudioPlugin {
     };
   }
 
+  async clearCache() {
+    // Nothing to do
+  }
+
   async pause(): Promise<void> {
     this.audioElement.pause();
   }

@@ -42,6 +42,7 @@ export interface NativeAudioPlugin {
   /**
    * Pause the music and remove all data from the info center.
    */
+  clearCache(): Promise<void>;
   stop(): Promise<void>;
   /**
    * Add a listener for one of the various events.

@@ -353,7 +353,7 @@ export const useCoolDB = () => {
               await updateItems(copy);
 
               if (maxUpdatedAt < latestLastUpdated) {
-                const warning = `The snapshot (${maxUpdatedAt}) received was out-of-order. The previous snapshot time was ${latestLastUpdated}.`;
+                const warning = `The snapshot (${maxUpdatedAt}) was received out-of-order. The previous snapshot time was ${latestLastUpdated}.`;
                 captureMessage(warning, Severity.Warning);
                 console.warn(warning);
               }

@@ -4,6 +4,3 @@ project(':capacitor-android').projectDir = new File('../node_modules/@capacitor/
 
 include ':capacitor-community-native-audio'
 project(':capacitor-community-native-audio').projectDir = new File('../node_modules/@capacitor-community/native-audio/android')
-
-include ':capacitor-blob-writer'
-project(':capacitor-blob-writer').projectDir = new File('../node_modules/capacitor-blob-writer/android')

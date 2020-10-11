@@ -8,10 +8,9 @@ import { GiSwordSpin } from "react-icons/gi";
 import { ButtonTabs } from "./sections/BottomTabs";
 import { ActionSheet } from "./action-sheet";
 import { FilesystemDirectory, Plugins, StatusBarStyle } from "@capacitor/core";
-import { writeFile } from "capacitor-blob-writer";
 // Import to register plugin
 import "@capacitor-community/native-audio";
-import type { NativeAudioPlugin } from "@capacitor-community/native-audio";
+import { NativeAudioPlugin } from "@capacitor-community/native-audio";
 import { AudioControls, useQueue } from "../queue";
 import { BackButton } from "./components/BackButton";
 import { useStartupHooks } from "../startup";
@@ -20,7 +19,6 @@ import { useThumbnail } from "../queries/thumbnail";
 import { Song } from "../shared/universal/types";
 import { useDefaultStatusBar } from "./status-bar";
 
-const { StatusBar } = Plugins;
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 
 class Controls implements AudioControls {
@@ -53,56 +51,56 @@ class Controls implements AudioControls {
     }
 
     const { src, song } = opts;
-    const directory = FilesystemDirectory.Cache;
-    const pathFromDir = `songs_cache/${song.id}.mp3`;
-    let uri: string | null = null;
-    try {
-      const stat = await Plugins.Filesystem.stat({ path: pathFromDir, directory });
-      if (stat.type === "NSFileTypeRegular") {
-        uri = stat.uri;
-      } else {
-        console.info(`${pathFromDir} is not a file: ${stat.type}`);
-      }
-    } catch (e) {
-      console.info(`Unable to stat ${pathFromDir}: ` + e.message);
-    }
+    // const directory = FilesystemDirectory.Cache;
+    // const pathFromDir = `songs_cache/${song.id}.mp3`;
+    // let uri: string | null = null;
+    // try {
+    //   const stat = await Plugins.Filesystem.stat({ path: pathFromDir, directory });
+    //   if (stat.type === "NSFileTypeRegular") {
+    //     uri = stat.uri;
+    //   } else {
+    //     console.info(`${pathFromDir} is not a file: ${stat.type}`);
+    //   }
+    // } catch (e) {
+    //   console.info(`Unable to stat ${pathFromDir}: ` + e.message);
+    // }
 
     // TODO stream to folder???
-    if (uri === null) {
-      console.log(`Fetching ${src}`);
-      const blob = await fetch(src).then((res) => res.blob());
+    // if (uri === null) {
+    // console.log(`Fetching ${src}`);
+    // const blob = await fetch(src).then((res) => res.blob());
 
-      uri = await writeFile({
-        path: pathFromDir,
-        directory,
+    // uri = await writeFile({
+    //   path: pathFromDir,
+    //   directory,
 
-        // data must be a Blob (creating a Blob which wraps other data types
-        // is trivial)
-        data: blob,
+    //   // data must be a Blob (creating a Blob which wraps other data types
+    //   // is trivial)
+    //   data: blob,
 
-        // create intermediate directories if they don't already exist
-        // default: false
-        recursive: true,
+    //   // create intermediate directories if they don't already exist
+    //   // default: false
+    //   recursive: true,
 
-        // fallback to Filesystem.writeFile instead of throwing an error
-        // (you may also specify a unary callback, which takes an Error and returns
-        // a boolean)
-        // default: true
-        fallback: () => {
-          return process.env.NODE_ENV === "production";
-        },
-      }).then((r) => r.uri);
+    //   // fallback to Filesystem.writeFile instead of throwing an error
+    //   // (you may also specify a unary callback, which takes an Error and returns
+    //   // a boolean)
+    //   // default: true
+    //   fallback: () => {
+    //     return process.env.NODE_ENV === "production";
+    //   },
+    // }).then((r) => r.uri);
 
-      console.log(`Successfully downloaded file to ${uri}`);
-    }
+    // console.log(`Successfully downloaded file to ${uri}`);
+    // }
 
-    if (uri === null) {
-      console.warn(`Download from ${src} was unsuccessful`);
-      return;
-    }
+    // if (uri === null) {
+    //   console.warn(`Download from ${src} was unsuccessful`);
+    //   return;
+    // }
 
     await NativeAudio.preload({
-      path: uri,
+      path: src,
       volume: this._volume ?? 1.0,
       title: song.title,
       artist: song.artist ?? "Unknown Artist",
