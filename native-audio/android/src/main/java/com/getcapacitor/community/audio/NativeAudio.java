@@ -2,6 +2,8 @@ package com.getcapacitor.community.audio;
 
 import android.Manifest;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -11,6 +13,7 @@ import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -18,8 +21,7 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.KeyEvent;
 import android.R;
 
-import androidx.media.app.NotificationCompat;
-import androidx.media.app.NotificationCompat.MediaStyle;
+import androidx.annotation.Nullable;
 
 import com.getcapacitor.JSObject;
 import com.getcapacitor.NativePlugin;
@@ -49,6 +51,7 @@ import java.net.URL;
 // TODO
 // https://android-developers.googleblog.com/2020/08/playing-nicely-with-media-controls.html
 // https://developer.android.com/training/notify-user/expanded#media-style
+// https://developer.android.com/training/run-background-service/create-service
 
 
 @SuppressWarnings("unused")
@@ -62,6 +65,9 @@ import java.net.URL;
 public class NativeAudio extends Plugin implements OnCompletionListener, AudioManager.OnAudioFocusChangeListener {
   private MediaSessionCompat mediaSession;
   private MediaPlayer player = new MediaPlayer();
+  private static String CHANNEL_ID = "capacitor-community-native-audio-channel-id";
+  private Info info = null;
+  private NotificationManager notificationManager = null;
 
   BroadcastReceiver receiver = new BroadcastReceiver() {
     @Override
@@ -81,25 +87,21 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
     MediaSessionCompat.Callback() {
       @Override
       public void onPlay() {
-        super.onPlay();
         playLogic();
       }
 
       @Override
       public void onPause() {
-        super.onPause();
         pauseLogic();
       }
 
       @Override
       public void onSkipToNext() {
-        super.onSkipToNext();
         nextLogic();
       }
 
       @Override
       public void onSkipToPrevious() {
-        super.onSkipToPrevious();
         previousLogic();
       }
 
@@ -114,13 +116,25 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
   public void load() {
     super.load();
 
+    this.notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+
+    if (Build.VERSION.SDK_INT >= 26) {
+      // The user-visible name of the channel.
+      CharSequence name = "Audio Controls";
+      // The user-visible description of the channel.
+      String description = "Control Playing Audio";
+
+      int importance = NotificationManager.IMPORTANCE_HIGH;
+      NotificationChannel channel = new NotificationChannel(NativeAudio.CHANNEL_ID, name, importance);
+      channel.setDescription(description);
+      this.notificationManager.createNotificationChannel(channel);
+    }
+
     final Context context = this.getContext();
     Intent headsetIntent = new Intent("music-controls-media-button");
     PendingIntent intent = PendingIntent.getBroadcast(context, 0, headsetIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     this.mediaSession = new MediaSessionCompat(context, "capacitor-community-native-audio", null, intent);
 
-    this.mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS | MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
-    this.setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
     this.mediaSession.setActive(true);
     this.mediaSession.setCallback(this.callback);
     this.player.setOnCompletionListener(this);
@@ -170,39 +184,14 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
     final String album = call.getString("album", "Unknown Album");
     final String cover = call.getString("cover");
     final double volume = call.getDouble("volume", 1.0);
-    final MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
-    final MediaStyle mediaStyle = new MediaStyle().setMediaSession(mediaSession.getSessionToken());
+
+    this.info = new Info(title, artist, cover, album);
 
     new Thread(
       new Runnable() {
         @Override
         public void run() {
-          Notification notification = new Notification.Builder()
-                  .setStyle(mediaStyle)
-                  .setContentTitle("Unknown Title")
-                  .build();
 
-          // Specify any actions which your users can perform, such as pausing and skipping to the next track.
-          Notification.Action pauseAction = Notification.Action.Builder(
-                  R.drawable.ic_media_pause, "Pause", pauseIntent
-          ).build();
-
-//          .addAction(R.drawable.ic_prev, "Previous", prevPendingIntent)
-//          .addAction(R.drawable.ic_pause, "Pause", pausePendingIntent)
-//          .addAction(R.drawable.ic_next, "Next", nextPendingIntent)
-
-
-          notification.addAction(pauseAction)
-
-          metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, title);
-          metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST, artist);
-          metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ALBUM, album);
-
-          if (cover != null) {
-            Bitmap bitmap = getBitmapFromURL(cover);
-            metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, bitmap);
-            metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ART, bitmap);
-          }
 
           try {
             player.setDataSource(url);
@@ -212,9 +201,6 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
             call.error(e.getMessage());
             return;
           }
-
-
-          mediaSession.setMetadata(metadataBuilder.build());
           setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
 
           call.success();
@@ -338,7 +324,71 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
     this.mediaSession.setPlaybackState(builder.build());
   }
 
-  // get Remote image
+  private void setNotification(int state) {
+    if (this.info == null) return;
+
+    // Swipe to dismiss intent
+    Intent dismissIntent = new Intent("music-controls-destroy");
+    PendingIntent dismissPendingIntent = PendingIntent.getBroadcast(getContext(), 1, dismissIntent, 0);
+
+    // Tap to open intent
+    Intent resultIntent = new Intent(getContext(), getContext().getClass()); // TODO IDK if the second arg is right
+    resultIntent.setAction(Intent.ACTION_MAIN);
+    resultIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+    PendingIntent resultPendingIntent = PendingIntent.getActivity(getContext(), 0, resultIntent, 0);
+
+    Notification.Builder builder = new Notification.Builder(getContext())
+            .setStyle(new Notification.MediaStyle().setShowActionsInCompactView(1))
+            .setContentTitle(this.info.title)
+            .setContentText(this.info.artist + " - " + this.info.album)
+            .setWhen(0)
+            .setOngoing(false)
+            .setDeleteIntent(dismissPendingIntent)
+            .setPriority(Notification.PRIORITY_MAX) // Note this is deprecated now
+            .setContentIntent(resultPendingIntent);
+
+    if (Build.VERSION.SDK_INT >= 26) {
+      builder.setChannelId(NativeAudio.CHANNEL_ID);
+    }
+
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP){
+      builder.setVisibility(Notification.VISIBILITY_PUBLIC);
+    }
+
+    Bitmap bitmap = null;
+    if (this.info.cover != null) {
+      bitmap = getBitmapFromURL(this.info.cover);
+      builder.setLargeIcon(bitmap);
+    }
+
+    // TODO is playing else
+    if (mediaSession.isActive()){
+      builder.setSmallIcon(android.R.drawable.ic_media_play);
+    } else {
+      builder.setSmallIcon(android.R.drawable.ic_media_pause);
+    }
+
+    // Previous intent
+    Intent previousIntent = new Intent("music-controls-previous");
+    PendingIntent previousPendingIntent = PendingIntent.getBroadcast(getContext(), 1, previousIntent, 0);
+    builder.addAction(android.R.drawable.ic_media_previous, "Previous", previousPendingIntent);
+
+    Intent pauseIntent = new Intent("music-controls-pause");
+    PendingIntent pausePendingIntent = PendingIntent.getBroadcast(getContext(), 1, pauseIntent, 0);
+    builder.addAction(android.R.drawable.ic_media_pause, "Pause", pausePendingIntent);
+
+    Intent playIntent = new Intent("music-controls-play");
+    PendingIntent playPendingIntent = PendingIntent.getBroadcast(getContext(), 1, playIntent, 0);
+    builder.addAction(android.R.drawable.ic_media_play, "Play", playPendingIntent);
+
+    Intent nextIntent = new Intent("music-controls-next");
+    PendingIntent nextPendingIntent = PendingIntent.getBroadcast(getContext(), 1, nextIntent, 0);
+    builder.addAction(android.R.drawable.ic_media_next, "Next", nextPendingIntent);
+
+    Notification notification = builder.build();
+    this.notificationManager.notify(1234, notification);
+  }
+
   private Bitmap getBitmapFromURL(String strURL) {
     try {
       URL url = new URL(strURL);
@@ -411,11 +461,13 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
   private void pauseLogic() {
     this.player.pause();
     this.setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
+    this.setNotification(PlaybackStateCompat.STATE_PAUSED);
   }
 
   private void playLogic() {
     this.player.start();
     this.setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
+    this.setNotification(PlaybackStateCompat.STATE_PLAYING);
   }
 
   private void previousLogic() {
@@ -429,5 +481,20 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
   @Override
   protected void handleOnDestroy() {
     super.handleOnDestroy();
+  }
+}
+
+class Info {
+  String title;
+  String artist;
+  String album;
+  @Nullable
+  String cover;
+
+  Info(@Nullable String title, @Nullable String artist, @Nullable String cover, @Nullable String album) {
+    this.title = title != null ? title :  "Unknown Title";
+    this.artist = artist != null ? artist : "Unknown Artist";
+    this.album = album != null ? album : "Unknown Album";
+    this.cover = cover;
   }
 }
