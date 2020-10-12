@@ -7,7 +7,7 @@ import { HiOutlineCog } from "react-icons/hi";
 import { GiSwordSpin } from "react-icons/gi";
 import { ButtonTabs } from "./sections/BottomTabs";
 import { ActionSheet } from "./action-sheet";
-import { FilesystemDirectory, Plugins, StatusBarStyle } from "@capacitor/core";
+import { Plugins, StatusBarStyle } from "@capacitor/core";
 // Import to register plugin
 import "@capacitor-community/native-audio";
 import { NativeAudioPlugin } from "@capacitor-community/native-audio";
@@ -187,7 +187,8 @@ export const App = () => {
     <>
       <div
         className={classNames(
-          "flex flex-col h-screen overflow-hidden text-gray-700 safe-top",
+          // safe-top takes priority is safe-top is invalid
+          "flex flex-col h-screen overflow-hidden text-gray-700 safe-top pt-3",
           route.mobileClassName,
           !route.showTabs && "safe-bottom",
         )}
