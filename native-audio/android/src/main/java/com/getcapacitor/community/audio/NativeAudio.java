@@ -8,18 +8,17 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.media.session.MediaSession;
+import android.media.session.PlaybackState;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.media.MediaMetadataCompat;
-import android.support.v4.media.session.MediaSessionCompat;
-import android.support.v4.media.session.PlaybackStateCompat;
 import android.view.KeyEvent;
-import android.R;
 
 import androidx.annotation.Nullable;
 
@@ -63,7 +62,7 @@ import java.net.URL;
   }
 )
 public class NativeAudio extends Plugin implements OnCompletionListener, AudioManager.OnAudioFocusChangeListener {
-  private MediaSessionCompat mediaSession;
+  private MediaSession mediaSession;
   private MediaPlayer player = new MediaPlayer();
   private static String CHANNEL_ID = "capacitor-community-native-audio-channel-id";
   private Info info = null;
@@ -75,16 +74,45 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
       String action = intent.getAction();
       if (action == null) return;
 
-      if (action.equals(android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY)) {
-        pauseLogic();
-      } else if (action.equals(Intent.ACTION_MEDIA_BUTTON)) {
-        handleIntent(intent);
+      System.out.println("Got INTENT:: " + action);
+
+      switch (action) {
+        case Intent.ACTION_HEADSET_PLUG:
+          int state = intent.getIntExtra("state", -1);
+          switch (state) {
+            case 0:
+              notifyListeners("pause", new JSObject());
+              break;
+            case 1:
+              // FIXME what should we do on plug in?
+              break;
+            default:
+              break;
+          }
+          break;
+        case AudioManager.ACTION_AUDIO_BECOMING_NOISY:
+          pauseLogic();
+          break;
+        case Intent.ACTION_MEDIA_BUTTON:
+          // This is prior to android 5.0 (21)
+          // FIXME I think I need to update a manifest for this to work
+          handleIntent(intent);
+          break;
+        case "destroy":
+          // TODO add support for disposing
+          notifyListeners("dispose", new JSObject());
+          notificationManager.cancel(1234);
+          break;
+        default:
+          // action is "next", "previous", "play" and "pause"
+          notifyListeners(action, new JSObject());
+          break;
       }
     }
   };
 
-  MediaSessionCompat.Callback callback = new
-    MediaSessionCompat.Callback() {
+  MediaSession.Callback callback = new
+    MediaSession.Callback() {
       @Override
       public void onPlay() {
         playLogic();
@@ -106,7 +134,8 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
       }
 
       @Override
-      public boolean onMediaButtonEvent(Intent intent) {
+      public boolean onMediaButtonEvent(@androidx.annotation.NonNull Intent intent) {
+        // This is for android >= 5.0 (21)
         boolean result = handleIntent(intent);
         return result || super.onMediaButtonEvent(intent);
       }
@@ -116,6 +145,14 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
   public void load() {
     super.load();
 
+    getContext().registerReceiver(this.receiver, new IntentFilter("previous"));
+    getContext().registerReceiver(this.receiver, new IntentFilter("pause"));
+    getContext().registerReceiver(this.receiver, new IntentFilter("play"));
+    getContext().registerReceiver(this.receiver, new IntentFilter("next"));
+    getContext().registerReceiver(this.receiver, new IntentFilter("destroy"));
+    getContext().registerReceiver(this.receiver, new IntentFilter(Intent.ACTION_MEDIA_BUTTON));
+    getContext().registerReceiver(this.receiver, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
+
     this.notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
 
     if (Build.VERSION.SDK_INT >= 26) {
@@ -124,16 +161,17 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
       // The user-visible description of the channel.
       String description = "Control Playing Audio";
 
-      int importance = NotificationManager.IMPORTANCE_HIGH;
-      NotificationChannel channel = new NotificationChannel(NativeAudio.CHANNEL_ID, name, importance);
+      // IMPORTANCE_LOW is very important (no popup, no sound)
+      // See https://stackoverflow.com/questions/54286389/how-do-i-make-an-android-local-notification-that-doesnt-pop-up-just-shows-up-o
+      NotificationChannel channel = new NotificationChannel(NativeAudio.CHANNEL_ID, name, NotificationManager.IMPORTANCE_LOW);
       channel.setDescription(description);
       this.notificationManager.createNotificationChannel(channel);
     }
 
     final Context context = this.getContext();
-    Intent headsetIntent = new Intent("music-controls-media-button");
+    Intent headsetIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
     PendingIntent intent = PendingIntent.getBroadcast(context, 0, headsetIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-    this.mediaSession = new MediaSessionCompat(context, "capacitor-community-native-audio", null, intent);
+    this.mediaSession = new MediaSession(context, "capacitor-community-native-audio");
 
     this.mediaSession.setActive(true);
     this.mediaSession.setCallback(this.callback);
@@ -183,15 +221,14 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
     final String artist = call.getString("artist", "Unknown Artist");
     final String album = call.getString("album", "Unknown Album");
     final String cover = call.getString("cover");
-    final double volume = call.getDouble("volume", 1.0);
-
+    final float volume = call.getFloat("volume", 1.0f);
     this.info = new Info(title, artist, cover, album);
 
     new Thread(
       new Runnable() {
         @Override
         public void run() {
-
+          player.setVolume(volume, volume);
 
           try {
             player.setDataSource(url);
@@ -201,8 +238,6 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
             call.error(e.getMessage());
             return;
           }
-          setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
-
           call.success();
         }
       }
@@ -300,25 +335,25 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
 
   private void setMediaPlaybackState(int state) {
     System.out.println("setMediaPlaybackState: " + state);
-    PlaybackStateCompat.Builder builder = new PlaybackStateCompat.Builder();
-    if(state == PlaybackStateCompat.STATE_PLAYING ) {
+    PlaybackState.Builder builder = new PlaybackState.Builder();
+    if(state == PlaybackState.STATE_PLAYING ) {
       builder.setActions(
-        PlaybackStateCompat.ACTION_PLAY_PAUSE |
-        PlaybackStateCompat.ACTION_PAUSE |
-        PlaybackStateCompat.ACTION_SKIP_TO_NEXT |
-        PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+        PlaybackState.ACTION_PLAY_PAUSE |
+        PlaybackState.ACTION_PAUSE |
+        PlaybackState.ACTION_SKIP_TO_NEXT |
+        PlaybackState.ACTION_SKIP_TO_PREVIOUS
       );
 
-      builder.setState(state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1.0f);
+      builder.setState(state, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 1.0f);
     } else {
       builder.setActions(
-        PlaybackStateCompat.ACTION_PLAY_PAUSE |
-        PlaybackStateCompat.ACTION_PLAY |
-        PlaybackStateCompat.ACTION_SKIP_TO_NEXT |
-        PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+        PlaybackState.ACTION_PLAY_PAUSE |
+        PlaybackState.ACTION_PLAY |
+        PlaybackState.ACTION_SKIP_TO_NEXT |
+        PlaybackState.ACTION_SKIP_TO_PREVIOUS
       );
 
-      builder.setState(state, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 0);
+      builder.setState(state, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 0);
     }
 
     this.mediaSession.setPlaybackState(builder.build());
@@ -328,7 +363,7 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
     if (this.info == null) return;
 
     // Swipe to dismiss intent
-    Intent dismissIntent = new Intent("music-controls-destroy");
+    Intent dismissIntent = new Intent("destroy");
     PendingIntent dismissPendingIntent = PendingIntent.getBroadcast(getContext(), 1, dismissIntent, 0);
 
     // Tap to open intent
@@ -336,16 +371,21 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
     resultIntent.setAction(Intent.ACTION_MAIN);
     resultIntent.addCategory(Intent.CATEGORY_LAUNCHER);
     PendingIntent resultPendingIntent = PendingIntent.getActivity(getContext(), 0, resultIntent, 0);
+    Notification.MediaStyle style = new Notification.MediaStyle()
+            .setShowActionsInCompactView(1);
+    // FIXME why does this break things?
+//            .setMediaSession(this.mediaSession.getSessionToken());
 
     Notification.Builder builder = new Notification.Builder(getContext())
-            .setStyle(new Notification.MediaStyle().setShowActionsInCompactView(1))
+            .setStyle(style)
             .setContentTitle(this.info.title)
             .setContentText(this.info.artist + " - " + this.info.album)
             .setWhen(0)
             .setOngoing(false)
             .setDeleteIntent(dismissPendingIntent)
             .setPriority(Notification.PRIORITY_MAX) // Note this is deprecated now
-            .setContentIntent(resultPendingIntent);
+            .setContentIntent(resultPendingIntent)
+            .setTicker(null);
 
     if (Build.VERSION.SDK_INT >= 26) {
       builder.setChannelId(NativeAudio.CHANNEL_ID);
@@ -355,36 +395,38 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
       builder.setVisibility(Notification.VISIBILITY_PUBLIC);
     }
 
-    Bitmap bitmap = null;
+    Bitmap bitmap;
     if (this.info.cover != null) {
       bitmap = getBitmapFromURL(this.info.cover);
       builder.setLargeIcon(bitmap);
     }
 
     // TODO is playing else
-    if (mediaSession.isActive()){
+    if (state == PlaybackState.STATE_PLAYING){
       builder.setSmallIcon(android.R.drawable.ic_media_play);
     } else {
       builder.setSmallIcon(android.R.drawable.ic_media_pause);
     }
 
+    // The intent action names must match the capacitor event names
     // Previous intent
-    Intent previousIntent = new Intent("music-controls-previous");
+    Intent previousIntent = new Intent("previous");
     PendingIntent previousPendingIntent = PendingIntent.getBroadcast(getContext(), 1, previousIntent, 0);
     builder.addAction(android.R.drawable.ic_media_previous, "Previous", previousPendingIntent);
 
-    Intent pauseIntent = new Intent("music-controls-pause");
+    Intent pauseIntent = new Intent("pause");
     PendingIntent pausePendingIntent = PendingIntent.getBroadcast(getContext(), 1, pauseIntent, 0);
     builder.addAction(android.R.drawable.ic_media_pause, "Pause", pausePendingIntent);
 
-    Intent playIntent = new Intent("music-controls-play");
+    Intent playIntent = new Intent("play");
     PendingIntent playPendingIntent = PendingIntent.getBroadcast(getContext(), 1, playIntent, 0);
     builder.addAction(android.R.drawable.ic_media_play, "Play", playPendingIntent);
 
-    Intent nextIntent = new Intent("music-controls-next");
+    Intent nextIntent = new Intent("next");
     PendingIntent nextPendingIntent = PendingIntent.getBroadcast(getContext(), 1, nextIntent, 0);
     builder.addAction(android.R.drawable.ic_media_next, "Next", nextPendingIntent);
 
+    System.out.println("Sending out notification!!");
     Notification notification = builder.build();
     this.notificationManager.notify(1234, notification);
   }
@@ -460,14 +502,14 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
 
   private void pauseLogic() {
     this.player.pause();
-    this.setMediaPlaybackState(PlaybackStateCompat.STATE_PAUSED);
-    this.setNotification(PlaybackStateCompat.STATE_PAUSED);
+    this.setMediaPlaybackState(PlaybackState.STATE_PAUSED);
+    this.setNotification(PlaybackState.STATE_PAUSED);
   }
 
   private void playLogic() {
     this.player.start();
-    this.setMediaPlaybackState(PlaybackStateCompat.STATE_PLAYING);
-    this.setNotification(PlaybackStateCompat.STATE_PLAYING);
+    this.setMediaPlaybackState(PlaybackState.STATE_PLAYING);
+    this.setNotification(PlaybackState.STATE_PLAYING);
   }
 
   private void previousLogic() {
