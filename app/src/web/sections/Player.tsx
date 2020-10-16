@@ -40,7 +40,7 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
 
   return (
     <div className="h-20 bg-gray-800 flex items-center px-4 z-10" ref={refFunc}>
-      <div className="flex items-center" style={{ width: "30%" }}>
+      <div className="flex items-center space-x-3" style={{ width: "30%" }}>
         {songInfo?.song && (
           <Thumbnail
             className="w-12 h-12 flex-shrink-0"
@@ -50,7 +50,7 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
           />
         )}
         {songInfo?.song && (
-          <div className="ml-3 min-w-0">
+          <div className="min-w-0">
             <div className="text-gray-100 text-sm" title={songInfo?.song.title}>
               {songInfo?.song.title}
             </div>
@@ -59,7 +59,7 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
         )}
         {songInfo?.song && (
           <LikedIcon
-            className="ml-6 text-gray-300 hover:text-gray-100"
+            className="text-gray-300 hover:text-gray-100"
             liked={songInfo?.song.liked}
             setLiked={setLiked}
           />

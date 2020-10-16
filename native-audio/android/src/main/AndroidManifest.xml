@@ -1,11 +1,5 @@
 
   <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="com.getcapacitor.community.audio.nativeaudio">
-
-    <application>
-      <!-- TODO -->
-      <service android:name=".RSSPullService" android:exported="false"/>
-
-    </application>
   </manifest>
   
