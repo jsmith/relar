@@ -47,9 +47,16 @@ export interface NativeAudioPlugin {
 
   /**
    * Add a listener for one of the various events.
+   *
+   * complete -> the current song is complete
+   * play -> the song should play
+   * pause -> the song should pause
+   * next -> the song should go to the next song
+   * previous -> the song should go to the previous song
+   * stop -> the song should stop playing and all state should be reset
    */
   addListener(
-    eventName: "complete" | "play" | "pause" | "next" | "previous",
+    eventName: "complete" | "play" | "pause" | "next" | "previous" | "stop",
     listenerFunc: () => void
   ): PluginListenerHandle;
 

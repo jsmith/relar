@@ -13,11 +13,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnCompletionListener;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 
 import androidx.annotation.Nullable;
@@ -33,21 +33,13 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-// For remote media controls
-// https://developer.android.com/reference/android/media/session/MediaSession
-// https://developer.android.com/reference/kotlin/android/support/v4/media/session/MediaSessionCompat
-
 // Media controls tutorial
 // https://www.youtube.com/watch?v=FBC1FgWe5X4&t=10s
-
-// Another super good post
-// https://stackoverflow.com/questions/30942054/media-session-compat-not-showing-lockscreen-controls-on-pre-lollipop
 
 // cordova-plugin-music-controls2 media controls file
 // https://github.com/ghenry22/cordova-plugin-music-controls2/blob/master/src/android/MusicControls.java
 // https://github.com/ghenry22/cordova-plugin-music-controls2/blob/master/src/android/MusicControlsNotification.java
 
-// TODO
 // https://android-developers.googleblog.com/2020/08/playing-nicely-with-media-controls.html
 // https://developer.android.com/training/notify-user/expanded#media-style
 // https://developer.android.com/training/run-background-service/create-service
@@ -61,12 +53,13 @@ import java.net.URL;
     Manifest.permission.READ_PHONE_STATE,
   }
 )
-public class NativeAudio extends Plugin implements OnCompletionListener, AudioManager.OnAudioFocusChangeListener {
+public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChangeListener {
+  private String TAG = "native-audio";
   private MediaSession mediaSession;
   private MediaPlayer player = new MediaPlayer();
   private static String CHANNEL_ID = "capacitor-community-native-audio-channel-id";
   private Info info = null;
-  private NotificationManager notificationManager = null;
+  private NotificationManager notificationManager;
 
   BroadcastReceiver receiver = new BroadcastReceiver() {
     @Override
@@ -74,7 +67,7 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
       String action = intent.getAction();
       if (action == null) return;
 
-      System.out.println("Got INTENT:: " + action);
+      Log.i(TAG, "Got INTENT:: " + action);
 
       switch (action) {
         case Intent.ACTION_HEADSET_PLUG:
@@ -99,8 +92,7 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
           handleIntent(intent);
           break;
         case "destroy":
-          // TODO add support for disposing
-          notifyListeners("dispose", new JSObject());
+          notifyListeners("stop", new JSObject());
           notificationManager.cancel(1234);
           break;
         default:
@@ -143,6 +135,7 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
 
   @Override
   public void load() {
+    Log.i(TAG, "LOAD");
     super.load();
 
     getContext().registerReceiver(this.receiver, new IntentFilter("previous"));
@@ -175,7 +168,20 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
 
     this.mediaSession.setActive(true);
     this.mediaSession.setCallback(this.callback);
-    this.player.setOnCompletionListener(this);
+
+    this.player.setLooping(false);
+    this.player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
+    // This must be registered *after* .start()
+    // See https://stackoverflow.com/questions/9998677/cannot-get-android-mediaplayer-oncompletion-to-fire
+    // Ok so the above comments seem to not be true anymore... since it works here
+    this.player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+      @Override
+      public void onCompletion(MediaPlayer mp) {
+        Log.i(TAG, "HELLO COMPLETE");
+        notifyListeners("complete", new JSObject());
+      }
+    });
 
     AudioManager audioManager = (AudioManager)
       getContext()
@@ -188,20 +194,10 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
     );
 
     if (result == AudioManager.AUDIOFOCUS_GAIN) {
-      System.out.println("Gained audio focus...");
+      Log.i(TAG, "Gained audio focus...");
     } else {
-      System.out.println("Failed to gain audio focus...");
+      Log.i(TAG, "Failed to gain audio focus...");
     }
-  }
-
-  @Override
-  protected void handleOnPause() {
-    super.handleOnPause();
-  }
-
-  @Override
-  protected void handleOnResume() {
-    super.handleOnResume();
   }
 
   /**
@@ -209,7 +205,7 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
    */
   @PluginMethod
   public void preload(final PluginCall call) {
-    System.out.println("preload: " + call.getData().toString());
+    Log.i(TAG, "preload: " + call.getData().toString());
 
     final String url = call.getString("path");
     if (url == null) {
@@ -231,6 +227,8 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
           player.setVolume(volume, volume);
 
           try {
+            player.reset();
+            Log.i(TAG, "PREPARE!!!");
             player.setDataSource(url);
             player.prepare();
           } catch (IOException e) {
@@ -319,22 +317,17 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
     call.success();
   }
 
-  /** MediaPlayer onCompletion event handler. Method which calls then song playing is complete*/
-  @Override
-  public void onCompletion(MediaPlayer mp) {
-    this.notifyListeners("complete", new JSObject());
-  }
 
   @Override
   public void onAudioFocusChange(int focusChange) {
 //    if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {} else if (
 //            focusChange == AudioManager.AUDIOFOCUS_GAIN
 //    ) {} else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {}
-    System.out.println("Audio focus change state: " + focusChange);
+    Log.i(TAG, "Audio focus change state: " + focusChange);
   }
 
   private void setMediaPlaybackState(int state) {
-    System.out.println("setMediaPlaybackState: " + state);
+    Log.i(TAG, "setMediaPlaybackState: " + state);
     PlaybackState.Builder builder = new PlaybackState.Builder();
     if(state == PlaybackState.STATE_PLAYING ) {
       builder.setActions(
@@ -401,7 +394,6 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
       builder.setLargeIcon(bitmap);
     }
 
-    // TODO is playing else
     if (state == PlaybackState.STATE_PLAYING){
       builder.setSmallIcon(android.R.drawable.ic_media_play);
     } else {
@@ -414,19 +406,21 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
     PendingIntent previousPendingIntent = PendingIntent.getBroadcast(getContext(), 1, previousIntent, 0);
     builder.addAction(android.R.drawable.ic_media_previous, "Previous", previousPendingIntent);
 
-    Intent pauseIntent = new Intent("pause");
-    PendingIntent pausePendingIntent = PendingIntent.getBroadcast(getContext(), 1, pauseIntent, 0);
-    builder.addAction(android.R.drawable.ic_media_pause, "Pause", pausePendingIntent);
-
-    Intent playIntent = new Intent("play");
-    PendingIntent playPendingIntent = PendingIntent.getBroadcast(getContext(), 1, playIntent, 0);
-    builder.addAction(android.R.drawable.ic_media_play, "Play", playPendingIntent);
+    if (state == PlaybackState.STATE_PLAYING) {
+      Intent pauseIntent = new Intent("pause");
+      PendingIntent pausePendingIntent = PendingIntent.getBroadcast(getContext(), 1, pauseIntent, 0);
+      builder.addAction(android.R.drawable.ic_media_pause, "Pause", pausePendingIntent);
+    } else {
+      Intent playIntent = new Intent("play");
+      PendingIntent playPendingIntent = PendingIntent.getBroadcast(getContext(), 1, playIntent, 0);
+      builder.addAction(android.R.drawable.ic_media_play, "Play", playPendingIntent);
+    }
 
     Intent nextIntent = new Intent("next");
     PendingIntent nextPendingIntent = PendingIntent.getBroadcast(getContext(), 1, nextIntent, 0);
     builder.addAction(android.R.drawable.ic_media_next, "Next", nextPendingIntent);
 
-    System.out.println("Sending out notification!!");
+    Log.i(TAG, "Sending out notification!!");
     Notification notification = builder.build();
     this.notificationManager.notify(1234, notification);
   }
@@ -478,18 +472,6 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
           // TODO what causes this??
           notifyListeners("play-pause", new JSObject());
           break;
-        case KeyEvent.KEYCODE_MEDIA_STOP:
-          // TODO what causes this??
-          notifyListeners("stop", new JSObject());
-          break;
-        case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
-          // TODO what causes this??
-          notifyListeners("fast-forward", new JSObject());
-          break;
-        case KeyEvent.KEYCODE_MEDIA_REWIND:
-          // TODO what causes this??
-          notifyListeners("rewind", new JSObject());
-          break;
         default:
           // TODO what causes this?
           notifyListeners("unknown", new JSObject());
@@ -508,6 +490,7 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
 
   private void playLogic() {
     this.player.start();
+    Log.i(TAG, "PLAY LOGIC");
     this.setMediaPlaybackState(PlaybackState.STATE_PLAYING);
     this.setNotification(PlaybackState.STATE_PLAYING);
   }
@@ -522,7 +505,26 @@ public class NativeAudio extends Plugin implements OnCompletionListener, AudioMa
 
   @Override
   protected void handleOnDestroy() {
+    Log.i(TAG, "HANDLE ON DESTROY");
     super.handleOnDestroy();
+  }
+
+  @Override
+  protected void handleOnRestart() {
+    Log.i(TAG, "HANDLE ON RESTART");
+    super.handleOnRestart();
+  }
+
+  @Override
+  protected void handleOnPause() {
+    Log.i(TAG, "HANDLE ON PAUSE");
+    super.handleOnPause();
+  }
+
+  @Override
+  protected void handleOnResume() {
+    Log.i(TAG, "HANDLE ON RESUME");
+    super.handleOnResume();
   }
 }
 

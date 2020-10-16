@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo } from "react";
-import { useUser } from "../auth";
+import { getDefinedUser, useUser } from "../auth";
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import { routes } from "../routes";
 import { LoadingSpinner } from "../components/LoadingSpinner";
@@ -15,9 +15,10 @@ import { AudioControls, useQueue } from "../queue";
 import { BackButton } from "./components/BackButton";
 import { useStartupHooks } from "../startup";
 import classNames from "classnames";
-import { useThumbnail } from "../queries/thumbnail";
+import { tryToGetDownloadUrlOrLog, useThumbnail } from "../queries/thumbnail";
 import { Song } from "../shared/universal/types";
 import { useDefaultStatusBar } from "./status-bar";
+import { Thumbnail } from "../components/Thumbnail";
 
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 
@@ -51,53 +52,7 @@ class Controls implements AudioControls {
     }
 
     const { src, song } = opts;
-    // const directory = FilesystemDirectory.Cache;
-    // const pathFromDir = `songs_cache/${song.id}.mp3`;
-    // let uri: string | null = null;
-    // try {
-    //   const stat = await Plugins.Filesystem.stat({ path: pathFromDir, directory });
-    //   if (stat.type === "NSFileTypeRegular") {
-    //     uri = stat.uri;
-    //   } else {
-    //     console.info(`${pathFromDir} is not a file: ${stat.type}`);
-    //   }
-    // } catch (e) {
-    //   console.info(`Unable to stat ${pathFromDir}: ` + e.message);
-    // }
-
-    // TODO stream to folder???
-    // if (uri === null) {
-    // console.log(`Fetching ${src}`);
-    // const blob = await fetch(src).then((res) => res.blob());
-
-    // uri = await writeFile({
-    //   path: pathFromDir,
-    //   directory,
-
-    //   // data must be a Blob (creating a Blob which wraps other data types
-    //   // is trivial)
-    //   data: blob,
-
-    //   // create intermediate directories if they don't already exist
-    //   // default: false
-    //   recursive: true,
-
-    //   // fallback to Filesystem.writeFile instead of throwing an error
-    //   // (you may also specify a unary callback, which takes an Error and returns
-    //   // a boolean)
-    //   // default: true
-    //   fallback: () => {
-    //     return process.env.NODE_ENV === "production";
-    //   },
-    // }).then((r) => r.uri);
-
-    // console.log(`Successfully downloaded file to ${uri}`);
-    // }
-
-    // if (uri === null) {
-    //   console.warn(`Download from ${src} was unsuccessful`);
-    //   return;
-    // }
+    const cover = await tryToGetDownloadUrlOrLog(getDefinedUser(), song, "song", "256");
 
     await NativeAudio.preload({
       path: src,
@@ -105,6 +60,7 @@ class Controls implements AudioControls {
       title: song.title,
       artist: song.artist ?? "Unknown Artist",
       album: song.albumName ?? "Unknown Album",
+      cover,
     });
   }
 
@@ -127,7 +83,15 @@ const controls = new Controls();
 export const App = () => {
   const { routeId, goTo } = useRouter();
   const { loading, user } = useUser();
-  const { _setRef, _nextAutomatic, songInfo, toggleState, next, previous } = useQueue();
+  const {
+    _setRef,
+    _nextAutomatic,
+    songInfo,
+    toggleState,
+    next,
+    previous,
+    stopPlaying,
+  } = useQueue();
   const thumbnail = useThumbnail(songInfo?.song, "song", "128");
 
   useEffect(() => {
@@ -157,10 +121,8 @@ export const App = () => {
     const { remove: dispose2 } = NativeAudio.addListener("play", toggleState);
     const { remove: dispose3 } = NativeAudio.addListener("pause", toggleState);
     const { remove: dispose4 } = NativeAudio.addListener("next", next);
-    const { remove: dispose5 } = NativeAudio.addListener("previous", () => {
-      console.log("JS PREVIOUS");
-      previous();
-    });
+    const { remove: dispose5 } = NativeAudio.addListener("previous", previous);
+    const { remove: dispose6 } = NativeAudio.addListener("stop", stopPlaying);
     _setRef(controls);
     return () => {
       dispose1();
@@ -168,8 +130,9 @@ export const App = () => {
       dispose3();
       dispose4();
       dispose5();
+      dispose6();
     };
-  }, [_nextAutomatic, _setRef, next, previous, toggleState]);
+  }, [_nextAutomatic, _setRef, next, previous, stopPlaying, toggleState]);
 
   if (
     loading ||
@@ -188,7 +151,7 @@ export const App = () => {
       <div
         className={classNames(
           // safe-top takes priority is safe-top is invalid
-          "flex flex-col h-screen overflow-hidden text-gray-700 safe-top pt-3",
+          "flex flex-col h-screen overflow-hidden text-gray-700 safe-top",
           route.mobileClassName,
           !route.showTabs && "safe-bottom",
         )}
