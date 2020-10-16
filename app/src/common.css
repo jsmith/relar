@@ -2,15 +2,13 @@
 /* See https://blog.phonegap.com/displaying-a-phonegap-app-correctly-on-the-iphone-x-c4a85664c493 */
 /* And https://developer.mozilla.org/en-US/docs/Web/CSS/env */
 .safe-bottom {
-  padding-bottom: 1rem;
   padding-bottom: calc(constant(safe-area-inset-bottom) + 1rem); /* iOS 11.0 */
   padding-bottom: calc(env(safe-area-inset-bottom) + 1rem); /* iOS 11.2 */
 }
 
 .safe-top {
-  padding-top: 1rem;
-  padding-top: constant(safe-area-inset-top); /* iOS 11.0 */
-  padding-top: env(safe-area-inset-top); /* iOS 11.2 */
+  padding-top: calc(constant(safe-area-inset-top) + 1rem); /* iOS 11.0 */
+  padding-top: calc(env(safe-area-inset-top) + 1rem); /* iOS 11.2 */
 }
 
 @font-face {
