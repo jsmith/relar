@@ -7,7 +7,7 @@ import classNames from "classnames";
 
 export const Hero = () => {
   return (
-    <div className="flex flex-col items-center text-gray-200 w-full">
+    <div className="flex flex-col items-center text-gray-200 w-full py-3">
       <div className="flex-grow flex items-center">
         <header className="flex items-center justify-center space-x-4 mt-6">
           <h1 className="text-6xl md:text-6xl">RELAR</h1>
@@ -23,7 +23,7 @@ export const Hero = () => {
         className={classNames(button({ color: "purple", invert: true }), "text-xl")}
         route={routes.signup}
       />
-      <Link label="Login" className="mt-3 uppercase text-xl" route={routes.login} />
+      <Link label="Login" className="mt-5 uppercase text-xl" route={routes.login} />
     </div>
   );
 };

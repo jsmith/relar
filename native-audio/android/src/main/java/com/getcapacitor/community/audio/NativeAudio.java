@@ -1,30 +1,51 @@
 package com.getcapacitor.community.audio;
 
-import static com.getcapacitor.community.audio.Constant.ASSET_ID;
-import static com.getcapacitor.community.audio.Constant.ASSET_PATH;
-import static com.getcapacitor.community.audio.Constant.AUDIO_CHANNEL_NUM;
-import static com.getcapacitor.community.audio.Constant.LOOP;
-import static com.getcapacitor.community.audio.Constant.VOLUME;
-
 import android.Manifest;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
-import android.os.ParcelFileDescriptor;
+import android.media.MediaPlayer;
+import android.media.session.MediaSession;
+import android.media.session.PlaybackState;
+import android.os.Build;
+import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
+
+import androidx.annotation.Nullable;
+
 import com.getcapacitor.JSObject;
 import com.getcapacitor.NativePlugin;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.concurrent.Callable;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+// Media controls tutorial
+// https://www.youtube.com/watch?v=FBC1FgWe5X4&t=10s
+
+// cordova-plugin-music-controls2 media controls file
+// https://github.com/ghenry22/cordova-plugin-music-controls2/blob/master/src/android/MusicControls.java
+// https://github.com/ghenry22/cordova-plugin-music-controls2/blob/master/src/android/MusicControlsNotification.java
+
+// https://android-developers.googleblog.com/2020/08/playing-nicely-with-media-controls.html
+// https://developer.android.com/training/notify-user/expanded#media-style
+// https://developer.android.com/training/run-background-service/create-service
+
+
+@SuppressWarnings("unused")
 @NativePlugin(
   permissions = {
     Manifest.permission.MODIFY_AUDIO_SETTINGS,
@@ -32,554 +53,492 @@ import java.util.concurrent.Callable;
     Manifest.permission.READ_PHONE_STATE,
   }
 )
-public class NativeAudio
-  extends Plugin
-  implements AudioManager.OnAudioFocusChangeListener {
-  public static final String TAG = "NativeAudio";
+public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChangeListener {
+  private String TAG = "native-audio";
+  private MediaSession mediaSession;
+  private MediaPlayer player = new MediaPlayer();
+  private static String CHANNEL_ID = "capacitor-community-native-audio-channel-id";
+  private Info info = null;
+  private NotificationManager notificationManager;
 
-  private static HashMap<String, AudioAsset> audioAssetList;
-  private static ArrayList<AudioAsset> resumeList;
+  BroadcastReceiver receiver = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      String action = intent.getAction();
+      if (action == null) return;
+
+      Log.i(TAG, "Got INTENT:: " + action);
+
+      switch (action) {
+        case Intent.ACTION_HEADSET_PLUG:
+          int state = intent.getIntExtra("state", -1);
+          switch (state) {
+            case 0:
+              notifyListeners("pause", new JSObject());
+              break;
+            case 1:
+              // FIXME what should we do on plug in?
+              break;
+            default:
+              break;
+          }
+          break;
+        case AudioManager.ACTION_AUDIO_BECOMING_NOISY:
+          pauseLogic();
+          break;
+        case Intent.ACTION_MEDIA_BUTTON:
+          // This is prior to android 5.0 (21)
+          // FIXME I think I need to update a manifest for this to work
+          handleIntent(intent);
+          break;
+        case "destroy":
+          notifyListeners("stop", new JSObject());
+          notificationManager.cancel(1234);
+          break;
+        default:
+          // action is "next", "previous", "play" and "pause"
+          notifyListeners(action, new JSObject());
+          break;
+      }
+    }
+  };
+
+  MediaSession.Callback callback = new
+    MediaSession.Callback() {
+      @Override
+      public void onPlay() {
+        playLogic();
+      }
+
+      @Override
+      public void onPause() {
+        pauseLogic();
+      }
+
+      @Override
+      public void onSkipToNext() {
+        nextLogic();
+      }
+
+      @Override
+      public void onSkipToPrevious() {
+        previousLogic();
+      }
+
+      @Override
+      public boolean onMediaButtonEvent(@androidx.annotation.NonNull Intent intent) {
+        // This is for android >= 5.0 (21)
+        boolean result = handleIntent(intent);
+        return result || super.onMediaButtonEvent(intent);
+      }
+    };
 
   @Override
   public void load() {
+    Log.i(TAG, "LOAD");
     super.load();
 
-    AudioManager audioManager = (AudioManager) getBridge()
-      .getActivity()
+    getContext().registerReceiver(this.receiver, new IntentFilter("previous"));
+    getContext().registerReceiver(this.receiver, new IntentFilter("pause"));
+    getContext().registerReceiver(this.receiver, new IntentFilter("play"));
+    getContext().registerReceiver(this.receiver, new IntentFilter("next"));
+    getContext().registerReceiver(this.receiver, new IntentFilter("destroy"));
+    getContext().registerReceiver(this.receiver, new IntentFilter(Intent.ACTION_MEDIA_BUTTON));
+    getContext().registerReceiver(this.receiver, new IntentFilter(Intent.ACTION_HEADSET_PLUG));
+
+    this.notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+
+    if (Build.VERSION.SDK_INT >= 26) {
+      // The user-visible name of the channel.
+      CharSequence name = "Audio Controls";
+      // The user-visible description of the channel.
+      String description = "Control Playing Audio";
+
+      // IMPORTANCE_LOW is very important (no popup, no sound)
+      // See https://stackoverflow.com/questions/54286389/how-do-i-make-an-android-local-notification-that-doesnt-pop-up-just-shows-up-o
+      NotificationChannel channel = new NotificationChannel(NativeAudio.CHANNEL_ID, name, NotificationManager.IMPORTANCE_LOW);
+      channel.setDescription(description);
+      this.notificationManager.createNotificationChannel(channel);
+    }
+
+    final Context context = this.getContext();
+    Intent headsetIntent = new Intent(Intent.ACTION_MEDIA_BUTTON);
+    PendingIntent intent = PendingIntent.getBroadcast(context, 0, headsetIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+    this.mediaSession = new MediaSession(context, "capacitor-community-native-audio");
+
+    this.mediaSession.setActive(true);
+    this.mediaSession.setCallback(this.callback);
+
+    this.player.setLooping(false);
+    this.player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
+    // This must be registered *after* .start()
+    // See https://stackoverflow.com/questions/9998677/cannot-get-android-mediaplayer-oncompletion-to-fire
+    // Ok so the above comments seem to not be true anymore... since it works here
+    this.player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+      @Override
+      public void onCompletion(MediaPlayer mp) {
+        Log.i(TAG, "HELLO COMPLETE");
+        notifyListeners("complete", new JSObject());
+      }
+    });
+
+    AudioManager audioManager = (AudioManager)
+      getContext()
       .getSystemService(Context.AUDIO_SERVICE);
 
-    if (audioManager != null) {
-      int result = audioManager.requestAudioFocus(
-        this,
-        AudioManager.STREAM_MUSIC,
-        AudioManager.AUDIOFOCUS_GAIN
-      );
+    int result = audioManager.requestAudioFocus(
+      this,
+      AudioManager.STREAM_MUSIC,
+      AudioManager.AUDIOFOCUS_GAIN
+    );
 
-      initSoundPool();
+    if (result == AudioManager.AUDIOFOCUS_GAIN) {
+      Log.i(TAG, "Gained audio focus...");
+    } else {
+      Log.i(TAG, "Failed to gain audio focus...");
     }
-  }
-
-  @Override
-  public void onAudioFocusChange(int focusChange) {
-    if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {} else if (
-      focusChange == AudioManager.AUDIOFOCUS_GAIN
-    ) {} else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {}
-  }
-
-  @Override
-  protected void handleOnPause() {
-    super.handleOnPause();
-
-    try {
-      if (audioAssetList != null) {
-        for (HashMap.Entry<String, AudioAsset> entry : audioAssetList.entrySet()) {
-          AudioAsset audio = entry.getValue();
-
-          if (audio != null) {
-            boolean wasPlaying = audio.pause();
-
-            if (wasPlaying) {
-              resumeList.add(audio);
-            }
-          }
-        }
-      }
-    } catch (Exception ex) {
-      Log.d(
-        TAG,
-        "Exception caught while listening for handleOnPause: " +
-        ex.getLocalizedMessage()
-      );
-    }
-  }
-
-  @Override
-  protected void handleOnResume() {
-    super.handleOnResume();
-
-    try {
-      if (resumeList != null) {
-        while (!resumeList.isEmpty()) {
-          AudioAsset audio = resumeList.remove(0);
-
-          if (audio != null) {
-            audio.resume();
-          }
-        }
-      }
-    } catch (Exception ex) {
-      Log.d(
-        TAG,
-        "Exception caught while listening for handleOnResume: " +
-        ex.getLocalizedMessage()
-      );
-    }
-  }
-
-  /**
-   * This method will load short duration audio file into memory.
-   * @param call
-   */
-  @PluginMethod
-  public void preloadSimple(final PluginCall call) {
-    if (!call.hasOption(ASSET_PATH)) {
-      call.error(ASSET_PATH + " property is missing");
-      return;
-    }
-
-    if (!call.hasOption(ASSET_ID)) {
-      call.error(ASSET_ID + " property is missing");
-      return;
-    }
-
-    new Thread(
-      new Runnable() {
-
-        @Override
-        public void run() {
-          preloadAsset(call);
-        }
-      }
-    )
-    .start();
   }
 
   /**
    * This method will load more optimized audio files for background into memory.
-   * @param call
    */
   @PluginMethod
-  public void preloadComplex(final PluginCall call) {
-    if (!call.hasOption(ASSET_PATH)) {
-      call.error(ASSET_PATH + " property is missing");
+  public void preload(final PluginCall call) {
+    Log.i(TAG, "preload: " + call.getData().toString());
+
+    final String url = call.getString("path");
+    if (url == null) {
+      call.error("url is required");
       return;
     }
 
-    if (!call.hasOption(ASSET_ID)) {
-      call.error(ASSET_ID + " property is missing");
-      return;
-    }
+    final String title = call.getString("title", "Unknown Title");
+    final String artist = call.getString("artist", "Unknown Artist");
+    final String album = call.getString("album", "Unknown Album");
+    final String cover = call.getString("cover");
+    final float volume = call.getFloat("volume", 1.0f);
+    this.info = new Info(title, artist, cover, album);
 
     new Thread(
       new Runnable() {
-
         @Override
         public void run() {
-          preloadAsset(call);
+          player.setVolume(volume, volume);
+
+          try {
+            player.reset();
+            Log.i(TAG, "PREPARE!!!");
+            player.setDataSource(url);
+            player.prepare();
+          } catch (IOException e) {
+            e.printStackTrace();
+            call.error(e.getMessage());
+            return;
+          }
+          call.success();
         }
       }
-    )
-    .start();
+    ).start();
   }
 
   /**
    * This method will play the loaded audio file if present in the memory.
-   * @param call
    */
   @PluginMethod
   public void play(final PluginCall call) {
-    if (!call.hasOption(ASSET_ID)) {
-      call.error(ASSET_ID + " property is missing");
-      return;
-    }
-
-    getBridge()
-      .getActivity()
-      .runOnUiThread(
-        new Runnable() {
-
-          @Override
-          public void run() {
-            playOrLoop("play", call);
-          }
-        }
-      );
-  }
-
-  /**
-   * This method will return the current time of the audio file
-   * @param call
-   */
-  @PluginMethod
-  public void getCurrentTime(final PluginCall call) {
-    try {
-      initSoundPool();
-
-      if (!call.hasOption(ASSET_ID)) {
-        call.error(ASSET_ID + " property is missing");
-        return;
-      }
-
-      String audioId = call.getString(ASSET_ID);
-
-      if (!audioAssetList.containsKey(audioId)) {
-        call.error(audioId + " asset is not loaded");
-        return;
-      }
-
-      AudioAsset asset = audioAssetList.get(audioId);
-      if (asset != null) {
-        call.success(
-          new JSObject().put("currentTime", asset.getCurrentPosition())
-        );
-      }
-    } catch (Exception ex) {
-      call.error(ex.getMessage());
-    }
-  }
-
-  /**
-   * This method will return the duration of the audio file
-   * @param call
-   */
-  @PluginMethod
-  public void getDuration(final PluginCall call) {
-    try {
-      initSoundPool();
-
-      if (!call.hasOption(ASSET_ID)) {
-        call.error(ASSET_ID + " property is missing");
-        return;
-      }
-
-      String audioId = call.getString(ASSET_ID);
-
-      if (!audioAssetList.containsKey(audioId)) {
-        call.error(audioId + " asset is not loaded");
-        return;
-      }
-
-      AudioAsset asset = audioAssetList.get(audioId);
-      if (asset != null) {
-        call.success(new JSObject().put("duration", asset.getDuration()));
-      }
-    } catch (Exception ex) {
-      call.error(ex.getMessage());
-    }
-  }
-
-  /**
-   * This method will return whether an audio file is loaded
-   * @param call
-   */
-  @PluginMethod
-  public void isLoaded(final PluginCall call) {
-    try {
-      initSoundPool();
-
-      if (!call.hasOption(ASSET_ID)) {
-        call.error(ASSET_ID + " property is missing");
-        return;
-      }
-
-      String audioId = call.getString(ASSET_ID);
-
-      call.resolve(
-        new JSObject().put("isLoaded", audioAssetList.containsKey(audioId))
-      );
-    } catch (Exception ex) {
-      call.error(ex.getMessage());
-    }
-  }
-
-  /**
-   * This method will loop the audio file for playback.
-   * @param call
-   */
-  @PluginMethod
-  public void loop(final PluginCall call) {
-    if (!call.hasOption(ASSET_ID)) {
-      call.error(ASSET_ID + " property is missing");
-      return;
-    }
-
-    getBridge()
-      .getActivity()
-      .runOnUiThread(
-        new Runnable() {
-
-          @Override
-          public void run() {
-            playOrLoop("loop", call);
-          }
-        }
-      );
+    this.playLogic();
+    call.success();
   }
 
   /**
    * This method will pause the audio file during playback.
-   * @param call
    */
   @PluginMethod
   public void pause(PluginCall call) {
-    if (!call.hasOption(ASSET_ID)) {
-      call.error(ASSET_ID + " property is missing");
-      return;
-    }
-
-    try {
-      initSoundPool();
-
-      String audioId = call.getString(ASSET_ID);
-
-      if (!audioAssetList.containsKey(audioId)) {
-        call.error(audioId + " asset is not loaded");
-        return;
-      }
-
-      AudioAsset asset = audioAssetList.get(audioId);
-      if (asset != null) {
-        boolean wasPlaying = asset.pause();
-
-        if (wasPlaying) {
-          resumeList.add(asset);
-        }
-      }
-      call.success();
-    } catch (Exception ex) {
-      call.error(ex.getMessage());
-    }
+    this.pauseLogic();
+    call.success();
   }
 
   /**
-   * This method will resume the audio file during playback.
-   * @param call
+   * This method will return the current time of the audio file
    */
   @PluginMethod
-  public void resume(PluginCall call) {
-    if (!call.hasOption(ASSET_ID)) {
-      call.error(ASSET_ID + " property is missing");
-      return;
-    }
+  public void getCurrentTime(final PluginCall call) {
+    final double position = this.player.getCurrentPosition();
+    call.success(new JSObject().put("currentTime", position / 1000));
+  }
 
-    try {
-      initSoundPool();
-
-      String audioId = call.getString(ASSET_ID);
-
-      if (!audioAssetList.containsKey(audioId)) {
-        call.error(audioId + " asset is not loaded");
-        return;
-      }
-
-      AudioAsset asset = audioAssetList.get(audioId);
-      if (asset != null) {
-        asset.resume();
-        resumeList.add(asset);
-      }
-    } catch (Exception ex) {
-      call.error(ex.getMessage());
-    }
+  /**
+   * This method will return the duration of the audio file
+   */
+  @PluginMethod
+  public void getDuration(final PluginCall call) {
+    final double duration = this.player.getDuration();
+    call.success(new JSObject().put("duration", duration / 1000));
   }
 
   /**
    * This method will stop the audio file during playback.
-   * @param call
    */
   @PluginMethod
   public void stop(PluginCall call) {
-    if (!call.hasOption(ASSET_ID)) {
-      call.error(ASSET_ID + " property is missing");
-      return;
-    }
-
-    try {
-      initSoundPool();
-
-      String audioId = call.getString(ASSET_ID);
-
-      if (!audioAssetList.containsKey(audioId)) {
-        call.error(audioId + " asset is not loaded");
-        return;
-      }
-
-      AudioAsset asset = audioAssetList.get(audioId);
-      if (asset != null) {
-        asset.stop();
-      }
-    } catch (Exception ex) {
-      call.error(ex.getMessage());
-    }
-  }
-
-  /**
-   * This method will stop and unload the audio file.
-   * @param call
-   */
-  @PluginMethod
-  public void unload(PluginCall call) {
-    if (!call.hasOption(ASSET_ID)) {
-      call.error(ASSET_ID + " property is missing");
-      return;
-    }
-
-    try {
-      initSoundPool();
-
-      new JSObject();
-      JSObject status;
-
-      String audioId = call.getString(ASSET_ID);
-
-      if (!audioAssetList.containsKey(audioId)) {
-        call.error(audioId + " asset is not loaded");
-        return;
-      }
-
-      AudioAsset asset = audioAssetList.get(audioId);
-      if (asset != null) {
-        asset.stop();
-        asset.unload();
-        audioAssetList.remove(audioId);
-      }
-      call.success();
-    } catch (Exception ex) {
-      call.error(ex.getMessage());
-    }
+    this.player.stop();
+    call.success();
   }
 
   /**
    * This method will adjust volume to specified value
-   * @param call
    */
   @PluginMethod
   public void setVolume(PluginCall call) {
-    if (!call.hasOption(ASSET_ID)) {
-      call.error(ASSET_ID + " property is missing");
-      return;
-    }
-
-    if (!call.hasOption(VOLUME)) {
-      call.error(VOLUME + " property is missing");
-      return;
-    }
-
-    try {
-      initSoundPool();
-
-      String audioId = call.getString(ASSET_ID);
-      float volume = call.getFloat(VOLUME);
-
-      if (!audioAssetList.containsKey(audioId)) {
-        call.error(audioId + " asset is not loaded");
-        return;
-      }
-
-      AudioAsset asset = audioAssetList.get(audioId);
-      if (asset != null) {
-        asset.setVolume(volume);
-      }
-    } catch (Exception ex) {
-      call.error(ex.getMessage());
-    }
+    final float value = call.getFloat("volume", 1.0f);
+    this.player.setVolume(value, value);
+    call.success();
   }
 
-  public void dispatchComplete(String assetId) {
-    JSObject ret = new JSObject();
-    ret.put("assetId", assetId);
-    notifyListeners("complete", ret);
+  @PluginMethod
+  public void clearCache(PluginCall call) {
+    // Nothing to do yet
+    call.success();
   }
 
-  private void preloadAsset(PluginCall call) {
-    double volume = 1.0;
-    int audioChannelNum = 1;
+  @PluginMethod
+  public void setAlbumArt(PluginCall call) {
+    // Nothing to do yet
+    call.success();
+  }
 
-    String audioId = call.getString(ASSET_ID);
-    String assetPath = call.getString(ASSET_PATH);
+  @PluginMethod
+  public void setCurrentTime(PluginCall call) {
+    final double currentTime = call.getDouble("currentTime", 0.0);
+    // seconds -> milliseconds
+    this.player.seekTo((int) currentTime * 1000);
+    call.success();
+  }
 
-    try {
-      initSoundPool();
 
-      if (audioAssetList.containsKey(audioId)) {
-        call.error(audioId + " asset is already loaded");
-        return;
-      }
+  @Override
+  public void onAudioFocusChange(int focusChange) {
+//    if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {} else if (
+//            focusChange == AudioManager.AUDIOFOCUS_GAIN
+//    ) {} else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {}
+    Log.i(TAG, "Audio focus change state: " + focusChange);
+  }
 
-      if (call.getDouble(VOLUME) == null) {
-        volume = 1.0;
-      } else {
-        volume = call.getDouble(VOLUME, 0.5);
-      }
-
-      if (call.getInt(AUDIO_CHANNEL_NUM) == null) {
-        audioChannelNum = 1;
-      } else {
-        audioChannelNum = call.getInt(AUDIO_CHANNEL_NUM);
-      }
-
-      boolean isUrl = call.getBoolean("isUrl", false);
-      AssetFileDescriptor assetFileDescriptor;
-
-      if (isUrl) {
-        File f = new File(new URI(assetPath));
-        ParcelFileDescriptor p = ParcelFileDescriptor.open(
-          f,
-          ParcelFileDescriptor.MODE_READ_ONLY
-        );
-        assetFileDescriptor = new AssetFileDescriptor(p, 0, -1);
-      } else {
-        Context ctx = getBridge().getActivity().getApplicationContext();
-        int identifier = ctx
-          .getResources()
-          .getIdentifier(assetPath, "raw", this.getContext().getPackageName());
-        assetFileDescriptor = ctx.getResources().openRawResourceFd(identifier);
-      }
-
-      AudioAsset asset = new AudioAsset(
-        this,
-        audioId,
-        assetFileDescriptor,
-        audioChannelNum,
-        (float) volume
+  private void setMediaPlaybackState(int state) {
+    Log.i(TAG, "setMediaPlaybackState: " + state);
+    PlaybackState.Builder builder = new PlaybackState.Builder();
+    if(state == PlaybackState.STATE_PLAYING ) {
+      builder.setActions(
+        PlaybackState.ACTION_PLAY_PAUSE |
+        PlaybackState.ACTION_PAUSE |
+        PlaybackState.ACTION_SKIP_TO_NEXT |
+        PlaybackState.ACTION_SKIP_TO_PREVIOUS
       );
-      audioAssetList.put(audioId, asset);
 
-      call.success();
-    } catch (Exception exp) {
-      if (exp instanceof FileNotFoundException) {
-        call.error(assetPath + " file cannot be found");
-      } else {
-        call.error(exp.getMessage());
-      }
+      builder.setState(state, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 1.0f);
+    } else {
+      builder.setActions(
+        PlaybackState.ACTION_PLAY_PAUSE |
+        PlaybackState.ACTION_PLAY |
+        PlaybackState.ACTION_SKIP_TO_NEXT |
+        PlaybackState.ACTION_SKIP_TO_PREVIOUS
+      );
+
+      builder.setState(state, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 0);
     }
+
+    this.mediaSession.setPlaybackState(builder.build());
   }
 
-  private void playOrLoop(String action, final PluginCall call) {
+  private void setNotification(int state) {
+    if (this.info == null) return;
+
+    // Swipe to dismiss intent
+    Intent dismissIntent = new Intent("destroy");
+    PendingIntent dismissPendingIntent = PendingIntent.getBroadcast(getContext(), 1, dismissIntent, 0);
+
+    // Tap to open intent
+    Intent resultIntent = new Intent(getContext(), getContext().getClass()); // TODO IDK if the second arg is right
+    resultIntent.setAction(Intent.ACTION_MAIN);
+    resultIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+    PendingIntent resultPendingIntent = PendingIntent.getActivity(getContext(), 0, resultIntent, 0);
+    Notification.MediaStyle style = new Notification.MediaStyle()
+            .setShowActionsInCompactView(1);
+    // FIXME why does this break things?
+//            .setMediaSession(this.mediaSession.getSessionToken());
+
+    Notification.Builder builder = new Notification.Builder(getContext())
+            .setStyle(style)
+            .setContentTitle(this.info.title)
+            .setContentText(this.info.artist + " - " + this.info.album)
+            .setWhen(0)
+            .setOngoing(false)
+            .setDeleteIntent(dismissPendingIntent)
+            .setPriority(Notification.PRIORITY_MAX) // Note this is deprecated now
+            .setContentIntent(resultPendingIntent)
+            .setTicker(null);
+
+    if (Build.VERSION.SDK_INT >= 26) {
+      builder.setChannelId(NativeAudio.CHANNEL_ID);
+    }
+
+    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP){
+      builder.setVisibility(Notification.VISIBILITY_PUBLIC);
+    }
+
+    Bitmap bitmap;
+    if (this.info.cover != null) {
+      bitmap = getBitmapFromURL(this.info.cover);
+      builder.setLargeIcon(bitmap);
+    }
+
+    if (state == PlaybackState.STATE_PLAYING){
+      builder.setSmallIcon(android.R.drawable.ic_media_play);
+    } else {
+      builder.setSmallIcon(android.R.drawable.ic_media_pause);
+    }
+
+    // The intent action names must match the capacitor event names
+    // Previous intent
+    Intent previousIntent = new Intent("previous");
+    PendingIntent previousPendingIntent = PendingIntent.getBroadcast(getContext(), 1, previousIntent, 0);
+    builder.addAction(android.R.drawable.ic_media_previous, "Previous", previousPendingIntent);
+
+    if (state == PlaybackState.STATE_PLAYING) {
+      Intent pauseIntent = new Intent("pause");
+      PendingIntent pausePendingIntent = PendingIntent.getBroadcast(getContext(), 1, pauseIntent, 0);
+      builder.addAction(android.R.drawable.ic_media_pause, "Pause", pausePendingIntent);
+    } else {
+      Intent playIntent = new Intent("play");
+      PendingIntent playPendingIntent = PendingIntent.getBroadcast(getContext(), 1, playIntent, 0);
+      builder.addAction(android.R.drawable.ic_media_play, "Play", playPendingIntent);
+    }
+
+    Intent nextIntent = new Intent("next");
+    PendingIntent nextPendingIntent = PendingIntent.getBroadcast(getContext(), 1, nextIntent, 0);
+    builder.addAction(android.R.drawable.ic_media_next, "Next", nextPendingIntent);
+
+    Log.i(TAG, "Sending out notification!!");
+    Notification notification = builder.build();
+    this.notificationManager.notify(1234, notification);
+  }
+
+  private Bitmap getBitmapFromURL(String strURL) {
     try {
-      initSoundPool();
-
-      final String audioId = call.getString(ASSET_ID);
-
-      if (audioAssetList.containsKey(audioId)) {
-        AudioAsset asset = audioAssetList.get(audioId);
-        if (LOOP.equals(action) && asset != null) {
-          asset.loop();
-        } else if (asset != null) {
-          asset.play(
-            new Callable<Void>() {
-
-              @Override
-              public Void call() throws Exception {
-                call.success(new JSObject().put(ASSET_ID, audioId));
-
-                return null;
-              }
-            }
-          );
-        }
-      }
+      URL url = new URL(strURL);
+      HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+      connection.setDoInput(true);
+      connection.connect();
+      InputStream input = connection.getInputStream();
+      return BitmapFactory.decodeStream(input);
     } catch (Exception ex) {
-      call.error(ex.getMessage());
+      notifyListeners("error", new JSObject().put("message", ex.getMessage()));
+      ex.printStackTrace();
+      return null;
     }
   }
 
-  private void initSoundPool() {
-    if (audioAssetList == null) {
-      audioAssetList = new HashMap<>();
+  private boolean handleIntent(Intent intent) {
+    Bundle extras = intent.getExtras();
+    if (extras == null) {
+      return false;
     }
 
-    if (resumeList == null) {
-      resumeList = new ArrayList<>();
+    final KeyEvent event = (KeyEvent) extras.get(Intent.EXTRA_KEY_EVENT);
+
+    if (event == null) {
+      return false;
     }
+
+    if (event.getAction() == KeyEvent.ACTION_DOWN) {
+      final int keyCode = event.getKeyCode();
+      switch (keyCode) {
+        case KeyEvent.KEYCODE_MEDIA_PAUSE:
+          notifyListeners("pause", new JSObject());
+          break;
+        case KeyEvent.KEYCODE_MEDIA_PLAY:
+          notifyListeners("play", new JSObject());
+          break;
+        case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+          this.previousLogic();
+          break;
+        case KeyEvent.KEYCODE_MEDIA_NEXT:
+          this.nextLogic();
+          break;
+        case KeyEvent.KEYCODE_HEADSETHOOK:
+        case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+          // TODO what causes this??
+          notifyListeners("play-pause", new JSObject());
+          break;
+        default:
+          // TODO what causes this?
+          notifyListeners("unknown", new JSObject());
+          return false;
+      }
+    }
+
+    return true;
+  }
+
+  private void pauseLogic() {
+    this.player.pause();
+    this.setMediaPlaybackState(PlaybackState.STATE_PAUSED);
+    this.setNotification(PlaybackState.STATE_PAUSED);
+  }
+
+  private void playLogic() {
+    this.player.start();
+    Log.i(TAG, "PLAY LOGIC");
+    this.setMediaPlaybackState(PlaybackState.STATE_PLAYING);
+    this.setNotification(PlaybackState.STATE_PLAYING);
+  }
+
+  private void previousLogic() {
+    notifyListeners("previous", new JSObject());
+  }
+
+  private void nextLogic() {
+    notifyListeners("next", new JSObject());
+  }
+
+  @Override
+  protected void handleOnDestroy() {
+    Log.i(TAG, "HANDLE ON DESTROY");
+    super.handleOnDestroy();
+  }
+
+  @Override
+  protected void handleOnRestart() {
+    Log.i(TAG, "HANDLE ON RESTART");
+    super.handleOnRestart();
+  }
+
+  @Override
+  protected void handleOnPause() {
+    Log.i(TAG, "HANDLE ON PAUSE");
+    super.handleOnPause();
+  }
+
+  @Override
+  protected void handleOnResume() {
+    Log.i(TAG, "HANDLE ON RESUME");
+    super.handleOnResume();
+  }
+}
+
+class Info {
+  String title;
+  String artist;
+  String album;
+  @Nullable
+  String cover;
+
+  Info(@Nullable String title, @Nullable String artist, @Nullable String cover, @Nullable String album) {
+    this.title = title != null ? title :  "Unknown Title";
+    this.artist = artist != null ? artist : "Unknown Artist";
+    this.album = album != null ? album : "Unknown Album";
+    this.cover = cover;
   }
 }
