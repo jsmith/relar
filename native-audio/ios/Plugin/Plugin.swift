@@ -373,6 +373,8 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate, AVAssetResourceLoade
                     let data = try Data(contentsOf: fileURL)
                     print("CACHING TO " + asset.url.absoluteString)
                     print("Count -> \(data.count)")
+                    // TODO asset.url.absoluteString has token
+                    // Create method that extract the parameters and ignores query parameters
                     self.storage?.async.setObject(data, forKey: asset.url.absoluteString, completion: { _ in })
                     print("STORED DATA IN CACHE")
                 } catch {
@@ -383,45 +385,9 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate, AVAssetResourceLoade
                 print("Export went wrong!! IDK what failed: " + String(exporter.status.rawValue))
             }
         })
-//
-//        exporter?.exportAsynchronously(completionHandler: {
-//            let data = Data(contentsOf: <#T##URL#>)
-//        })
-        
-//        do {
-//            let data = try Data(contentsOf: asset.url)
-//            print("GOT DATA FROM " + asset.url.absoluteString)
-//            print("Count -> \(data.count)")
-//            storage?.async.setObject(data, forKey: asset.url.absoluteString, completion: { _ in })
-//            print("STORED DATA IN CACHE")
-//        } catch {
-//            print("Could not get data from " + asset.url.absoluteString)
-//        }
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
 }
-
-//// MARK: - CachingPlayerItemDelegate
-//extension NativeAudio: CachingPlayerItemDelegate {
-//    func playerItem(_ playerItem: CachingPlayerItem, didFinishDownloadingData data: Data) {
-//        print("Finishing downloading " + playerItem.url.absoluteString + ", saving to stroage!")
-//        // A track is downloaded. Saving it to the cache asynchronously.
-//        storage?.async.setObject(data, forKey: playerItem.url.absoluteString, completion: { _ in })
-//    }
-//
-//    func playerItem(_ playerItem: CachingPlayerItem, didDownloadBytesSoFar bytesDownloaded: Int, outOf bytesExpected: Int) {
-//        // print("\(bytesDownloaded)/\(bytesExpected)")
-//    }
-//
-//    func playerItemPlaybackStalled(_ playerItem: CachingPlayerItem) {
-//        print("Not enough data for playback. Probably because of the poor network. Wait a bit and try to play later.")
-//    }
-//
-//    func playerItem(_ playerItem: CachingPlayerItem, downloadingFailedWith error: Error) {
-//        print("ERROR", error)
-//    }
-//}
-

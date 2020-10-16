@@ -138,6 +138,7 @@ export const QueueContext = createContext<{
   _setRef: (el: AudioControls | null) => void;
   shuffle: boolean;
   toggleShuffle: () => void;
+  stopPlaying: () => void;
 }>({
   queue: [],
   setQueue: async () => {},
@@ -158,6 +159,7 @@ export const QueueContext = createContext<{
   _setRef: () => {},
   shuffle: false,
   toggleShuffle: () => {},
+  stopPlaying: () => {},
 });
 
 export interface AudioControls {
@@ -512,6 +514,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
         shuffle: shuffle === "true",
         toggleShuffle,
         dequeue,
+        stopPlaying,
       }}
     >
       {props.children}
