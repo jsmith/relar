@@ -15,6 +15,11 @@ let globalUser: firebase.User | undefined;
 
 export const getGlobalUser = () => globalUser;
 
+export const getDefinedUser = (): firebase.User => {
+  if (!globalUser) throw Error("User is undefined");
+  return globalUser;
+};
+
 export const UserProvider = (props: React.Props<{}>) => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<firebase.User>();

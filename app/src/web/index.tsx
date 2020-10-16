@@ -23,8 +23,8 @@ import { ModalProvider } from "react-modal-hook";
 import { setBaseUrls } from "../backend";
 import { env } from "../env";
 import "../firebase";
-import "../common.css";
 import "../tailwind.css";
+import "../common.css";
 import SnackbarProvider from "react-simple-snackbar";
 
 setBaseUrls(env);

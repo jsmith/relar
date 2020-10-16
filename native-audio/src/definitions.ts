@@ -44,12 +44,29 @@ export interface NativeAudioPlugin {
    */
   clearCache(): Promise<void>;
   stop(): Promise<void>;
+
+  /**
+   * Add a listener for one of the various events.
+   *
+   * complete -> the current song is complete
+   * play -> the song should play
+   * pause -> the song should pause
+   * next -> the song should go to the next song
+   * previous -> the song should go to the previous song
+   * stop -> the song should stop playing and all state should be reset
+   */
+  addListener(
+    eventName: "complete" | "play" | "pause" | "next" | "previous" | "stop",
+    listenerFunc: () => void
+  ): PluginListenerHandle;
+
+  // TODO add iOS and client support
   /**
    * Add a listener for one of the various events.
    */
   addListener(
-    eventName: "complete" | "play" | "pause" | "next" | "previous",
-    listenerFunc: () => void
+    eventName: "error",
+    listenerFunc: (data: { message: string }) => void
   ): PluginListenerHandle;
 }
 
@@ -58,5 +75,10 @@ export interface PreloadOptions {
   title: string;
   artist: string;
   album: string;
+  // TODO add support to iOS
+  /**
+   * An https URL to your cover photo.
+   */
+  cover?: string;
   volume?: number;
 }

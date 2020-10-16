@@ -3,12 +3,15 @@
 The RELAR mobile app and website.
 
 ## Development
+
 ### Web
+
 ```
 npm run dev-web
 ```
 
 ### Mobile
+
 ```
 npm run dev-mobile
 ```
@@ -24,25 +27,13 @@ There are several methods and tools you can use to run the app on iOS.
 - You have a developer account
 - You have your developer account and team configured in Xcode
 
-See the [Xcode Setup](https://ionicframework.com/docs/developing/ios#xcode-setup) docs.
-
 ### Running Once
 
-Previewing on the device requires the app to be built to web assets and synced to the iOS project. Once this is done, just push the run button in Xcode. See the docs [Running on Xcode](https://ionicframework.com/docs/developing/ios#running-with-xcode).
-
 ```
-npx cap sync # or just npx cap copy
+npx cap sync
 ```
 
 > Tip: Make sure to build first!
-
-### iOS Hot Reload
-
-After this command is run, just select the target in Xcode and press play =) Alternatively, you can run the following command before running the Xcode project to create a hot-reload server.
-
-```
-ionic capacitor run ios -l --external
-```
 
 ### iOS Debugging
 
@@ -58,8 +49,6 @@ Running on Android is very similar to setting up iOS.
 - You have Android Studio installed
 - You have an emulator installed
 
-See the [Ionic Android Studio](https://ionicframework.com/docs/developing/android#android-studio) docs.
-
 ### Running Once
 
 Like iOS, you need to sync your built assets to the android file. Once this is done, just click the Run button and select the emulator.
@@ -67,18 +56,6 @@ Like iOS, you need to sync your built assets to the android file. Once this is d
 ```
 npx cap sync # or just npx cap copy
 ```
-
-### Android Hot Reload
-
-Just run an almost identical command to the iOS hot reload server. Once you run the following command, just the app on the emulator using Android Studio.
-
-```
-ionic capacitor run android -l --external
-```
-
-### Android Debugging
-
-You can you Chrome DevTools to debug an app running on Android, neat! Check out the docs [here](https://ionicframework.com/docs/developing/android#using-chrome-devtools).
 
 ## Deployment
 
