@@ -9,6 +9,9 @@ import { Result, ok } from "neverthrow";
 import { useConfirmPassword } from "../../confirm-password";
 import { useConfirmAction } from "../../confirm-actions";
 import { resetPassword, changeEmail, deleteAccount } from "../../auth";
+import { LOCAL_CACHE_TEXT } from "../../text";
+import { DATABASE_NAME } from "../../db";
+import { deleteDB } from "idb";
 
 export const OverviewSection = ({
   title,
@@ -84,8 +87,22 @@ export const Account = () => {
         <TabPanel className="text-gray-800" selectedClassName="flex-grow">
           <h1 className="text-2xl">Account Overview</h1>
           <p className="text-xs text-gray-700">
-            You are currently logged in as <span className="italic">{user.email}</span>
+            You are currently logged in as <span className="font-bold">{user.email}</span>
           </p>
+          <OverviewSection
+            title="Local Cache"
+            subtitle={LOCAL_CACHE_TEXT}
+            actionText="Clear Local Cache"
+            action={async () => {
+              deleteDB(DATABASE_NAME, {
+                blocked: () => {
+                  window.location.reload();
+                },
+              });
+
+              return ok("Successfully cleared local cache. Reloading...");
+            }}
+          />
           <OverviewSection
             title="Change Email"
             subtitle="We'll send you a confirmation email after submission to make sure you didn't make a mistake!"

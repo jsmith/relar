@@ -9,10 +9,8 @@ import { useDefinedUser } from "../../auth";
 import { useModal } from "react-modal-hook";
 import { Feedback } from "../../sections/Feedback";
 import firebase from "firebase/app";
-import { deleteDB } from "idb";
-import { DATABASE_NAME } from "../../db";
 
-const ITEMS = ["Account" as const, "Clear Cache" as const, "Feedback" as const, "Log Out" as const];
+const ITEMS = ["Settings" as const, "Feedback" as const, "Log Out" as const];
 
 export interface AccountDropdownProps {
   className?: string;
@@ -29,12 +27,12 @@ export const AccountDropdown = ({ className }: AccountDropdownProps) => {
     selectedItem: null,
     onSelectedItemChange: (j) => {
       switch (j.selectedItem) {
-        case "Account":
+        case "Settings":
           goTo(routes.account);
           break;
-        case "Clear Cache":
-          deleteDB(DATABASE_NAME, { blocked: () => window.location.reload() });
-          break;
+        // case "Clear Cache":
+        // deleteDB(DATABASE_NAME, { blocked: () => window.location.reload() });
+        // break;
         case "Log Out":
           firebase.analytics().logEvent("logout");
           firebase.auth().signOut();
@@ -61,6 +59,7 @@ export const AccountDropdown = ({ className }: AccountDropdownProps) => {
         className={classNames(
           "absolute right-0 min-w-full bg-gray-800 rounded text-gray-300 divide-gray-400 divide-y mt-1",
           "focus:outline-none border border-transparent focus:border-gray-200",
+          isOpen ? "block" : "hidden",
         )}
       >
         {isOpen &&
