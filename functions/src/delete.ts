@@ -1,6 +1,6 @@
 import * as f from "firebase-functions";
-import { deleteAllUserData, deleteAlbumIfSingleSong, deleteArtistSingleSong } from "./utils";
-import { adminDb, adminStorage } from "./shared/node/utils";
+import { deleteAlbumIfSingleSong, deleteArtistSingleSong } from "./utils";
+import { adminDb, adminStorage, deleteAllUserData } from "./shared/node/utils";
 import { Sentry, setSentryUser, wrapAndReport } from "./sentry";
 import { admin } from "./admin";
 import { Playlist, Song, SongType, UserData } from "./shared/universal/types";

@@ -5,18 +5,20 @@ import { useRouter } from "@graywolfai/react-tiniest-router";
 import { routes } from "../routes";
 import { useAlbumSongs } from "../queries/album";
 import { useQueue } from "../queue";
+import { useAlbumAttributes } from "../utils";
 
 export const AlbumCard = ({ album, className }: { album: Album; className?: string }) => {
   const { setQueue } = useQueue();
   const { goTo } = useRouter();
   const songs = useAlbumSongs(album.id);
+  const { name, artist } = useAlbumAttributes(album);
 
   return (
     <ThumbnailCard
       type="album"
       objects={album}
-      title={album.album ?? ""}
-      subtitle={album.albumArtist}
+      title={name}
+      subtitle={artist}
       onClick={() => goTo(routes.album, { albumId: album.id })}
       className={className}
       play={() =>

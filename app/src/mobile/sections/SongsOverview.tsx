@@ -11,9 +11,10 @@ import { Collage, CollageProps } from "../../components/Collage";
 import { SetQueueSource, SongInfo, useQueue, checkSourcesEqual } from "../../queue";
 import { Modals } from "@capacitor/core";
 import { Audio } from "@jsmith21/svg-loaders-react";
+import Skeleton from "react-loading-skeleton";
 
 export interface SongsOverviewProps {
-  title: string;
+  title: string | undefined;
   subTitle?: string;
   infoPoints?: string[];
   onDelete?: () => Promise<void>;
@@ -128,7 +129,7 @@ export const SongsOverview = ({
           )}
         </button>
       </div>
-      <div className="font-bold text-lg mx-3 mt-2">{title}</div>
+      <div className="font-bold text-lg mx-3 mt-2">{title || <Skeleton width={80} />}</div>
       <div className="mx-3 mt-1 flex items-center">
         <div>
           <div className="text-xs">{subTitle}</div>

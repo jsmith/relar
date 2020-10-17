@@ -10,7 +10,7 @@ import { useModal } from "react-modal-hook";
 import { Feedback } from "../../sections/Feedback";
 import firebase from "firebase/app";
 
-const ITEMS = ["Settings" as const, "Feedback" as const, "Log Out" as const];
+const ITEMS = ["Settings" as const, "Feedback" as const, "Beta Guide" as const, "Log Out" as const];
 
 export interface AccountDropdownProps {
   className?: string;
@@ -30,9 +30,9 @@ export const AccountDropdown = ({ className }: AccountDropdownProps) => {
         case "Settings":
           goTo(routes.account);
           break;
-        // case "Clear Cache":
-        // deleteDB(DATABASE_NAME, { blocked: () => window.location.reload() });
-        // break;
+        case "Beta Guide":
+          goTo(routes["beta-guide"]);
+          break;
         case "Log Out":
           firebase.analytics().logEvent("logout");
           firebase.auth().signOut();

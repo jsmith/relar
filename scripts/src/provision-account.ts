@@ -1,5 +1,5 @@
 import * as uuid from "uuid";
-import { BetaSignup } from "./shared/types";
+import { BetaSignup } from "./shared/universal/types";
 import * as sgMail from "@sendgrid/mail";
 import { env } from "./env";
 import { argv, admin } from "./admin";
@@ -19,13 +19,14 @@ const main = async () => {
   const email = argv[2];
   const ref = firestore.doc(`beta_signups/${email}`);
   const doc = await ref.get();
-  if (!doc.exists) {
+  const data = doc.data() as BetaSignup | undefined;
+  if (!data) {
     console.log(`"${email}" is not on the beta list`);
     return;
   }
 
-  const betaSignup: BetaSignup = { email, token };
-  await ref.set(betaSignup);
+  const betaSignup: Partial<BetaSignup> = { token };
+  await ref.update(betaSignup);
 
   const inviteUrl = `https://relar.app/invite/${token}`;
 
@@ -33,7 +34,15 @@ const main = async () => {
     from: "contact@relar.app",
     to: email,
     subject: "RELAR Beta Invite",
-    text: `Your RELAR invite is here! Head over to ${inviteUrl} to signup :) PS, keep this link secret!`,
+    text: `
+Hey ${data.firstName},
+
+Your RELAR invite is here! Head over to ${inviteUrl} to signup :) Before getting started, make sure to check out the beta guide at https://relar.app/beta-guide. Also, feel free to join the Relar discord server at https://discord.gg/A83FHss :)
+
+- Jacob
+
+PS, keep your invite link secret!
+`.trim(),
   });
 
   // const result = await auth.getUserByEmail("jsmith@hey.com");

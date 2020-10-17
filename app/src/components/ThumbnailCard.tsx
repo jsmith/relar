@@ -65,7 +65,7 @@ export const ThumbnailCard = ({
             }}
             className="bg-purple-500 text-white rounded-full p-1 hover:scale-110 transform"
           >
-            <MdPlayArrow className={classNames("w-8 h-8")} />
+            <MdPlayArrow className={classNames("w-10 h-10")} />
           </button>
         </div>
       )}
