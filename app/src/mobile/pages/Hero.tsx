@@ -15,7 +15,7 @@ export const Hero = () => {
         </header>
       </div>
       <div className="pb-12 font-bold text-xl md:text-2xl">
-        <div className="font-bold text-xl">All your songs.</div>
+        <div className="font-bold text-xl">Your music collection.</div>
         <div className="font-bold text-xl">Stream from anywhere.</div>
       </div>
       <Link

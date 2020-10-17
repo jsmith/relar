@@ -137,10 +137,11 @@ export const SongsOverview = ({
 
         <div className="flex-grow" />
 
-        <button className="rounded-full border text-gray-700 border-gray-700">
-          <HiDownload className="w-5 h-5" style={{ padding: "0.15rem" }} />
-          {/* <HiCheck className="w-5 h-5" style={{ padding: "0.15rem" }} /> */}
-        </button>
+        {/* FIXME add support for offline */}
+        {/* <button className="rounded-full border text-gray-700 border-gray-700">
+          <HiDownload className="w-5 h-5" style={{ padding: "0.15rem" }} /> */}
+        {/* <HiCheck className="w-5 h-5" style={{ padding: "0.15rem" }} /> */}
+        {/* </button> */}
 
         <button
           className="p-1"
