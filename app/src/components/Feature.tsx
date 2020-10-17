@@ -31,7 +31,7 @@ export const Feature = ({
         <Icon className="sm:w-16 sm:h-16 w-10 h-10" />
       </div>
       <div className="flex-grow sm:text-left text-center mt-6 sm:mt-0">
-        <h2 className="text-gray-800 text-lg title-font font-medium mb-2">{title}</h2>
+        <h2 className="text-gray-800 text-lg title-font font-bold mb-2">{title}</h2>
         <p className="leading-relaxed text-gray-600 text-sm">{text}</p>
         {/* <a className="mt-3 text-indigo-500 inline-flex items-center">Learn More →</a> */}
       </div>
