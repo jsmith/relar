@@ -1,6 +1,6 @@
 import React from "react";
-import { GiSwordSpin } from "react-icons/gi";
 import { Link } from "../components/Link";
+import { LogoIcon } from "../components/LogoIcon";
 import { routes } from "../routes";
 
 export const Footer = () => {
@@ -8,7 +8,7 @@ export const Footer = () => {
     <footer className="text-gray-600 bg-gray-300">
       <div className="container px-5 py-6 mx-auto flex items-center sm:flex-row flex-col">
         <div className="flex items-center space-x-4">
-          <GiSwordSpin className="w-6 h-6" />
+          <LogoIcon className="w-6 h-6" />
           <p className="text-sm">
             © 2020 RELAR —
             <a

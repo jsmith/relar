@@ -1,6 +1,6 @@
 import React from "react";
-import { GiSwordSpin } from "react-icons/gi";
 import classNames from "classnames";
+import { LogoNText } from "./LogoNText";
 
 export interface CardPageProps {
   children?: React.ReactNode;
@@ -10,7 +10,7 @@ export interface CardPageProps {
 
 export const CardPage = ({ children, footer, cardClassName }: CardPageProps) => {
   return (
-    <div className="flex flex-col items-center justify-center text-gray-700 bg-white w-full flex-grow">
+    <div className="flex flex-col items-center justify-center text-gray-700 bg-white md:bg-transparent w-full flex-grow">
       {/* CARD */}
       <div
         className={classNames(
@@ -18,10 +18,7 @@ export const CardPage = ({ children, footer, cardClassName }: CardPageProps) => 
           cardClassName,
         )}
       >
-        <header className="flex items-center justify-center space-x-4 mt-6">
-          <h1 className="text-5xl">RELAR</h1>
-          <GiSwordSpin className="w-10 h-10" />
-        </header>
+        <LogoNText logoClassName="w-10 h-10" textClassName="text-5xl" className="space-x-3 mt-6" />
         {children}
 
         {footer && <div className="h-4"></div>}

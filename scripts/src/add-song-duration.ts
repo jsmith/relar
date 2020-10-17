@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import { argv, admin } from "./admin";
-import { adminStorage, adminDb } from "./shared/admin-utils";
+import { adminStorage, adminDb } from "./shared/node/utils";
 import { getMp3Duration } from "../../functions/src/get-mp3-duration";
 
 const main = async () => {

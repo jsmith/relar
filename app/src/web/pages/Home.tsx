@@ -41,18 +41,20 @@ export const Home = () => {
 
   return (
     <div className="space-y-5 w-full">
-      <HomeTopic
-        title="Recently Played"
-        subTitle="Your recently played songs will appear here."
-        route={routes.generated}
-        params={{ generatedType: "recently-played" }}
-        wrapperClassName="px-5"
-        textClassName="px-5"
-      >
-        {recentlyPlayed.slice(0, 10).map((song, i) => (
-          <SongCard key={song.id} song={song} generatedType="recently-played" index={i} />
-        ))}
-      </HomeTopic>
+      {recentlyPlayed.length > 0 && (
+        <HomeTopic
+          title="Recently Played"
+          subTitle="Your recently played songs will appear here."
+          route={routes.generated}
+          params={{ generatedType: "recently-played" }}
+          wrapperClassName="px-5"
+          textClassName="px-5"
+        >
+          {recentlyPlayed.slice(0, 10).map((song, i) => (
+            <SongCard key={song.id} song={song} generatedType="recently-played" index={i} />
+          ))}
+        </HomeTopic>
+      )}
 
       <HomeTopic
         title="Recently Added"

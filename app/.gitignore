@@ -11,5 +11,6 @@ capacitor.config.json
 
 dist
 build
+src/tailwind.css
 
 google-api-key.json

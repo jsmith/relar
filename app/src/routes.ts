@@ -1,6 +1,7 @@
 import React from "react";
 import { RouteType } from "@graywolfai/react-tiniest-router";
 import { isMobile } from "./utils";
+const BetaGuide = React.lazy(() => import("./pages/BetaGuide"));
 const Login = React.lazy(() => import("./pages/Login"));
 const Settings = React.lazy(() => import("./mobile/pages/Settings"));
 const Search = React.lazy(() => import("./pages/Search"));
@@ -262,6 +263,18 @@ export const routes = createRoutes({
     title: "Playlist",
     showBack: true,
     showTabs: true,
+  },
+  "beta-guide": {
+    id: "beta-guide",
+    path: "/beta-guide",
+    component: BetaGuide,
+    protected: false,
+    sidebar: false,
+    className: "",
+    mobileClassName: "",
+    title: "Beta Guide",
+    showBack: true,
+    showTabs: false,
   },
   generated: {
     id: "generated",

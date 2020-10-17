@@ -12,9 +12,18 @@ import {
   Array,
 } from "runtypes";
 
+// FIXME remove createdAt for each model since firestore automatically stores the createdAt and updatedAt times
+
 export const Timestamp = Unknown.withGuard((x): x is firebase.firestore.Timestamp => true);
 
+export const BetaDeviceType = Literal("ios").Or(Literal("android")).Or(Literal("none"));
+
+export type BetaDevice = Static<typeof BetaDeviceType>;
+
 export const UserDataType = Record({
+  firstName: String,
+  /** What device the user choose */
+  device: BetaDeviceType,
   songCount: Number.Or(Undefined),
 });
 
@@ -161,10 +170,6 @@ export const AlbumType = Record({
 
 export type Album = Static<typeof AlbumType>;
 
-export const BetaDeviceType = Literal("ios").Or(Literal("android")).Or(Literal("none"));
-
-export type BetaDevice = Static<typeof BetaDeviceType>;
-
 export const BetaSignupType = Record({
   email: String,
   firstName: String,
@@ -281,7 +286,7 @@ export type BetaAPI = {
         password: string;
       };
       response:
-        | Success
+        | (Success & { uid: string })
         | KnownError<"invalid-token" | "invalid-password" | "already-have-account">
         | UnknownError;
     };
