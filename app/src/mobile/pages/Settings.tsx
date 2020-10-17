@@ -18,7 +18,7 @@ export const Settings = () => {
   const user = useDefinedUser();
 
   return (
-    <div className="mx-5 w-full py-5 flex flex-col space-y-3 items-baseline">
+    <div className="mx-5 w-full pt-5 flex flex-col space-y-3 items-baseline">
       <div className="text-sm">
         {`Signed in as `} <span className="font-bold">{user.email}</span>
       </div>
@@ -41,7 +41,7 @@ export const Settings = () => {
 
       {import.meta.env.MODE !== "production" && (
         <button
-          className="px-3 py-1 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"
+          className="px-3 py-2 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"
           onClick={() => NativeAudio.clearCache().catch(captureException)}
         >
           {" "}
@@ -51,7 +51,7 @@ export const Settings = () => {
 
       {import.meta.env.MODE !== "production" && (
         <button
-          className="px-3 py-1 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"
+          className="px-3 py-2 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"
           onClick={() => window.location.reload()}
         >
           Refresh
