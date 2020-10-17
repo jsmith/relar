@@ -1,6 +1,6 @@
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import React from "react";
-import { getAlbumName, onConditions, useMySnackbar } from "../../utils";
+import { onConditions, useMySnackbar } from "../../utils";
 import { SongsOverview } from "../sections/SongsOverview";
 import {
   usePlaylist,
@@ -23,7 +23,7 @@ export const PlaylistOverview = () => {
   return (
     <SongsOverview
       songs={songs}
-      title={getAlbumName(playlist?.name)}
+      title={playlist?.name}
       onRename={(name) => {
         onConditions(
           () => rename(name),

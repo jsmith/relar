@@ -4,7 +4,6 @@ import { useRouter } from "@graywolfai/react-tiniest-router";
 import { routes } from "../routes";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { HiOutlineCog } from "react-icons/hi";
-import { GiSwordSpin } from "react-icons/gi";
 import { ButtonTabs } from "./sections/BottomTabs";
 import { ActionSheet } from "./action-sheet";
 import { Plugins, StatusBarStyle } from "@capacitor/core";
@@ -19,6 +18,8 @@ import { tryToGetDownloadUrlOrLog, useThumbnail } from "../queries/thumbnail";
 import { Song } from "../shared/universal/types";
 import { useDefaultStatusBar } from "./status-bar";
 import { Thumbnail } from "../components/Thumbnail";
+import { LogoIcon } from "../components/LogoIcon";
+import { LogoNText } from "../components/LogoNText";
 
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 
@@ -166,9 +167,8 @@ export const App = () => {
             {route.showBack ? (
               <BackButton className="z-10 p-1" />
             ) : (
-              <div className="font-bold">
-                RELAR <GiSwordSpin className="inline-block -mt-1 -ml-1" />
-              </div>
+              // TODO test
+              <LogoNText textClassName="font-bold" logoClassName="" />
             )}
 
             {route.id !== "settings" && (

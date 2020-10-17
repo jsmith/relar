@@ -16,7 +16,7 @@ const faq = [
   ],
   [
     "Are there any limits to the amount of uploaded songs?",
-    "For now, each account can only upload 500 songs. The system has been designed to support 20,000 songs which I eventually hope to support.",
+    "To limit initial costs, each account can only upload 500 songs. The system has been designed to eventually support 20,000 songs per user.",
   ],
   [
     "Are there any limits to the size of each file?",
@@ -27,11 +27,11 @@ const faq = [
     "Yes! These apps are still in very early stage development though and lack basic features like offline support.",
   ],
   [
-    "Is this service comparable to Google Play Music?",
-    "Yes and no. GPM was a great service with thousands of hours of optimization and improvements which this service currently doesn't match.",
+    "Is Relar comparable to Google Play Music (GPM)?",
+    "Yes and no. GPM was a great service with tens of thousands of engineering hours put into optimizations and improvements whereas Relar is still in the very early stages of development.",
   ],
   [
-    'When will this service offer "X"?',
+    'When will Relar offer "X"?',
     "I am currently dedicating my spare time developing this app and will be adding features very frequently.",
   ],
 ];
@@ -49,7 +49,9 @@ export const Hero = () => {
             <span className="text-purple-800 text-xl leading-none">Streamed everywhere.</span>
             <div className="w-24 h-1 bg-purple-600" />
             <div className="text-gray-600 text-sm">
-              Upload your curated audio file collection and stream to all of your devices.
+              Bummed out that Google Play Music is deprecated? Looking to host your mp3 collection
+              online? Relar allows you to upload your curated audio file collection and stream to
+              all of your devices.
             </div>
           </div>
           <div className="flex-grow" />
@@ -61,13 +63,13 @@ export const Hero = () => {
         <div className="mx-auto">
           <Feature
             title="MP3 Support"
-            text="Upload your mp3 collection to our app and then stream them to your devices."
+            text="Upload your mp3 collection to our app using our web uploader."
             icon={HeartBeat}
           />
           <Feature
             reverse
             title="Stream Anywheres"
-            text="Use the web app to stream music to all of your devices."
+            text="Use the web and mobile apps to stream music to all of your devices."
             icon={HiOutlineCloudDownload}
           />
           <Feature

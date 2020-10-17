@@ -4,7 +4,6 @@ import { useRouter } from "@graywolfai/react-tiniest-router";
 import { useUser } from "../auth";
 import { Sidebar } from "../components/Sidebar";
 import { FaMusic } from "react-icons/fa";
-import { GiSwordSpin } from "react-icons/gi";
 import classNames from "classnames";
 import { Player } from "./sections/Player";
 import { MdLibraryMusic, MdSearch, MdAddCircle, MdMusicNote } from "react-icons/md";
@@ -20,7 +19,8 @@ import { QueueAudio } from "../queue";
 import { Queue } from "./sections/Queue";
 import FocusTrap from "focus-trap-react";
 import { useStartupHooks } from "../startup";
-import { useCoolSongs } from "../db";
+import { LogoIcon } from "../components/LogoIcon";
+import { LogoNText } from "../components/LogoNText";
 
 export interface SideBarItem {
   label: string;
@@ -191,10 +191,11 @@ export const App = (_: React.Props<{}>) => {
           route={routes.hero}
           className="flex items-center space-x-2 focus:outline-none border border-transparent focus:border-gray-300 rounded p-1"
           label={
-            <>
-              <h1 className="text-2xl tracking-wider uppercase">Relar</h1>
-              <GiSwordSpin className="w-6 h-6 text-purple-500" />
-            </>
+            <LogoNText
+              className="space-x-2"
+              logoClassName="w-8 h-8 text-purple-500"
+              textClassName="text-2xl tracking-wider"
+            />
           }
         />
         {user && <div className="text-purple-500 text-2xl">|</div>}

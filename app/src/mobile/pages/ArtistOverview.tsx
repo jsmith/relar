@@ -1,6 +1,5 @@
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import React from "react";
-import { getAlbumName } from "../../utils";
 import { SongsOverview } from "../sections/SongsOverview";
 import { useArtist, useArtistSongs } from "../../queries/artist";
 
@@ -15,7 +14,7 @@ export const ArtistOverview = () => {
       type="song"
       songs={songs}
       objects={songs}
-      title={getAlbumName(artist?.name)}
+      title={artist?.name ?? "Unknown Album"}
       source={{ type: "artist", id: artistName, sourceHumanName: artistName }}
     />
   );
