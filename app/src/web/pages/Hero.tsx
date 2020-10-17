@@ -26,6 +26,14 @@ const faq = [
     "Do you actually have iOS and Android apps?",
     "Yes! These apps are still in very early stage development though and lack basic features like offline support.",
   ],
+  [
+    "Is this service comparable to Google Play Music?",
+    "Yes and no. GPM was a great service with thousands of hours of optimization and improvements which this service currently doesn't match.",
+  ],
+  [
+    'When will this service offer "X"?',
+    "I am currently dedicating my spare time developing this app and will be adding features very frequently.",
+  ],
 ];
 
 export const Hero = () => {
