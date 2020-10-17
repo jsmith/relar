@@ -10,7 +10,7 @@ import { admin } from "./admin";
 import { Sentry, wrapAndReport, setSentryUser } from "./sentry";
 import { Result, ok, err } from "neverthrow";
 import * as functions from "firebase-functions";
-import { betaSignups } from "./shared/node/utils";
+import { adminDb, betaSignups } from "./shared/node/utils";
 import { ORIGINS } from "./utils";
 
 sgMail.setApiKey(env.mail.sendgrid_api_key);
@@ -179,17 +179,26 @@ router.post("/create-account", async (req) => {
         };
       }
 
-      await auth.createUser({
+      const user = await auth.createUser({
+        displayName: data.firstName,
         email: data.email,
         password: req.body.password,
         emailVerified: true,
       });
 
+      const userData = adminDb(db, user.uid).doc();
+      transaction.set(userData, {
+        firstName: data.firstName,
+        songCount: 0,
+        device: data.device,
+      });
+
       const betaSignupRef = betaSignups(db).doc(doc.id);
-      await transaction.delete(betaSignupRef);
+      transaction.delete(betaSignupRef);
 
       return {
         type: "success",
+        uid: user.uid,
       };
     },
   );
@@ -210,7 +219,9 @@ export const onBetaSignup = functions.firestore.document("beta_signups/{email}")
       text: `
 Hey ${firstName},
 
-You have successfully signed up for RELAR beta! We hope to be rolling things out by the end of 2020. Once everything is ready, we will contact you with with a signup link :)
+You have successfully signed up for RELAR beta! I hope to be rolling things out in the coming weeks. Once everything is ready, I'll contact you with with a signup link :)
+
+- Jacob
 `.trim(),
     });
 

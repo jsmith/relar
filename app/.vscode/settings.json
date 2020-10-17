@@ -18,7 +18,8 @@
     "signup",
     "somewheres",
     "tabbable",
-    "unmount"
+    "unmount",
+    "uploader"
   ],
   "search.exclude": {
     ".cache/": true,

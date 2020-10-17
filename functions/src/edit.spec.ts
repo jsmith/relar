@@ -1,6 +1,5 @@
 import supertest from "supertest";
-import { deleteAllUserData } from "./utils";
-import { adminDb } from "./shared/node/utils";
+import { adminDb, deleteAllUserData } from "./shared/node/utils";
 import { testFunctions } from "./configure-tests";
 import {
   noOp,
@@ -52,7 +51,6 @@ const createBody = (
 };
 
 test.before(async () => {
-  // await deleteCollection(await firestore.collection("beta_signups"));
   const result = await createTestUser();
   idToken = result.token;
 });

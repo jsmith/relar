@@ -1,3 +1,20 @@
+/* This is for tbe BetaGuide component */
+.beta-guide li {
+  position: relative;
+  padding-left: 1.6666667em;
+}
+
+.beta-guide li:before {
+  content: "";
+  position: absolute;
+  background-color: #cbd5e0;
+  border-radius: 50%;
+  width: 0.375em;
+  height: 0.375em;
+  top: 0.6875em;
+  left: 0.25em;
+}
+
 /* This needs to be CSS sadly */
 /* See https://blog.phonegap.com/displaying-a-phonegap-app-correctly-on-the-iphone-x-c4a85664c493 */
 /* And https://developer.mozilla.org/en-US/docs/Web/CSS/env */

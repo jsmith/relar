@@ -3,7 +3,9 @@ import * as serviceAccount from "../../serviceAccountKey.toga-4e3f5.json";
 import * as serviceAccountStaging from "../../serviceAccountKey.relar-staging.json";
 
 const argv = process.argv.slice(0);
+let environment: "staging" | "production" = "staging";
 if (argv.includes("--prod")) {
+  environment = "production";
   argv.splice(2, 1);
   argv.splice(argv.indexOf("--prod"), 1);
 
@@ -24,4 +26,4 @@ if (argv.includes("--prod")) {
   });
 }
 
-export { admin, argv };
+export { admin, argv, environment };

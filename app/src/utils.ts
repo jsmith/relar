@@ -10,9 +10,10 @@ import {
 } from "react";
 import * as Sentry from "@sentry/browser";
 import tiny from "tinycolor2";
-import { ALBUM_ID_DIVIDER } from "./shared/universal/utils";
+import { ALBUM_ID_DIVIDER, getAlbumAttributes } from "./shared/universal/utils";
 import { useSnackbar } from "react-simple-snackbar";
-import { FilesystemDirectory, Plugins, StatusBarStyle } from "@capacitor/core";
+import { Plugins } from "@capacitor/core";
+import { Album } from "./shared/universal/types";
 
 const { Storage } = Plugins;
 
@@ -527,23 +528,6 @@ export function useWindowSize() {
   return windowSize;
 }
 
-/** Get the display album artist name */
-export const getAlbumArtistName = (
-  albumArtist: string | undefined,
-  albumId: string | undefined,
-) => {
-  return albumArtist
-    ? albumArtist
-    : albumId?.split(ALBUM_ID_DIVIDER)[0]
-    ? albumId.split(ALBUM_ID_DIVIDER)[0]
-    : "Unknown Artist";
-};
-
-/** Get the display album name */
-export const getAlbumName = (name: string | undefined) => {
-  return name ? name : "Unknown Album";
-};
-
 let defaultErrorHandlers: Array<(error: unknown) => void> = [];
 const onConditionsFunction = <T>(
   f: () => Promise<T>,
@@ -632,4 +616,14 @@ export const useMySnackbar = () => {
     mobile ? {} : { position: "top-right", style: { transform: "translateY(60px)" } },
   );
   return open;
+};
+
+export const useAlbumAttributes = (album?: Album) => {
+  return useMemo(() => {
+    const { albumArtist } = album ? getAlbumAttributes(album.id) : { albumArtist: undefined };
+    return {
+      name: album?.album ? album.album : "Unknown Album",
+      artist: album?.albumArtist ? album.albumArtist : albumArtist ? albumArtist : "Unknown Artist",
+    };
+  }, [album]);
 };

@@ -33,3 +33,11 @@ Add "deleted" to all songs.
 ```
 NODE_PRESERVE_SYMLINKS=1 npx ts-node src/add-deleted.ts <USER_ID>
 ```
+
+## clear-data.ts
+
+Delete all data for a user
+
+```
+NODE_PRESERVE_SYMLINKS=1 npx ts-node src/clear-data.ts <email>
+```

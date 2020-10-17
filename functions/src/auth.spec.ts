@@ -1,6 +1,5 @@
 import supertest from "supertest";
-import { deleteCollection } from "./utils";
-import { betaSignups } from "./shared/node/utils";
+import { adminDb, betaSignups, deleteCollection } from "./shared/node/utils";
 import { testFunctions } from "./configure-tests";
 import { noOp } from "./test-utils";
 import { admin } from "./admin";
@@ -113,7 +112,7 @@ test("prevents a user with an account from signing up", async () => {
     .expect(200, { type: "error", code: "already-have-account" });
 });
 
-test("can create an account", async () => {
+test.only("can create an account", async () => {
   const data: BetaSignup = {
     email: "test@user.com",
     token: "1234",
@@ -123,15 +122,24 @@ test("can create an account", async () => {
   };
   await betaSignups(firestore).doc("test@user.com").set(data);
 
-  await supertest(app)
+  const res = await supertest(app)
     .post("/create-account")
     .send({ password: "123456aA", token: "1234" })
-    .expect(200, { type: "success" });
+    .expect(200);
+
+  const uid: string = res.body.uid;
 
   await betaSignups(firestore)
     .doc("test@user.com")
     .get()
     .then((data) => assert.not(data.exists));
+
+  const userData = await adminDb(firestore, uid).doc().get();
+  assert.equal(userData.data(), {
+    device: "android",
+    firstName: "Tester",
+    songCount: 0,
+  });
 });
 
 test("disallows two short passwords", async () => {

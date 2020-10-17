@@ -1,5 +1,4 @@
-import { deleteAllUserData } from "./utils";
-import { adminDb } from "./shared/node/utils";
+import { adminDb, deleteAllUserData } from "./shared/node/utils";
 import { testFunctions } from "./configure-tests";
 import {
   createAndUploadTestSong,
@@ -28,7 +27,7 @@ test("deletes album & artist, decrements song count, and deletes playlist items"
   const before = await createAndUploadTestSong("test1", songTwo);
   const after = await createAndUploadTestSong("test2", { ...songTwo, deleted: true });
   const playlist = await createAndUploadPlaylist("playlist name", [after]);
-  await db.doc().set({ songCount: 1 });
+  await db.doc().set({ songCount: 1, firstName: "", device: "android" });
   await db.album(songTwo.albumId).create(songTwoAlbum);
   await db.artist(songTwo.artist).create(songTwoArtist);
   await wrapped(
