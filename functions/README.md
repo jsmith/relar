@@ -1,6 +1,6 @@
 # Functions
 
-The RELAR cloud functions.
+The Relar cloud functions.
 
 ## Testing Setup
 

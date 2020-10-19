@@ -22,13 +22,13 @@ export const LI = ({ children }: { children: React.ReactNode }) => (
 
 export const BetaGuide = () => {
   return (
-    <div className="px-8 mx-auto max-w-3xl text-gray-800 w-full py-5 beta-guide">
+    <div className="px-8 mx-auto max-w-3xl text-gray-800 w-full py-5 beta-guide overflow-y-auto min-h-0">
       <H1 l="Beta Guide" />
       <P>
         Thanks again for signing up to test the app through the beta program. This platform was
-        designed from the group up to offer a scalable solution to hosting and streaming audio
-        files. Although there are still numerous limitations, getting your feedback (good and back)
-        now is essential for future development.
+        designed from the group up to provide a scalable solution to hosting and streaming audio
+        files. Although there are still numerous limitations with the current platform, getting your
+        feedback now is essential for future development.
       </P>
 
       <H2 l="Your Role" />
@@ -74,6 +74,7 @@ export const BetaGuide = () => {
         <LI>You cannot edit album metadata</LI>
         <LI>You cannot upload new album covers to songs after being uploaded</LI>
         <LI>The mobile app does not have offline support</LI>
+        <LI>There is not duplicate song detection</LI>
       </ul>
 
       <P className="pt-3">

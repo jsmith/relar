@@ -9,7 +9,6 @@ capacitor.config.json
 **/fastlane/screenshots
 **/fastlane/test_output
 
-dist
 build
 src/tailwind.css
 

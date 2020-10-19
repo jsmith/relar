@@ -87,6 +87,10 @@ const getUserData = () => {
     .then((o) => o.data());
 };
 
+const initUserData = () => {
+  return adminDb(db, "testUser").doc().set({ songCount: undefined, firstName: "", device: "none" });
+};
+
 test("can parse the tags of an mp3 file", async () => {
   const result = await parseID3Tags({
     tmpFilePath: path.resolve(__dirname, "..", "assets", "file_with_artist_album.mp3"),
@@ -111,6 +115,7 @@ test("can hash image", async () => {
 });
 
 test("works when uploading a valid song with just a title", async () => {
+  initUserData();
   const wrapped = testFunctions.wrap(createSong);
   const { objectMetadata, songId } = await upload("file_just_title.mp3");
   await wrapped(objectMetadata);
@@ -118,7 +123,7 @@ test("works when uploading a valid song with just a title", async () => {
   const song = await getSong(songId);
   const user = await getUserData();
 
-  assert.equal(user, { songCount: 1 });
+  assert.equal(user.songCount, 1);
   assert.equal(song && typeof song.createdAt.toMillis(), "number");
   assert.equal(
     song,
@@ -145,6 +150,7 @@ test.after.each(async () => {
 });
 
 test("works when uploading a valid song with a title, artist and album", async () => {
+  initUserData();
   const wrapped = testFunctions.wrap(createSong);
   const { objectMetadata, songId } = await upload("file_with_artist_album.mp3");
   await wrapped(objectMetadata);
@@ -152,7 +158,7 @@ test("works when uploading a valid song with a title, artist and album", async (
   const song = (await getSong(songId)) as Song;
   const user = await getUserData();
 
-  assert.equal(user, { songCount: 1 });
+  assert.equal(user.songCount, 1);
 
   const testSong = createTestSong({
     id: songId,
@@ -196,6 +202,7 @@ test("works when uploading a valid song with a title, artist and album", async (
 });
 
 test("can upload two songs with the same artist/album", async () => {
+  initUserData();
   const wrapped = testFunctions.wrap(createSong);
   const { objectMetadata: om1, songId: s1 } = await upload("file_with_artist_album.mp3");
   await wrapped(om1);
@@ -221,6 +228,7 @@ test("can upload two songs with the same artist/album", async () => {
 });
 
 test("can upload artwork", async () => {
+  initUserData();
   const wrapped = testFunctions.wrap(createSong);
   const { objectMetadata, songId } = await upload("file_with_artwork.mp3");
   await wrapped(objectMetadata);

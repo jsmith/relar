@@ -1,19 +1,19 @@
 import * as admin from "firebase-admin";
-import * as serviceAccount from "../../serviceAccountKey.toga-4e3f5.json";
+import * as serviceAccount from "../../serviceAccountKey.relar-production.json";
 import * as serviceAccountStaging from "../../serviceAccountKey.relar-staging.json";
 
 const argv = process.argv.slice(0);
 let environment: "staging" | "production" = "staging";
-if (argv.includes("--prod")) {
+const index = argv.indexOf("--prod");
+if (index !== -1) {
   environment = "production";
-  argv.splice(2, 1);
-  argv.splice(argv.indexOf("--prod"), 1);
+  argv.splice(index, 1);
 
   console.log("Init prod");
   admin.initializeApp({
-    databaseURL: "https://toga-4e3f5.firebaseio.com",
-    storageBucket: "toga-4e3f5.appspot.com",
-    projectId: "toga-4e3f5",
+    databaseURL: "https://relar-production.firebaseio.com",
+    storageBucket: "relar-production.appspot.com",
+    projectId: "relar-production",
     credential: admin.credential.cert(serviceAccount as any),
   });
 } else {

@@ -1,7 +1,7 @@
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import React from "react";
 import { ListContainer, ListContainerRowProps } from "../components/ListContainer";
-import { routes } from "../../routes";
+import { goToAlbum } from "../../routes";
 import { MusicListItem } from "../sections/MusicListItem";
 import { Album } from "../../shared/universal/types";
 import { useCoolAlbums } from "../../db";
@@ -22,7 +22,7 @@ const AlbumRow = ({
       absoluteIndex={absoluteIndex}
       object={album}
       type="album"
-      onClick={() => goTo(routes.album, { albumId: album.id })}
+      onClick={() => goToAlbum(goTo, album.id)}
       mode={mode}
     />
   );
