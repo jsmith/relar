@@ -22,7 +22,7 @@ export const LI = ({ children }: { children: React.ReactNode }) => (
 
 export const BetaGuide = () => {
   return (
-    <div className="px-8 mx-auto max-w-3xl text-gray-800 w-full py-5 beta-guide">
+    <div className="px-8 mx-auto max-w-3xl text-gray-800 w-full py-5 beta-guide overflow-y-auto min-h-0">
       <H1 l="Beta Guide" />
       <P>
         Thanks again for signing up to test the app through the beta program. This platform was

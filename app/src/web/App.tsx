@@ -186,15 +186,15 @@ export const App = (_: React.Props<{}>) => {
   return (
     <div className="h-screen text-white flex flex-col" style={{ backgroundColor: bgApp }}>
       <SkipNavLink className="text-gray-800" />
-      <div className="flex bg-gray-900 items-center h-16 px-5 flex-shrink-0 space-x-2">
+      <div className="flex bg-gray-900 items-center h-16 px-3 sm:px-5 flex-shrink-0 space-x-2">
         <Link
           route={routes.hero}
-          className="flex items-center space-x-2 focus:outline-none border border-transparent focus:border-gray-300 rounded p-1"
+          className="flex items-center space-x-2 focus:outline-none border border-transparent focus:border-gray-300 rounded"
           label={
             <LogoNText
               className="space-x-2"
               logoClassName="w-8 h-8 text-purple-500"
-              textClassName="text-2xl tracking-wider"
+              textClassName="sm:text-2xl text-xl tracking-wider"
             />
           }
         />
@@ -215,13 +215,17 @@ export const App = (_: React.Props<{}>) => {
         {user ? (
           <AccountDropdown className="z-10" />
         ) : (
-          <div className="flex space-x-2 items-center">
+          <div className="flex space-x-2 items-center sm:text-base text-sm">
             <Link
-              className={button({ color: "purple", invert: true })}
+              className={button({ color: "purple", padding: "px-2 py-2 sm:px-4", invert: true })}
               label="Login"
               route={routes.login}
             />
-            <Link className={button({ color: "purple" })} label="Sign Up" route={routes.signup} />
+            <Link
+              className={button({ color: "purple", padding: "px-2 py-2 sm:px-4" })}
+              label="Sign Up"
+              route={routes.signup}
+            />
           </div>
         )}
       </div>
