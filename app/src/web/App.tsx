@@ -215,7 +215,7 @@ export const App = (_: React.Props<{}>) => {
         {user ? (
           <AccountDropdown className="z-10" />
         ) : (
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 items-center">
             <Link
               className={button({ color: "purple", invert: true })}
               label="Login"

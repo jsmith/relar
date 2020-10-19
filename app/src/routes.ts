@@ -1,7 +1,8 @@
 import React from "react";
 import { RouterContextType, RouteType, useRouter } from "@graywolfai/react-tiniest-router";
-import { isMobile } from "./utils";
+import { IS_WEB_VIEW } from "./utils";
 import { ALBUM_ID_DIVIDER } from "./shared/universal/utils";
+console.log(IS_WEB_VIEW);
 const BetaGuide = React.lazy(() => import("./pages/BetaGuide"));
 const Login = React.lazy(() => import("./pages/Login"));
 const Settings = React.lazy(() => import("./mobile/pages/Settings"));
@@ -9,35 +10,35 @@ const Search = React.lazy(() => import("./pages/Search"));
 const Signup = React.lazy(() => import("./pages/Signup"));
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
 const Home = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/Home") : import("./web/pages/Home"),
+  IS_WEB_VIEW ? import("./mobile/pages/Home") : import("./web/pages/Home"),
 );
 const Songs = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/Songs") : import("./web/pages/Songs"),
+  IS_WEB_VIEW ? import("./mobile/pages/Songs") : import("./web/pages/Songs"),
 );
 const Artists = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/Artists") : import("./web/pages/Artists"),
+  IS_WEB_VIEW ? import("./mobile/pages/Artists") : import("./web/pages/Artists"),
 );
 const Albums = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/Albums") : import("./web/pages/Albums"),
+  IS_WEB_VIEW ? import("./mobile/pages/Albums") : import("./web/pages/Albums"),
 );
 const Playlists = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/Playlists") : import("./web/pages/Playlists"),
+  IS_WEB_VIEW ? import("./mobile/pages/Playlists") : import("./web/pages/Playlists"),
 );
 const AlbumOverview = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/AlbumOverview") : import("./web/pages/AlbumOverview"),
+  IS_WEB_VIEW ? import("./mobile/pages/AlbumOverview") : import("./web/pages/AlbumOverview"),
 );
 const ArtistOverview = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/ArtistOverview") : import("./web/pages/ArtistOverview"),
+  IS_WEB_VIEW ? import("./mobile/pages/ArtistOverview") : import("./web/pages/ArtistOverview"),
 );
 const Generated = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/Generated") : import("./web/pages/Generated"),
+  IS_WEB_VIEW ? import("./mobile/pages/Generated") : import("./web/pages/Generated"),
 );
 const PlaylistOverview = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/PlaylistOverview") : import("./web/pages/PlaylistOverview"),
+  IS_WEB_VIEW ? import("./mobile/pages/PlaylistOverview") : import("./web/pages/PlaylistOverview"),
 );
 const ForgotPasswordSuccess = React.lazy(() => import("./pages/ForgotPasswordSuccess"));
 const Hero = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/Hero") : import("./web/pages/Hero"),
+  IS_WEB_VIEW ? import("./mobile/pages/Hero") : import("./web/pages/Hero"),
 );
 const Account = React.lazy(() => import("./web/pages/Account"));
 const Library = React.lazy(() => import("./mobile/pages/Library"));

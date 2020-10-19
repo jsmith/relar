@@ -26,9 +26,9 @@ export const BetaGuide = () => {
       <H1 l="Beta Guide" />
       <P>
         Thanks again for signing up to test the app through the beta program. This platform was
-        designed from the group up to offer a scalable solution to hosting and streaming audio
-        files. Although there are still numerous limitations, getting your feedback (good and back)
-        now is essential for future development.
+        designed from the group up to provide a scalable solution to hosting and streaming audio
+        files. Although there are still numerous limitations with the current platform, getting your
+        feedback now is essential for future development.
       </P>
 
       <H2 l="Your Role" />

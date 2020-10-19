@@ -25,6 +25,11 @@ const main = async () => {
     return;
   }
 
+  if (data.token) {
+    console.log(`"${email}" already has a token`);
+    return;
+  }
+
   const betaSignup: Partial<BetaSignup> = { token };
   await ref.update(betaSignup);
 
