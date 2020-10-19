@@ -1,45 +1,6 @@
 import * as admin from "firebase-admin";
-import { GetFilesResponse } from "@google-cloud/storage";
 import { adminDb } from "./shared/node/utils";
 import { Album, Artist } from "./shared/universal/types";
-
-export const deleteCollection = async (
-  collection: FirebaseFirestore.CollectionReference<unknown>,
-) => {
-  const docs = await collection.get().then((r) => r.docs.map((doc) => doc.ref));
-  await Promise.all(docs.map((doc) => doc.delete()));
-};
-
-export const deleteAllUserData = async (
-  db: FirebaseFirestore.Firestore,
-  storage: admin.storage.Storage | undefined,
-  userId: string,
-) => {
-  await adminDb(db, userId).doc().delete();
-  await deleteCollection(adminDb(db, userId).songs());
-  await deleteCollection(adminDb(db, userId).artists());
-  await deleteCollection(adminDb(db, userId).albums());
-  await deleteCollection(adminDb(db, userId).playlists());
-
-  if (!storage) {
-    return;
-  }
-
-  await storage
-    .bucket()
-    .getFiles({
-      prefix: `${userId}/`,
-    })
-    .then(deleteAllFiles);
-};
-
-export const deleteAllFiles = async ([files]: GetFilesResponse) => {
-  const promises = files.map((file) => {
-    return file.delete();
-  });
-
-  await Promise.all(promises);
-};
 
 export const fromEntries = <T extends string, V>(iterable: Array<[T, V]>): Record<T, V> => {
   return [...iterable].reduce((obj, [key, val]) => {
@@ -110,6 +71,7 @@ export const ORIGINS = [
   "http://localhost:3000",
   "http://0.0.0.0:3000",
   "https://toga-4e3f5.web.app",
+  "https://relar-production.web.app",
   "https://relar.app",
   "https://staging.relar.app",
 ];

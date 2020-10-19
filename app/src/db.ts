@@ -145,7 +145,7 @@ export const getMaxUpdatedAt = (songs: Model[]): number => {
       // Turn into milliseconds
       // I've found that only the 3 most significant values are defined and everything else is
       // zeros (ie. XXX 000 000)
-      song.updatedAt.seconds * 1000 + Math.round(song.updatedAt.nanoseconds / 1_000_000),
+      song.updatedAt.seconds * 1000 + Math.round(song.updatedAt.nanoseconds / 1000000),
     );
   });
 

@@ -10,7 +10,15 @@ const classes = {
 
 export const bgApp = "#f2f2f3";
 
-export const button = ({ color = "purple", invert }: { color?: "purple"; invert?: boolean }) => {
+export const button = ({
+  color = "purple",
+  padding = "px-4 py-2",
+  invert,
+}: {
+  color?: "purple";
+  padding?: string;
+  invert?: boolean;
+}) => {
   const className = invert
     ? classNames("bg-transparent", classes[color].invert)
     : classNames(
@@ -19,8 +27,9 @@ export const button = ({ color = "purple", invert }: { color?: "purple"; invert?
       );
 
   return classNames(
-    "py-2 px-4 border uppercase font-medium rounded-md",
+    "border uppercase font-medium rounded-md",
     className,
+    padding,
     "transition duration-150 ease-in-out",
   );
 };

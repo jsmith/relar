@@ -10,7 +10,7 @@ import {
 } from "react";
 import * as Sentry from "@sentry/browser";
 import tiny from "tinycolor2";
-import { ALBUM_ID_DIVIDER, getAlbumAttributes } from "./shared/universal/utils";
+import { getAlbumAttributes } from "./shared/universal/utils";
 import { useSnackbar } from "react-simple-snackbar";
 import { Plugins } from "@capacitor/core";
 import { Album } from "./shared/universal/types";
@@ -483,6 +483,20 @@ export const removeElementFromShuffled = <T>(
     mappingTo: newMappingTo,
   };
 };
+
+const rules = [
+  // if it says it's a webview, let's go with that
+  "WebView",
+  // iOS webview will be the same as safari but missing "Safari"
+  "(iPhone|iPod|iPad)(?!.*Safari)",
+  // Android Lollipop and Above: webview will be the same as native but it will contain "wv"
+  // Android KitKat to lollipop webview will put {version}.0.0.0
+  "Android.*(wv|.0.0.0)",
+  // old chrome android webview agent
+  "Linux; U; Android",
+];
+
+export const IS_WEB_VIEW = !!import.meta.env.SNOWPACK_PUBLIC_MOBILE;
 
 /* eslint-disable */
 export const isMobile = () => {

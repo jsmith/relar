@@ -1,9 +1,5 @@
 {
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
-  "cSpell.words": [
-    "RELAR",
-    "Signup",
-    "firestore"
-  ]
+  "cSpell.words": ["Relar", "Signup", "firestore"]
 }

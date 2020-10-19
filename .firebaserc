@@ -1,6 +1,7 @@
 {
   "projects": {
-    "production": "toga-4e3f5",
+    // "production": "toga-4e3f5",
+    "production": "relar-production",
     "testing": "relar-test",
     "staging": "relar-staging"
   }
