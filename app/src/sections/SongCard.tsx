@@ -2,7 +2,7 @@ import React from "react";
 import type { Song } from "../shared/universal/types";
 import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "@graywolfai/react-tiniest-router";
-import { routes } from "../routes";
+import { goToAlbum, routes } from "../routes";
 import { GeneratedType, generatedTypeToName, useQueue } from "../queue";
 import { useIsMobile } from "../utils";
 import { useGeneratedTypeSongs } from "../queries/songs";
@@ -35,8 +35,7 @@ export const SongCard = ({
       type="song"
       title={song.title}
       subtitle={song.artist}
-      onClick={() => (isMobile ? playSong() : goTo(routes.album, { albumId: song.albumId ?? "" }))}
-      // FIXME
+      onClick={() => (isMobile ? playSong() : goToAlbum(goTo, song.albumId))}
       play={playSong}
     />
   );

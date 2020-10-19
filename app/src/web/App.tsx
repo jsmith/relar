@@ -77,7 +77,7 @@ export const App = (_: React.Props<{}>) => {
     routeId,
   ]);
 
-  useDocumentTitle(route?.title ? `${route.title} | RELAR` : "RELAR");
+  useDocumentTitle(route?.title ? `${route.title} | Relar` : "Relar");
 
   useStartupHooks();
 

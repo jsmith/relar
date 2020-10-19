@@ -71,7 +71,8 @@ export const Invite = () => {
       </p>
       {success ? (
         <BlockAlert type="success">
-          Your account has successfully been created :) Have you see our{" "}
+          Your account has been successfully created :) You should now be able to{" "}
+          <Link route={routes.login} label="login" />. Also, have you seen our{" "}
           <Link label="beta guide" route={routes["beta-guide"]} /> yet?
         </BlockAlert>
       ) : (

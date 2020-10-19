@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "../components/Button";
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import { routes } from "../routes";
@@ -9,26 +9,15 @@ import { Link } from "../components/Link";
 import { preventAndCall } from "../utils";
 import { BlockAlert } from "../components/BlockAlert";
 
-const RESET_INSTRUCTIONS =
-  "Enter your email address and we will send you instructions to reset your password.";
-
 export const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string>();
-  const { goTo } = useRouter();
-  const { user } = useUser();
-
-  useEffect(() => {
-    if (user) {
-      goTo(routes.songs);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const [success, setSuccess] = useState(false);
 
   const resetPassword = async () => {
     const result = await sendPasswordResetEmail(email);
     result.match(
-      () => goTo(routes.forgotPasswordSuccess, { email }),
+      () => setSuccess(true),
       ({ message }) => setError(message),
     );
   };
@@ -43,18 +32,30 @@ export const ForgotPassword = () => {
       }
     >
       <h4 className="text-center">Forgot Your Password?</h4>
-      <p className="text-sm text-center">{RESET_INSTRUCTIONS}</p>
-      <form className="space-y-3">
-        <Input
-          value={email}
-          onChange={setEmail}
-          label="Email"
-          type="email"
-          placeholder="john@example.com"
-        />
-        {error && <BlockAlert type="error">{error}</BlockAlert>}
-        <Button label="Continue" className="w-full" onClick={preventAndCall(resetPassword)} />
-      </form>
+      {success ? (
+        <BlockAlert type="success">
+          If your account exists, an email was just sent to{" "}
+          <span className="font-bold">{email}</span>. After resetting your password, you should be
+          able to <Link label="login" route={routes.login} /> :)
+        </BlockAlert>
+      ) : (
+        <>
+          <p className="text-sm text-center">
+            Enter your email address and we will send you instructions to reset your password.
+          </p>
+          <form className="space-y-3">
+            <Input
+              value={email}
+              onChange={setEmail}
+              label="Email"
+              type="email"
+              placeholder="john@example.com"
+            />
+            {error && <BlockAlert type="error">{error}</BlockAlert>}
+            <Button label="Continue" className="w-full" onClick={preventAndCall(resetPassword)} />
+          </form>
+        </>
+      )}
     </CardPage>
   );
 };

@@ -9,16 +9,16 @@ export const TermsAndConditions = () => {
       <div className="prose m-auto py-12">
         <h1>Terms and Conditions</h1>
 
-        <p>Welcome to RELAR!</p>
+        <p>Welcome to Relar!</p>
 
         <p>
-          These terms and conditions outline the rules and regulations for the use of RELAR{`'`}s
+          These terms and conditions outline the rules and regulations for the use of Relar{`'`}s
           Website, located at <a href="https://relar.app">https://relar.app</a>.
         </p>
 
         <p>
           By accessing this website we assume you accept these terms and conditions. Do not continue
-          to use RELAR if you do not agree to take all of the terms and conditions stated on this
+          to use Relar if you do not agree to take all of the terms and conditions stated on this
           page.
         </p>
 
@@ -40,8 +40,8 @@ export const TermsAndConditions = () => {
         <h2>Cookies</h2>
 
         <p>
-          We employ the use of cookies. By accessing RELAR, you agreed to use cookies in agreement
-          with the RELAR{`'`}s Privacy Policy.{" "}
+          We employ the use of cookies. By accessing Relar, you agreed to use cookies in agreement
+          with the Relar{`'`}s Privacy Policy.{" "}
         </p>
 
         <p>
@@ -53,18 +53,18 @@ export const TermsAndConditions = () => {
         <h2>License</h2>
 
         <p>
-          Unless otherwise stated, RELAR and/or its licensors own the intellectual property rights
-          for all material on RELAR. All intellectual property rights are reserved. You may access
-          this from RELAR for your own personal use subjected to restrictions set in these terms and
+          Unless otherwise stated, Relar and/or its licensors own the intellectual property rights
+          for all material on Relar. All intellectual property rights are reserved. You may access
+          this from Relar for your own personal use subjected to restrictions set in these terms and
           conditions.
         </p>
 
         <p>You must not:</p>
         <ul>
-          <li>Republish material from RELAR</li>
-          <li>Sell, rent or sub-license material from RELAR</li>
-          <li>Reproduce, duplicate or copy material from RELAR</li>
-          <li>Redistribute content from RELAR</li>
+          <li>Republish material from Relar</li>
+          <li>Sell, rent or sub-license material from Relar</li>
+          <li>Reproduce, duplicate or copy material from Relar</li>
+          <li>Redistribute content from Relar</li>
         </ul>
 
         <h2>Content Liability</h2>
@@ -126,7 +126,7 @@ export const TermsAndConditions = () => {
 
         <h2>Changes to this Document</h2>
         <p>
-          RELAR has the discretion to update this document at any time. When updates are made, the{" "}
+          Relar has the discretion to update this document at any time. When updates are made, the{" "}
           <a href="#update-date">revision date</a> at the bottom of this page will be updated. By
           using this website you are agreeing to be bound by the current version of these terms of
           service.

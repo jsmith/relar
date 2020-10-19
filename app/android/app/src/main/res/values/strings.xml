@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">RELAR</string>
-    <string name="title_activity_main">RELAR</string>
+    <string name="app_name">Relar</string>
+    <string name="title_activity_main">Relar</string>
     <string name="package_name">app.relar.mobile</string>
     <string name="custom_url_scheme">app.relar.mobile</string>
 </resources>

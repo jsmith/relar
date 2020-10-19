@@ -1,6 +1,7 @@
 import React from "react";
-import { RouteType } from "@graywolfai/react-tiniest-router";
+import { RouterContextType, RouteType, useRouter } from "@graywolfai/react-tiniest-router";
 import { isMobile } from "./utils";
+import { ALBUM_ID_DIVIDER } from "./shared/universal/utils";
 const BetaGuide = React.lazy(() => import("./pages/BetaGuide"));
 const Login = React.lazy(() => import("./pages/Login"));
 const Settings = React.lazy(() => import("./mobile/pages/Settings"));
@@ -194,7 +195,7 @@ export const routes = createRoutes({
   },
   album: {
     id: "album",
-    path: "/library/albums/:albumId",
+    path: "/library/albums/:artist/:album",
     component: AlbumOverview,
     protected: true,
     sidebar: true,
@@ -337,3 +338,22 @@ export const routes = createRoutes({
     mobileClassName: "",
   },
 });
+
+export const goToAlbum = (goTo: RouterContextType["goTo"], albumId: string | undefined) => {
+  goTo(routes.album, getAlbumRouteParams(albumId));
+};
+
+export const getAlbumRouteParams = (albumId: string | undefined) => {
+  const [artist, album] = albumId ? albumId.split(ALBUM_ID_DIVIDER) : ["", ""];
+  return { album, artist };
+};
+
+export const useAlbumIdFromParams = (): string => {
+  const { params } = useRouter();
+  // Since the regex can return undefined if the group is empty, we need to handle this situation
+  const { artist: artistName, album: albumName } = params as {
+    artist: string | undefined;
+    album: string | undefined;
+  };
+  return `${artistName ?? ""}${ALBUM_ID_DIVIDER}${albumName ?? ""}`;
+};

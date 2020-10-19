@@ -74,6 +74,7 @@ export const BetaGuide = () => {
         <LI>You cannot edit album metadata</LI>
         <LI>You cannot upload new album covers to songs after being uploaded</LI>
         <LI>The mobile app does not have offline support</LI>
+        <LI>There is not duplicate song detection</LI>
       </ul>
 
       <P className="pt-3">

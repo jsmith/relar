@@ -28,5 +28,5 @@ jobs:
       - run: make install-ci
       - run: npm run build
         working-directory: native-audio
-      - run: make patch
+      - run: npx patch-package
       - run: make checks

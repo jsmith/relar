@@ -9,3 +9,6 @@ serviceAccountKey*
 .firebase
 scripts/.env
 *.log
+
+# Ignore since this is generated
+public/index.html

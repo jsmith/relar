@@ -1,12 +1,11 @@
 import React from "react";
-import { useRouter } from "@graywolfai/react-tiniest-router";
 import { useAlbumSongs, useAlbum } from "../../queries/album";
 import { SongsOverview } from "../sections/SongsOverview";
 import { useAlbumAttributes } from "../../utils";
+import { useAlbumIdFromParams } from "../../routes";
 
 export const AlbumOverview = ({ container }: { container: HTMLElement | null }) => {
-  const { params } = useRouter();
-  const { albumId } = params as { albumId: string };
+  const albumId = useAlbumIdFromParams();
   const album = useAlbum(albumId);
   const songs = useAlbumSongs(albumId);
   const { name, artist } = useAlbumAttributes(album);

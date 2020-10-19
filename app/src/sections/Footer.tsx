@@ -10,7 +10,7 @@ export const Footer = () => {
         <div className="flex items-center space-x-4">
           <LogoIcon className="w-6 h-6" />
           <p className="text-sm">
-            © 2020 RELAR —
+            © 2020 Relar —
             <a
               href="https://github.com/jsmith"
               rel="noopener noreferrer"

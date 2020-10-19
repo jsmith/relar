@@ -32,7 +32,7 @@ export const onFeedbackGiven = functions.firestore
       await sgMail.send({
         from: "contact@relar.app",
         to: env.mail.notification_email,
-        subject: `RELAR Feedback From ${user.email ?? "Unknown Email"}`,
+        subject: `Relar Feedback From ${user.email ?? "Unknown Email"}`,
         text: feedback,
       });
     }),

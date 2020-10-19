@@ -26,7 +26,7 @@ export const useStartupHooks = () => {
     // you the number of users who have visited each screen in your app, and which screens are
     // the most popular."
     // See https://firebase.googleblog.com/2020/08/google-analytics-manual-screen-view.html
-    firebase.analytics().logEvent("screen_view", { app_name: "RELAR", screen_name: routeId });
+    firebase.analytics().logEvent("screen_view", { app_name: "Relar", screen_name: routeId });
   }, [routeId]);
 
   const online = useOnlineStatus();

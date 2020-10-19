@@ -33,11 +33,11 @@ const main = async () => {
   await sgMail.send({
     from: "contact@relar.app",
     to: email,
-    subject: "RELAR Beta Invite",
+    subject: "Relar Beta Invite",
     text: `
 Hey ${data.firstName},
 
-Your RELAR invite is here! Head over to ${inviteUrl} to signup :) Before getting started, make sure to check out the beta guide at https://relar.app/beta-guide. Also, feel free to join the Relar discord server at https://discord.gg/A83FHss :)
+Your Relar invite is here! Head over to ${inviteUrl} to signup. Before getting started, make sure to check out the beta guide at https://relar.app/beta-guide. Also, feel free to join the Relar discord server at https://discord.gg/A83FHss :)
 
 - Jacob
 

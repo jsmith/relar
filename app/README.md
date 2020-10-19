@@ -1,6 +1,6 @@
 # App
 
-The RELAR mobile app and website.
+The Relar mobile app and website.
 
 ## Development
 
