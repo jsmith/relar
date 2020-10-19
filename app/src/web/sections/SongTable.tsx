@@ -19,7 +19,7 @@ import { useConfirmAction } from "../../confirm-actions";
 import { useLikeSong, useDeleteSong } from "../../queries/songs";
 import { fmtMSS } from "../../utils";
 import { Link } from "../../components/Link";
-import { routes } from "../../routes";
+import { getAlbumRouteParams, routes } from "../../routes";
 import { link } from "../../classes";
 import { AddToPlaylistEditor } from "./AddToPlaylistModal";
 import Skeleton from "react-loading-skeleton";
@@ -183,7 +183,11 @@ export const SongTableRow = <T extends SongInfo>({
 
   const artist = song.artist && (
     <Link
-      className={classNames(link({ color: "" }), mode === "condensed" && "text-2xs")}
+      className={classNames(
+        link({ color: "" }),
+        "truncate block",
+        mode === "condensed" && "text-2xs",
+      )}
       label={song.artist}
       route={routes.artist}
       params={{ artistName: song.artist }}
@@ -192,10 +196,14 @@ export const SongTableRow = <T extends SongInfo>({
 
   const album = song.albumId && (
     <Link
-      className={classNames(link({ color: "" }), mode === "condensed" && "text-2xs")}
+      className={classNames(
+        link({ color: "" }),
+        "truncate block",
+        mode === "condensed" && "text-2xs",
+      )}
       label={song.albumName}
       route={routes.album}
-      params={{ albumId: song.albumId }}
+      params={getAlbumRouteParams(song.albumId)}
     />
   );
 
@@ -262,12 +270,8 @@ export const SongTableRow = <T extends SongInfo>({
           className="transform -translate-x-4"
         />
       </Cell>
-      {mode === "regular" && (
-        <TextCell title={song.artist} text={artist} className="h-12 truncate" />
-      )}
-      {mode === "regular" && (
-        <TextCell title={song.albumName} text={album} className="h-12 truncate" />
-      )}
+      {mode === "regular" && <TextCell title={song.artist} text={artist} className="h-12" />}
+      {mode === "regular" && <TextCell title={song.albumName} text={album} className="h-12" />}
       <TextCell text={`${song.played ?? ""}`} className="h-12 truncate" />
       {includeDateAdded && (
         <TextCell

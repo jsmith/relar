@@ -24,7 +24,7 @@ export const Home = () => {
     return (
       <div className="flex flex-col justify-center items-center space-y-3">
         <MusicalNote />
-        <h1 className="text-3xl text-gray-700">Welcome to RELAR</h1>
+        <h1 className="text-3xl text-gray-700">Welcome to Relar</h1>
         <p className="text-gray-600">
           Open the web app to upload music! Don{`'`}t worry, things will update here automatically.
           {/* Click the {`"`}

@@ -1,6 +1,6 @@
-# RELAR
+# Relar
 
-The RELAR repository.
+The Relar repository.
 
 ## Environment Setup
 
@@ -107,7 +107,7 @@ firebase deploy --only storage:rules
 ### CORS
 
 ```
-gsutil cors set storage.json gs://relar-staging.appspot.com # or gs://toga-4e3f5.appspot.com
+gsutil cors set storage.json gs://relar-staging.appspot.com # or gs://relar-production.appspot.com
 ```
 
 ## Resources

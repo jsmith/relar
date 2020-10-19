@@ -104,7 +104,7 @@ export interface AlbumId {
 }
 
 export const createAlbumId = ({ albumName, albumArtist, artist }: AlbumId) => {
-  return `${albumArtist ?? artist ?? ""}${ALBUM_ID_DIVIDER}${albumName ?? ""}`;
+  return `${albumArtist ? albumArtist : artist ? artist : ""}${ALBUM_ID_DIVIDER}${albumName ?? ""}`;
 };
 
 export const getAlbumAttributes = (albumId: string) => {

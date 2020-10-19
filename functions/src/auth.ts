@@ -215,11 +215,11 @@ export const onBetaSignup = functions.firestore.document("beta_signups/{email}")
     await sgMail.send({
       from: "contact@relar.app",
       to: email,
-      subject: "RELAR Beta Signup",
+      subject: "Relar Beta Signup",
       text: `
 Hey ${firstName},
 
-You have successfully signed up for RELAR beta! I hope to be rolling things out in the coming weeks. Once everything is ready, I'll contact you with with a signup link :)
+You have successfully signed up for the Relar beta! I'm going to be slowly rolling things out over the coming weeks. Once it's your turn, I'll contact you with with a signup link :)
 
 - Jacob
 `.trim(),
@@ -231,7 +231,7 @@ You have successfully signed up for RELAR beta! I hope to be rolling things out 
     await sgMail.send({
       from: "contact@relar.app",
       to: env.mail.notification_email,
-      subject: `RELAR Beta Signup (${email})`,
+      subject: `Relar Beta Signup (${email})`,
       text: `It looks like you got a new beta signup from "${email}" :)`,
     });
   }),

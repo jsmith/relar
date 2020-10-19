@@ -36,7 +36,11 @@ test("deletes album & artist, decrements song count, and deletes playlist items"
   );
   assertDeleted(db.album(songTwo.albumId));
   assertDeleted(db.artist(songTwo.artist));
-  await assert.equal((await db.doc().get()).data(), { songCount: 0 });
+  await assert.equal((await db.doc().get()).data(), {
+    songCount: 0,
+    firstName: "",
+    device: "android",
+  });
   const data = await playlist.get().then((snap) => snap.data());
   await assert.equal(data, {
     name: "playlist name",

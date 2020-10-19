@@ -8,15 +8,12 @@
     "firebase/analytics",
     "firebase/performance"
   ],
-  "installOptions": {
-    "treeShake": true
-  },
   "mount": {
     "src/shared": "/_dist_/shared"
   },
   "exclude": ["**/src/shared/node/**", "**/load-env.ts"],
   "devOptions": {
-    "port": 3000,
-    "fallback": "mobile/index.html"
-  }
+    "port": 3000
+  },
+  "plugins": [["@snowpack/plugin-webpack"]]
 }

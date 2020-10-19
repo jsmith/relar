@@ -2,7 +2,7 @@ import React from "react";
 import type { Album } from "../shared/universal/types";
 import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "@graywolfai/react-tiniest-router";
-import { routes } from "../routes";
+import { goToAlbum, routes } from "../routes";
 import { useAlbumSongs } from "../queries/album";
 import { useQueue } from "../queue";
 import { useAlbumAttributes } from "../utils";
@@ -19,7 +19,7 @@ export const AlbumCard = ({ album, className }: { album: Album; className?: stri
       objects={album}
       title={name}
       subtitle={artist}
-      onClick={() => goTo(routes.album, { albumId: album.id })}
+      onClick={() => goToAlbum(goTo, album.id)}
       className={className}
       play={() =>
         setQueue({

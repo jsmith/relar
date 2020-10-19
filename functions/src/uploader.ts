@@ -168,7 +168,7 @@ const createTmpDir = async () => {
   };
 };
 
-// For reference -> https://us-central1-toga-4e3f5.cloudfunctions.net/health
+// For reference -> https://us-central1-relar-production.cloudfunctions.net/health
 export const health = f.https.onRequest((_, res) => {
   res.send(`Running v${process.env.npm_package_version}`);
 });
@@ -448,7 +448,7 @@ export const createSong = f.storage.object().onFinalize(
           await sgMail.send({
             from: "contact@relar.app",
             to: user.email,
-            subject: "RELAR Upload Error",
+            subject: "Relar Upload Error",
             text:
               "There was an error processing your song. Please try again or contact support (ie. respond to this email)!",
           });
