@@ -39,7 +39,7 @@ export const Settings = () => {
         <p className="text-xs text-gray-700">{LOCAL_CACHE_TEXT}</p>
       </div>
 
-      {import.meta.env.MODE !== "production" && (
+      {import.meta.env?.MODE !== "production" && (
         <button
           className="px-3 py-2 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"
           onClick={() => NativeAudio.clearCache().catch(captureException)}
@@ -49,7 +49,7 @@ export const Settings = () => {
         </button>
       )}
 
-      {import.meta.env.MODE !== "production" && (
+      {import.meta.env?.MODE !== "production" && (
         <button
           className="px-3 py-2 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"
           onClick={() => window.location.reload()}

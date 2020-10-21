@@ -34,8 +34,8 @@ test("deletes album & artist, decrements song count, and deletes playlist items"
     { before: await before.get(), after: await after.get() },
     { params: { userId: "testUser" } },
   );
-  assertDeleted(db.album(songTwo.albumId));
-  assertDeleted(db.artist(songTwo.artist));
+  await assertDeleted(db.album(songTwo.albumId));
+  await assertDeleted(db.artist(songTwo.artist));
   await assert.equal((await db.doc().get()).data(), {
     songCount: 0,
     firstName: "",
