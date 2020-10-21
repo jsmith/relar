@@ -19,7 +19,7 @@ import { useConfirmAction } from "../../confirm-actions";
 import { useLikeSong, useDeleteSong } from "../../queries/songs";
 import { fmtMSS } from "../../utils";
 import { Link } from "../../components/Link";
-import { getAlbumRouteParams, routes } from "../../routes";
+import { getAlbumRouteParams, getArtistRouteParams, routes } from "../../routes";
 import { link } from "../../classes";
 import { AddToPlaylistEditor } from "./AddToPlaylistModal";
 import Skeleton from "react-loading-skeleton";
@@ -183,7 +183,7 @@ export const SongTableRow = <T extends SongInfo>({
       )}
       label={song.artist}
       route={routes.artist}
-      params={{ artistName: song.artist }}
+      params={getArtistRouteParams(song.artist)}
     />
   );
 

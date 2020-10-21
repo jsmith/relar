@@ -1,12 +1,10 @@
 import React from "react";
-import { useRouter } from "@graywolfai/react-tiniest-router";
 import { useArtistSongs } from "../../queries/artist";
 import { SongsOverview } from "../sections/SongsOverview";
+import { useArtistNameFromParams } from "../../routes";
 
 export const ArtistOverview = ({ container }: { container: HTMLElement | null }) => {
-  const { params } = useRouter();
-  // FIXME validation
-  const { artistName } = params as { artistName: string };
+  const artistName = useArtistNameFromParams();
   const songs = useArtistSongs(artistName);
 
   return (

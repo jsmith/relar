@@ -1,6 +1,6 @@
 {
   "name": "relar",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "dependencies": {
     "throttle-debounce": "^2.3.0"
   },

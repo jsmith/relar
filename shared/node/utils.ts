@@ -1,6 +1,6 @@
 import * as admin from "firebase-admin";
 import * as path from "path";
-import { createPath, createAlbumId, AlbumId } from "../universal/utils";
+import { createPath, createAlbumId, AlbumId, encodeFirebase } from "../universal/utils";
 import { Album, UserData, Artist, Song, BetaSignup, Playlist } from "../universal/types";
 import { GetFilesResponse } from "@google-cloud/storage";
 
@@ -92,12 +92,14 @@ export const adminDb = (db: FirebaseFirestore.Firestore, userId: string) => {
       db.doc(
         path
           .append("albums")
-          .append(typeof albumId === "string" ? albumId : createAlbumId(albumId))
+          .append(encodeFirebase(typeof albumId === "string" ? albumId : createAlbumId(albumId)))
           .build(),
       ) as DocumentReference<Album>,
     artists: () => db.collection(path.append("artists").build()) as CollectionReference<Artist>,
     artist: (artistName: string) =>
-      db.doc(path.append("artists").append(artistName).build()) as DocumentReference<Artist>,
+      db.doc(
+        path.append("artists").append(encodeFirebase(artistName)).build(),
+      ) as DocumentReference<Artist>,
     doc: () => db.doc(path.build()) as DocumentReference<UserData>,
     findAlbumSongs: (albumId: string) => {
       const key: keyof Song = "albumId";

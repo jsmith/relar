@@ -2,7 +2,7 @@ import React from "react";
 import type { Artist } from "../shared/universal/types";
 import { ThumbnailCard } from "../components/ThumbnailCard";
 import { useRouter } from "@graywolfai/react-tiniest-router";
-import { routes } from "../routes";
+import { getArtistRouteParams, routes } from "../routes";
 import { useArtistSongs } from "../queries/artist";
 import { useQueue } from "../queue";
 
@@ -17,7 +17,7 @@ export const ArtistCard = ({ artist, className }: { artist: Artist; className?: 
       type="song"
       title={artist.name}
       subtitle={""}
-      onClick={() => goTo(routes.artist, { artistName: artist.name })}
+      onClick={() => goTo(routes.artist, getArtistRouteParams(artist.name))}
       className={className}
       play={() =>
         setQueue({

@@ -10,7 +10,7 @@ import {
 } from "../components/ListContainer";
 import { AiOutlineUser } from "react-icons/ai";
 import { RiAlbumLine } from "react-icons/ri";
-import { routes } from "../../routes";
+import { getAlbumRouteParams, getArtistRouteParams, routes } from "../../routes";
 import type { Song } from "../../shared/universal/types";
 import { HiPlus, HiTrash } from "react-icons/hi";
 import { Modals } from "@capacitor/core";
@@ -115,7 +115,7 @@ const SongListRow = ({
               icon: AiOutlineUser,
               route: routes.artist,
               type: "link",
-              params: { artistName: song.artist },
+              params: getArtistRouteParams(song.artist),
             }
           : undefined,
         song.albumId
@@ -124,7 +124,7 @@ const SongListRow = ({
               icon: RiAlbumLine,
               route: routes.album,
               type: "link",
-              params: { albumId: song.albumId },
+              params: getAlbumRouteParams(song.albumId),
             }
           : undefined,
         {

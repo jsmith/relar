@@ -3,8 +3,8 @@ import * as uuid from "uuid";
 import * as path from "path";
 import { testFunctions } from "./configure-tests";
 import { removeUndefined } from "./utils";
-import { adminDb, deleteAllUserData } from "./shared/node/utils";
-import { createTestSong } from "./test-utils";
+import { adminDb, adminStorage, deleteAllUserData } from "./shared/node/utils";
+import { assertExists, createTestSong } from "./test-utils";
 import { test } from "uvu";
 import assert from "uvu/assert";
 
@@ -236,6 +236,23 @@ test("can upload artwork", async () => {
   const file = storage.bucket().file(`testUser/song_artwork/${song?.artwork?.hash}/artwork.jpg`);
   const [exists] = await file.exists();
   assert.equal(exists, true);
+});
+
+test("can upload song with artist & album that have slashes in their names", async () => {
+  initUserData();
+  const wrapped = testFunctions.wrap(createSong);
+  const { objectMetadata, songId } = await upload("file_with_artist_and_album_with_slash.mp3");
+  await wrapped(objectMetadata);
+
+  await assertExists(
+    adminDb(firestore, "testUser").album({
+      albumName: "Sanctuary/EP",
+      artist: "KOAN/Sound",
+      albumArtist: "",
+    }),
+  );
+
+  await assertExists(adminDb(firestore, "testUser").artist("KOAN/Sound"));
 });
 
 test.run();
