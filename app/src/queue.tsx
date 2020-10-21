@@ -492,6 +492,17 @@ export const QueueProvider = (props: React.Props<{}>) => {
     }
   }, [setShuffle, shuffle, shuffleSongs]);
 
+  useHotkeys("right", () => current.current.index !== undefined && next(), [next]);
+  useHotkeys(
+    "left",
+    () => {
+      if (current.current.index) {
+        previous();
+      }
+    },
+    [previous],
+  );
+
   return (
     <QueueContext.Provider
       value={{

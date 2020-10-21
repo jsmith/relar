@@ -8,12 +8,7 @@ import { usePlaylistSongs } from "../../queries/playlists";
 import { fmtToDate, songsCount } from "../../utils";
 import { useCoolPlaylists } from "../../db";
 
-const PlaylistRow = ({
-  absoluteIndex,
-  item: playlist,
-  handleSentinel,
-  mode,
-}: ListContainerRowProps<Playlist>) => {
+const PlaylistRow = ({ item: playlist, mode }: ListContainerRowProps<Playlist>) => {
   const { goTo } = useRouter();
   const songs = usePlaylistSongs(playlist);
   // FIXME this is fine for now
@@ -23,8 +18,6 @@ const PlaylistRow = ({
     <MusicListItem
       title={playlist.name}
       subTitle={`${songsCount(songs?.length)} • Created on ${fmtToDate(playlist.createdAt)}`}
-      handleSentinel={handleSentinel}
-      absoluteIndex={absoluteIndex}
       object={song}
       type="song"
       onClick={() => goTo(routes.playlist, { playlistId: playlist.id })}

@@ -119,7 +119,7 @@ export const Account = () => {
           </OverviewSection>
           <OverviewSection
             title="Reset Your Password"
-            subtitle={`After clicking "Reset Password" we'll send you a link by email to reset your password.`}
+            subtitle={`After clicking "CHANGE PASSWORD" we'll send you a link by email to reset your password.`}
             actionText="Change Password"
             action={() => resetPassword(user)}
           />
