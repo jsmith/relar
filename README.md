@@ -45,12 +45,18 @@ The other files/folders in this repo are a mixture of documentation and configur
 
 ## Deployment
 
-Deployment is managed by `GitHub Actions` (see below). We run deployment whenever a new tag is pushed!
+<!-- Deployment is managed by `GitHub Actions` (see below). We run deployment whenever a new tag is pushed!
 
 ```
 # follow the prompts for this
 npm run version
-```
+``` -->
+
+1. Update version in `package.json`, `functions/package.json` and `app/package.json`.
+2. Update version in `app/.env`.
+3. Run `firebase --project production functions:config:set environment.version=VERSION` where `VERSION` is the new version
+4. Run the build commands
+5. Run `firebase deploy --project production`
 
 ## GitHub Actions
 

@@ -3,11 +3,27 @@ const fs = require("fs");
 const { argv } = require("process");
 const { assert } = require("console");
 const root = path.dirname(__dirname);
-const package = path.join(root, "mobile", "package.json");
-const ios = path.join(root, "mobile", "ios", "App", "App", "Info.plist");
-const android = path.join(root, "mobile", "android", "app", "build.gradle");
+const functionsPackage = path.join(root, "app", "package.json");
+const appPackage = path.join(root, "app", "package.json");
+const ios = path.join(root, "app", "ios", "App", "App", "Info.plist");
+const android = path.join(root, "app", "android", "app", "build.gradle");
 
-const packageContents = JSON.parse(fs.readFileSync(package).toString());
+const version: string | undefined = argv[1];
+if (version === undefined) {
+  console.log("Usage: node postversion.js VERSION [--dry | --dry-run]");
+  process.exit(1);
+}
+
+if (!version.match(/[0-9]+\.[0-9]+\.[0-9]/)) {
+  console.log(`${version} is not a valid version`);
+  console.log("Usage: node postversion.js VERSION [--dry | --dry-run]");
+  process.exit(1);
+}
+
+const functionsPackageContents = JSON.parse(
+  fs.readFileSync(functionsPackage).toString()
+);
+const appPackageContents = JSON.parse(fs.readFileSync(appPackage).toString());
 
 // Looks like:
 // versionCode 1
@@ -21,9 +37,6 @@ const originalAndroidContents = androidContents;
 // <key>CFBundleVersion</key>
 // <string>1</string>
 let iosContents = fs.readFileSync(ios).toString();
-
-const version = packageContents.version;
-if (!version) throw Error("version is not defined in " + package);
 
 let match = androidContents.match(/^ +versionCode ([0-9]+)$/m);
 if (!match) throw Error("Unable to find versionCode in " + android);
@@ -54,8 +67,12 @@ console.log(
 console.log(`iOS CFBundleVersion ${bundleVersion} -> ${newBuildNumber}`);
 console.log(`Android versionName ${versionName} -> ${version}`);
 console.log(`Android versionCode ${versionCode} -> ${newBuildNumber}`);
+console.log(
+  `functions/package.json version ${functionsPackageContents.version} -> ${version}`
+);
+console.log(`app/package.json version ${appPackage.version} -> ${version}`);
 
-if (argv.includes("--dry") || argv.includes("--dry-run")) return;
+if (argv.includes("--dry") || argv.includes("--dry-run")) process.exit(0);
 
 console.log("Writing iOS versions to " + ios);
 console.log("Writing Android versions to " + android);
@@ -90,14 +107,4 @@ iosContents = iosContents.replace(
 if (previous === iosContents) throw Error("Failed to replace CFBundleVersion");
 
 fs.writeFileSync(android, androidContents);
-
-try {
-  fs.writeFileSync(ios, iosContents);
-} catch (e) {
-  try {
-    // Return android file to original state if ios write fails
-    fs.writeFileSync(android, originalAndroidContents);
-  } catch {}
-
-  throw e;
-}
+fs.writeFileSync(ios, iosContents);

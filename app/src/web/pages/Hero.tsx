@@ -31,6 +31,14 @@ const faq = [
     "Yes and no. GPM was a great service with tens of thousands of engineering hours put into optimizations and improvements whereas Relar is still in the very early stages of development.",
   ],
   [
+    "Can I transfer my Google Play Music library?",
+    "There is currently no way to quickly transfer your library but this is something I want to implement before the release.",
+  ],
+  [
+    "Can I purchase or stream songs from a preexisting catalogue?",
+    "There is no way to purchase or stream music at this time. All audio files must be uploaded by you.",
+  ],
+  [
     'When will Relar offer "X"?',
     "I am currently dedicating my spare time developing this app and will be adding features very frequently.",
   ],

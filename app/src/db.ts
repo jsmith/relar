@@ -252,6 +252,121 @@ export const useCoolDB = () => {
           })})`,
         );
 
+        // This "running" variable acts as a lock so that the following code
+        // is only running once at a time
+        let running = false;
+        const changes: Array<firebase.firestore.DocumentChange<IndexDBTypeMap[M]>> = [];
+        const startProcessor = async () => {
+          if (running) return;
+          if (changes.length === 0) return;
+          running = true;
+          const changesToProcess = changes.splice(0, changes.length);
+
+          const eventName = `${model}_snapshot`;
+          const trace = firebase.performance().trace(eventName);
+          trace.start();
+
+          firebase.analytics().logEvent(eventName, {
+            value: changesToProcess.length,
+          });
+
+          console.log(
+            `[${model}] Got ${model} snapshot with ${changesToProcess.length} changes!`,
+            changesToProcess,
+          );
+          const copy = [...items];
+
+          const add = (change: firebase.firestore.DocumentChange<IndexDBTypeMap[M]>) => {
+            const data = change.doc.data();
+            // I see no scenarios where this happens but like.. just to be safe
+            if (data.deleted) {
+              console.warn(
+                `[${model}] Document "${change.doc.id}" not being added to the ${model} collection as it's been deleted`,
+              );
+              return;
+            }
+
+            console.log(`[${model}] Adding document "${change.doc.id}" to the ${model} collection`);
+
+            copy.push(data);
+          };
+
+          const mutate = (
+            change: firebase.firestore.DocumentChange<IndexDBTypeMap[M]>,
+            index: number,
+          ) => {
+            const data = change.doc.data();
+
+            // When any mutation comes that set "delete" to true remove our local copy
+            if (data.deleted) {
+              console.log(
+                `[${model}] Deleting document "${change.doc.id}" in the ${model} collection (index ${index})`,
+              );
+
+              copy.splice(index, 1);
+              return;
+            }
+
+            console.log(
+              `[${model}] Mutating document "${change.doc.id}" in the ${model} collection (index ${index})`,
+            );
+
+            if (copy[index].updatedAt.toMillis() > data.updatedAt.toMillis()) {
+              console.warn(
+                `[${model}] Received a change that is out-of-date with the current state of "${data.id}". ${copy[index].updatedAt} vs. ${data.updatedAt}`,
+              );
+              return;
+            }
+
+            copy[index] = data;
+          };
+
+          const changedSongs: Item[] = [];
+          changesToProcess.forEach((change) => {
+            changedSongs.push(change.doc.data());
+            if (change.type === "removed") {
+              // SKIP (see comments above)
+            } else if (change.type === "added") {
+              // We can't trust this event to give us songs that we don't have for numerous reasons
+              // First being the reason I described above and secondly because we just can't be sure
+              // about the state of our local data
+              // Because of this, we first check to see if the song exists
+              const index = copy.findIndex((item) => item.id === change.doc.id);
+              if (index === -1) add(change);
+              else mutate(change, index);
+            } else {
+              const index = copy.findIndex((item) => item.id === change.doc.id);
+              if (index === -1) add(change);
+              mutate(change, index);
+            }
+          });
+
+          const maxUpdatedAt = getMaxUpdatedAt(changedSongs);
+          await updateItems(copy);
+
+          if (maxUpdatedAt < latestLastUpdated) {
+            const warning = `The snapshot (${maxUpdatedAt}) was received out-of-order. The previous snapshot time was ${latestLastUpdated}.`;
+            captureMessage(warning, Severity.Warning);
+            console.warn(warning);
+          }
+
+          console.log(
+            `[${model}] The previous last updated time was ${latestLastUpdated}. Setting to ${maxUpdatedAt}.`,
+          );
+          // This should be fine but like... it all depends on how firebase manages snapshots
+          // Like, am I guaranteed to get all snapshots that occurred on or before a particular time?
+          // Or will do snapshots ever arrive out of order?
+          // I add 1 since we've already
+          await db.putValue("lastUpdated", { name: model, value: maxUpdatedAt });
+          latestLastUpdated = maxUpdatedAt;
+
+          trace.stop();
+          trace.putMetric("count", changesToProcess.length);
+
+          running = false;
+          startProcessor();
+        };
+
         // Keep an in memory version of the last updated time
         let latestLastUpdated = lastUpdated.value;
         return (
@@ -260,116 +375,14 @@ export const useCoolDB = () => {
             .where("updatedAt", ">=", lastUpdatedDate)
             // When a document that currently exists in the snapshot is modified, two events are
             // emitted! The first is a "removed" event and the second is an "added" event
-            .onSnapshot({}, async (snapshot) => {
-              const eventName = `${model}_snapshot`;
-              const trace = firebase.performance().trace(eventName);
-              trace.start();
-
-              const changes = snapshot.docChanges();
-
-              firebase.analytics().logEvent(eventName, {
-                value: changes.length,
-              });
-
-              if (changes.length === 0) return;
-              console.log(
-                `[${model}] Got ${model} snapshot with ${changes.length} changes!`,
-                changes,
-              );
-              const copy = [...items];
-
-              const add = (change: firebase.firestore.DocumentChange<IndexDBTypeMap[M]>) => {
-                const data = change.doc.data();
-                // I see no scenarios where this happens but like.. just to be safe
-                if (data.deleted) {
-                  console.warn(
-                    `[${model}] Document "${change.doc.id}" not being added to the ${model} collection as it's been deleted`,
-                  );
-                  return;
-                }
-
-                console.log(
-                  `[${model}] Adding document "${change.doc.id}" to the ${model} collection`,
-                );
-
-                copy.push(data);
-              };
-
-              const mutate = (
-                change: firebase.firestore.DocumentChange<IndexDBTypeMap[M]>,
-                index: number,
-              ) => {
-                const data = change.doc.data();
-
-                // When any mutation comes that set "delete" to true remove our local copy
-                if (data.deleted) {
-                  console.log(
-                    `[${model}] Deleting document "${change.doc.id}" in the ${model} collection (index ${index})`,
-                  );
-
-                  copy.splice(index, 1);
-                  return;
-                }
-
-                console.log(
-                  `[${model}] Mutating document "${change.doc.id}" in the ${model} collection (index ${index})`,
-                );
-
-                if (copy[index].updatedAt.toMillis() > data.updatedAt.toMillis()) {
-                  console.warn(
-                    `[${model}] Received a change that is out-of-date with the current state of "${data.id}". ${copy[index].updatedAt} vs. ${data.updatedAt}`,
-                  );
-                  return;
-                }
-
-                copy[index] = data;
-              };
-
-              const changedSongs: Item[] = [];
-              changes.forEach((change) => {
-                changedSongs.push(change.doc.data());
-                if (change.type === "removed") {
-                  // "removed" events are worthless in my scenario
-                  // I initially planned on this firing when a song was deleted but I realized that
-                  // will only happen if it was previously in the snapshot range
-                  // Furthermore, this event is triggered when a document currently in the snapshot
-                  // is mutated which... kinda makes no sense but oh well
-                } else if (change.type === "added") {
-                  // We can't trust this event to give us songs that we don't have for numerous reasons
-                  // First being the reason I described above and secondly because we just can't be sure
-                  // about the state of our local data
-                  // Because of this, we first check to see if the song exists
-                  const index = copy.findIndex((item) => item.id === change.doc.id);
-                  if (index === -1) add(change);
-                  else mutate(change, index);
-                } else {
-                  const index = copy.findIndex((item) => item.id === change.doc.id);
-                  if (index === -1) add(change);
-                  mutate(change, index);
-                }
-              });
-
-              const maxUpdatedAt = getMaxUpdatedAt(changedSongs);
-              await updateItems(copy);
-
-              if (maxUpdatedAt < latestLastUpdated) {
-                const warning = `The snapshot (${maxUpdatedAt}) was received out-of-order. The previous snapshot time was ${latestLastUpdated}.`;
-                captureMessage(warning, Severity.Warning);
-                console.warn(warning);
-              }
-
-              console.log(
-                `[${model}] The previous last updated time was ${latestLastUpdated}. Setting to ${maxUpdatedAt}.`,
-              );
-              // This should be fine but like... it all depends on how firebase manages snapshots
-              // Like, am I guaranteed to get all snapshots that occurred on or before a particular time?
-              // Or will do snapshots ever arrive out of order?
-              // I add 1 since we've already
-              await db.putValue("lastUpdated", { name: model, value: maxUpdatedAt });
-              latestLastUpdated = maxUpdatedAt;
-
-              trace.stop();
-              trace.putMetric("count", changes.length);
+            .onSnapshot({}, (snapshot) => {
+              // "removed" events are worthless in my scenario
+              // I initially planned on this firing when a song was deleted but I realized that
+              // will only happen if it was previously in the snapshot range
+              // Furthermore, this event is triggered when a document currently in the snapshot
+              // is mutated which... kinda makes no sense but oh well
+              changes.push(...snapshot.docChanges().filter((change) => change.type !== "removed"));
+              startProcessor();
             })
         );
       };

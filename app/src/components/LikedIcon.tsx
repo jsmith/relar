@@ -18,7 +18,10 @@ export const LikedIcon = ({ iconClassName, className, liked, setLiked }: Favorit
         // likedOrUnlikeSong(!liked);
       }}
       title="Save to Likes"
-      className={classNames(className, "text-purple-500")}
+      className={classNames(
+        className,
+        "text-purple-500 focus:outline-none focus:bg-purple-400 focus:bg-opacity-25 p-1 rounded-full",
+      )}
     >
       {liked ? <FaHeart className={iconClassName} /> : <FaRegHeart className={iconClassName} />}
     </button>

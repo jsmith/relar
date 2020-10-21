@@ -1,8 +1,8 @@
 import React from "react";
 import { RouterContextType, RouteType, useRouter } from "@graywolfai/react-tiniest-router";
-import { IS_WEB_VIEW } from "./utils";
+import { isMobile, IS_WEB_VIEW } from "./utils";
 import { ALBUM_ID_DIVIDER } from "./shared/universal/utils";
-console.log(IS_WEB_VIEW);
+const ReleaseNotes = React.lazy(() => import("./pages/ReleaseNotes"));
 const BetaGuide = React.lazy(() => import("./pages/BetaGuide"));
 const Login = React.lazy(() => import("./pages/Login"));
 const Settings = React.lazy(() => import("./mobile/pages/Settings"));
@@ -10,31 +10,67 @@ const Search = React.lazy(() => import("./pages/Search"));
 const Signup = React.lazy(() => import("./pages/Signup"));
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
 const Home = React.lazy(() =>
-  IS_WEB_VIEW ? import("./mobile/pages/Home") : import("./web/pages/Home"),
+  IS_WEB_VIEW
+    ? import("./mobile/pages/Home")
+    : isMobile()
+    ? import("./pages/UseDesktop")
+    : import("./web/pages/Home"),
 );
 const Songs = React.lazy(() =>
-  IS_WEB_VIEW ? import("./mobile/pages/Songs") : import("./web/pages/Songs"),
+  IS_WEB_VIEW
+    ? import("./mobile/pages/Songs")
+    : isMobile()
+    ? import("./pages/UseDesktop")
+    : import("./web/pages/Songs"),
 );
 const Artists = React.lazy(() =>
-  IS_WEB_VIEW ? import("./mobile/pages/Artists") : import("./web/pages/Artists"),
+  IS_WEB_VIEW
+    ? import("./mobile/pages/Artists")
+    : isMobile()
+    ? import("./pages/UseDesktop")
+    : import("./web/pages/Artists"),
 );
 const Albums = React.lazy(() =>
-  IS_WEB_VIEW ? import("./mobile/pages/Albums") : import("./web/pages/Albums"),
+  IS_WEB_VIEW
+    ? import("./mobile/pages/Albums")
+    : isMobile()
+    ? import("./pages/UseDesktop")
+    : import("./web/pages/Albums"),
 );
 const Playlists = React.lazy(() =>
-  IS_WEB_VIEW ? import("./mobile/pages/Playlists") : import("./web/pages/Playlists"),
+  IS_WEB_VIEW
+    ? import("./mobile/pages/Playlists")
+    : isMobile()
+    ? import("./pages/UseDesktop")
+    : import("./web/pages/Playlists"),
 );
 const AlbumOverview = React.lazy(() =>
-  IS_WEB_VIEW ? import("./mobile/pages/AlbumOverview") : import("./web/pages/AlbumOverview"),
+  IS_WEB_VIEW
+    ? import("./mobile/pages/AlbumOverview")
+    : isMobile()
+    ? import("./pages/UseDesktop")
+    : import("./web/pages/AlbumOverview"),
 );
 const ArtistOverview = React.lazy(() =>
-  IS_WEB_VIEW ? import("./mobile/pages/ArtistOverview") : import("./web/pages/ArtistOverview"),
+  IS_WEB_VIEW
+    ? import("./mobile/pages/ArtistOverview")
+    : isMobile()
+    ? import("./pages/UseDesktop")
+    : import("./web/pages/ArtistOverview"),
 );
 const Generated = React.lazy(() =>
-  IS_WEB_VIEW ? import("./mobile/pages/Generated") : import("./web/pages/Generated"),
+  IS_WEB_VIEW
+    ? import("./mobile/pages/Generated")
+    : isMobile()
+    ? import("./pages/UseDesktop")
+    : import("./web/pages/Generated"),
 );
 const PlaylistOverview = React.lazy(() =>
-  IS_WEB_VIEW ? import("./mobile/pages/PlaylistOverview") : import("./web/pages/PlaylistOverview"),
+  IS_WEB_VIEW
+    ? import("./mobile/pages/PlaylistOverview")
+    : isMobile()
+    ? import("./pages/UseDesktop")
+    : import("./web/pages/PlaylistOverview"),
 );
 const ForgotPasswordSuccess = React.lazy(() => import("./pages/ForgotPasswordSuccess"));
 const Hero = React.lazy(() =>
@@ -52,7 +88,7 @@ type Route<ID extends string> = {
   component: React.LazyExoticComponent<(opts: { container: HTMLElement | null }) => JSX.Element>;
   showTabs: boolean;
   protected: boolean;
-  className: string;
+  className?: string;
   mobileClassName: string;
   sidebar: boolean;
   title: string | false;
@@ -176,11 +212,21 @@ export const routes = createRoutes({
     component: Songs,
     protected: true,
     sidebar: true,
-    className: "py-2",
     mobileClassName: "",
     title: "Songs",
     showBack: true,
     showTabs: true,
+  },
+  "release-notes": {
+    id: "release-notes",
+    path: "/release-notes",
+    component: ReleaseNotes,
+    protected: false,
+    sidebar: false,
+    mobileClassName: "",
+    title: "ReleaseNotes",
+    showBack: true,
+    showTabs: false,
   },
   albums: {
     id: "albums",

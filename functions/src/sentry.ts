@@ -5,7 +5,7 @@ Sentry.init({
   dsn: "https://c1f6b53d686d47fc8d2f8fcf31651304@o400394.ingest.sentry.io/5295615",
   environment: env.project,
   // FIXME these are actually undefined during execution sadly
-  release: process.env.npm_package_name + "@" + process.env.npm_package_version,
+  release: "functions@" + env.version,
   beforeSend: (event) => {
     // If it's not production *and* it's not staging, don't actually send anything
     if (env.project !== "production" && env.project !== "staging") {

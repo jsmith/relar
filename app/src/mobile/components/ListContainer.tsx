@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import classNames from "classnames";
-import { SentinelBlockHandler, useRecycle } from "../../recycle";
 import { motion, useMotionValue, useTransform } from "framer-motion";
+import RecycledList from "react-recycled-scrolling";
 
 export type ListContainerMode = "regular" | "condensed";
 
@@ -37,8 +37,6 @@ const letters = [
 export interface ListContainerRowProps<T> {
   item: T;
   index: number;
-  absoluteIndex: number;
-  handleSentinel: SentinelBlockHandler;
   items: Array<T>;
   mode: ListContainerMode;
 }
@@ -66,18 +64,6 @@ export const ListContainer = function <T, K extends keyof T, E>({
 }: ListContainerProps<T, K, E>) {
   const container = useRef<HTMLDivElement | null>(null);
   const timer = useRef<NodeJS.Timeout>();
-  const {
-    start,
-    end,
-    placeholderBottomHeight,
-    placeholderTopHeight,
-    table: ref,
-    handleSentinel,
-  } = useRecycle({
-    container: container.current,
-    rowCount: items?.length ?? 0,
-    rowHeight: height,
-  });
   const opacity = useMotionValue(0);
   const pointerEvents = useTransform(opacity, (value) => (value === 0 ? "none" : ""));
 
@@ -133,33 +119,25 @@ export const ListContainer = function <T, K extends keyof T, E>({
     };
   }, [clearTimer, disableNavigator, resetTimer]);
 
-  const rows = useMemo(
-    () =>
-      items
-        ?.slice(start, end)
-        .map((song, i) => (
-          <Row
-            key={start + i}
-            snapshot={song}
-            item={song}
-            index={i}
-            absoluteIndex={start + i}
-            handleSentinel={handleSentinel}
-            items={items}
-            mode={mode}
-            {...extra}
-          />
-        )),
-    [items, start, end, Row, handleSentinel, mode, extra],
+  const rowRenderer = useCallback(
+    ({ song, index }: { song: T; index: number }) => (
+      <Row
+        key={index}
+        snapshot={song}
+        item={song}
+        index={index}
+        items={items ?? []}
+        mode={mode}
+        {...extra}
+      />
+    ),
+    [Row, extra, items, mode],
   );
 
   return (
     <div className={classNames("overflow-y-scroll", className)} ref={container}>
-      <div className="h-full" ref={ref}>
-        <div style={{ height: placeholderTopHeight }} />
-        {rows}
-        <div style={{ height: placeholderBottomHeight }} />
-      </div>
+      {/* TODO test mobile */}
+      <RecycledList attrList={items} itemFn={rowRenderer} itemHeight={height} />
       {!disableNavigator && (
         <motion.div
           className={classNames("absolute h-full top-0 right-0 py-1 pr-1")}

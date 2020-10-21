@@ -76,7 +76,7 @@ export const SongsOverview = <T extends SongInfo>({
   }, [infoPoints, songDuration, songs?.length]);
 
   return (
-    <div>
+    <div className="w-full flex flex-col">
       <div
         className="flex items-end p-8"
         style={{
@@ -141,16 +141,14 @@ export const SongsOverview = <T extends SongInfo>({
           )}
         </div>
       </div>
-      <div>
-        <div>
-          <SongTable
-            songs={songs}
-            container={container}
-            actions={songActions}
-            source={source}
-            includeDateAdded={includeDateAdded}
-          />
-        </div>
+      <div className="flex-grow">
+        <SongTable
+          songs={songs}
+          container={container}
+          actions={songActions}
+          source={source}
+          includeDateAdded={includeDateAdded}
+        />
       </div>
     </div>
   );

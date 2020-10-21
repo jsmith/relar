@@ -8,7 +8,7 @@ import classNames from "classnames";
 import { Player } from "./sections/Player";
 import { MdLibraryMusic, MdSearch, MdAddCircle, MdMusicNote } from "react-icons/md";
 import { AccountDropdown } from "./sections/AccountDropdown";
-import { useDocumentTitle } from "../utils";
+import { isMobile, useDocumentTitle } from "../utils";
 import { Link } from "../components/Link";
 import { button, link, bgApp } from "../classes";
 import { SkipNavLink, SkipNavContent } from "@reach/skip-nav";
@@ -94,94 +94,92 @@ export const App = (_: React.Props<{}>) => {
     return <LoadingSpinner className="h-screen" />;
   }
 
-  const content = route?.sidebar ? (
-    <UploadModal
-      display={uploadDisplay}
-      setDisplay={setUploadDisplay}
-      className="flex flex-col h-full overflow-hidden"
-    >
-      <div className="relative flex-grow flex flex-col">
-        <Sidebar
-          className="flex-grow"
-          sidebar={
-            <div className="h-full bg-gray-900 w-56">
-              <nav>
-                <ul>
-                  {sideLinks.map(({ icon: Icon, route, label }) => (
+  const content =
+    route?.sidebar && !isMobile() ? (
+      <UploadModal
+        display={uploadDisplay}
+        setDisplay={setUploadDisplay}
+        className="flex flex-col h-full overflow-hidden"
+      >
+        <div className="relative flex-grow flex flex-col">
+          <Sidebar
+            className="flex-grow"
+            sidebar={
+              <div className="h-full bg-gray-900 w-56">
+                <nav>
+                  <ul>
+                    {sideLinks.map(({ icon: Icon, route, label }) => (
+                      <li
+                        tabIndex={0}
+                        className={classNames(
+                          "flex py-2 px-5 items-center hover:bg-gray-800 cursor-pointer focus:outline-none focus:bg-gray-700",
+                          isRoute(route) ? "bg-gray-800" : undefined,
+                        )}
+                        onClick={() => goTo(route)}
+                        key={label}
+                      >
+                        <Icon className="w-6 h-6" />
+                        <span className="ml-4">{label}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+                <div className="border-b border-gray-800 my-3 mx-3" />
+                <button
+                  className="flex py-2 px-5 items-center hover:bg-gray-800 w-full focus:outline-none focus:bg-gray-700"
+                  onClick={() => setUploadDisplay(true)}
+                >
+                  <MdAddCircle className="w-6 h-6" />
+                  <div className="ml-4">Upload Music</div>
+                </button>
+              </div>
+            }
+          >
+            <div ref={(ref) => setContainer(ref)} className="h-full absolute inset-0 flex flex-col">
+              {(isRoute(routes.songs) ||
+                isRoute(routes.artists) ||
+                isRoute(routes.albums) ||
+                isRoute(routes.playlists)) && (
+                <ul
+                  className="flex space-x-4 text-xl sticky top-0 z-10 px-5"
+                  style={{ backgroundColor: bgApp }}
+                >
+                  {/* FIXME accessible */}
+                  {libraryLinks.map(({ label, route }) => (
                     <li
-                      tabIndex={0}
+                      key={label}
                       className={classNames(
-                        "flex py-2 px-5 items-center hover:bg-gray-800 cursor-pointer focus:outline-none focus:bg-gray-700",
-                        isRoute(route) ? "bg-gray-800" : undefined,
+                        // FIXME bold
+                        "my-2 border-gray-600 cursor-pointer hover:text-gray-800",
+                        isRoute(route) ? "border-b-2 text-gray-700" : " text-gray-600",
                       )}
                       onClick={() => goTo(route)}
-                      key={label}
                     >
-                      <Icon className="w-6 h-6" />
-                      <span className="ml-4">{label}</span>
+                      {label}
                     </li>
                   ))}
                 </ul>
-              </nav>
-              <div className="border-b border-gray-800 my-3 mx-3" />
-              <button
-                className="flex py-2 px-5 items-center hover:bg-gray-800 w-full focus:outline-none focus:bg-gray-700"
-                onClick={() => setUploadDisplay(true)}
-              >
-                <MdAddCircle className="w-6 h-6" />
-                <div className="ml-4">Upload Music</div>
-              </button>
+              )}
+              <div className={classNames(route.className, "flex-grow flex")}>
+                <React.Suspense fallback={<LoadingSpinner />}>
+                  <route.component container={container} />
+                </React.Suspense>
+              </div>
             </div>
-          }
-        >
-          <div
-            ref={(ref) => setContainer(ref)}
-            className="h-full absolute inset-0 overflow-y-auto flex flex-col"
-          >
-            {(isRoute(routes.songs) ||
-              isRoute(routes.artists) ||
-              isRoute(routes.albums) ||
-              isRoute(routes.playlists)) && (
-              <ul
-                className="flex space-x-4 text-xl sticky top-0 z-10 px-5"
-                style={{ backgroundColor: bgApp }}
-              >
-                {/* FIXME accessible */}
-                {libraryLinks.map(({ label, route }) => (
-                  <li
-                    key={label}
-                    className={classNames(
-                      // FIXME bold
-                      "my-2 border-gray-600 cursor-pointer hover:text-gray-800",
-                      isRoute(route) ? "border-b-2 text-gray-700" : " text-gray-600",
-                    )}
-                    onClick={() => goTo(route)}
-                  >
-                    {label}
-                  </li>
-                ))}
-              </ul>
-            )}
-            <div className={classNames(route.className, "flex-grow flex")}>
-              <React.Suspense fallback={<LoadingSpinner />}>
-                <route.component container={container} />
-              </React.Suspense>
-            </div>
-          </div>
 
-          <FocusTrap active={queueDisplay} focusTrapOptions={{ clickOutsideDeactivates: true }}>
-            {/* By passing in the the player to the exclude prop, clicking on the Player doesn't close the queue. Yay!! */}
-            <Queue visible={queueDisplay} close={closeQueue} exclude={playerRef} />
-          </FocusTrap>
-        </Sidebar>
-      </div>
-      <Player toggleQueue={() => setQueueDisplay(!queueDisplay)} refFunc={playerRef} />
-    </UploadModal>
-  ) : route?.id ? (
-    <route.component container={container} />
-  ) : (
-    <div className="text-black">404</div>
-  );
+            <FocusTrap active={queueDisplay} focusTrapOptions={{ clickOutsideDeactivates: true }}>
+              {/* By passing in the the player to the exclude prop, clicking on the Player doesn't close the queue. Yay!! */}
+              <Queue visible={queueDisplay} close={closeQueue} exclude={playerRef} />
+            </FocusTrap>
+          </Sidebar>
+        </div>
+        <Player toggleQueue={() => setQueueDisplay(!queueDisplay)} refFunc={playerRef} />
+      </UploadModal>
+    ) : route?.id ? (
+      <route.component container={container} />
+    ) : (
+      <div className="text-black">404</div>
+    );
 
   return (
     <div className="h-screen text-white flex flex-col" style={{ backgroundColor: bgApp }}>

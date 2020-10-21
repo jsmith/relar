@@ -170,7 +170,7 @@ const createTmpDir = async () => {
 
 // For reference -> https://us-central1-relar-production.cloudfunctions.net/health
 export const health = f.https.onRequest((_, res) => {
-  res.send(`Running v${process.env.npm_package_version}`);
+  res.send(`Running v${env.version}`);
 });
 
 export const generateThumbs = f.storage.object().onFinalize(
