@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "scripts": {
     "clean": "rm -rf build",
     "cp-mobile": "cp index.mobile.html public/index.html",
@@ -45,6 +45,7 @@
     "react-infinite-scroll-component": "^5.1.0",
     "react-loading-skeleton": "^2.1.1",
     "react-modal-hook": "^3.0.0",
+    "react-recycled-scrolling": "^1.0.8",
     "react-simple-snackbar": "^1.1.10",
     "react-tabs": "^3.1.1",
     "react-useportal": "^1.0.13",

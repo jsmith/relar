@@ -7,12 +7,7 @@ import { Artist } from "../../shared/universal/types";
 import { useArtistSongs } from "../../queries/artist";
 import { useCoolArtists } from "../../db";
 
-const ArtistRow = ({
-  absoluteIndex,
-  item: artist,
-  handleSentinel,
-  mode,
-}: ListContainerRowProps<Artist>) => {
+const ArtistRow = ({ item: artist, mode }: ListContainerRowProps<Artist>) => {
   const { goTo } = useRouter();
   const songs = useArtistSongs(artist.name);
   // FIXME this is fine for now
@@ -21,8 +16,6 @@ const ArtistRow = ({
   return (
     <MusicListItem
       title={artist.name}
-      handleSentinel={handleSentinel}
-      absoluteIndex={absoluteIndex}
       object={song}
       type="song"
       onClick={() => goTo(routes.artist, { artistName: artist.name })}

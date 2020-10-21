@@ -10,7 +10,13 @@ import { useModal } from "react-modal-hook";
 import { Feedback } from "../../sections/Feedback";
 import firebase from "firebase/app";
 
-const ITEMS = ["Settings" as const, "Feedback" as const, "Beta Guide" as const, "Log Out" as const];
+const ITEMS = [
+  "Settings" as const,
+  "Feedback" as const,
+  "Beta Guide" as const,
+  "Release Notes" as const,
+  "Log Out" as const,
+];
 
 export interface AccountDropdownProps {
   className?: string;
@@ -32,6 +38,9 @@ export const AccountDropdown = ({ className }: AccountDropdownProps) => {
           break;
         case "Beta Guide":
           goTo(routes["beta-guide"]);
+          break;
+        case "Release Notes":
+          goTo(routes["release-notes"]);
           break;
         case "Log Out":
           firebase.analytics().logEvent("logout");

@@ -51,7 +51,7 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
         )}
         {songInfo?.song && (
           <div className="min-w-0">
-            <div className="text-gray-100 text-sm" title={songInfo?.song.title}>
+            <div className="text-gray-100 text-sm clamp-2" title={songInfo?.song.title}>
               {songInfo?.song.title}
             </div>
             <div className="text-gray-300 text-xs">{songInfo?.song.artist}</div>

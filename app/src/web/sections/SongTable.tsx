@@ -1,4 +1,4 @@
-import React, { useMemo, useState, CSSProperties } from "react";
+import React, { useMemo, useState, CSSProperties, useRef, useCallback } from "react";
 import classNames from "classnames";
 import {
   MdMusicNote,
@@ -24,74 +24,71 @@ import { link } from "../../classes";
 import { AddToPlaylistEditor } from "./AddToPlaylistModal";
 import Skeleton from "react-loading-skeleton";
 import { useQueue, SetQueueSource, SongInfo, checkQueueItemsEqual } from "../../queue";
-import { useRecycle, SentinelBlock } from "../../recycle";
 import { Audio } from "@jsmith21/svg-loaders-react";
+import RecycledList from "react-recycled-scrolling";
+
+const widths = {
+  title: { flexGrow: 1, minWidth: 0 },
+  artist: { flex: "0 0 24%" },
+  album: { flex: "0 0 18%" },
+  songCount: { flex: "0 0 50px" },
+  dateAdded: { flex: "0 0 100px" },
+  duration: { flex: "0 0 60px" },
+  liked: { flex: "0 0 50px" },
+};
 
 export const HeaderCol = ({
   label,
-  width,
   className,
   style,
 }: {
   label: React.ReactNode;
-  width: string;
   className?: string;
-  style?: CSSProperties;
+  style: CSSProperties;
 }) => {
   return (
-    <th
+    <div
       className={classNames(
         "text-left text-gray-800 text-xs uppercase tracking-wider font-bold",
         className,
       )}
-      style={{ width, ...style }}
+      style={style}
     >
       {label}
-    </th>
+    </div>
   );
 };
 
 export const Cell = ({
   children,
   className,
+  style,
+  title,
 }: {
   children: React.ReactNode;
   className?: string;
+  style: CSSProperties;
+  title?: string;
 }) => {
   return (
-    <td
+    <div
       className={classNames(
-        "h-12 whitespace-no-wrap border-b border-gray-200 border-opacity-25 cursor-pointer",
+        "whitespace-no-wrap border-b border-gray-200 border-opacity-25 cursor-pointer",
         className,
       )}
+      style={style}
     >
       {children}
-    </td>
+    </div>
   );
 };
 
 export const LoadingCell = ({ width }: { width?: number }) => {
   return (
-    <Cell className="px-2 py-4">
+    <Cell className="px-2 py-4" style={{}}>
       <div className="pr-3">
         <Skeleton width={width} />
       </div>
-    </Cell>
-  );
-};
-
-export const TextCell = ({
-  text,
-  className,
-  title,
-}: {
-  text?: React.ReactNode;
-  className: string;
-  title?: string;
-}) => {
-  return (
-    <Cell className={className}>
-      <div title={title}>{text}</div>
     </Cell>
   );
 };
@@ -102,9 +99,6 @@ export interface SongTableItem<T extends SongInfo>
 }
 
 export interface SongTableRowProps<T extends SongInfo> {
-  /**
-   * The song. `undefined` means it is loading.
-   */
   song: T;
   setSong: (song: T) => void;
   actions: SongTableItem<T>[] | undefined;
@@ -123,7 +117,6 @@ export const SongTableRow = <T extends SongInfo>({
   mode,
   playing,
   paused,
-  children,
   includeDateAdded,
   index,
 }: SongTableRowProps<T>) => {
@@ -194,7 +187,7 @@ export const SongTableRow = <T extends SongInfo>({
     />
   );
 
-  const album = song.albumId && (
+  const album = song.albumId && song.albumName && (
     <Link
       className={classNames(
         link({ color: "" }),
@@ -208,8 +201,12 @@ export const SongTableRow = <T extends SongInfo>({
   );
 
   return (
-    <tr className="group hover:bg-gray-300 text-gray-700 text-sm" onClick={() => setSong(song)}>
-      <Cell className="flex space-x-2 items-center h-12 pl-3">
+    <div
+      // h-full to take up entire parent (set by recycle view)
+      className="group hover:bg-gray-300 text-gray-700 text-sm flex items-center h-full"
+      onClick={() => setSong(song)}
+    >
+      <Cell className="flex space-x-2 items-center pl-3" style={widths.title}>
         <div className="w-5 h-5 relative">
           {playing ? (
             <Audio
@@ -261,31 +258,44 @@ export const SongTableRow = <T extends SongInfo>({
             <IconButton
               icon={MdMoreVert}
               className="group-hover:w-8 focus:w-8 w-0 overflow-hidden py-1 pl-1 flex-shrink-0"
-              hoverClassName="hover:bg-gray-400"
+              hoverClassName="hover:bg-gray-400 focus:bg-gray-400 focus:outline-none"
               iconClassName="w-0 w-6 h-6"
               {...props}
             />
           )}
           items={contextMenuItems}
-          className="transform -translate-x-4"
+          className="transform -translate-x-4 z-10"
         />
       </Cell>
-      {mode === "regular" && <TextCell title={song.artist} text={artist} className="h-12" />}
-      {mode === "regular" && <TextCell title={song.albumName} text={album} className="h-12" />}
-      <TextCell text={`${song.played ?? ""}`} className="h-12 truncate" />
-      {includeDateAdded && (
-        <TextCell
-          title={song.createdAt.toDate().toLocaleDateString()}
-          text={song.createdAt.toDate().toLocaleDateString()}
-          className="h-12 truncate"
-        />
+      {mode === "regular" && (
+        <Cell title={song.artist} className="" style={widths.artist}>
+          {artist}
+        </Cell>
       )}
-      <TextCell text={fmtMSS(song.duration / 1000)} className="h-12 truncate" />
-      <Cell className="h-12 truncate">
-        <LikedIcon liked={song.liked} setLiked={setLiked} />
-        {children}
+      {mode === "regular" && (
+        <Cell title={song.albumName} className="" style={widths.album}>
+          {album}
+        </Cell>
+      )}
+      <Cell className="text-center truncate" style={widths.songCount}>
+        {`${song.played ?? ""}`}
       </Cell>
-    </tr>
+      {includeDateAdded && (
+        <Cell
+          title={song.createdAt.toDate().toLocaleDateString()}
+          className="text-center truncate"
+          style={widths.dateAdded}
+        >
+          {song.createdAt.toDate().toLocaleDateString()}
+        </Cell>
+      )}
+      <Cell className="text-center truncate" style={widths.duration}>
+        {fmtMSS(song.duration / 1000)}
+      </Cell>
+      <Cell className=" truncate" style={widths.liked}>
+        <LikedIcon liked={song.liked} setLiked={setLiked} />
+      </Cell>
+    </div>
   );
 };
 
@@ -316,20 +326,6 @@ export const SongTable = function <T extends SongInfo>({
   includeDateAdded,
 }: SongTableProps<T>) {
   const { setQueue, playing: notPaused, dequeue, enqueue, songInfo } = useQueue();
-  const rowCount = useMemo(() => songs?.length ?? 0, [songs]);
-  const {
-    start,
-    end,
-    placeholderBottomHeight,
-    placeholderTopHeight,
-    table,
-    handleSentinel,
-  } = useRecycle({
-    container,
-    rowCount,
-    rowHeight: 48,
-  });
-
   const actionsWithAddRemove = useMemo(() => {
     const actionsWithAddRemove = actions ? [...actions] : [];
     if (source.type === "queue") {
@@ -353,15 +349,26 @@ export const SongTable = function <T extends SongInfo>({
     if (!songs) {
       return Array(loadingRows)
         .fill(undefined)
-        .map((_, i) => (
-          <tr key={i}>
-            <LoadingCell />
-            <LoadingCell />
-            <LoadingCell />
-          </tr>
-        ));
+        .map((_, i) => i);
     }
-    return songs.slice(start, end).map((song, i) => {
+
+    return songs.map((song, index) => ({ song, index }));
+  }, [loadingRows, songs]);
+
+  // TODO update snowpack + react
+  const rowRenderer = useCallback(
+    (row: { song: T; index: number } | number) => {
+      if (typeof row === "number") {
+        return (
+          <div key={row}>
+            <LoadingCell />
+            <LoadingCell />
+            <LoadingCell />
+          </div>
+        );
+      }
+
+      const { song, index } = row;
       const playing = checkQueueItemsEqual(
         { song, id: song.playlistId ?? song.id, source },
         songInfo,
@@ -371,60 +378,44 @@ export const SongTable = function <T extends SongInfo>({
       return (
         <SongTableRow
           song={song}
-          index={start + i}
-          setSong={() => setQueue({ songs: songs, source, index: start + i })}
-          key={`${song.id}///${start + i}`}
+          index={index}
+          setSong={() => setQueue({ songs: songs ?? [], source, index })}
+          key={`${song.id}///${index}`}
           actions={actionsWithAddRemove}
           mode={mode}
           playing={playing}
           paused={!notPaused}
           includeDateAdded={includeDateAdded}
-        >
-          <SentinelBlock index={start + i} handleSentinel={handleSentinel} />
-        </SongTableRow>
+        />
       );
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    songs,
-    start,
-    end,
-    loadingRows,
-    songInfo?.id,
-    songInfo?.source,
-    actionsWithAddRemove,
-    mode,
-    notPaused,
-    includeDateAdded,
-    handleSentinel,
-    // We are ignoring source since they are created each time
-    // source,
-    setQueue,
-  ]);
+    },
+    [actionsWithAddRemove, includeDateAdded, mode, notPaused, setQueue, songInfo, songs, source],
+  );
 
   return (
-    <table className="text-gray-800 table-fixed w-full" ref={table}>
-      <thead>
-        <tr key={mode}>
-          <HeaderCol
-            width="42%"
-            label={mode === "regular" ? "Title" : "Song"}
-            className="py-2 pl-3 ml-5"
-            style={{ textIndent: "27px" }}
-          />
-          {mode === "regular" && <HeaderCol width="32%" label="Artist" className="py-2" />}
-          {mode === "regular" && <HeaderCol width="26%" label="Album" className="py-2" />}
-          <HeaderCol width="50px" label={<MdMusicNote className="w-5 h-5" />} className="py-2" />
-          {includeDateAdded && <HeaderCol width="100px" label="Date Added" className="py-2" />}
-          <HeaderCol width="60px" label="" className="py-2" />
-          <HeaderCol width="90px" label="" className="py-2" />
-        </tr>
-      </thead>
-      <tbody>
-        <tr style={{ height: `${placeholderTopHeight}px` }} />
-        {rows}
-        <tr style={{ height: `${placeholderBottomHeight}px` }} />
-      </tbody>
-    </table>
+    <div className="text-gray-800 w-full flex flex-col h-full">
+      <div key={mode} className="flex">
+        <HeaderCol
+          label={mode === "regular" ? "Title" : "Song"}
+          className="py-2 pl-10"
+          style={widths.title}
+        />
+        {mode === "regular" && <HeaderCol label="Artist" className="py-2" style={widths.artist} />}
+        {mode === "regular" && <HeaderCol label="Album" className="py-2" style={widths.album} />}
+        <HeaderCol
+          label={<MdMusicNote className="w-5 h-5" />}
+          className="py-2"
+          style={widths.songCount}
+        />
+        {includeDateAdded && (
+          <HeaderCol label="Date Added" className="py-2" style={widths.dateAdded} />
+        )}
+        <HeaderCol label="" className="py-2" style={widths.duration} />
+        <HeaderCol label="" className="py-2" style={widths.liked} />
+      </div>
+      <div className="flex-grow">
+        <RecycledList attrList={rows} itemFn={rowRenderer} itemHeight={48} />
+      </div>
+    </div>
   );
 };

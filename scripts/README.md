@@ -41,3 +41,11 @@ Delete all data for a user
 ```
 NODE_PRESERVE_SYMLINKS=1 npx ts-node src/clear-data.ts <email>
 ```
+
+## ls-beta-signups.ts
+
+List beta signups in order of least recent to most recent.
+
+```
+NODE_PRESERVE_SYMLINKS=1 npx ts-node src/ls-beta-signups.ts
+```

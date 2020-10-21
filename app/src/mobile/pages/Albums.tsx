@@ -6,20 +6,13 @@ import { MusicListItem } from "../sections/MusicListItem";
 import { Album } from "../../shared/universal/types";
 import { useCoolAlbums } from "../../db";
 
-const AlbumRow = ({
-  absoluteIndex,
-  item: album,
-  handleSentinel,
-  mode,
-}: ListContainerRowProps<Album>) => {
+const AlbumRow = ({ item: album, mode }: ListContainerRowProps<Album>) => {
   const { goTo } = useRouter();
 
   return (
     <MusicListItem
       title={album.album ? album.album : "Unknown Album"}
       subTitle={album.albumArtist ? album.albumArtist : "Unknown Artist"}
-      handleSentinel={handleSentinel}
-      absoluteIndex={absoluteIndex}
       object={album}
       type="album"
       onClick={() => goToAlbum(goTo, album.id)}

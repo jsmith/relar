@@ -37,7 +37,7 @@ service cloud.firestore {
 
       match /albums/{albumId} {
         function validUpdate() {
-          return affectedKeys().hasOnly(['artwork']) && affectedKeys().hasAll(['updatedAt'])
+          return affectedKeys().hasOnly(['artwork', 'updatedAt']) && affectedKeys().hasAll(['updatedAt'])
         }
 
         allow update: if isUser() && validUpdate()

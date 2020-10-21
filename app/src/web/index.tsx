@@ -1,3 +1,4 @@
+import { env } from "../env";
 import * as Sentry from "@sentry/browser";
 
 if (process.env.NODE_ENV !== "development") {
@@ -5,8 +6,19 @@ if (process.env.NODE_ENV !== "development") {
   Sentry.init({
     environment: process.env.NODE_ENV,
     // See https://docs.sentry.io/workflow/releases/?platform=javascript
-    release: "app@" + process.env.npm_package_version,
+    release: "app@" + env.version,
     dsn: "https://ae6c432b2c074f17b223ddd11df69461@o400394.ingest.sentry.io/5258806",
+    beforeSend: (e) => {
+      // FIXME probably handle this eventually
+      if (
+        e.message ===
+        "AbortError: The play() request was interrupted by a new load request. https://goo.gl/LdLk22"
+      ) {
+        return null;
+      }
+
+      return e;
+    },
   });
 }
 
@@ -21,7 +33,6 @@ import { ConfirmActionProvider } from "../confirm-actions";
 import { ConfirmPasswordProvider } from "../confirm-password";
 import { ModalProvider } from "react-modal-hook";
 import { setBaseUrls } from "../backend";
-import { env } from "../env";
 import "../firebase";
 import "../tailwind.css";
 import "../common.css";

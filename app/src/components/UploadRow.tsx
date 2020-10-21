@@ -15,17 +15,18 @@ export interface UploadRowProps {
   onRemove: () => void;
 }
 
-type TaskState =
-  | { status: "running" }
-  | { status: "error"; error: string }
-  | { status: "cancelled" };
-
 export const UploadRow = ({ file, task }: UploadRowProps) => {
   const [error, setError] = useState("");
   const [cancelled, setCancelled] = useState(false);
   const [progress, setProgress] = useState(0);
 
   const handleSnapshot = (snapshot: firebase.storage.UploadTaskSnapshot) => {
+    if (snapshot.totalBytes > 20 * 1024 * 1024) {
+      setError("This file is greater than 20MB.");
+      task?.cancel();
+      return;
+    }
+
     const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
     setProgress(progress);
     // switch (snapshot.state) {
@@ -57,7 +58,9 @@ export const UploadRow = ({ file, task }: UploadRowProps) => {
               break;
             default:
               setError("Something went wrong during the upload.");
-              captureAndLog(error);
+              captureAndLog(e, {
+                code,
+              });
           }
         },
         () => console.debug("COMPLETE"),
@@ -72,7 +75,7 @@ export const UploadRow = ({ file, task }: UploadRowProps) => {
   return (
     <div key={file.name} className="py-2 space-x-2 flex items-center group">
       {cancelled ? (
-        <AiOutlineStop className="flex-shrink-0" />
+        <AiOutlineStop title={error} className="flex-shrink-0" />
       ) : error ? (
         <MdErrorOutline title={error} className="text-red-600 flex-shrink-0" />
       ) : progress === 100 ? (

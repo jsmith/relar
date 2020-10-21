@@ -2,7 +2,6 @@ import React from "react";
 import { MdMoreVert } from "react-icons/md";
 import { ActionSheetItem, openActionSheet } from "../action-sheet";
 import { Thumbnail, ThumbnailProps } from "../../components/Thumbnail";
-import { SentinelBlock, SentinelBlockHandler } from "../../recycle";
 import classNames from "classnames";
 import type { ListContainerMode } from "../components/ListContainer";
 import { Audio } from "@jsmith21/svg-loaders-react";
@@ -10,25 +9,21 @@ import { Audio } from "@jsmith21/svg-loaders-react";
 export type MusicListItemState = "not-playing" | "playing" | "paused";
 
 export const MusicListItem = ({
-  absoluteIndex,
   actionItems,
   onClick,
   title,
   subTitle,
   object,
-  handleSentinel,
   mode,
   type,
   state = "not-playing",
 }: {
-  absoluteIndex: number;
   title: string;
   subTitle?: string;
   object: ThumbnailProps["object"];
   type: ThumbnailProps["type"];
   actionItems?: Array<ActionSheetItem | undefined>;
   onClick: () => void;
-  handleSentinel: SentinelBlockHandler;
   mode: ListContainerMode;
   state?: MusicListItemState;
 }) => {
@@ -64,7 +59,6 @@ export const MusicListItem = ({
       <div className="flex flex-col min-w-0 flex-grow text-left justify-center">
         <div className={classNames("truncate", !subTitle && "font-bold")}>{title}</div>
         {subTitle && <div className="text-sm">{subTitle}</div>}
-        <SentinelBlock index={absoluteIndex} handleSentinel={handleSentinel} />
       </div>
       <button
         className="p-1"
