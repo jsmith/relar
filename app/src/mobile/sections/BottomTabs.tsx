@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from "react";
 import type { IconType } from "react-icons/lib";
 import type { RouteType } from "@graywolfai/react-tiniest-router";
 import { Link } from "../../components/Link";
-import { routes } from "../../routes";
+import { getAlbumRouteParams, getArtistRouteParams, routes } from "../../routes";
 import { HiDotsHorizontal, HiHome, HiSearch, HiTrash } from "react-icons/hi";
 import {
   MdLibraryMusic,
@@ -297,27 +297,29 @@ export const ButtonTabs = () => {
                 </button>
                 <button
                   className="focus:outline-none"
-                  onClick={() =>
+                  onClick={() => {
+                    if (!songInfo) return;
                     openActionSheet([
-                      {
-                        label: "Go To Artist",
-                        icon: AiOutlineUser,
-                        route: routes.artist,
-                        type: "link",
-                        // FIXME
-                        params: { artistName: songInfo?.song.artist ?? "" },
-                      },
+                      songInfo.song.artist
+                        ? {
+                            label: "Go To Artist",
+                            icon: AiOutlineUser,
+                            route: routes.artist,
+                            type: "link",
+                            params: getArtistRouteParams(songInfo.song.artist),
+                          }
+                        : undefined,
                       {
                         label: "Go to Album",
                         icon: RiAlbumLine,
                         route: routes.album,
                         type: "link",
                         // FIXME
-                        params: { albumId: songInfo?.song.albumId ?? "" },
+                        params: getAlbumRouteParams(songInfo.song.albumId),
                       },
                       { label: "Clear Queue", icon: HiTrash, onClick: clear, type: "click" },
-                    ])
-                  }
+                    ]);
+                  }}
                 >
                   <HiDotsHorizontal className="w-6 h-6 text-gray-200" />
                 </button>

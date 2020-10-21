@@ -52,11 +52,12 @@ The other files/folders in this repo are a mixture of documentation and configur
 npm run version
 ``` -->
 
+1. Make sure you've added release notes
 1. Update version in `package.json`, `functions/package.json` and `app/package.json`.
-2. Update version in `app/.env`.
-3. Run `firebase --project production functions:config:set environment.version=VERSION` where `VERSION` is the new version
-4. Run the build commands
-5. Run `firebase deploy --project production`
+1. Update version in `app/.env`.
+1. Run `firebase --project production functions:config:set environment.version=VERSION` where `VERSION` is the new version
+1. Run the build commands
+1. Run `firebase deploy --project production`
 
 ## GitHub Actions
 

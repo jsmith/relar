@@ -14,7 +14,7 @@ export const onFeedbackGiven = functions.firestore
   .document("user_data/{userId}/feedback/{feedbackId}")
   .onCreate(
     wrapAndReport(async (object) => {
-      const { feedback } = decode(object.data(), UserFeedbackType)._unsafeUnwrap();
+      const { feedback, type } = decode(object.data(), UserFeedbackType)._unsafeUnwrap();
       const userId = object.ref.parent.parent?.id;
       if (!userId) {
         Sentry.captureMessage("Unable to find user ID in feedback onCreate");
@@ -32,7 +32,7 @@ export const onFeedbackGiven = functions.firestore
       await sgMail.send({
         from: "contact@relar.app",
         to: env.mail.notification_email,
-        subject: `Relar Feedback From ${user.email ?? "Unknown Email"}`,
+        subject: `Relar Feedback From ${user.email ?? "Unknown Email"} [${type}]`,
         text: feedback,
       });
     }),

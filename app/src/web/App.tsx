@@ -178,7 +178,12 @@ export const App = (_: React.Props<{}>) => {
     ) : route?.id ? (
       <route.component container={container} />
     ) : (
-      <div className="text-black">404</div>
+      <div className="flex flex-col text-black w-full flex-grow justify-center items-center">
+        <div>This is a 404</div>
+        <div>
+          Take me <Link route={routes.home} label="home" />?
+        </div>
+      </div>
     );
 
   return (

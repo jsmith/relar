@@ -2,7 +2,9 @@ import firebase from "firebase/app";
 import type { Song, Album, Artist, UserData, Playlist, UserFeedback } from "./types";
 import type { Runtype, Static, Success, Failure } from "runtypes";
 
-export type DecodeResult<T> = (Success<T> | Failure) & { _unsafeUnwrap: () => T };
+export type DecodeResult<T> = (Success<T> | Failure) & {
+  _unsafeUnwrap: () => T;
+};
 
 export const decode = <V extends Runtype<any>>(
   data: unknown,
@@ -59,10 +61,14 @@ export const clientDb = (userId: string) => {
       db.doc(path.append("songs").append(songId).build()) as DocumentReference<Song>,
     songs: () => db.collection(path.append("songs").build()) as CollectionReference<Song>,
     album: (albumId: string) =>
-      db.doc(path.append("albums").append(albumId).build()) as DocumentReference<Album>,
+      db.doc(path.append("albums").append(encodeFirebase(albumId)).build()) as DocumentReference<
+        Album
+      >,
     albums: () => db.collection(path.append("albums").build()) as CollectionReference<Album>,
     artist: (artistId: string) =>
-      db.doc(path.append("artists").append(artistId).build()) as DocumentReference<Artist>,
+      db.doc(path.append("artists").append(encodeFirebase(artistId)).build()) as DocumentReference<
+        Artist
+      >,
     artists: () => db.collection(path.append("artists").build()) as CollectionReference<Artist>,
     doc: () => db.doc(path.build()) as DocumentReference<UserData>,
     playlists: () =>
@@ -117,3 +123,29 @@ export const getAlbumAttributes = (albumId: string) => {
 
 export const isDefined = <T>(value: T | undefined | null): value is T =>
   value !== null && value !== undefined;
+
+// http://stackoverflow.com/a/6969486/692528
+// eslint-disable-next-line no-useless-escape
+const escapeRegExp = (str: string) => str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+
+const create = (chars: string[]) => {
+  const charCodes = chars.map((c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
+
+  const charToCode: Record<string, string> = {};
+  const codeToChar: Record<string, string> = {};
+  chars.forEach((c, i) => {
+    charToCode[c] = charCodes[i];
+    codeToChar[charCodes[i]] = c;
+  });
+
+  const charsRegex = new RegExp(`[${escapeRegExp(chars.join(""))}]`, "g");
+  const charCodesRegex = new RegExp(charCodes.join("|"), "g");
+
+  const encode = (str: string) => str.replace(charsRegex, (match) => charToCode[match]);
+  const decode = (str: string) => str.replace(charCodesRegex, (match) => codeToChar[match]);
+
+  return { encode, decode };
+};
+
+// http://stackoverflow.com/a/19148116/692528
+export const { encode: encodeFirebase, decode: decodeFirebase } = create(".$[]#/%".split(""));

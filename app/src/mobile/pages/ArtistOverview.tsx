@@ -1,11 +1,10 @@
-import { useRouter } from "@graywolfai/react-tiniest-router";
 import React from "react";
 import { SongsOverview } from "../sections/SongsOverview";
 import { useArtist, useArtistSongs } from "../../queries/artist";
+import { useArtistNameFromParams } from "../../routes";
 
 export const ArtistOverview = () => {
-  const { params } = useRouter();
-  const { artistName } = params as { artistName: string };
+  const artistName = useArtistNameFromParams();
   const artist = useArtist(artistName);
   const songs = useArtistSongs(artistName);
 

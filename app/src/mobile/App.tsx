@@ -20,6 +20,7 @@ import { useDefaultStatusBar } from "./status-bar";
 import { Thumbnail } from "../components/Thumbnail";
 import { LogoIcon } from "../components/LogoIcon";
 import { LogoNText } from "../components/LogoNText";
+import { Link } from "../components/Link";
 
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 
@@ -144,7 +145,14 @@ export const App = () => {
   }
 
   if (!route) {
-    return <div>404</div>;
+    return (
+      <div className="flex flex-col">
+        <div>This is a 404</div>
+        <div>
+          Take me <Link route={routes.home} label="home" />?
+        </div>
+      </div>
+    );
   }
 
   return (

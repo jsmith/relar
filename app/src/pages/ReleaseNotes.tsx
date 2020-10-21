@@ -53,6 +53,11 @@ const changelog: Change[] = [
       "Other small fixes and improvements",
     ],
   },
+  {
+    version: "0.6.1",
+    date: "October 21 2020",
+    fixes: ['Fixed album and artist name "/" encoding issues'],
+  },
 ].reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (
