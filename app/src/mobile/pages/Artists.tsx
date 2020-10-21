@@ -1,7 +1,7 @@
 import { useRouter } from "@graywolfai/react-tiniest-router";
 import React, { useMemo } from "react";
 import { ListContainer, ListContainerRowProps } from "../components/ListContainer";
-import { routes } from "../../routes";
+import { getArtistRouteParams, routes } from "../../routes";
 import { MusicListItem } from "../sections/MusicListItem";
 import { Artist } from "../../shared/universal/types";
 import { useArtistSongs } from "../../queries/artist";
@@ -18,7 +18,7 @@ const ArtistRow = ({ item: artist, mode }: ListContainerRowProps<Artist>) => {
       title={artist.name}
       object={song}
       type="song"
-      onClick={() => goTo(routes.artist, { artistName: artist.name })}
+      onClick={() => goTo(routes.artist, getArtistRouteParams(artist.name))}
       mode={mode}
     />
   );

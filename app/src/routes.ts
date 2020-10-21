@@ -392,7 +392,11 @@ export const goToAlbum = (goTo: RouterContextType["goTo"], albumId: string | und
 
 export const getAlbumRouteParams = (albumId: string | undefined) => {
   const [artist, album] = albumId ? albumId.split(ALBUM_ID_DIVIDER) : ["", ""];
-  return { album, artist };
+  return { album: encodeURIComponent(album), artist: encodeURIComponent(artist) };
+};
+
+export const getArtistRouteParams = (artistName: string) => {
+  return { artistName: encodeURIComponent(artistName) };
 };
 
 export const useAlbumIdFromParams = (): string => {
@@ -402,5 +406,15 @@ export const useAlbumIdFromParams = (): string => {
     artist: string | undefined;
     album: string | undefined;
   };
-  return `${artistName ?? ""}${ALBUM_ID_DIVIDER}${albumName ?? ""}`;
+  return `${decodeURIComponent(artistName ?? "")}${ALBUM_ID_DIVIDER}${decodeURIComponent(
+    albumName ?? "",
+  )}`;
+};
+
+export const useArtistNameFromParams = (): string => {
+  const { params } = useRouter();
+  const { artistName } = params as {
+    artistName: string;
+  };
+  return decodeURIComponent(artistName);
 };
