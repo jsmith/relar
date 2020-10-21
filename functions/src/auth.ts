@@ -112,7 +112,6 @@ router.post("/beta-signup", async (req) => {
       email: req.body.email,
       firstName: req.body.firstName,
       device: req.body.device,
-      createdAt: (admin.firestore.FieldValue.serverTimestamp() as unknown) as admin.firestore.Timestamp,
     };
 
     await transaction.set(betaSignupRef, betaSignUp);

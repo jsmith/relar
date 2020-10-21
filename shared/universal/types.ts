@@ -14,13 +14,9 @@ import {
 
 // FIXME remove createdAt for each model since firestore automatically stores the createdAt and updatedAt times
 
-export const Timestamp = Unknown.withGuard(
-  (x): x is firebase.firestore.Timestamp => true
-);
+export const Timestamp = Unknown.withGuard((x): x is firebase.firestore.Timestamp => true);
 
-export const BetaDeviceType = Literal("ios")
-  .Or(Literal("android"))
-  .Or(Literal("none"));
+export const BetaDeviceType = Literal("ios").Or(Literal("android")).Or(Literal("none"));
 
 export type BetaDevice = Static<typeof BetaDeviceType>;
 
@@ -65,7 +61,7 @@ export const ArtworkType = Record({
 
     /** 128x128 download URL. */
     artworkDownloadUrl256: String.Or(Undefined).Or(Null),
-  })
+  }),
 );
 
 export type Artwork = Static<typeof ArtworkType>;
@@ -181,7 +177,7 @@ export const BetaSignupType = Record({
 }).And(
   Partial({
     token: String,
-  })
+  }),
 );
 
 export type BetaSignup = Static<typeof BetaSignupType>;
@@ -222,7 +218,7 @@ export const PlaylistType = Record({
        * not need to be unique.
        */
       id: String,
-    })
+    }),
   ).Or(Undefined),
 
   /** When the playlist was created. */
@@ -289,9 +285,7 @@ export type BetaAPI = {
       };
       response:
         | (Success & { uid: string })
-        | KnownError<
-            "invalid-token" | "invalid-password" | "already-have-account"
-          >
+        | KnownError<"invalid-token" | "invalid-password" | "already-have-account">
         | UnknownError;
     };
   };
