@@ -1,6 +1,6 @@
 // This supports the browser (import.meta) *and* the testing environment (process.env)
 const get = (key: string): string => {
-  return import.meta.env ? (import.meta.env[key] as string) : (process.env[key] as string);
+  return import.meta.env ? (import.meta.env![key] as string) : (process.env[key] as string);
 };
 
 export const env = {

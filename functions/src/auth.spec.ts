@@ -46,7 +46,6 @@ test("can successfully sign up a user by email", async () => {
       assert.equal(data.data(), {
         firstName: "Tester",
         email: "test@user.com",
-        createdAt: data.data().createdAt,
         device: "ios",
       }),
     );
@@ -112,13 +111,12 @@ test("prevents a user with an account from signing up", async () => {
     .expect(200, { type: "error", code: "already-have-account" });
 });
 
-test.only("can create an account", async () => {
+test("can create an account", async () => {
   const data: BetaSignup = {
     email: "test@user.com",
     token: "1234",
     firstName: "Tester",
     device: "android",
-    createdAt: 0 as any,
   };
   await betaSignups(firestore).doc("test@user.com").set(data);
 
@@ -176,7 +174,6 @@ test("disallows users who already have accounts", async () => {
     token: "1234",
     device: "ios",
     firstName: "Tester",
-    createdAt: 0 as any,
   };
   await betaSignups(firestore).doc("test@user.com").set(data);
 

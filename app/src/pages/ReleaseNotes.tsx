@@ -1,8 +1,5 @@
 import React from "react";
 import classNames from "classnames";
-import { Link } from "../components/Link";
-import { routes } from "../routes";
-import { link } from "../classes";
 
 export const H1 = ({ l, className }: { l: string; className?: string }) => (
   <h1 className={classNames(className, "text-4xl font-bold")}>{l}</h1>
@@ -40,7 +37,7 @@ const changelog: Change[] = [
     fixes: ["Added svg-loaders-react patch for fill"],
   },
   {
-    version: "0.6.1",
+    version: "0.6.0",
     date: "October 21 2020",
     features: [
       "Improved the beta guide",

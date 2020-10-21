@@ -102,12 +102,12 @@ export const adminDb = (db: FirebaseFirestore.Firestore, userId: string) => {
     findAlbumSongs: (albumId: string) => {
       const key: keyof Song = "albumId";
       const value: Song["albumId"] = albumId;
-      return adminDb(db, userId).songs().where(key, "==", value);
+      return adminDb(db, userId).songs().where(key, "==", value).where("deleted", "==", false);
     },
     findArtistSongs: (name: string) => {
       const key: keyof Song = "artist";
       const value: Song["artist"] = name;
-      return adminDb(db, userId).songs().where(key, "==", value);
+      return adminDb(db, userId).songs().where(key, "==", value).where("deleted", "==", false);
     },
     playlists: () =>
       db.collection(`user_data/${userId}/playlists`) as CollectionReference<Playlist>,

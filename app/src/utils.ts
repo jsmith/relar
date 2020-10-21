@@ -490,7 +490,7 @@ export const removeElementFromShuffled = <T>(
   };
 };
 
-export const IS_WEB_VIEW = !!import.meta.env.SNOWPACK_PUBLIC_MOBILE;
+export const IS_WEB_VIEW = !!import.meta.env?.SNOWPACK_PUBLIC_MOBILE;
 
 /* eslint-disable */
 export const isMobile = () => {
