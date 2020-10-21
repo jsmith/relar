@@ -1,5 +1,4 @@
 import * as uuid from "uuid";
-import { BetaSignup } from "./shared/universal/types";
 import * as sgMail from "@sendgrid/mail";
 import { env } from "./env";
 import { argv, admin } from "./admin";
@@ -15,9 +14,8 @@ const main = async () => {
     return;
   }
 
-  const token = uuid.v4();
   const from = argv[2];
-  const to = argv[2];
+  const to = argv[3];
 
   const fromRef = await firestore.doc(from).get();
   const toRef = await firestore.doc(to).get();

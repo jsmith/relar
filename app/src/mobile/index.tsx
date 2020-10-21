@@ -1,3 +1,4 @@
+import { env } from "../env";
 import * as Sentry from "@sentry/browser";
 
 if (process.env.NODE_ENV !== "development") {
@@ -5,7 +6,7 @@ if (process.env.NODE_ENV !== "development") {
   Sentry.init({
     environment: process.env.NODE_ENV,
     // See https://docs.sentry.io/workflow/releases/?platform=javascript
-    release: "mobile@" + process.env.npm_package_version,
+    release: "mobile@" + env.version,
     dsn: "https://ae6c432b2c074f17b223ddd11df69461@o400394.ingest.sentry.io/5258806",
   });
 }
@@ -18,7 +19,6 @@ import { Router } from "@graywolfai/react-tiniest-router";
 import { routes } from "../routes";
 import { UserProvider } from "../auth";
 import { setBaseUrls } from "../backend";
-import { env } from "../env";
 import { QueueProvider } from "../queue";
 import "../tailwind.css";
 import "../common.css";

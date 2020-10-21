@@ -26,4 +26,5 @@ export const env = {
     notification_email: get(config.mail, "notification_email"),
   },
   project: get(config.environment, "project"),
+  version: get(config.environment, "version"),
 };

@@ -43,11 +43,10 @@ const AddToPlaylistMenu = ({ song, hide }: { song: Song; hide: () => void }) => 
 
 const SongListRow = ({
   item: song,
-  handleSentinel,
   items: songs,
-  absoluteIndex,
   mode,
   source,
+  index,
 }: ListContainerRowProps<SongInfo> & {
   source: SetQueueSource;
 }) => {
@@ -82,10 +81,10 @@ const SongListRow = ({
   );
 
   const state = useMemo((): MusicListItemState => {
-    const id = songs[absoluteIndex].playlistId ?? songs[absoluteIndex].id;
+    const id = songs[index].playlistId ?? songs[index].id;
     if (!checkQueueItemsEqual({ song, id, source }, songInfo)) return "not-playing";
     return playing ? "playing" : "paused";
-  }, [absoluteIndex, playing, song, songInfo, songs, source]);
+  }, [index, playing, song, songInfo, songs, source]);
 
   return (
     <MusicListItem
@@ -149,13 +148,11 @@ const SongListRow = ({
         setQueue({
           source,
           songs: songs!,
-          index: absoluteIndex,
+          index: index,
         })
       }
       title={song.title}
       subTitle={`${song.artist ?? "Unknown Artist"} • ${fmtMSS(song.duration / 1000)}`}
-      handleSentinel={handleSentinel}
-      absoluteIndex={absoluteIndex}
       object={song}
       mode={mode}
       state={state}

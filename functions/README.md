@@ -21,5 +21,5 @@ npm run test
 Run this to set the project configuration.
 
 ```
-firebase functions:config:set mail.sendgrid_api_key="API_KEY" mail.notification_email="jsmith@hey.com" environment.project=PROJECT --project PROJECT
+firebase functions:config:set mail.sendgrid_api_key="API_KEY" mail.notification_email="jacob@relar.app" environment.project=PROJECT --project PROJECT
 ```

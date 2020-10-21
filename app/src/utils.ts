@@ -216,8 +216,14 @@ export const wrap = (f: () => Promise<any>) => () => {
   f();
 };
 
-export const captureAndLog = (e: unknown) => {
-  const extra: Record<string, any> = {};
+export const captureAndLog = (
+  e: unknown,
+  extra?: {
+    [key: string]: any;
+  },
+) => {
+  extra = extra || {};
+
   // This specifically handles axios errors which return the response as a field in the error object
   if ((e as any).response) {
     extra.response = (e as any).response;
@@ -483,18 +489,6 @@ export const removeElementFromShuffled = <T>(
     mappingTo: newMappingTo,
   };
 };
-
-const rules = [
-  // if it says it's a webview, let's go with that
-  "WebView",
-  // iOS webview will be the same as safari but missing "Safari"
-  "(iPhone|iPod|iPad)(?!.*Safari)",
-  // Android Lollipop and Above: webview will be the same as native but it will contain "wv"
-  // Android KitKat to lollipop webview will put {version}.0.0.0
-  "Android.*(wv|.0.0.0)",
-  // old chrome android webview agent
-  "Linux; U; Android",
-];
 
 export const IS_WEB_VIEW = !!import.meta.env.SNOWPACK_PUBLIC_MOBILE;
 
