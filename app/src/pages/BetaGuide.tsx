@@ -80,13 +80,20 @@ export const BetaGuide = () => {
         </P>
         <ul className="mt-2">
           <LI>You can only upload 500 songs</LI>
-          <LI>Each song can be at most 10 MB</LI>
+          <LI>Each song can be at most 20 MB</LI>
           <LI>You cannot download or backup songs that have been uploaded</LI>
           <LI>You cannot edit album metadata</LI>
           <LI>You cannot upload new album covers to songs after being uploaded</LI>
           <LI>The mobile app does not have offline support</LI>
           <LI>There is not duplicate song detection</LI>
           <LI>There is no way to automatically transfer your Google Play Music library</LI>
+        </ul>
+
+        <H2 l="Known Issues" />
+        <P>There are a few known issues that will be addressed soon.</P>
+        <ul className="mt-2">
+          <LI>The system cannot process unsynchronized ID3 which results in failed uploads</LI>
+          <LI>The system does notify users if songs fail processing in the backend</LI>
         </ul>
 
         <P className="pt-3">

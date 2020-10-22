@@ -42,7 +42,6 @@ export const Thumbnail = ({
           // Anonymous because https://stackoverflow.com/questions/19869150/getimagedata-cross-origin-error
           crossOrigin="anonymous"
           src={thumbnail}
-          alt="Album Cover"
           className="w-full h-full"
           onError={(e) => {
             // TODO figure out why???

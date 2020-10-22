@@ -13,7 +13,7 @@ export const Artists = () => {
   }
 
   return (
-    <div className="flex flex-wrap px-5 w-full" style={{ height: "fit-content" }}>
+    <div className="flex flex-wrap px-5 w-full" style={{ height: "max-content" }}>
       {artists.length > 0 ? (
         artists.map((artist) => <ArtistCard className="mx-1" key={artist.id} artist={artist} />)
       ) : (
