@@ -13,7 +13,7 @@ export const Albums = () => {
   }
 
   return (
-    <div className="flex flex-wrap px-5 w-full" style={{ height: "fit-content" }}>
+    <div className="flex flex-wrap px-5 w-full overflow-y-auto" style={{ height: "max-content" }}>
       {albums.length > 0 ? (
         albums.map((album) => <AlbumCard className="mx-1" key={album.id} album={album} />)
       ) : (

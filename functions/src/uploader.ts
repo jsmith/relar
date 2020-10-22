@@ -441,8 +441,9 @@ export const createSong = f.storage.object().onFinalize(
         try {
           // It's important that we delete this file from storage when
           // we detect an error
-          console.warn(`Deleting "${object.name}" due to failure.`);
-          await gcs.bucket(object.bucket).file(object.name).delete();
+          // Edit: I'm no longer deleting to help with debugging
+          // console.warn(`Deleting "${object.name}" due to failure.`);
+          // await gcs.bucket(object.bucket).file(object.name).delete();
           const user = await admin.auth().getUser(userId);
 
           await sgMail.send({

@@ -58,6 +58,16 @@ const changelog: Change[] = [
     date: "October 21 2020",
     fixes: ['Fixed album and artist name "/" encoding issues'],
   },
+  {
+    version: "0.6.2",
+    date: "October 22 2020",
+    fixes: [
+      "Fixed song rendering bug on Safari",
+      "Fixed scrolling for albums, artists and playlists and home pages",
+      "Other small styling fixes",
+    ],
+    features: ["Updated the beta guide with known issues"],
+  },
 ].reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (
