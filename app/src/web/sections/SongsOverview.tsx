@@ -81,6 +81,7 @@ export const SongsOverview = <T extends SongInfo>({
         className="flex items-end p-8"
         style={{
           height: "400px",
+          maxHeight: "50%",
           backgroundImage: `linear-gradient(to bottom, ${from}, ${to})`,
         }}
       >
@@ -88,7 +89,7 @@ export const SongsOverview = <T extends SongInfo>({
           size="256"
           objects={songs}
           type="song"
-          className="w-48 h-48 lg:w-64 lg:h-64"
+          className="w-48 h-48 lg:w-64 lg:h-64 flex-shrink-0"
           setAverageColor={setAverageColor}
         />
 
@@ -141,7 +142,7 @@ export const SongsOverview = <T extends SongInfo>({
           )}
         </div>
       </div>
-      <div className="flex-grow">
+      <div className="flex-grow flex">
         <SongTable
           songs={songs}
           container={container}

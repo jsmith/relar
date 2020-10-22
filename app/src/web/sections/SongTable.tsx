@@ -392,8 +392,10 @@ export const SongTable = function <T extends SongInfo>({
     [actionsWithAddRemove, includeDateAdded, mode, notPaused, setQueue, songInfo, songs, source],
   );
 
+  console.log(rows.length);
+
   return (
-    <div className="text-gray-800 w-full flex flex-col h-full">
+    <div className="text-gray-800 w-full flex flex-col">
       <div key={mode} className="flex">
         <HeaderCol
           label={mode === "regular" ? "Title" : "Song"}
@@ -413,8 +415,13 @@ export const SongTable = function <T extends SongInfo>({
         <HeaderCol label="" className="py-2" style={widths.duration} />
         <HeaderCol label="" className="py-2" style={widths.liked} />
       </div>
-      <div className="flex-grow">
-        <RecycledList attrList={rows} itemFn={rowRenderer} itemHeight={48} />
+      <div className="flex-grow flex">
+        <RecycledList
+          attrList={rows}
+          itemFn={rowRenderer}
+          itemHeight={48}
+          className="relative w-full"
+        />
       </div>
     </div>
   );
