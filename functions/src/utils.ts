@@ -56,7 +56,7 @@ export const deleteArtistSingleSong = async ({
 
   if (songs.docs.length === 1) {
     const update: Partial<Artist> = {
-      // TODO simplify
+      // FIXME simplify
       updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
       deleted: true,
     };

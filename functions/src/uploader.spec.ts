@@ -97,21 +97,24 @@ test("can parse the tags of an mp3 file", async () => {
   });
 
   if (result.isErr()) {
-    throw Error("" + result.error);
+    throw Error("" + result.error.message);
   }
 
-  const tags = result.value.id3Tag;
-  assert.equal(tags?.title, "WalloonLilliShort");
-  assert.equal(tags?.band, "Web Samples");
-  assert.equal(tags?.artist, "Hendrik Broekman");
-  assert.equal(tags?.album, "Web Samples");
+  const tags = result.value.metadata;
+  assert.equal(tags.common.title, "WalloonLilliShort");
+  assert.equal(tags.common.albumartist, "Web Samples");
+  assert.equal(tags.common.artist, "Hendrik Broekman");
+  assert.equal(tags.common.album, "Web Samples");
+  assert.equal(tags.common.track, { no: 30, of: 30 });
+  assert.equal(tags.common.disk, { no: null, of: 2 });
+  assert.equal(Math.round(tags.format.duration * 1000), 13087);
 });
 
 test("can hash image", async () => {
   const filePath = path.resolve(__dirname, "..", "assets", "file_with_artist_album.mp3");
   const result = await md5Hash(filePath);
   const hash = result._unsafeUnwrap();
-  assert.equal(hash, "91316d766920ee089779d22d12428c1a");
+  assert.equal(hash, "b5ecdb659b2df687a1a5aedb3fb1da78");
 });
 
 test("works when uploading a valid song with just a title", async () => {
@@ -133,10 +136,16 @@ test("works when uploading a valid song with just a title", async () => {
       fileName: "file_just_title.mp3",
       createdAt: song?.createdAt,
       albumId: "<<<<<<<",
-      genre: "",
-      albumName: "",
       duration: 13087,
       updatedAt: song?.updatedAt,
+      track: {
+        no: 30,
+        of: 30,
+      },
+      disk: {
+        no: null,
+        of: null,
+      },
     }),
   );
 });
@@ -172,6 +181,14 @@ test("works when uploading a valid song with a title, artist and album", async (
     createdAt: song.createdAt,
     duration: 13087,
     updatedAt: song.updatedAt,
+    track: {
+      no: 30,
+      of: 30,
+    },
+    disk: {
+      no: null,
+      of: 2,
+    },
   });
 
   assert.equal(song, testSong);
@@ -241,7 +258,7 @@ test("can upload artwork", async () => {
 test("can upload song with artist & album that have slashes in their names", async () => {
   initUserData();
   const wrapped = testFunctions.wrap(createSong);
-  const { objectMetadata, songId } = await upload("file_with_artist_and_album_with_slash.mp3");
+  const { objectMetadata } = await upload("file_with_artist_and_album_with_slash.mp3");
   await wrapped(objectMetadata);
 
   await assertExists(

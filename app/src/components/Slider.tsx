@@ -35,17 +35,17 @@ export const Slider = ({
 
   const left = useMemo(() => `${(value / maxValue) * 100}%`, [value, maxValue]);
 
+  const move = (clientX: number) => {
+    if (!ref.current) {
+      return;
+    }
+
+    const { left, width } = ref.current.getBoundingClientRect();
+    const newValue = Math.round(clamp((clientX - left) / width, 0, 1) * maxValue);
+    onChange(newValue);
+  };
+
   const onPress = (source: "touch" | "mouse") => {
-    const move = (clientX: number) => {
-      if (!ref.current) {
-        return;
-      }
-
-      const { left, width } = ref.current.getBoundingClientRect();
-      const newValue = Math.round(clamp((clientX - left) / width, 0, 1) * maxValue);
-      onChange(newValue);
-    };
-
     if (source === "mouse") {
       const disposer = addEventListeners({
         mousemove: (e) => move(e.clientX),
@@ -73,7 +73,7 @@ export const Slider = ({
   return (
     <div ref={ref} className={classNames("flex items-center justify-center group", className)}>
       <div className="py-1 relative min-w-full">
-        <div className="h-1 bg-gray-500 rounded-full">
+        <div className="h-1 bg-gray-500 rounded-full" onClick={(e) => move(e.clientX)}>
           {/* This wrapper element and the relative className are important for overflow-hidden to actually work */}
           <div className="w-full h-full rounded-full relative overflow-hidden">
             <div

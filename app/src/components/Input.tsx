@@ -1,21 +1,29 @@
 import React from "react";
 import classNames from "classnames";
-import { isMobile, Keys } from "../utils";
+import { isMobile, Keys, parseIntOr } from "../utils";
 
-export interface InputProps {
-  value: string;
+export type InputProps = {
   label?: string;
-  onChange: (value: string) => void;
   labelClassName?: string;
   spanClassName?: string;
   inputClassName?: string;
   placeholder?: string;
-  type?: "email" | "password" | "number";
   inputId?: string;
   onEnter?: () => void;
   autoFocus?: boolean;
   required?: boolean;
-}
+} & (
+  | {
+      type?: "email" | "password";
+      onChange: (value: string) => void;
+      value: string;
+    }
+  | {
+      type: "number";
+      value: number | undefined;
+      onChange: (value: number | undefined) => void;
+    }
+);
 
 export const Input = (props: InputProps) => {
   return (
@@ -25,12 +33,16 @@ export const Input = (props: InputProps) => {
       )}
       <input
         required={props.required}
-        value={props.value}
+        value={props.value ?? ""}
         type={props.type}
         id={props.inputId}
         className={classNames("form-input w-full", props.inputClassName)}
         placeholder={props.placeholder}
-        onChange={(e) => props.onChange(e.target.value)}
+        onChange={(e) =>
+          props.type === "number"
+            ? props.onChange(parseIntOr(e.target.value, undefined))
+            : props.onChange(e.target.value)
+        }
         // Disable for mobile since users usually just want to exit their keyboard
         onKeyDown={(e) =>
           e.keyCode === Keys.Return && !isMobile() && props.onEnter && props.onEnter()

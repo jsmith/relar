@@ -76,7 +76,7 @@ export const onDeleteSong = f.firestore.document("user_data/{userId}/songs/{song
     //     .get();
 
     //   if (albums.docs.length === 0) {
-    //     await adminStorage(storage, userId)
+    //     await adminStorage(userId)
     //       .artworks(song.artwork.hash, song.artwork.type)
     //       .all()
     //       .then(deleteAllFiles);
@@ -84,7 +84,7 @@ export const onDeleteSong = f.firestore.document("user_data/{userId}/songs/{song
     // }
 
     try {
-      const file = adminStorage(admin.storage(), userId).song(song.id, song.fileName);
+      const file = adminStorage(userId).song(song.id, song.fileName);
       await file.delete();
     } catch (e) {
       if (e.code === 404) {

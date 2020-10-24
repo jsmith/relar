@@ -44,9 +44,9 @@ export const deleteAllUserData = async (
     .then(deleteAllFiles);
 };
 
-export const adminStorage = (storage: admin.storage.Storage, userId: string) => {
+export const adminStorage = (userId: string) => {
   const p = createPath().append(userId);
-  const bucket = storage.bucket();
+  const bucket = admin.storage().bucket();
 
   return {
     artworks: (hash: string, type: "jpg" | "png") => {
@@ -72,7 +72,7 @@ export const adminStorage = (storage: admin.storage.Storage, userId: string) => 
       songId: string;
       filePath: string;
       fileName: string;
-    }) => adminStorage(storage, userId).song(songId, fileName).download({ destination: filePath }),
+    }) => adminStorage(userId).song(songId, fileName).download({ destination: filePath }),
   };
 };
 

@@ -44,7 +44,6 @@ export const Thumbnail = ({
           src={thumbnail}
           className="w-full h-full"
           onError={(e) => {
-            // TODO figure out why???
             Sentry.captureMessage(`Error loading image from "${thumbnail}"`, {
               level: Sentry.Severity.Error,
               extra: {

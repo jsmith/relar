@@ -22,7 +22,7 @@ export const createTestSong = (song: Partial<Song>): Song => {
     played: 0,
     duration: 0,
     downloadUrl: undefined,
-    year: "",
+    year: undefined,
     artist: undefined,
     albumName: undefined,
     albumArtist: undefined,
@@ -31,6 +31,14 @@ export const createTestSong = (song: Partial<Song>): Song => {
     whenLiked: undefined,
     lastPlayed: undefined,
     artwork: undefined,
+    track: {
+      no: null,
+      of: null,
+    },
+    disk: {
+      no: null,
+      of: null,
+    },
     createdAt: admin.firestore.Timestamp.fromDate(new Date()),
     updatedAt: admin.firestore.Timestamp.fromDate(new Date()),
     deleted: false,
@@ -135,6 +143,12 @@ export const assertExists = async (ref: FirebaseFirestore.DocumentReference<unkn
 
 export const assertDoesNotExists = async (ref: FirebaseFirestore.DocumentReference<unknown>) => {
   assert.not((await ref.get()).exists);
+};
+
+export const assertNotDeleted = async (
+  ref: FirebaseFirestore.DocumentReference<{ deleted: boolean }>,
+) => {
+  assert.ok(await ref.get().then((snap) => snap.data()?.deleted === false));
 };
 
 export const assertDeleted = async (

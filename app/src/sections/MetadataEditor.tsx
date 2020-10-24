@@ -6,6 +6,45 @@ import { metadataBackend, getOrUnknownError } from "../backend";
 import { useDefinedUser } from "../auth";
 import { BlockAlert } from "../components/BlockAlert";
 import { useSongRef } from "../firestore";
+import { Thumbnail } from "../components/Thumbnail";
+import { parseIntOr } from "../utils";
+
+export const PositionInformation = ({
+  label,
+  of,
+  setOf,
+  no,
+  setNo,
+}: {
+  label: string;
+  of: number | null;
+  no: number | null;
+  setOf: (value: number | null) => void;
+  setNo: (value: number | null) => void;
+}) => {
+  return (
+    <fieldset className="min-w-0">
+      <legend>{label}</legend>
+      <div className="flex items-center space-x-1">
+        <input
+          value={no ?? ""}
+          type="number"
+          onChange={(e) => setNo(e.target.value ? +e.target.value : null)}
+          aria-label="Number"
+          className="min-w-0 form-input"
+        />
+        <span>of</span>
+        <input
+          value={of ?? ""}
+          type="number"
+          onChange={(e) => setOf(e.target.value ? +e.target.value : null)}
+          aria-label="Total"
+          className="min-w-0 form-input"
+        />
+      </div>
+    </fieldset>
+  );
+};
 
 export interface MetadataEditorProps {
   setDisplay: (display: boolean) => void;
@@ -21,8 +60,12 @@ export const MetadataEditor = ({ song, setDisplay, onSuccess }: MetadataEditorPr
   const [albumArtist, setAlbumArtist] = useState("");
   const [albumName, setAlbumName] = useState("");
   const [genre, setGenre] = useState("");
-  const [year, setYear] = useState("");
+  const [year, setYear] = useState<number>();
   const [error, setError] = useState("");
+  const [trackNo, setTrackNo] = useState<number | null>(null);
+  const [trackOf, setTrackOf] = useState<number | null>(null);
+  const [diskNo, setDiskNo] = useState<number | null>(null);
+  const [diskOf, setDiskOf] = useState<number | null>(null);
 
   useEffect(() => {
     setTitle(song.title ?? "");
@@ -30,7 +73,11 @@ export const MetadataEditor = ({ song, setDisplay, onSuccess }: MetadataEditorPr
     setAlbumArtist(song.albumArtist ?? "");
     setAlbumName(song.albumName ?? "");
     setGenre(song.genre ?? "");
-    setYear(song.year ?? "");
+    setYear(typeof song.year === "number" ? song.year : parseIntOr(song.year, undefined));
+    setTrackNo(song.track?.no ?? null);
+    setTrackOf(song.track?.of ?? null);
+    setDiskNo(song.disk?.no ?? null);
+    setDiskOf(song.disk?.of ?? null);
   }, [song]);
 
   const submit = async () => {
@@ -43,6 +90,14 @@ export const MetadataEditor = ({ song, setDisplay, onSuccess }: MetadataEditorPr
       albumName: albumName,
       genre: genre,
       year: year,
+      track: {
+        no: trackNo,
+        of: trackOf,
+      },
+      disk: {
+        no: diskNo,
+        of: diskOf,
+      },
     };
 
     const idToken = await user.getIdToken();
@@ -83,14 +138,37 @@ export const MetadataEditor = ({ song, setDisplay, onSuccess }: MetadataEditorPr
       initialFocus="#title-input"
       onCancel={() => setDisplay(false)}
       onOk={submit}
-      wrapperClassName="space-y-2"
     >
-      <Input inputId="title-input" value={title} onChange={setTitle} label="Title" />
-      <Input value={artist} onChange={setArtist} label="Artist" />
-      <Input value={albumArtist} onChange={setAlbumArtist} label="Album Artist" />
-      <Input value={albumName} onChange={setAlbumName} label="Album" />
-      <Input value={genre} onChange={setGenre} label="Genre" />
-      <Input value={year} onChange={setYear} label="Year" />
+      <div className="flex space-x-4">
+        <div className="space-y-2 w-3/5">
+          <Input inputId="title-input" value={title} onChange={setTitle} label="Title" />
+          <Input value={artist} onChange={setArtist} label="Artist" />
+          <Input value={albumArtist} onChange={setAlbumArtist} label="Album Artist" />
+          <Input value={albumName} onChange={setAlbumName} label="Album" />
+          <Input value={genre} onChange={setGenre} label="Genre" />
+          <Input type="number" value={year} onChange={setYear} label="Year" />
+        </div>
+        <div className="w-2/5 space-y-2">
+          <div className="space-y-1">
+            <Thumbnail size="128" type="song" object={song} className="w-32 h-32" />
+            <p className="text-xs text-gray-700">The thumbnail is not yet editable.</p>
+          </div>
+          <PositionInformation
+            no={trackNo}
+            of={trackOf}
+            setNo={setTrackNo}
+            setOf={setTrackOf}
+            label="Track"
+          />
+          <PositionInformation
+            no={diskNo}
+            of={diskOf}
+            setNo={setDiskNo}
+            setOf={setDiskOf}
+            label="Disc"
+          />
+        </div>
+      </div>
 
       {error && <BlockAlert type="error">{error}</BlockAlert>}
     </OkCancelModal>

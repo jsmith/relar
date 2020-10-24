@@ -49,3 +49,11 @@ List beta signups in order of least recent to most recent.
 ```
 NODE_PRESERVE_SYMLINKS=1 npx ts-node src/ls-beta-signups.ts
 ```
+
+## add-track-disc-n-fix-year-info.ts
+
+Add track and disc info and fix year info (string to number).
+
+```
+node --preserve-symlinks-main --preserve-symlinks -r @graywolfai/esbuild-register src/add-track-disc-n-fix-year-info.ts
+```
