@@ -32,7 +32,15 @@ const editSongData: MetadataAPI["/edit"]["POST"]["body"]["update"] = {
   albumArtist: "Greg G",
   albumName: "Wow Wow",
   genre: "Pop",
-  year: "2000",
+  year: 2000,
+  disk: {
+    no: 1,
+    of: 5,
+  },
+  track: {
+    no: 1,
+    of: 1,
+  },
 };
 
 const editAlbumId = createAlbumId(editSongData);
@@ -72,6 +80,8 @@ test("can successfully edit a song", async () => {
   assert.equal(body.update.genre, updated?.genre);
   assert.equal(body.update.albumArtist, updated?.albumArtist);
   assert.equal(body.update.albumName, updated?.albumName);
+  assert.equal(body.update.track, updated?.track);
+  assert.equal(body.update.disk, updated?.disk);
   assert.equal(createAlbumId(body.update), updated?.albumId);
   await assertExists(db.artist("Greg"));
   await assertExists(db.album(editAlbumId));
@@ -89,8 +99,6 @@ test("deletes old album and artist", async () => {
   await createAndUploadTestSong("test", songTwo);
   await db.album(songTwo.albumId).create(songTwoAlbum);
   await db.artist(songTwo.artist).create(songTwoArtist);
-  // await assertExists(db.album(songTwo.albumId));
-  // await assertExists(db.artist(songTwoArtist.name));
   const body = createBody("test", editSongData);
   await supertest(app).post("/edit").send(body).expect(200, {
     type: "success",

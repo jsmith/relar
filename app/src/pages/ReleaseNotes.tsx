@@ -68,6 +68,16 @@ const changelog: Change[] = [
     ],
     features: ["Updated the beta guide with known issues"],
   },
+  {
+    version: "0.7.0",
+    date: "October 23 2020",
+    fixes: ["Improved audio file metadata (ID3) parser", "Volume now persisting across sessions"],
+    features: [
+      "Added track and disk number support",
+      "Added support for album artwork with the image/jpg MIME type",
+      'Added "click to seek" functionality',
+    ],
+  },
 ].reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (

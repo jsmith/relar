@@ -149,3 +149,13 @@ const create = (chars: string[]) => {
 
 // http://stackoverflow.com/a/19148116/692528
 export const { encode: encodeFirebase, decode: decodeFirebase } = create(".$[]#/%".split(""));
+
+export function removedUndefinedValues<T>(obj: T): T {
+  for (const propName in obj) {
+    if (obj[propName] === undefined) {
+      delete obj[propName];
+    }
+  }
+
+  return obj;
+}

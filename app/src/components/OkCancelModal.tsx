@@ -35,7 +35,7 @@ export const OkCancelModal = ({
   return (
     <Modal titleText={titleText} onExit={onCancel} initialFocus={initialFocus} loading={loading}>
       <div
-        className={classNames("bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4", wrapperClassName)}
+        className={classNames("bg-white px-5 pt-10 pb-5", wrapperClassName)}
         style={wrapperStyle}
       >
         {children}

@@ -16,7 +16,7 @@ const main = async () => {
       "file_with_artwork.mp3",
     ]) {
       const songId = uuid.v4();
-      await adminStorage(admin.storage(), userId).uploadSong(
+      await adminStorage(userId).uploadSong(
         songId,
         path.resolve(__dirname, "../../functions/assets", fileName)
       );

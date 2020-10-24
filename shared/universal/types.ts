@@ -14,13 +14,9 @@ import {
 
 // FIXME remove createdAt for each model since firestore automatically stores the createdAt and updatedAt times
 
-export const Timestamp = Unknown.withGuard(
-  (x): x is firebase.firestore.Timestamp => true
-);
+export const Timestamp = Unknown.withGuard((x): x is firebase.firestore.Timestamp => true);
 
-export const BetaDeviceType = Literal("ios")
-  .Or(Literal("android"))
-  .Or(Literal("none"));
+export const BetaDeviceType = Literal("ios").Or(Literal("android")).Or(Literal("none"));
 
 export type BetaDevice = Static<typeof BetaDeviceType>;
 
@@ -32,6 +28,13 @@ export const UserDataType = Record({
 });
 
 export type UserData = Static<typeof UserDataType>;
+
+export const PositionInformationType = Record({
+  no: Number.Or(Null),
+  of: Number.Or(Null),
+});
+
+export type PositionInformation = Static<typeof PositionInformationType>;
 
 export const ArtworkType = Record({
   /**
@@ -65,7 +68,7 @@ export const ArtworkType = Record({
 
     /** 128x128 download URL. */
     artworkDownloadUrl256: String.Or(Undefined).Or(Null),
-  })
+  }),
 );
 
 export type Artwork = Static<typeof ArtworkType>;
@@ -111,13 +114,27 @@ export const SongType = Record({
 
   /**
    * A four-digit year.
+   *
+   * We were previously writing strings but are now writing numbers after the switch to "music-metadata"
    */
-  year: String.Or(Undefined),
+  year: Number.Or(String).Or(Undefined),
 
   /**
    * The genre.
    */
   genre: String.Or(Undefined),
+
+  // TODO run update on previous uploaded songs
+  // TODO removed undefined after update
+  /**
+   * The track info.
+   */
+  track: PositionInformationType.Or(Undefined),
+
+  /**
+   * The disc info.
+   */
+  disk: PositionInformationType.Or(Undefined),
 
   /**
    * Whether this person has "liked" this song
@@ -181,7 +198,7 @@ export const BetaSignupType = Record({
 }).And(
   Partial({
     token: String,
-  })
+  }),
 );
 
 export type BetaSignup = Static<typeof BetaSignupType>;
@@ -222,7 +239,7 @@ export const PlaylistType = Record({
        * not need to be unique.
        */
       id: String,
-    })
+    }),
   ).Or(Undefined),
 
   /** When the playlist was created. */
@@ -289,9 +306,7 @@ export type BetaAPI = {
       };
       response:
         | (Success & { uid: string })
-        | KnownError<
-            "invalid-token" | "invalid-password" | "already-have-account"
-          >
+        | KnownError<"invalid-token" | "invalid-password" | "already-have-account">
         | UnknownError;
     };
   };
@@ -309,13 +324,9 @@ export type MetadataAPI = {
           albumArtist: string;
           albumName: string;
           genre: string;
-          year: string;
-          // FIXME
-          // track?: number;
-          // totalTracks?: number;
-          // disc?: number;
-          // totalDiscs?: number;
-          // explicit?: boolean;
+          year: number | undefined;
+          track: PositionInformation;
+          disk: PositionInformation;
         };
       };
       response:
