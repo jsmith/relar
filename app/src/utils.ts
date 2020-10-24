@@ -14,6 +14,7 @@ import { getAlbumAttributes } from "./shared/universal/utils";
 import { useSnackbar } from "react-simple-snackbar";
 import { Plugins } from "@capacitor/core";
 import { Album } from "./shared/universal/types";
+import { debounce } from "throttle-debounce";
 
 const { Storage } = Plugins;
 
@@ -302,22 +303,28 @@ export const useGradient = (color: string, amount = 5) => {
   };
 };
 
+const debouncedStorageSet = debounce(500, Storage.set.bind(Storage));
+
 export function useLocalStorage<T extends string>(
   key: string,
   defaultValue: T,
 ): [T, (value: T) => void];
 export function useLocalStorage<T extends string>(key: string): [T | undefined, (value: T) => void];
 export function useLocalStorage<T extends string>(key: string, defaultValue?: T) {
-  const [value, setValue] = useState<T>();
+  const [value, setValue] = useState<T | undefined>(defaultValue);
 
   useEffect(() => {
-    Storage.get({ key }).then(({ value }) => setValue(value as T | undefined));
+    Storage.get({ key }).then(({ value }) => {
+      if (value !== null) {
+        setValue(value as T);
+      }
+    });
   }, [key]);
 
   const setValueAndStore = useCallback(
     (value: T) => {
       setValue(value);
-      Storage.set({ key, value });
+      debouncedStorageSet({ key, value });
     },
     [key],
   );
@@ -634,4 +641,10 @@ export const useAlbumAttributes = (album?: Album) => {
       artist: album?.albumArtist ? album.albumArtist : albumArtist ? albumArtist : "Unknown Artist",
     };
   }, [album]);
+};
+
+export const parseIntOr = <T>(value: string | undefined, defaultValue: T) => {
+  if (value === undefined) return defaultValue;
+  const parsed = parseInt(value);
+  return parsed ? parsed : defaultValue;
 };

@@ -5,17 +5,15 @@ import sharp from "sharp";
 import * as fs from "fs-extra";
 import * as crypto from "crypto";
 import { Result, ok, err, ResultAsync } from "neverthrow";
-import * as id3 from "id3-parser";
+import * as mm from "music-metadata";
 import { ObjectMetadata } from "firebase-functions/lib/providers/storage";
-import { IID3Tag } from "id3-parser/lib/interface";
 import { Song, UserDataType, Artwork } from "./shared/universal/types";
 import { admin } from "./admin";
 import sgMail from "@sendgrid/mail";
 import { env } from "./env";
 import { createAlbumId } from "./shared/universal/utils";
 import { adminDb } from "./shared/node/utils";
-import { getMp3Duration } from "./get-mp3-duration";
-import { wrapAndReport, setSentryUser } from "./sentry";
+import { wrapAndReport, setSentryUser, Sentry } from "./sentry";
 
 sgMail.setApiKey(env.mail.sendgrid_api_key);
 
@@ -57,10 +55,13 @@ interface CustomObject {
   contentType: string;
 }
 
-interface IError {
-  type: "error";
-  delete?: boolean;
+interface ProcessingError {
+  type: "processing-error";
   message: string;
+}
+
+interface ProcessingStop {
+  type: "processing-stop";
 }
 
 // This "info" type allows us to terminate execution for reasons that aren't errors
@@ -71,18 +72,18 @@ interface Info {
 
 const checkObjectName = <O extends ObjectMetadata>(
   object: O,
-): Result<O & { name: string }, IError> => {
+): Result<O & { name: string }, ProcessingStop> => {
   return object.name
     ? ok(Object.assign(object, { name: object.name })) // This bit is just to satisfy TS
-    : err({ type: "error", message: "object.name is undefined" });
+    : err({ type: "processing-stop" });
 };
 
 const checkContentType = <O extends ObjectMetadata>(
   object: O,
-): Result<O & { contentType: string }, IError> => {
+): Result<O & { contentType: string }, ProcessingStop> => {
   return object.contentType
     ? ok(Object.assign(object, { contentType: object.contentType })) // This bit is just to satisfy TS
-    : err({ type: "error", message: "object.contentType is undefined" });
+    : err({ type: "processing-stop" });
 };
 
 const getPaths = <O extends ObjectMetadata & { name: string; contentType: string }, E>(
@@ -108,21 +109,23 @@ const matchRegex = (matcher: RegExp) => <O extends CustomObject>(
 
 const matchContentType = (pattern: string) => <O extends CustomObject>(
   object: O,
-): Result<O, IError> => {
+): Result<O, ProcessingError> => {
   return object.contentType.includes(pattern)
     ? ok(object)
     : err({
-        type: "error",
-        delete: true,
+        type: "processing-error",
         message: `"${object.filePath}" does not have the correct Content-Type: ${object.contentType}`,
       });
 };
 
-const unwrap = (r: Result<unknown, IError | Info>) => {
+const unwrap = (r: Result<unknown, ProcessingError | ProcessingStop | Info>) => {
   if (r.isErr()) {
-    if (r.error.type === "error") {
+    if (r.error.type === "processing-error") {
       // This will get logged to Sentry using the wrapAndReport function
       throw new Error(r.error.message);
+    } else if (r.error.type === "processing-stop") {
+      // Nothing to print here
+      return false;
     } else {
       // Just log these to the logger (not to Sentry)
       // This is kinda weird honestly but oh well
@@ -136,7 +139,7 @@ const unwrap = (r: Result<unknown, IError | Info>) => {
 
 const downloadObject = (tmpDir: string) => <O extends { bucket: Bucket; filePath: string }>(
   o: O,
-): ResultAsync<O & { tmpFilePath: string; tmpDir: string }, IError> => {
+): ResultAsync<O & { tmpFilePath: string; tmpDir: string }, ProcessingError> => {
   // Download Source File
   const tmpFilePath = path.join(tmpDir, path.basename(o.filePath));
   console.info(`Downloading "${o.filePath}" to "${tmpFilePath}"!`);
@@ -144,9 +147,8 @@ const downloadObject = (tmpDir: string) => <O extends { bucket: Bucket; filePath
     o.bucket.file(o.filePath).download({
       destination: tmpFilePath,
     }),
-    (e): IError => ({
-      type: "error",
-      delete: true,
+    (e): ProcessingError => ({
+      type: "processing-error",
       message: `Unknown error while downloading "${o.filePath}": ` + e,
     }),
   ).map(() => ({ ...o, tmpDir, tmpFilePath }));
@@ -176,7 +178,7 @@ export const health = f.https.onRequest((_, res) => {
 export const generateThumbs = f.storage.object().onFinalize(
   wrapAndReport(async (object) => {
     const { dispose, tmpDir } = await createTmpDir();
-    return ok<ObjectMetadata, IError | Info>(object)
+    return ok<ObjectMetadata, ProcessingError | ProcessingStop | Info>(object)
       .andThen(checkObjectName)
       .andThen(checkContentType)
       .andThen(getPaths)
@@ -205,7 +207,10 @@ export const generateThumbs = f.storage.object().onFinalize(
 
         return ResultAsync.fromPromise(
           Promise.all(uploadPromises),
-          (e): IError => ({ type: "error", message: `Unknown error resizing "${filePath}": ` + e }),
+          (e): ProcessingError => ({
+            type: "processing-error",
+            message: `Unknown error resizing "${filePath}": ` + e,
+          }),
         );
       })
       .then(dispose)
@@ -213,28 +218,23 @@ export const generateThumbs = f.storage.object().onFinalize(
   }),
 );
 
-const readFile = (filePath: string): ResultAsync<Buffer, IError> => {
+const parseTags = (filePath: string): ResultAsync<mm.IAudioMetadata, ProcessingError> => {
   return ResultAsync.fromPromise(
-    fs.readFile(filePath),
-    (e): IError => ({ type: "error", message: `Unable to read "${filePath}": ${e}` }),
+    mm.parseFile(filePath, { duration: true }),
+    (e): ProcessingError => ({
+      type: "processing-error",
+      message: `Unable to parse tags from "${filePath}": ${e}`,
+    }),
   );
 };
 
 export const parseID3Tags = <O extends { tmpFilePath: string }>(
   o: O,
-): ResultAsync<O & { id3Tag?: IID3Tag; duration: number }, IError> => {
-  return readFile(o.tmpFilePath).andThen((buffer) => {
-    const id3Tag = id3.parse(buffer);
-    if (!id3Tag) {
-      console.warn(`Unable to parse ID3 tags "${o.tmpFilePath}"`);
-    }
-
-    const duration = getMp3Duration(buffer);
-
+): ResultAsync<O & { metadata: mm.IAudioMetadata }, ProcessingError> => {
+  return parseTags(o.tmpFilePath).andThen((metadata) => {
     return ok({
       ...o,
-      id3Tag: id3Tag ? id3Tag : undefined,
-      duration,
+      metadata,
     });
   });
 };
@@ -250,8 +250,9 @@ export const createSong = f.storage.object().onFinalize(
     const { dispose, tmpDir } = await createTmpDir();
     // This is kinda a hack but we need this for later
     const userId = object.name?.split("/")[1];
+    setSentryUser({ id: userId });
 
-    return ok<ObjectMetadata, IError | Info>(object)
+    return ok<ObjectMetadata, ProcessingError | ProcessingStop | Info>(object)
       .andThen(checkObjectName)
       .andThen(checkContentType)
       .andThen(getPaths)
@@ -260,14 +261,21 @@ export const createSong = f.storage.object().onFinalize(
       .asyncAndThen(downloadObject(tmpDir))
       .andThen(parseID3Tags)
       .andThen(
-        andPromise(async ({ bucket, filePath, duration, fileName, match, id3Tag }) => {
+        andPromise(async ({ bucket, filePath, metadata, fileName, match }) => {
           try {
             const userId = match[1];
-            setSentryUser({ id: userId });
             const songId = match[2];
 
             const userRef = db.collection("user_data").doc(userId);
             const newSongRef = userRef.collection("songs").doc(songId);
+
+            const duration = metadata.format.duration;
+            if (duration === undefined) {
+              return err({
+                type: "processing-error",
+                message: "The song duration is not defined but should be defined",
+              });
+            }
 
             // In a transaction, add the new rating and update the aggregate totals
             let artwork: Artwork | undefined;
@@ -278,9 +286,8 @@ export const createSong = f.storage.object().onFinalize(
               const result = UserDataType.validate(res.data() ?? {});
               if (!result.success) {
                 return err({
-                  type: "error",
+                  type: "processing-error",
                   message: `Invalid UserData[${result.key}]: ${result.message}`,
-                  delete: true,
                 });
               }
 
@@ -288,29 +295,35 @@ export const createSong = f.storage.object().onFinalize(
               result.value.songCount = (result.value.songCount ?? 0) + 1;
               if (result.value.songCount > MAX_SONGS) {
                 return err({
-                  type: "error",
+                  type: "processing-error",
                   message: `User exceeded maximum song count (${MAX_SONGS}).`,
-                  delete: true,
                 });
               }
 
               // FIXME remove the uploaded file if we fail after this point
               // I don't see this happening that often but it's very possible
               // that we will throw an error after this if blocks finishes
-              if (id3Tag?.image) {
-                let fileName: string;
+              if (metadata.common.picture && metadata.common.picture?.length > 0) {
+                const pictures = metadata.common.picture;
+                if (pictures.length > 1) {
+                  Sentry.captureMessage(`There are ${pictures.length} images in ${filePath}`);
+                }
+
+                const picture = pictures[0];
                 let type: "jpg" | "png";
-                if (id3Tag.image.mime === "image/png") {
-                  fileName = "artwork.png";
+                if (picture.format === "image/png") {
                   type = "png";
-                } else if (id3Tag.image.mime === "image/jpeg") {
-                  fileName = "artwork.jpg";
+                } else if (picture.format === "image/jpeg") {
+                  type = "jpg";
+                } else if (picture.format === "image/jpg") {
+                  // This is not the mime type (see https://stackoverflow.com/questions/33692835/is-the-mime-type-image-jpg-the-same-as-image-jpeg)
+                  // but... this doesn't seem to be the case in practice
+                  // I've notice a fair amount of cases where "image/jpg" are being given
                   type = "jpg";
                 } else {
                   return err({
-                    type: "error",
-                    message: `Invalid MIME type "${id3Tag.image.mime}". Expected "image/png" or "image/jpeg".`,
-                    delete: true,
+                    type: "processing-error",
+                    message: `Invalid MIME type "${picture.type}". Expected "image/png" or "image/jpeg".`,
                   });
                 }
 
@@ -319,18 +332,17 @@ export const createSong = f.storage.object().onFinalize(
                 // Basically we write the image data to disc and then stream the data back
                 // The example MD5 code I found online used a stream so it looks like I'm
                 // using a stream too 😂
-                await fs.writeFile(imageFilePath, id3Tag.image.data);
+                await fs.writeFile(imageFilePath, picture.data);
                 const hashResult = await md5Hash(imageFilePath);
                 if (hashResult.isErr()) {
                   return err({
-                    type: "error",
+                    type: "processing-error",
                     message: `Unable to hash song artwork for "${filePath}": ` + hashResult.error,
-                    delete: true,
                   });
                 }
 
                 artwork = { hash: hashResult.value, type };
-                const destination = `${userId}/song_artwork/${artwork.hash}/${fileName}`;
+                const destination = `${userId}/song_artwork/${artwork.hash}/artwork.${type}`;
                 const [artworkExists] = await bucket.file(destination).exists();
                 if (artworkExists) {
                   console.log(`Artwork for song already exists: "${destination}"`);
@@ -341,25 +353,25 @@ export const createSong = f.storage.object().onFinalize(
               }
 
               const albumId = createAlbumId({
-                albumName: id3Tag?.album,
-                albumArtist: id3Tag?.band,
-                artist: id3Tag?.artist,
+                albumName: metadata.common.album,
+                albumArtist: metadata.common.albumartist,
+                artist: metadata.common.artist,
               });
 
               // reads must come before writes in a snapshot so the following reads are grouped together
               const albumSnap = await transaction.get(userData.album(albumId));
 
-              const artistSnap = id3Tag?.artist
-                ? await transaction.get(userData.artist(id3Tag?.artist))
+              const artistSnap = metadata.common.artist
+                ? await transaction.get(userData.artist(metadata.common.artist))
                 : undefined;
 
               let album = albumSnap.data();
               if (!album) {
                 album = {
                   id: albumId,
-                  album: id3Tag?.album,
+                  album: metadata.common.album,
                   // The band value is the album artist
-                  albumArtist: id3Tag?.band,
+                  albumArtist: metadata.common.albumartist,
                   // If this is a new album, initialize the artwork hash the the hash
                   // of the artwork for this song. Note that this value may be undefined.
                   artwork,
@@ -371,10 +383,10 @@ export const createSong = f.storage.object().onFinalize(
               }
 
               let artist = artistSnap?.data();
-              if (!artist && artistSnap && id3Tag?.artist) {
+              if (!artist && artistSnap && metadata.common.artist) {
                 artist = {
-                  id: id3Tag.artist,
-                  name: id3Tag.artist,
+                  id: metadata.common.artist,
+                  name: metadata.common.artist,
                   updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
                   deleted: false,
                 };
@@ -388,19 +400,22 @@ export const createSong = f.storage.object().onFinalize(
                 fileName,
                 id: songId,
                 downloadUrl: undefined,
-                title: id3Tag?.title ?? defaultTitle,
+                title: metadata.common.title ?? defaultTitle,
                 artist: artist?.name,
                 albumName: album?.album,
                 albumArtist: album?.albumArtist,
                 albumId: album?.id,
-                year: id3Tag?.year,
+                year: metadata.common.year,
                 liked: false,
                 whenLiked: undefined,
-                genre: id3Tag?.genre,
+                genre: metadata.common.genre ? metadata.common.genre[0] : undefined,
+                track: metadata.common.track,
+                disk: metadata.common.disk,
                 played: 0,
                 lastPlayed: undefined,
                 artwork,
-                duration,
+                // convert seconds -> milliseconds
+                duration: Math.round(duration * 1000),
                 createdAt: admin.firestore.FieldValue.serverTimestamp() as admin.firestore.Timestamp,
                 updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
                 deleted: false,
@@ -419,8 +434,7 @@ export const createSong = f.storage.object().onFinalize(
             // Maybe create a custom error with properties?
             // It would be type unsafe but the easiest way
             return err({
-              type: "error",
-              delete: true,
+              type: "processing-error",
               message: e.message,
             });
           }
@@ -428,15 +442,14 @@ export const createSong = f.storage.object().onFinalize(
       )
       .then(dispose)
       .then(async (result) => {
-        if (
-          !userId ||
-          !object.name ||
-          result.isOk() ||
-          result.error.type !== "error" ||
-          !result.error.delete
-        ) {
+        if (!userId || !object.name || result.isOk() || result.error.type !== "processing-error") {
           return result;
         }
+
+        Sentry.captureMessage(
+          `There was an error processing ${object.name}: ${result.error.message}`,
+          Sentry.Severity.Error,
+        );
 
         try {
           // It's important that we delete this file from storage when
@@ -450,8 +463,9 @@ export const createSong = f.storage.object().onFinalize(
             from: "contact@relar.app",
             to: user.email,
             subject: "Relar Upload Error",
-            text:
-              "There was an error processing your song. Please try again or contact support (ie. respond to this email)!",
+            text: `There was an error processing ${path.basename(
+              object.name,
+            )}. We've been notified of your issue but feel free contact support by respond to this email.`,
           });
         } catch (e) {
           console.warn(`Unable to send an email to ${userId}`);

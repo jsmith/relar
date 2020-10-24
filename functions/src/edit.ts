@@ -6,7 +6,7 @@ import * as bodyParser from "body-parser";
 import { admin } from "./admin";
 import { deleteAlbumIfSingleSong, deleteArtistSingleSong, ORIGINS } from "./utils";
 import { adminDb } from "./shared/node/utils";
-import { createAlbumId } from "./shared/universal/utils";
+import { createAlbumId, removedUndefinedValues } from "./shared/universal/utils";
 import * as functions from "firebase-functions";
 import { Sentry } from "./sentry";
 
@@ -52,7 +52,7 @@ router.post("/edit", async (req) => {
   }
 
   // This is important so that we don't just pass in whatever was sent in the client
-  const update: Partial<Song> = {
+  const update: Partial<Song> = removedUndefinedValues({
     title: body.update.title,
     genre: body.update.genre,
     year: body.update.year,
@@ -60,8 +60,10 @@ router.post("/edit", async (req) => {
     albumArtist: body.update.albumArtist,
     artist: body.update.artist,
     albumId: createAlbumId(body.update),
+    track: body.update.track,
+    disk: body.update.disk,
     updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
-  };
+  });
 
   console.log(`Update for ${body.songId} -> ${JSON.stringify(update)}`);
 

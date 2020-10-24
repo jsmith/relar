@@ -37,7 +37,7 @@ export const Modal = ({
     >
       <div
         className={classNames(
-          "bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full",
+          "bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-xl sm:w-full",
         )}
         role="dialog"
         aria-modal="true"

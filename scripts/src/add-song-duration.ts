@@ -1,7 +1,11 @@
 import * as fs from "fs";
 import { argv, admin } from "./admin";
 import { adminStorage, adminDb } from "./shared/node/utils";
-import { getMp3Duration } from "../../functions/src/get-mp3-duration";
+// import { getMp3Duration } from "../../functions/src/get-mp3-duration";
+
+const getMp3Duration = (_: Buffer): number => {
+  throw Error();
+};
 
 const main = async () => {
   const userId = argv[2];
@@ -14,7 +18,7 @@ const main = async () => {
   for (const doc of docs) {
     const destination = __dirname + "/tmp.mp3";
     try {
-      await adminStorage(admin.storage(), userId).downloadSong({
+      await adminStorage(userId).downloadSong({
         fileName: doc.data().fileName,
         songId: doc.id,
         filePath: destination,

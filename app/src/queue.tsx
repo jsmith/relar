@@ -1,4 +1,4 @@
-import React, { useContext, useState, useCallback, useRef, useEffect } from "react";
+import React, { useContext, useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { createContext } from "react";
 import type { Song } from "./shared/universal/types";
 import { tryToGetSongDownloadUrlOrLog } from "./queries/songs";
@@ -153,7 +153,7 @@ export const QueueContext = createContext<{
   seekTime: () => {},
   playing: false,
   toggleState: () => {},
-  volume: 0.8,
+  volume: 100,
   setVolume: () => {},
   clear: () => {},
   _setRef: () => {},
@@ -194,14 +194,22 @@ export const QueueProvider = (props: React.Props<{}>) => {
   const [mode, setMode] = useLocalStorage<QueuePlayMode>("player-mode", "none");
   const { user } = useUser();
   const [playing, setPlaying] = useState<boolean>(false);
-  /** The volume from 0 to 100 */
-  const [volumeString, setVolumeString] = useLocalStorage("player-volume");
-  // ?? just in case parsing fails
   const isMobile = useIsMobile();
-  const defaultVolume = isMobile ? 100 : 80;
-  const [volume, setVolumeState] = useState(
-    volumeString ? parseInt(volumeString) ?? defaultVolume : defaultVolume,
+  /** The volume from 0 to 100 */
+  const [volumeString, setVolumeString] = useLocalStorage<string>(
+    "player-volume",
+    isMobile ? "100" : "80",
   );
+  const setVolume = useCallback(
+    (value: number) => {
+      setVolumeString("" + value);
+      // HTML5 audio.volume is a value between 0 and 1
+      // See https://stackoverflow.com/questions/10075909/how-to-set-the-loudness-of-html5-audio
+      if (ref.current) ref.current.setVolume(value / 100);
+    },
+    [setVolumeString],
+  );
+  const volume = useMemo(() => parseInt(volumeString), [volumeString]);
 
   // We do this internally since iOS (and maybe android) don't have time update events
   // So, to resolve this, we use timers while playing and then fetch the time manually
@@ -444,17 +452,6 @@ export const QueueProvider = (props: React.Props<{}>) => {
     setCurrentTime(seconds);
     if (ref.current) ref.current.setCurrentTime(seconds);
   }, []);
-
-  const setVolume = useCallback(
-    (value: number) => {
-      setVolumeString("" + value);
-      setVolumeState(value);
-      // HTML5 audio.volume is a value between 0 and 1
-      // See https://stackoverflow.com/questions/10075909/how-to-set-the-loudness-of-html5-audio
-      if (ref.current) ref.current.setVolume(value / 100);
-    },
-    [setVolumeString],
-  );
 
   const _setRef = useCallback(
     (el: AudioControls | null) => {

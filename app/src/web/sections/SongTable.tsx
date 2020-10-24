@@ -121,9 +121,10 @@ export const SongTableRow = <T extends SongInfo>({
   index,
 }: SongTableRowProps<T>) => {
   const [focusedPlay, setFocusedPlay] = useState(false);
-  const [showEditorModal, hideEditorModal] = useModal(() => (
-    <MetadataEditor setDisplay={() => hideEditorModal()} song={song} onSuccess={() => {}} />
-  ));
+  const [showEditorModal, hideEditorModal] = useModal(
+    () => <MetadataEditor setDisplay={() => hideEditorModal()} song={song} onSuccess={() => {}} />,
+    [song],
+  );
   const [showAddPlaylistModal, hideAddPlaylistModal] = useModal(() => (
     <AddToPlaylistEditor setDisplay={() => hideAddPlaylistModal()} song={song} />
   ));
@@ -355,7 +356,6 @@ export const SongTable = function <T extends SongInfo>({
     return songs.map((song, index) => ({ song, index }));
   }, [loadingRows, songs]);
 
-  // TODO update snowpack + react
   const rowRenderer = useCallback(
     (row: { song: T; index: number } | number) => {
       if (typeof row === "number") {
@@ -391,8 +391,6 @@ export const SongTable = function <T extends SongInfo>({
     },
     [actionsWithAddRemove, includeDateAdded, mode, notPaused, setQueue, songInfo, songs, source],
   );
-
-  console.log(rows.length);
 
   return (
     <div className="text-gray-800 w-full flex flex-col">
