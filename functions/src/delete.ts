@@ -83,17 +83,17 @@ export const onDeleteSong = f.firestore.document("user_data/{userId}/songs/{song
     //   }
     // }
 
-    try {
-      const file = adminStorage(userId).song(song.id, song.fileName);
-      await file.delete();
-    } catch (e) {
-      if (e.code === 404) {
-        Sentry.captureMessage(`Couldn't find song to delete for ${song.id}.`, {
-          extra: { song },
-        });
-      } else {
-        throw e;
-      }
-    }
+    // try {
+    //   const file = adminStorage(userId).song(song.id, song.fileName);
+    //   await file.delete();
+    // } catch (e) {
+    //   if (e.code === 404) {
+    //     Sentry.captureMessage(`Couldn't find song to delete for ${song.id}.`, {
+    //       extra: { song },
+    //     });
+    //   } else {
+    //     throw e;
+    //   }
+    // }
   }),
 );

@@ -4,6 +4,8 @@ const { argv } = require("process");
 const root = __dirname;
 const ios = path.join(root, "app", "ios", "App", "App", "Info.plist");
 const android = path.join(root, "app", "android", "app", "build.gradle");
+const env = path.join(root, "app", ".env");
+const { execSync } = require("child_process");
 
 const command = argv[2];
 const version = argv[3];
@@ -47,25 +49,51 @@ let androidContents = fs.readFileSync(android).toString();
 // <string>1</string>
 let iosContents = fs.readFileSync(ios).toString();
 
-let match = androidContents.match(/^ +versionCode ([0-9]+)$/m);
-if (!match) throw Error("Unable to find versionCode in " + android);
-const versionCode = +match[1];
+let appEnvContents = fs.readFileSync(env).toString();
 
-match = androidContents.match(/^ +versionName "([0-9.]+)"$/m);
-if (!match) throw Error("Unable to find versionName in " + android);
-const versionName = match[1];
+/**
+ *
+ * @param {RegExp} reg
+ * @param {string} value
+ */
+const regexMatchAndReplace = (reg, value) => {
+  const match = value.match(reg);
+  if (!match) console.log(`Unable to match ${reg}`);
+  return [
+    match,
+    (replacement, body) => (body ? body : value).replace(reg, replacement),
+  ];
+};
 
-match = iosContents.match(
-  /^\s+<key>CFBundleShortVersionString<\/key>\s+<string>([0-9.]+)<\/string>$/m
+const [androidVersionCode, androidVersionCodeReplace] = regexMatchAndReplace(
+  /^( +versionCode )([0-9]+)$/m,
+  androidContents
 );
-if (!match) throw Error("Unable to find CFBundleShortVersionString in " + ios);
-const shortVersionString = match[1];
+const versionCode = +androidVersionCode[2];
 
-match = iosContents.match(
-  /^\s+<key>CFBundleVersion<\/key>\s+<string>([0-9]+)<\/string>$/m
+const [androidVersionName, androidVersionNameReplace] = regexMatchAndReplace(
+  /^( +versionName )"([0-9.]+)"$/m,
+  androidContents
 );
-if (!match) throw Error("Unable to find CFBundleVersion in " + ios);
-const bundleVersion = +match[1];
+const versionName = androidVersionName[2];
+
+const [iosShort, iosShortReplace] = regexMatchAndReplace(
+  /^(\s+<key>CFBundleShortVersionString<\/key>\s+<string>)([0-9.]+)(<\/string>)$/m,
+  iosContents
+);
+const shortVersionString = iosShort[2];
+
+const [iosVersion, iosVersionReplace] = regexMatchAndReplace(
+  /^(\s+<key>CFBundleVersion<\/key>\s+<string>)([0-9]+)(<\/string>)$/m,
+  iosContents
+);
+const bundleVersion = +iosVersion[2];
+
+const [appEnvVersion, appEnvVersionReplace] = regexMatchAndReplace(
+  /^SNOWPACK_PUBLIC_VERSION=([0-9.]+)$/m,
+  appEnvContents
+);
+const appVersion = appEnvVersion[1];
 
 const newBuildNumber =
   Math.max(bundleVersion, versionCode) + (command === "versions" ? 0 : 1);
@@ -76,33 +104,19 @@ console.log(
 console.log(`iOS CFBundleVersion ${bundleVersion} -> ${newBuildNumber}`);
 console.log(`Android versionName ${versionName} -> ${version}`);
 console.log(`Android versionCode ${versionCode} -> ${newBuildNumber}`);
+console.log(`SNOWPACK_PUBLIC_VERSION ${appVersion} -> ${version}`);
+console.log(`environment.version ${version}`);
 
-console.log("Writing iOS versions to " + ios);
-console.log("Writing Android versions to " + android);
-
-let previous = androidContents;
-androidContents = androidContents.replace(
-  /^( +versionCode )([0-9]+)$/m,
-  `$1${newBuildNumber}`
+execSync(
+  `firebase --project production functions:config:set environment.version=${version}`
 );
 
-previous = androidContents;
-androidContents = androidContents.replace(
-  /^( +versionName )"([0-9.]+)"$/m,
-  `$1"${version}"`
-);
-
-previous = iosContents;
-iosContents = iosContents.replace(
-  /^(\s+<key>CFBundleShortVersionString<\/key>\s+<string>)([0-9.]+)(<\/string>)$/m,
-  `$1${version}$3`
-);
-
-previous = iosContents;
-iosContents = iosContents.replace(
-  /^(\s+<key>CFBundleVersion<\/key>\s+<string>)([0-9]+)(<\/string>)$/m,
-  `$1${newBuildNumber}$3`
-);
+androidContents = androidVersionCodeReplace(`$1${newBuildNumber}`);
+androidContents = androidVersionNameReplace(`$1"${version}"`, androidContents);
+iosContents = iosVersionReplace(`$1${newBuildNumber}$3`);
+iosContents = iosShortReplace(`$1${version}$3`, iosContents);
+appEnvContents = appEnvVersionReplace(`SNOWPACK_PUBLIC_VERSION=${version}`);
 
 fs.writeFileSync(android, androidContents);
 fs.writeFileSync(ios, iosContents);
+fs.writeFileSync(env, appEnvContents);
