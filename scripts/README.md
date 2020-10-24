@@ -7,7 +7,7 @@ Just some useful scrips for doing... things!
 Creates an invite token for a single user waiting on the beta signup list. The email is passed as a command line arg which the script takes. The script itself finds a user, generates a token, saves that token in the database for reference and then sends that token their way.
 
 ```
-NODE_PRESERVE_SYMLINKS=1 npx ts-node src/provision-account.ts <EMAIL>
+yarn x src/provision-account.ts <EMAIL>
 ```
 
 ## create-fake-song-data.ts
@@ -15,7 +15,7 @@ NODE_PRESERVE_SYMLINKS=1 npx ts-node src/provision-account.ts <EMAIL>
 Creates 30 fakes songs for the given user.
 
 ```
-NODE_PRESERVE_SYMLINKS=1 npx ts-node src/create-fake-song-data.ts <USER_ID>
+yarn x src/create-fake-song-data.ts <USER_ID>
 ```
 
 ## add-song-duration.ts
@@ -23,7 +23,7 @@ NODE_PRESERVE_SYMLINKS=1 npx ts-node src/create-fake-song-data.ts <USER_ID>
 Add durations for all songs.
 
 ```
-NODE_PRESERVE_SYMLINKS=1 npx ts-node src/add-song-duration.ts <USER_ID>
+yarn x src/add-song-duration.ts <USER_ID>
 ```
 
 ## add-deleted.ts
@@ -31,7 +31,7 @@ NODE_PRESERVE_SYMLINKS=1 npx ts-node src/add-song-duration.ts <USER_ID>
 Add "deleted" to all songs.
 
 ```
-NODE_PRESERVE_SYMLINKS=1 npx ts-node src/add-deleted.ts <USER_ID>
+yarn x src/add-deleted.ts <USER_ID>
 ```
 
 ## clear-data.ts
@@ -39,7 +39,7 @@ NODE_PRESERVE_SYMLINKS=1 npx ts-node src/add-deleted.ts <USER_ID>
 Delete all data for a user
 
 ```
-NODE_PRESERVE_SYMLINKS=1 npx ts-node src/clear-data.ts <email>
+yarn x src/clear-data.ts <email>
 ```
 
 ## ls-beta-signups.ts
@@ -47,7 +47,7 @@ NODE_PRESERVE_SYMLINKS=1 npx ts-node src/clear-data.ts <email>
 List beta signups in order of least recent to most recent.
 
 ```
-NODE_PRESERVE_SYMLINKS=1 npx ts-node src/ls-beta-signups.ts
+yarn x src/ls-beta-signups.ts
 ```
 
 ## add-track-disc-n-fix-year-info.ts
@@ -55,5 +55,21 @@ NODE_PRESERVE_SYMLINKS=1 npx ts-node src/ls-beta-signups.ts
 Add track and disc info and fix year info (string to number).
 
 ```
-node --preserve-symlinks-main --preserve-symlinks -r @graywolfai/esbuild-register src/add-track-disc-n-fix-year-info.ts
+yarn x src/add-track-disc-n-fix-year-info.ts
+```
+
+## dl-songs.ts
+
+Download _all_ songs to `~/.relar/<ENV>_songs/songs.json`
+
+```
+yarn x src/dl-songs.ts
+```
+
+## scratch.ts
+
+This does... nothing important! Use it to run some analysis.
+
+```
+yarn x src/scratch.ts
 ```

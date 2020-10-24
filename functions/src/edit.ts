@@ -5,8 +5,8 @@ import { MetadataAPI, Song, Album } from "./shared/universal/types";
 import * as bodyParser from "body-parser";
 import { admin } from "./admin";
 import { deleteAlbumIfSingleSong, deleteArtistSingleSong, ORIGINS } from "./utils";
-import { adminDb } from "./shared/node/utils";
-import { createAlbumId, removedUndefinedValues } from "./shared/universal/utils";
+import { adminDb, undefinedToDelete } from "./shared/node/utils";
+import { createAlbumId } from "./shared/universal/utils";
 import * as functions from "firebase-functions";
 import { Sentry } from "./sentry";
 
@@ -52,7 +52,7 @@ router.post("/edit", async (req) => {
   }
 
   // This is important so that we don't just pass in whatever was sent in the client
-  const update: Partial<Song> = removedUndefinedValues({
+  const update: Partial<Song> = undefinedToDelete({
     title: body.update.title,
     genre: body.update.genre,
     year: body.update.year,
