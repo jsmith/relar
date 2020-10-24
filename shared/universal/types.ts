@@ -117,15 +117,13 @@ export const SongType = Record({
    *
    * We were previously writing strings but are now writing numbers after the switch to "music-metadata"
    */
-  year: Number.Or(String).Or(Undefined),
+  year: Number.Or(Undefined).Or(Undefined),
 
   /**
    * The genre.
    */
   genre: String.Or(Undefined),
 
-  // TODO run update on previous uploaded songs
-  // TODO removed undefined after update
   /**
    * The track info.
    */

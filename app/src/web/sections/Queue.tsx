@@ -111,7 +111,7 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
                 // 300px is just from trial and error
                 maxHeight: `calc(100vh - 300px)`,
               }}
-              className="overflow-y-auto"
+              className="overflow-y-auto flex"
             >
               <SongTable
                 songs={songs}

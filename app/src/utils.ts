@@ -314,6 +314,7 @@ export function useLocalStorage<T extends string>(key: string, defaultValue?: T)
   const [value, setValue] = useState<T | undefined>(defaultValue);
 
   useEffect(() => {
+    // TODO use Record
     Storage.get({ key }).then(({ value }) => {
       if (value !== null) {
         setValue(value as T);

@@ -125,3 +125,13 @@ export const betaSignups = (db: FirebaseFirestore.Firestore) => {
       db.collection("beta_signups") as FirebaseFirestore.CollectionReference<BetaSignup>,
   };
 };
+
+export function undefinedToDelete<T>(obj: T): T {
+  for (const propName in obj) {
+    if (obj[propName] === undefined) {
+      obj[propName] = admin.firestore.FieldValue.delete() as any;
+    }
+  }
+
+  return obj;
+}

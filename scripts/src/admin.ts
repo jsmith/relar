@@ -1,6 +1,9 @@
 import * as admin from "firebase-admin";
 import * as serviceAccount from "../../serviceAccountKey.relar-production.json";
 import * as serviceAccountStaging from "../../serviceAccountKey.relar-staging.json";
+import * as path from "path";
+import * as os from "os";
+import * as fs from "fs";
 
 const argv = process.argv.slice(0);
 let environment: "staging" | "production" = "staging";
@@ -26,4 +29,12 @@ if (index !== -1) {
   });
 }
 
-export { admin, argv, environment };
+const directory = path.join(os.homedir(), ".relar", `${environment}_songs`);
+
+try {
+  fs.mkdirSync(directory, { recursive: true });
+} catch {
+  // Ignore exists
+}
+
+export { admin, argv, environment, directory };
