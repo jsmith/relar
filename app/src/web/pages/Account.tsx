@@ -65,9 +65,21 @@ export const Account = () => {
   const { confirmPassword } = useConfirmPassword();
   const { confirmAction } = useConfirmAction();
 
-  const deleteUser = useCallback(() => {
-    user.delete();
-  }, [user]);
+  // const renderAction = (action: UploadAction) => {
+  //   return (
+  //     <div className="flex justify-between">
+  //       <div>
+  //         <div>{action.fileName}</div>
+  //         <div>{fmtToDate(action.createdAt)}</div>
+  //       </div>
+
+  //       <div>
+  //         <div className="">{action.status}</div>
+  //         <div className="">{action.message}</div>
+  //       </div>
+  //     </div>
+  //   );
+  // };
 
   return (
     <div className="mx-6">
@@ -76,6 +88,9 @@ export const Account = () => {
           <Tab selectedClassName="bg-purple-100" className="cursor-pointer py-2 px-2 text-gray-800">
             Account Overview
           </Tab>
+          {/* <Tab selectedClassName="bg-purple-100" className="cursor-pointer py-2 px-2 text-gray-800">
+            Account History
+          </Tab> */}
           <Tab selectedClassName="bg-purple-100" className="cursor-pointer py-2 px-2 text-gray-800">
             Billing
           </Tab>
@@ -145,6 +160,9 @@ export const Account = () => {
             }}
           />
         </TabPanel>
+        {/* <TabPanel className="text-gray-800" selectedClassName="flex-grow">
+          <RecycledList itemHeight={48} itemFn={renderAction} attrList={} />
+        </TabPanel> */}
         <TabPanel className="text-gray-800 space-y-2" selectedClassName="flex-grow">
           <h1 className="text-2xl">Billing</h1>
           <div className="rounded bg-blue-100 text-blue-700 p-3 text-sm">

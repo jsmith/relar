@@ -360,7 +360,7 @@ public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChan
     PendingIntent dismissPendingIntent = PendingIntent.getBroadcast(getContext(), 1, dismissIntent, 0);
 
     // Tap to open intent
-    Intent resultIntent = new Intent(getContext(), getContext().getClass()); // TODO IDK if the second arg is right
+    Intent resultIntent = new Intent(getContext(), getContext().getClass()); // FIXME IDK if the second arg is right
     resultIntent.setAction(Intent.ACTION_MAIN);
     resultIntent.addCategory(Intent.CATEGORY_LAUNCHER);
     PendingIntent resultPendingIntent = PendingIntent.getActivity(getContext(), 0, resultIntent, 0);
@@ -469,11 +469,11 @@ public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChan
           break;
         case KeyEvent.KEYCODE_HEADSETHOOK:
         case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-          // TODO what causes this??
+          // FIXME what causes this??
           notifyListeners("play-pause", new JSObject());
           break;
         default:
-          // TODO what causes this?
+          // FIXME what causes this?
           notifyListeners("unknown", new JSObject());
           return false;
       }

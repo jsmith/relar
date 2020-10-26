@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { FiMusic } from "react-icons/fi";
 import AriaModal from "react-aria-modal";
 import * as uuid from "uuid";
@@ -6,6 +6,10 @@ import { UploadRow } from "../components/UploadRow";
 import { link } from "../classes";
 import { useUserStorage } from "../storage";
 import firebase from "firebase/app";
+import { useUserData } from "../firestore";
+import { UploadAction } from "../shared/universal/types";
+import { useStateWithRef } from "../utils";
+import { MdErrorOutline } from "react-icons/md";
 
 export interface UploadModalProps {
   children?: React.ReactNode;
@@ -21,12 +25,41 @@ const toFileArray = (fileList: FileList) => {
 };
 
 export const UploadModal = ({ children, className, display, setDisplay }: UploadModalProps) => {
-  const [files, setFiles] = useState<
-    Array<{ file: File; task: firebase.storage.UploadTask | undefined }>
+  const [files, setFiles, filesRef] = useStateWithRef<
+    Array<{
+      file: File;
+      task: firebase.storage.UploadTask | undefined;
+      action: UploadAction | undefined;
+      songId: string | undefined;
+    }>
   >([]);
   const fileUpload = useRef<HTMLInputElement | null>(null);
   const [count, setCount] = useState(0);
   const storage = useUserStorage();
+  const createdSnapshot = useRef<(() => void) | null>(null);
+  const userData = useUserData();
+
+  useEffect(() => {
+    if (files.length > 0 && !createdSnapshot.current) {
+      createdSnapshot.current = userData
+        .actions()
+        .where("updatedAt", ">=", new Date())
+        .onSnapshot((snapshot) => {
+          const actionLookup: Record<string, UploadAction> = {};
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            actionLookup[data.songId] = data;
+          });
+
+          setFiles(
+            // Using the filesRef is super important
+            filesRef.current.map((o) =>
+              o.songId === undefined ? o : { ...o, action: actionLookup[o.songId] },
+            ),
+          );
+        });
+    }
+  }, [files, filesRef, setFiles, userData]);
 
   const addFiles = (fileList: FileList | null) => {
     if (!fileList) {
@@ -40,12 +73,16 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
         const id = uuid.v4();
         const ref = storage.song(id, file.name);
         return {
+          songId: id,
           task: ref.put(file),
+          action: undefined,
           file,
         };
       } else {
         return {
+          songId: undefined,
           task: undefined,
+          action: undefined,
           file,
         };
       }
@@ -99,23 +136,29 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
           />
           {/* https://tailwindcomponents.com/component/file-upload-with-drop-on-and-preview */}
           {/* https://tailwindui.com/components/application-ui/overlays/modals */}
-          <div className="border-2 border-dashed border-purple-400 h-full rounded px-1 py-3 overflow-y-scroll">
+          <div className="border-2 border-dashed border-purple-400 h-full rounded px-1 py-3 overflow-y-auto">
             {files.length > 0 ? (
-              <div className="space-y-2">
-                <div className="flex flex-col max-w-4xl m-auto divide-y divide-gray-400">
-                  {files.map(({ file, task }, i) => (
+              <div className="space-y-2 max-w-4xl mx-auto px-2">
+                <div className="flex flex-col divide-y divide-gray-400">
+                  {files.map(({ file, task, action }, i) => (
                     <UploadRow
                       key={i}
                       file={file}
                       task={task}
+                      action={action}
                       onRemove={() =>
                         setFiles([...files.slice(0, i), ...files.slice(i + 1, files.length)])
                       }
                     />
                   ))}
                 </div>
+                <div className="text-center text-sm text-gray-700 pt-3">
+                  Getting errors? Hover your mouse over the icons (e.g. "
+                  <MdErrorOutline className="w-4 h-4 inline" />
+                  ") to get more information.
+                </div>
                 <div className="text-center text-sm text-gray-700 pb-3">
-                  Still want to add more? Click{" "}
+                  Want to keep uploading? Click{" "}
                   <button
                     id="upload-music-button"
                     onClick={() => fileUpload.current && fileUpload.current.click()}

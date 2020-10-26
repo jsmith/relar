@@ -1,9 +1,10 @@
 {
   "name": "functions",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "scripts": {
     "build": "rm -rf lib && ../node_modules/.bin/tsc",
     "test": "./test.sh",
+    "t": "node --preserve-symlinks-main --preserve-symlinks -r @graywolfai/esbuild-register",
     "check:lint": "../node_modules/.bin/eslint \"**/*.{ts,tsx}\"",
     "check:formatting": "../node_modules/.bin/prettier --list-different \"**/*.{ts,tsx,js}\"",
     "check:types": "../node_modules/.bin/tsc --noEmit"

@@ -63,7 +63,6 @@ export const Cell = ({
   children,
   className,
   style,
-  title,
 }: {
   children: React.ReactNode;
   className?: string;
@@ -73,7 +72,7 @@ export const Cell = ({
   return (
     <div
       className={classNames(
-        "whitespace-no-wrap border-b border-gray-200 border-opacity-25 cursor-pointer",
+        "whitespace-no-wrap border-b border-gray-200 border-opacity-25 cursor-pointer min-w-0",
         className,
       )}
       style={style}
@@ -208,7 +207,7 @@ export const SongTableRow = <T extends SongInfo>({
       onClick={() => setSong(song)}
     >
       <Cell className="flex space-x-2 items-center pl-3" style={widths.title}>
-        <div className="w-5 h-5 relative">
+        <div className="w-5 h-5 relative flex-shrink-0">
           {playing ? (
             <Audio
               className="w-full h-4 text-purple-500 flex-shrink-0"

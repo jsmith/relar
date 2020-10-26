@@ -314,7 +314,7 @@ export function useLocalStorage<T extends string>(key: string, defaultValue?: T)
   const [value, setValue] = useState<T | undefined>(defaultValue);
 
   useEffect(() => {
-    // TODO use Record
+    // FIXME use Record
     Storage.get({ key }).then(({ value }) => {
       if (value !== null) {
         setValue(value as T);
@@ -649,3 +649,15 @@ export const parseIntOr = <T>(value: string | undefined, defaultValue: T) => {
   const parsed = parseInt(value);
   return parsed ? parsed : defaultValue;
 };
+
+export function useStateWithRef<T>(value: T): [T, (value: T) => void, React.MutableRefObject<T>] {
+  const [state, setState] = useState<T>(value);
+  const ref = useRef<T>(value);
+
+  const setStateAndRef = useCallback((value: T) => {
+    setState(value);
+    ref.current = value;
+  }, []);
+
+  return [state, setStateAndRef, ref];
+}

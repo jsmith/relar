@@ -10,6 +10,7 @@ import {
   shuffleArray,
   removeElementFromShuffled,
   useIsMobile,
+  useStateWithRef,
 } from "./utils";
 import firebase from "firebase/app";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -17,6 +18,7 @@ import { createEmitter } from "./events";
 import * as uuid from "uuid";
 import { captureException } from "@sentry/browser";
 import { getUserDataOrError, serverTimestamp } from "./firestore";
+import { useChangedSongs, useCoolSongs } from "./db";
 
 const emitter = createEmitter<{ updateCurrentTime: [number] }>();
 
@@ -190,7 +192,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
     mappings: undefined,
     index: undefined,
   });
-  const [songInfo, setSongInfo] = useState<QueueItem>(); // currently playing song
+  const [songInfo, setSongInfo, songInfoRef] = useStateWithRef<QueueItem | undefined>(undefined); // currently playing song
   const [mode, setMode] = useLocalStorage<QueuePlayMode>("player-mode", "none");
   const { user } = useUser();
   const [playing, setPlaying] = useState<boolean>(false);
@@ -210,6 +212,37 @@ export const QueueProvider = (props: React.Props<{}>) => {
     [setVolumeString],
   );
   const volume = useMemo(() => parseInt(volumeString), [volumeString]);
+  useChangedSongs(
+    useCallback(
+      (changed) => {
+        // There could be a more efficient way to do this
+        const lookup: Record<string, Song> = {};
+        changed.forEach((song) => {
+          lookup[song.id] = song;
+        });
+
+        let doSet = false;
+        const queue = current.current.queue.map((song) => {
+          if (lookup[song.song.id]) {
+            doSet = true;
+            return { ...song, song: lookup[song.song.id] };
+          }
+
+          return song;
+        });
+
+        if (doSet) {
+          setQueueState(queue);
+          current.current.queue = queue;
+        }
+
+        if (songInfoRef.current && lookup[songInfoRef.current.song.id]) {
+          setSongInfo({ ...songInfoRef.current, song: lookup[songInfoRef.current.song.id] });
+        }
+      },
+      [setSongInfo, songInfoRef],
+    ),
+  );
 
   // We do this internally since iOS (and maybe android) don't have time update events
   // So, to resolve this, we use timers while playing and then fetch the time manually
@@ -252,7 +285,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
     setCurrentTime(0);
     ref.current?.setSrc(null);
     current.current.index = undefined;
-  }, []);
+  }, [setSongInfo]);
 
   const changeSongIndex = useCallback(
     async (index: number) => {
@@ -297,15 +330,9 @@ export const QueueProvider = (props: React.Props<{}>) => {
       }
 
       userData.song(song.id).update(update).catch(captureAndLogError);
-
-      // if (ref.current?.paused === false) {
-      //   ref.current?.play();
-      //   setPlaying(true);
-      // }
-
       setSongInfo({ song, id: item.id, source });
     },
-    [stopPlaying, user],
+    [setSongInfo, stopPlaying, user],
   );
 
   /**
@@ -545,6 +572,9 @@ export const QueueAudio = () => {
                 setSrc: async (opts: { src: string } | null) => {
                   if (opts) {
                     el.src = opts.src;
+                  } else {
+                    // This is important since if the player is currently playing we need to make sure it stops
+                    el.pause();
                   }
                 },
                 getCurrentTime: async () => el.currentTime,

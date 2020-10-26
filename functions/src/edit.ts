@@ -41,7 +41,7 @@ router.post("/edit", async (req) => {
   }
 
   const userId = user.uid;
-  const userData = adminDb(db, user.uid);
+  const userData = adminDb(user.uid);
   const ref = userData.song(body.songId);
 
   if (!body.update.title) {

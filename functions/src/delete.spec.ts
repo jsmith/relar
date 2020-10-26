@@ -13,13 +13,11 @@ import assert from "uvu/assert";
 
 // This must go *after* the `functions` init call
 import { onDeleteSong } from "./delete";
-import { admin } from "./admin";
 
-const firestore = admin.firestore();
-const db = adminDb(firestore, "testUser");
+const db = adminDb("testUser");
 
 test.before.each(async () => {
-  await deleteAllUserData(firestore, undefined, "testUser");
+  await deleteAllUserData(undefined, "testUser");
 });
 
 test("deletes album & artist, decrements song count, and deletes playlist items", async () => {

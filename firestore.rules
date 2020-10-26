@@ -19,19 +19,12 @@ service cloud.firestore {
       	allow read: if isUser()
       }
 
-      // TODO enforce createdAt
-      
       match /songs/{songId} {
 				function validUpdate() {
           // artwork is slightly insecure since we really only want to allow updates to "artwork.artworkDownloadUrl32"
           return affectedKeys().hasOnly(['lastPlayed', 'played', 'liked', 'downloadUrl', 'artwork', 'whenLiked', 'updatedAt', 'deleted']) && affectedKeys().hasAll(['updatedAt'])
         }
 
-        // function conformsToSchema() {
-        //   // TODO
-        //   request.resource.data.
-        // }
-        
       	allow update: if isUser() && validUpdate()
       }
 

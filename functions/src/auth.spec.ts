@@ -132,7 +132,7 @@ test("can create an account", async () => {
     .get()
     .then((data) => assert.not(data.exists));
 
-  const userData = await adminDb(firestore, uid).doc().get();
+  const userData = await adminDb(uid).doc().get();
   assert.equal(userData.data(), {
     device: "android",
     firstName: "Tester",

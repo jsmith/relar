@@ -30,7 +30,7 @@ const withPerformanceAndAnalytics = async <T>(
 };
 
 let cache: { [path: string]: unknown[] | undefined } = {};
-const watchers = createEmitter<Record<string, [unknown]>>();
+const watchers = createEmitter<Record<string, [unknown, unknown]>>();
 
 export type IndexDBModels = "songs" | "albums" | "artists" | "playlists";
 
@@ -228,12 +228,12 @@ export const useCoolDB = () => {
 
         // Emit and cache right away so users get the items
         cache[model] = items;
-        watchers.emit(model, items);
+        watchers.emit(model, items, []);
 
-        const updateItems = async (newItems: Item[]) => {
+        const updateItems = async (newItems: Item[], changedItems: Item[]) => {
           cache[model] = newItems;
           items = newItems;
-          watchers.emit(model, newItems);
+          watchers.emit(model, newItems, changedItems);
           await db.putBulkValue(model, newItems);
         };
 
@@ -321,28 +321,25 @@ export const useCoolDB = () => {
             copy[index] = data;
           };
 
-          const changedSongs: Item[] = [];
+          const changedItems: Item[] = [];
           changesToProcess.forEach((change) => {
-            changedSongs.push(change.doc.data());
+            changedItems.push(change.doc.data());
             if (change.type === "removed") {
               // SKIP (see comments above)
-            } else if (change.type === "added") {
-              // We can't trust this event to give us songs that we don't have for numerous reasons
-              // First being the reason I described above and secondly because we just can't be sure
-              // about the state of our local data
-              // Because of this, we first check to see if the song exists
-              const index = copy.findIndex((item) => item.id === change.doc.id);
-              if (index === -1) add(change);
-              else mutate(change, index);
-            } else {
-              const index = copy.findIndex((item) => item.id === change.doc.id);
-              if (index === -1) add(change);
-              mutate(change, index);
+              return;
             }
+            // At this point, it's an "added" or "removed" event
+            // We can't trust this event to give us songs that we don't have for numerous reasons
+            // First being the reason I described above and secondly because we just can't be sure
+            // about the state of our local data
+            // Because of this, we first check to see if the song exists
+            const index = copy.findIndex((item) => item.id === change.doc.id);
+            if (index === -1) add(change);
+            else mutate(change, index);
           });
 
-          const maxUpdatedAt = getMaxUpdatedAt(changedSongs);
-          await updateItems(copy);
+          const maxUpdatedAt = getMaxUpdatedAt(changedItems);
+          await updateItems(copy, changedItems);
 
           if (maxUpdatedAt < latestLastUpdated) {
             const warning = `The snapshot (${maxUpdatedAt}) was received out-of-order. The previous snapshot time was ${latestLastUpdated}.`;
@@ -418,6 +415,14 @@ const useCoolItems = function <T extends IndexDBModels>(model: T) {
 const useSort = <T>(items: T[] | undefined, sort: (a: T, b: T) => number) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(() => items?.sort(sort), [items]);
+};
+
+export const useChangedSongs = (cb: (songs: Song[]) => void) => {
+  useEffect(() => {
+    return watchers.on("songs", (_, changed) => {
+      cb(changed as Song[]);
+    });
+  }, [cb]);
 };
 
 export const useCoolSongs = () =>
