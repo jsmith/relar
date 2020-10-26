@@ -3,20 +3,24 @@ import * as uuid from "uuid";
 import * as path from "path";
 import { testFunctions } from "./configure-tests";
 import { removeUndefined } from "./utils";
-import { adminDb, adminStorage, deleteAllUserData } from "./shared/node/utils";
-import { assertExists, createTestSong } from "./test-utils";
+import { adminDb, deleteAllUserData, md5Hash } from "./shared/node/utils";
+import {
+  assertExists,
+  assertFileDoesNotExist,
+  assertFileExists,
+  createTestSong,
+} from "./test-utils";
 import { test } from "uvu";
-import assert from "uvu/assert";
+import assert, { unreachable } from "uvu/assert";
 
 // This must go *after* the `functions` init call
-import { createSong, parseID3Tags, md5Hash } from "./uploader";
+import { createSong, parseMetadata } from "./uploader";
 import { admin } from "./admin";
 import { createAlbumId } from "./shared/universal/utils";
 
 const storage = admin.storage();
-const firestore = admin.firestore();
 
-const upload = async (fileName: string) => {
+const uploadCanCall = async (fileName: string) => {
   const songId = uuid.v4();
 
   const destination = `testUser/songs/${songId}/${fileName}`;
@@ -30,77 +34,97 @@ const upload = async (fileName: string) => {
     bucket: storage.bucket().name,
   });
 
+  const file = storage.bucket().file(destination);
+
+  const wrapped = testFunctions.wrap(createSong);
+  try {
+    await wrapped(objectMetadata);
+  } catch (error) {
+    error.songId = songId;
+    error.objectMetadata = objectMetadata;
+    error.file = file;
+    throw error;
+  }
+
   return {
+    error: undefined,
     songId,
+    file,
     objectMetadata,
   };
 };
 
-const db = admin.firestore();
-
 const getAlbum = (albumId: string) => {
-  return adminDb(db, "testUser")
+  return adminDb("testUser")
     .album(albumId)
     .get()
     .then((o) => o.data());
 };
 
 const getArtist = (artistId: string) => {
-  return adminDb(db, "testUser")
+  return adminDb("testUser")
     .artist(artistId)
     .get()
     .then((o) => o.data());
 };
 
 const getSong = (songId: string) => {
-  return adminDb(db, "testUser")
+  return adminDb("testUser")
     .song(songId)
     .get()
     .then((o) => o.data());
 };
 
+const getAction = (index = 0) => {
+  return adminDb("testUser")
+    .actions()
+    .orderBy("createdAt")
+    .get()
+    .then((snap) => snap.docs[index].data());
+};
+
 const getSongs = () => {
-  return adminDb(db, "testUser")
+  return adminDb("testUser")
     .songs()
     .get()
     .then((o) => o.docs.map((doc) => doc.data()));
 };
 
 const getAlbums = () => {
-  return adminDb(db, "testUser")
+  return adminDb("testUser")
     .albums()
     .get()
     .then((o) => o.docs.map((doc) => doc.data()));
 };
 
 const getArtists = () => {
-  return adminDb(db, "testUser")
+  return adminDb("testUser")
     .artists()
     .get()
     .then((o) => o.docs.map((doc) => doc.data()));
 };
 
 const getUserData = () => {
-  return adminDb(db, "testUser")
+  return adminDb("testUser")
     .doc()
     .get()
     .then((o) => o.data());
 };
 
 const initUserData = () => {
-  return adminDb(db, "testUser").doc().set({ songCount: undefined, firstName: "", device: "none" });
+  return adminDb("testUser").doc().set({ songCount: undefined, firstName: "", device: "none" });
 };
 
 test("can parse the tags of an mp3 file", async () => {
-  const result = await parseID3Tags({
-    tmpFilePath: path.resolve(__dirname, "..", "assets", "file_with_artist_album.mp3"),
-  });
+  const result = await parseMetadata(
+    path.resolve(__dirname, "..", "assets", "file_with_artist_album.mp3"),
+  );
 
   if (result.isErr()) {
     throw Error("" + result.error.message);
   }
 
-  const tags = result.value.metadata;
+  const tags = result.value;
   assert.equal(tags.common.title, "WalloonLilliShort");
   assert.equal(tags.common.albumartist, "Web Samples");
   assert.equal(tags.common.artist, "Hendrik Broekman");
@@ -119,9 +143,7 @@ test("can hash image", async () => {
 
 test("works when uploading a valid song with just a title", async () => {
   initUserData();
-  const wrapped = testFunctions.wrap(createSong);
-  const { objectMetadata, songId } = await upload("file_just_title.mp3");
-  await wrapped(objectMetadata);
+  const { songId } = await uploadCanCall("file_just_title.mp3");
 
   const song = await getSong(songId);
   const user = await getUserData();
@@ -146,13 +168,14 @@ test("works when uploading a valid song with just a title", async () => {
         no: null,
         of: null,
       },
+      hash: "b8ee90edc66d92d2a4b130de59e262d8",
     }),
   );
 });
 
-test.after.each(async () => {
+test.before.each(async () => {
   try {
-    await deleteAllUserData(firestore, storage, "testUser");
+    await deleteAllUserData(storage, "testUser");
   } catch (e) {
     console.log(e);
   }
@@ -160,9 +183,7 @@ test.after.each(async () => {
 
 test("works when uploading a valid song with a title, artist and album", async () => {
   initUserData();
-  const wrapped = testFunctions.wrap(createSong);
-  const { objectMetadata, songId } = await upload("file_with_artist_album.mp3");
-  await wrapped(objectMetadata);
+  const { songId } = await uploadCanCall("file_with_artist_album.mp3");
 
   const song = (await getSong(songId)) as Song;
   const user = await getUserData();
@@ -189,6 +210,7 @@ test("works when uploading a valid song with a title, artist and album", async (
       no: null,
       of: 2,
     },
+    hash: "b5ecdb659b2df687a1a5aedb3fb1da78",
   });
 
   assert.equal(song, testSong);
@@ -216,17 +238,21 @@ test("works when uploading a valid song with a title, artist and album", async (
 
   assert.equal(artist, expectedArtist);
   assert.equal(album, expectedAlbum);
+
+  const actions = await adminDb("testUser").actions().get();
+  assert.equal(actions.docs.length, 1);
+  const action = actions.docs[0].data();
+  assert.equal(action.songId, song.id);
+  assert.equal(action.status, "success");
+  assert.equal(action.fileName, "file_with_artist_album.mp3");
 });
 
 test("can upload two songs with the same artist/album", async () => {
   initUserData();
-  const wrapped = testFunctions.wrap(createSong);
-  const { objectMetadata: om1, songId: s1 } = await upload("file_with_artist_album.mp3");
-  await wrapped(om1);
+  const { songId: s1 } = await uploadCanCall("file_with_artist_album.mp3");
 
   // This might eventually break when we check for duplicates using hashing
-  const { objectMetadata: om2, songId: s2 } = await upload("file_with_artist_album.mp3");
-  await wrapped(om2);
+  const { songId: s2 } = await uploadCanCall("file_with_artist_album_with_diff_track.mp3");
 
   const userData = await getUserData();
   assert.equal(userData?.songCount, 2);
@@ -242,13 +268,14 @@ test("can upload two songs with the same artist/album", async () => {
   const albums = await getAlbums();
   assert.equal(artists.length, 1);
   assert.equal(albums.length, 1);
+
+  const actions = await adminDb("testUser").actions().get();
+  assert.equal(actions.docs.length, 2);
 });
 
 test("can upload artwork", async () => {
   initUserData();
-  const wrapped = testFunctions.wrap(createSong);
-  const { objectMetadata, songId } = await upload("file_with_artwork.mp3");
-  await wrapped(objectMetadata);
+  const { songId } = await uploadCanCall("file_with_artwork.mp3");
   const song = await getSong(songId);
   const file = storage.bucket().file(`testUser/song_artwork/${song?.artwork?.hash}/artwork.jpg`);
   const [exists] = await file.exists();
@@ -257,19 +284,55 @@ test("can upload artwork", async () => {
 
 test("can upload song with artist & album that have slashes in their names", async () => {
   initUserData();
-  const wrapped = testFunctions.wrap(createSong);
-  const { objectMetadata } = await upload("file_with_artist_and_album_with_slash.mp3");
-  await wrapped(objectMetadata);
+  await uploadCanCall("file_with_artist_and_album_with_slash.mp3");
 
   await assertExists(
-    adminDb(firestore, "testUser").album({
+    adminDb("testUser").album({
       albumName: "Sanctuary/EP",
       artist: "KOAN/Sound",
       albumArtist: "",
     }),
   );
 
-  await assertExists(adminDb(firestore, "testUser").artist("KOAN/Sound"));
+  await assertExists(adminDb("testUser").artist("KOAN/Sound"));
+});
+
+test("can upload bogus mp3", async () => {
+  initUserData();
+  const { songId, file } = await uploadCanCall("empty.mp3");
+  const action = await getAction();
+  assert.equal(action.songId, songId);
+  assert.equal(action.status, "error");
+  await assertFileDoesNotExist(file);
+});
+
+test("can upload corrupt mp3", async () => {
+  initUserData();
+  const { songId, file } = await uploadCanCall("corrupt.mp3");
+  const action = await getAction();
+  assert.equal(action.songId, songId);
+  assert.equal(action.status, "error");
+  await assertFileDoesNotExist(file);
+});
+
+test("stops duplicates", async () => {
+  initUserData();
+  const { songId, file } = await uploadCanCall("file_with_artwork.mp3");
+  const action = await getAction();
+  assert.equal(action.status, "success");
+  await assertFileExists(file);
+
+  const { file: file2 } = await uploadCanCall("file_with_artwork.mp3");
+  const action2 = await getAction(1);
+  assert.equal(action2.status, "cancelled");
+  await assertFileDoesNotExist(file2);
+
+  adminDb("testUser").song(songId).update({
+    deleted: true,
+  });
+
+  // test doesn't throw an error this time
+  await uploadCanCall("file_with_artwork.mp3");
 });
 
 test.run();

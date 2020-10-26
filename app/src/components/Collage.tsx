@@ -1,5 +1,4 @@
 import React, { useMemo } from "react";
-import type { Artwork } from "../shared/universal/types";
 import { Thumbnail } from "./Thumbnail";
 import { ThumbnailObject, ThumbnailType, ThumbnailSize } from "../queries/thumbnail";
 import classNames from "classnames";

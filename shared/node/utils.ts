@@ -1,8 +1,19 @@
 import * as admin from "firebase-admin";
 import * as path from "path";
 import { createPath, createAlbumId, AlbumId, encodeFirebase } from "../universal/utils";
-import { Album, UserData, Artist, Song, BetaSignup, Playlist } from "../universal/types";
+import {
+  Album,
+  UserData,
+  Artist,
+  Song,
+  BetaSignup,
+  Playlist,
+  UploadAction,
+} from "../universal/types";
 import { GetFilesResponse } from "@google-cloud/storage";
+import * as fs from "fs";
+import * as crypto from "crypto";
+import { err, ok, Result } from "neverthrow";
 
 export const deleteCollection = async (
   collection: FirebaseFirestore.CollectionReference<unknown>,
@@ -22,15 +33,15 @@ export const deleteAllFiles = async ([files]: GetFilesResponse) => {
 };
 
 export const deleteAllUserData = async (
-  db: FirebaseFirestore.Firestore,
   storage: admin.storage.Storage | undefined,
   userId: string,
 ) => {
-  await adminDb(db, userId).doc().delete();
-  await deleteCollection(adminDb(db, userId).songs());
-  await deleteCollection(adminDb(db, userId).artists());
-  await deleteCollection(adminDb(db, userId).albums());
-  await deleteCollection(adminDb(db, userId).playlists());
+  await adminDb(userId).doc().delete();
+  await deleteCollection(adminDb(userId).songs());
+  await deleteCollection(adminDb(userId).artists());
+  await deleteCollection(adminDb(userId).albums());
+  await deleteCollection(adminDb(userId).playlists());
+  await deleteCollection(adminDb(userId).actions());
 
   if (!storage) {
     return;
@@ -79,7 +90,8 @@ export const adminStorage = (userId: string) => {
 type CollectionReference<T> = FirebaseFirestore.CollectionReference<T>;
 type DocumentReference<T> = FirebaseFirestore.DocumentReference<T>;
 
-export const adminDb = (db: FirebaseFirestore.Firestore, userId: string) => {
+export const adminDb = (userId: string) => {
+  const db = admin.firestore();
   const path = createPath().append("user_data").append(userId);
 
   return {
@@ -87,6 +99,10 @@ export const adminDb = (db: FirebaseFirestore.Firestore, userId: string) => {
     songs: () => db.collection(path.append("songs").build()) as CollectionReference<Song>,
     song: (songId: string) =>
       db.doc(path.append("songs").append(songId).build()) as DocumentReference<Song>,
+    action: (actionId: string) =>
+      db.doc(`user_data/${userId}/actions/${actionId}`) as DocumentReference<UploadAction>,
+    actions: () =>
+      db.collection(`user_data/${userId}/actions`) as CollectionReference<UploadAction>,
     albums: () => db.collection(path.append("albums").build()) as CollectionReference<Album>,
     album: (albumId: AlbumId | string) =>
       db.doc(
@@ -104,12 +120,12 @@ export const adminDb = (db: FirebaseFirestore.Firestore, userId: string) => {
     findAlbumSongs: (albumId: string) => {
       const key: keyof Song = "albumId";
       const value: Song["albumId"] = albumId;
-      return adminDb(db, userId).songs().where(key, "==", value).where("deleted", "==", false);
+      return adminDb(userId).songs().where(key, "==", value).where("deleted", "==", false);
     },
     findArtistSongs: (name: string) => {
       const key: keyof Song = "artist";
       const value: Song["artist"] = name;
-      return adminDb(db, userId).songs().where(key, "==", value).where("deleted", "==", false);
+      return adminDb(userId).songs().where(key, "==", value).where("deleted", "==", false);
     },
     playlists: () =>
       db.collection(`user_data/${userId}/playlists`) as CollectionReference<Playlist>,
@@ -135,3 +151,13 @@ export function undefinedToDelete<T>(obj: T): T {
 
   return obj;
 }
+
+export const md5Hash = (localFilePath: string): Promise<Result<string, Error>> => {
+  return new Promise<Result<string, Error>>((resolve) => {
+    const md5sum = crypto.createHash("md5");
+    const stream = fs.createReadStream(localFilePath);
+    stream.on("data", (data) => md5sum.update(data));
+    stream.on("error", (e) => resolve(err(e)));
+    stream.on("end", () => resolve(ok(md5sum.digest("hex"))));
+  });
+};

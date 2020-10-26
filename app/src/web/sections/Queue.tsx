@@ -6,7 +6,7 @@ import React, {
   forwardRef,
   MutableRefObject,
 } from "react";
-import { generatedTypeToName, useQueue } from "../../queue";
+import { generatedTypeToName, SongInfo, useQueue } from "../../queue";
 import { SongTable } from "./SongTable";
 import { MdQueueMusic, MdMoreVert } from "react-icons/md";
 import { useOnClickOutside, useCombinedRefs } from "../../utils";
@@ -23,7 +23,10 @@ export interface QueueProps {
 export const Queue = forwardRef<HTMLDivElement, QueueProps>(
   ({ visible, close, exclude }, forwarded) => {
     const { queue, songInfo, clear } = useQueue();
-    const songs = useMemo(() => queue.map(({ song }) => song), [queue]);
+    const songs = useMemo(
+      () => queue.map(({ song, id }): SongInfo => ({ ...song, playlistId: id })),
+      [queue],
+    );
     const [container, setContainer] = useState<HTMLDivElement | null>(null);
     const ref = useRef<HTMLDivElement | null>(null);
     const combined = useCombinedRefs(ref, forwarded);

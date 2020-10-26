@@ -92,6 +92,9 @@ export const SongType = Record({
   /** The duration of the song in milliseconds. */
   duration: Number,
 
+  /** The MD5 hash. */
+  hash: String.Or(Undefined),
+
   /**
    * The artist name. This is a unique value.
    */
@@ -117,7 +120,7 @@ export const SongType = Record({
    *
    * We were previously writing strings but are now writing numbers after the switch to "music-metadata"
    */
-  year: Number.Or(Undefined).Or(Undefined),
+  year: Number.Or(String).Or(Undefined),
 
   /**
    * The genre.
@@ -200,6 +203,21 @@ export const BetaSignupType = Record({
 );
 
 export type BetaSignup = Static<typeof BetaSignupType>;
+
+export const UploadActionType = Record({
+  id: String,
+  type: Literal("upload"),
+  fileName: String,
+  songId: String,
+  createdAt: Timestamp,
+  /** For listening to changes */
+  updatedAt: Timestamp,
+  status: Literal("success").Or(Literal("error")).Or(Literal("pending")).Or(Literal("cancelled")),
+  /** Should be set when status === "error" || status === "cancelled" */
+  message: String.Or(Undefined),
+});
+
+export type UploadAction = Static<typeof UploadActionType>;
 
 export const ArtistType = Record({
   /** The id of the artist. Just the name for now. */

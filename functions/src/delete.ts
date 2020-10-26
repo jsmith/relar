@@ -10,7 +10,7 @@ const db = admin.firestore();
 
 export const onDeleteUser = f.auth.user().onDelete(async (user) => {
   setSentryUser({ id: user.uid, email: user.email });
-  await deleteAllUserData(db, admin.storage(), user.uid);
+  await deleteAllUserData(admin.storage(), user.uid);
 });
 
 export const onDeleteSong = f.firestore.document("user_data/{userId}/songs/{songId}").onUpdate(
@@ -29,7 +29,7 @@ export const onDeleteSong = f.firestore.document("user_data/{userId}/songs/{song
 
     const song = after;
 
-    const userData = adminDb(db, userId).doc();
+    const userData = adminDb(userId).doc();
 
     const writes: Array<undefined | (() => void)> = [];
     const albumId = createAlbumId(song);
@@ -39,7 +39,7 @@ export const onDeleteSong = f.firestore.document("user_data/{userId}/songs/{song
         writes.push(await deleteArtistSingleSong({ db, userId, transaction, artist: song.artist }));
       }
 
-      const playlists = await transaction.get(adminDb(db, userId).playlists());
+      const playlists = await transaction.get(adminDb(userId).playlists());
       playlists.forEach((playlist) => {
         let found = false;
         const songs: Playlist["songs"] = playlist.data().songs?.filter(({ songId }) => {
@@ -69,7 +69,7 @@ export const onDeleteSong = f.firestore.document("user_data/{userId}/songs/{song
     // // There could be a weird race condition where an album is updated to use this artwork
     // // But it's a slim chance and we'll handle this in the frontend
     // if (song.artwork) {
-    //   const albums = await adminDb(db, userId)
+    //   const albums = await adminDb(userId)
     //     .albums()
     //     .collection()
     //     .where("artwork.hash", "==", song.artwork.hash)

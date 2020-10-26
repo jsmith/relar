@@ -24,7 +24,7 @@ export const deleteAlbumIfSingleSong = async ({
   userId: string;
   transaction: FirebaseFirestore.Transaction;
 }) => {
-  const userData = adminDb(db, userId);
+  const userData = adminDb(userId);
   const songs = await transaction.get(userData.findAlbumSongs(albumId));
 
   // This album is now EMPTY!
@@ -51,7 +51,7 @@ export const deleteArtistSingleSong = async ({
   userId: string;
   transaction: FirebaseFirestore.Transaction;
 }) => {
-  const userData = adminDb(db, userId);
+  const userData = adminDb(userId);
   const songs = await transaction.get(userData.findArtistSongs(artist));
 
   if (songs.docs.length === 1) {

@@ -8,11 +8,15 @@ import { createAlbumId } from "./shared/universal/utils";
 import "uvu";
 import assert from "uvu/assert";
 import type firebase from "firebase";
+import { firestore } from "firebase-admin";
 
 /** Call this function with things you don't want to be removed (ie. side effects) */
 export const noOp = (...args: any[]) => {};
 
-export const createTestSong = (song: Partial<Song>): Song => {
+export type StorageBucket = ReturnType<admin.storage.Storage["bucket"]>;
+export type StorageFile = ReturnType<StorageBucket["file"]>;
+
+export const createTestSong = (song: Partial<Song> & { hash: string }): Song => {
   // Remove undefined values for equality checks
   return removeUndefined({
     id: "",
@@ -113,8 +117,9 @@ export const songTwoArtist: Artist = {
 };
 
 export const createAndUploadTestSong = async (songId: string, options: Partial<Song>) => {
-  const song = createTestSong({ ...options, id: songId });
-  const ref = await adminDb(admin.firestore(), "testUser").song(songId);
+  // IDC about the hash here
+  const song = createTestSong({ ...options, id: songId, hash: "" });
+  const ref = await adminDb("testUser").song(songId);
   await ref.set(song);
   return ref;
 };
@@ -132,7 +137,7 @@ export const createAndUploadPlaylist = async (
     deleted: false,
   };
 
-  const ref = await adminDb(admin.firestore(), "testUser").playlist(playlist.id);
+  const ref = await adminDb("testUser").playlist(playlist.id);
   await ref.set(playlist);
   return ref;
 };
@@ -155,4 +160,16 @@ export const assertDeleted = async (
   ref: FirebaseFirestore.DocumentReference<{ deleted: boolean }>,
 ) => {
   assert.ok(await ref.get().then((snap) => snap.data()?.deleted));
+};
+
+export const assertFileDoesNotExist = async (file: StorageFile) => {
+  // const file = storage.bucket().file(`testUser/song_artwork/${song?.artwork?.hash}/artwork.jpg`);
+  const [exists] = await file.exists();
+  assert.equal(exists, false);
+};
+
+export const assertFileExists = async (file: StorageFile) => {
+  // const file = storage.bucket().file(`testUser/song_artwork/${song?.artwork?.hash}/artwork.jpg`);
+  const [exists] = await file.exists();
+  assert.equal(exists, true);
 };
