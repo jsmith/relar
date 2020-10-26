@@ -279,6 +279,7 @@ export const useCoolDB = () => {
           const add = (change: firebase.firestore.DocumentChange<IndexDBTypeMap[M]>) => {
             const data = change.doc.data();
             // I see no scenarios where this happens but like.. just to be safe
+            // Edit: There are scenarios where this could happen (e.g. I modify the data in a script)
             if (data.deleted) {
               console.warn(
                 `[${model}] Document "${change.doc.id}" not being added to the ${model} collection as it's been deleted`,
