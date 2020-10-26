@@ -4,7 +4,7 @@ import * as path from "path";
 import sharp from "sharp";
 import * as fs from "fs-extra";
 import * as crypto from "crypto";
-import { Result, ok, err, ResultAsync } from "neverthrow";
+import { Result, ok, err, ResultAsync, Err } from "neverthrow";
 import * as mm from "music-metadata";
 import { ObjectMetadata } from "firebase-functions/lib/providers/storage";
 import { Song, UserDataType, Artwork, UploadAction } from "./shared/universal/types";
@@ -178,6 +178,14 @@ function assertNameDefined(o: ObjectMetadata): asserts o is ObjectMetadata & { n
   }
 }
 
+const unwrapAndReport = <T extends any[]>(
+  fn: (...args: T) => Promise<Result<unknown, ProcessingError | Info>>,
+) => {
+  return wrapAndReport((...args: T) => {
+    return fn(...args).then(unwrap);
+  });
+};
+
 export const parseMetadata = (filePath: string): ResultAsync<mm.IAudioMetadata, ProcessingError> =>
   ResultAsync.fromPromise(mm.parseFile(filePath), (e) => ({
     type: "error",
@@ -185,11 +193,11 @@ export const parseMetadata = (filePath: string): ResultAsync<mm.IAudioMetadata, 
   }));
 
 export const createSong = f.storage.object().onFinalize(
-  wrapAndReport(async (object) => {
+  unwrapAndReport(async (object) => {
     assertNameDefined(object);
     const match = matchRegex(object.name, /^([^/]+)\/songs\/([^/]+)\/[^/]+$/);
     if (match.isErr()) {
-      return unwrap(match);
+      return match;
     }
 
     const userId = match.value[1];
@@ -240,7 +248,7 @@ export const createSong = f.storage.object().onFinalize(
         Sentry.captureException(error);
       }
 
-      return unwrap(err(error));
+      return err(error);
     };
 
     const processOk = async () => {
@@ -252,7 +260,7 @@ export const createSong = f.storage.object().onFinalize(
       };
 
       await action.update(update);
-      return unwrap(ok({}));
+      return ok<unknown, ProcessingError | Info>({});
     };
 
     const filePath = await ok<ObjectMetadata, ProcessingError>(object)
@@ -281,10 +289,14 @@ export const createSong = f.storage.object().onFinalize(
         });
       }
 
+      // Ok I'm doing this just to preserve indentation
+      // There is absolutely no other reason for this type
+      type R = Err<unknown, ProcessingError> | undefined;
+
       // Beware that this code *could* run twice
       // I had to solve an issue where the temporary directory was being removed in the first
       // iteration and then the code failed the second time around
-      await db.runTransaction(async (transaction) => {
+      const result: R = await db.runTransaction(async (transaction) => {
         const duplicates = await transaction.get(
           adminDb(userId).songs().where("hash", "==", songHash.value).where("deleted", "==", false),
         );
@@ -449,15 +461,19 @@ export const createSong = f.storage.object().onFinalize(
         // return only to satisfy ts
         return;
       });
+      // END TRANSACTION
+
+      if (result) return result;
+
+      // It's important that we call this out here since processOk removes the temporary directory
+      // Code depends on that directory existing
+      return await processOk();
     } catch (e) {
       return processError({
         type: "error",
         message: e.message ?? e,
       });
     }
-
-    // It's important that we call this out here since processOk removes the temporary directory
-    // Code depends on that directory existing
-    return processOk();
+    // END TRY CATCH
   }),
 );

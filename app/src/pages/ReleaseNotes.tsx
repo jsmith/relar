@@ -104,6 +104,11 @@ const changelog = create([
       "Improved uploading process to stream back errors in the cloud rather than send an email",
     ],
   },
+  {
+    version: "0.8.1",
+    date: "October 26 2020",
+    fixes: ["Fixed uploading issue where errors weren't being reported back to the web app"],
+  },
 ]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (
