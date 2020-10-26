@@ -16,9 +16,9 @@ Sentry.init({
   },
 });
 
-export const wrapAndReport = <T extends any[], V>(fn: (...args: T) => V | Promise<V>) => async (
-  ...args: T
-): Promise<V> => {
+export const wrapAndReport = <T extends any[]>(
+  fn: (...args: T) => boolean | undefined | void | Promise<boolean | undefined | void>,
+) => async (...args: T): Promise<boolean | undefined | void> => {
   try {
     Sentry.setUser(null);
     Sentry.configureScope((scope) => scope.clear());

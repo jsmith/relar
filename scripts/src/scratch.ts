@@ -10,8 +10,8 @@ const main = async () => {
   const json: Song[] = JSON.parse(contents);
 
   const songs = json
-    .filter((song) => typeof song.year === "string")
-    .map((song) => song.year);
+    .filter((song) => song.title === "Tell Me")
+    .map((song) => song);
 
   console.log(songs);
 };

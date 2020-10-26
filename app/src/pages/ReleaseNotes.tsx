@@ -25,7 +25,10 @@ type Change = {
   removed?: string[];
 };
 
-const changelog: Change[] = [
+// Use function for extra type safety
+const create = (changelog: Change[]): Change[] => changelog;
+
+const changelog = create([
   {
     version: "0.2.4",
     date: "July 08 2020",
@@ -86,7 +89,22 @@ const changelog: Change[] = [
       "Fixed metadata update error where you couldn't delete the year",
     ],
   },
-].reverse();
+  {
+    version: "0.8.0",
+    date: "October 26 2020",
+    fixes: [
+      "Fix contact email address in privacy policy and terms & conditions",
+      "Fixed issue where some thumbnails weren't loading",
+      "Fixed issue where liking the song in the player wasn't working",
+      "Song counts now updating in real-time",
+      "Other bug fixes",
+    ],
+    features: [
+      "Add duplicate detection using MD5 hash algorithm",
+      "Improved uploading process to stream back errors in the cloud rather than send an email",
+    ],
+  },
+]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (
   <div className="text-sm flex items-baseline space-x-2" key={change}>

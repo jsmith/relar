@@ -1,5 +1,5 @@
 import firebase from "firebase/app";
-import type { Song, Album, Artist, UserData, Playlist, UserFeedback } from "./types";
+import type { Song, Album, Artist, UserData, Playlist, UserFeedback, UploadAction } from "./types";
 import type { Runtype, Static, Success, Failure } from "runtypes";
 
 export type DecodeResult<T> = (Success<T> | Failure) & {
@@ -77,6 +77,8 @@ export const clientDb = (userId: string) => {
       db.doc(`user_data/${userId}/playlists/${id}`) as DocumentReference<Playlist>,
     feedback: (id: string) =>
       db.doc(`user_data/${userId}/feedback/${id}`) as DocumentReference<UserFeedback>,
+    actions: () =>
+      db.collection(`user_data/${userId}/actions`) as CollectionReference<UploadAction>,
   };
 };
 

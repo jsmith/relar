@@ -1,5 +1,5 @@
 import * as fs from "fs";
-import { argv, admin } from "./admin";
+import { argv } from "./admin";
 import { adminStorage, adminDb } from "./shared/node/utils";
 // import { getMp3Duration } from "../../functions/src/get-mp3-duration";
 
@@ -10,7 +10,7 @@ const getMp3Duration = (_: Buffer): number => {
 const main = async () => {
   const userId = argv[2];
 
-  const docs = await adminDb(admin.firestore(), userId)
+  const docs = await adminDb(userId)
     .songs()
     .get()
     .then((snapshot) => snapshot.docs);

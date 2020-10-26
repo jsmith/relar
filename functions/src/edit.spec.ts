@@ -22,7 +22,7 @@ import { createAlbumId } from "./shared/universal/utils";
 
 const firestore = admin.firestore();
 noOp(testFunctions);
-const db = adminDb(firestore, "testUser");
+const db = adminDb("testUser");
 
 let idToken: string;
 
@@ -64,7 +64,7 @@ test.before(async () => {
 });
 
 test.before.each(async () => {
-  await deleteAllUserData(firestore, undefined, "testUser");
+  await deleteAllUserData(undefined, "testUser");
 });
 
 test("can successfully edit a song", async () => {

@@ -175,7 +175,6 @@ export const App = () => {
             {route.showBack ? (
               <BackButton className="z-10 p-1" />
             ) : (
-              // TODO test
               <LogoNText textClassName="font-bold" logoClassName="" />
             )}
 

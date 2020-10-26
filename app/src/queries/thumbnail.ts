@@ -98,15 +98,19 @@ export const tryToGetDownloadUrlOrLog = async (
   if (result.isOk()) {
     artwork[key] = result.value;
     // we are explicitly not awaiting this since we don't care when it finishes
-    ref.update(update);
+    ref.update(update).catch(captureAndLog);
     return result.value;
   }
 
   if (result.error === "storage/object-not-found") {
+    // Sentry.captureMessage(`Artwork data not found for ${ref.path}`, Sentry.Severity.Warning);
     // This means that there isn't any artwork
-    artwork[key] = null;
+    // artwork[key] = null;
     // again, we are not awaiting
-    ref.update(update).catch(captureAndLog);
+    // Edit: This logic is actually bad. If the artwork isn't there, it might not have generated yet.
+    // Because of this, I'm going just ignoring this error
+    // This *could* also happen if the thumbnail creation fails though
+    // ref.update(update).catch(captureAndLog);
     return;
   }
 

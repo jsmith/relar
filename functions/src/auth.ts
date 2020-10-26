@@ -185,7 +185,7 @@ router.post("/create-account", async (req) => {
         emailVerified: true,
       });
 
-      const userData = adminDb(db, user.uid).doc();
+      const userData = adminDb(user.uid).doc();
       transaction.set(userData, {
         firstName: data.firstName,
         songCount: 0,

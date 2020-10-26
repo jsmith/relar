@@ -12,7 +12,8 @@ export interface SongTimeSliderProps {
 export const SongTimeSlider = ({ disabled, duration: durationMs }: SongTimeSliderProps) => {
   const currentTime = useCurrentTime();
   const currentTimeText = useMemo(() => fmtMSS(currentTime), [currentTime]);
-  const duration = useMemo(() => (durationMs ?? 0) / 1000, [durationMs]);
+  // ?? 1 is important to avoid division by 0 errors
+  const duration = useMemo(() => (durationMs ?? 1) / 1000, [durationMs]);
   const endTimeText = useMemo(() => fmtMSS(duration), [duration]);
   const { seekTime } = useQueue();
   const isMobile = useIsMobile();
