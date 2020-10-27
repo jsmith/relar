@@ -85,16 +85,14 @@ export const BetaGuide = () => {
           <LI>You cannot edit album metadata</LI>
           <LI>You cannot upload new album covers to songs after being uploaded</LI>
           <LI>The mobile app does not have offline support</LI>
-          <LI>There is not duplicate song detection</LI>
           <LI>There is no way to automatically transfer your Google Play Music library</LI>
         </ul>
 
-        <H2 l="Known Issues" />
+        {/* <H2 l="Known Issues" />
         <P>There are a few known issues that will be addressed soon.</P>
         <ul className="mt-2">
-          <LI>The system cannot process unsynchronized ID3 which results in failed uploads</LI>
-          <LI>The system does notify users if songs fail processing in the backend</LI>
-        </ul>
+          <LI>Your</LI>
+        </ul> */}
 
         <P className="pt-3">
           Have your seen the{" "}

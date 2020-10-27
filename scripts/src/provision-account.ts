@@ -1,6 +1,6 @@
 import * as uuid from "uuid";
 import { BetaSignup } from "./shared/universal/types";
-import * as sgMail from "@sendgrid/mail";
+import sgMail from "@sendgrid/mail";
 import { env } from "./env";
 import { argv, admin } from "./admin";
 

@@ -18,7 +18,7 @@ import { createEmitter } from "./events";
 import * as uuid from "uuid";
 import { captureException } from "@sentry/browser";
 import { getUserDataOrError, serverTimestamp } from "./firestore";
-import { useChangedSongs, useCoolSongs } from "./db";
+import { useChangedSongs } from "./db";
 
 const emitter = createEmitter<{ updateCurrentTime: [number] }>();
 
