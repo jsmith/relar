@@ -6,7 +6,6 @@ import firebase from "firebase/app";
 import * as Sentry from "@sentry/browser";
 import { useCoolDB } from "./db";
 import { onConditions, useMySnackbar, useOnlineStatus } from "./utils";
-import { Err } from "neverthrow";
 
 export const useStartupHooks = () => {
   const { routeId } = useRouter();

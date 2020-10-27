@@ -14,12 +14,17 @@ const main = async () => {
 
   // Although a transaction would be more appropriate, I'm just using a batch
   const writes: Array<Write<Song>> = [];
+  let i = 0;
   for (const doc of snapshot.docs) {
+    i++;
+    console.log(`Processing ${i} / ${snapshot.docs.length}`);
     const data = doc.data();
+    if (data.deleted || data.hash) continue;
+
     const destination = path.join(directory, `${data.id}.mp3`);
     const result = await md5Hash(destination);
     if (result.isErr()) {
-      console.log(`Unable to MD5 hash "${destination}"`);
+      console.log(`Unable to MD5 hash "${destination}": ` + result.error);
       return;
     }
 

@@ -109,6 +109,14 @@ const changelog = create([
     date: "October 26 2020",
     fixes: ["Fixed uploading issue where errors weren't being reported back to the web app"],
   },
+  {
+    version: "0.8.2",
+    date: "October 26 2020",
+    fixes: [
+      "Update landing page and beta guide to reflect duplicate detection",
+      "Fixed bug where resetting local cache caused songs to never load",
+    ],
+  },
 ]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (

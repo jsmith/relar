@@ -10,8 +10,7 @@ import { useConfirmPassword } from "../../confirm-password";
 import { useConfirmAction } from "../../confirm-actions";
 import { resetPassword, changeEmail, deleteAccount } from "../../auth";
 import { LOCAL_CACHE_TEXT } from "../../text";
-import { DATABASE_NAME } from "../../db";
-import { deleteDB } from "idb";
+import { resetDB } from "../../db";
 
 export const OverviewSection = ({
   title,
@@ -109,12 +108,7 @@ export const Account = () => {
             subtitle={LOCAL_CACHE_TEXT}
             actionText="Clear Local Cache"
             action={async () => {
-              deleteDB(DATABASE_NAME, {
-                blocked: () => {
-                  window.location.reload();
-                },
-              });
-
+              resetDB(user.uid);
               return ok("Successfully cleared local cache. Reloading...");
             }}
           />

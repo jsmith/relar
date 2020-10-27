@@ -26,9 +26,13 @@ const faq = [
     "Do you actually have iOS and Android apps?",
     "Yes! These apps are still in very early stage development though and lack basic features like offline support.",
   ],
+  // [
+  //   "Is Relar comparable to Google Play Music (GPM)?",
+  //   "Yes and no. GPM was a great service with tens of thousands of engineering hours put into optimizations and improvements whereas Relar is still in the very early stages of development.",
+  // ],
   [
-    "Is Relar comparable to Google Play Music (GPM)?",
-    "Yes and no. GPM was a great service with tens of thousands of engineering hours put into optimizations and improvements whereas Relar is still in the very early stages of development.",
+    "Do you have duplicate detection?",
+    "Yes! Relar uses an MD5 hashing algorithm to automatically detect duplicate uploads.",
   ],
   [
     "Can I transfer my Google Play Music library?",
