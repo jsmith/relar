@@ -1,4 +1,4 @@
-import { openDB, IDBPDatabase } from "idb";
+import { openDB, IDBPDatabase, deleteDB } from "idb";
 import { useEffect, useMemo, useState } from "react";
 import { useUser } from "./auth";
 import { Album, Artist, Playlist, Song } from "./shared/universal/types";
@@ -6,8 +6,6 @@ import { clientDb } from "./shared/universal/utils";
 import firebase from "firebase/app";
 import { createEmitter } from "./events";
 import { captureMessage, Severity } from "@sentry/browser";
-
-export const DATABASE_NAME = "firebase-collections";
 
 const withPerformanceAndAnalytics = async <T>(
   cb: () => Promise<T[]>,
@@ -45,12 +43,34 @@ export type IndexDBTypeMap = {
 
 export type Model = IndexDBTypeMap[IndexDBModels];
 
+const emitter = createEmitter<{ close: [] }>();
+
+export const resetDB = (db: string) => {
+  emitter.emit("close");
+
+  // Give the databases enough time to hopefully close
+  setTimeout(() => {
+    deleteDB(db, {
+      blocked: () => {
+        console.log("BLOCKED");
+      },
+    }).then(() => {
+      window.location.reload();
+    });
+  }, 3000);
+};
+
 export class IndexedDb {
+  public dispose: () => void;
   private database: string;
   private db: IDBPDatabase<unknown> | undefined;
 
   constructor(database: string) {
     this.database = database;
+    this.dispose = emitter.on("close", () => {
+      console.log("CLOSING DB");
+      this.db && this.db.close();
+    });
   }
 
   public async createObjectStore(tableNames: string[]) {
@@ -153,7 +173,7 @@ export const getMaxUpdatedAt = (songs: Model[]): number => {
 };
 
 /**
- * The songs provider. undefined means the songs are loading.
+ * This should be called *once*.
  */
 export const useCoolDB = () => {
   const { user } = useUser();
@@ -162,7 +182,9 @@ export const useCoolDB = () => {
     const init = async () => {
       if (!user) return;
       cache = {};
-      const db = new IndexedDb(DATABASE_NAME);
+      // Use the name of the user so that the data from one user doesn't mess with the data from another user
+      // TODO is this secure?
+      const db = new IndexedDb(user.uid);
       await db.createObjectStore([]);
       const songs = clientDb(user.uid).songs();
       const artists = clientDb(user.uid).artists();

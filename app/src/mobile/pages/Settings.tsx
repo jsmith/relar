@@ -1,16 +1,14 @@
 import React from "react";
 import firebase from "firebase/app";
 import { useDefinedUser } from "../../auth";
-import { Button } from "../../components/Button";
-import { DATABASE_NAME } from "../../db";
 import { deleteDB } from "idb";
 
 import { Plugins } from "@capacitor/core";
 import { NativeAudioPlugin } from "@capacitor-community/native-audio";
 import { captureException } from "@sentry/browser";
-import { useSnackbar } from "react-simple-snackbar";
 import { link } from "../../classes";
 import { LOCAL_CACHE_TEXT } from "../../text";
+import { resetDB } from "../../db";
 
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 
@@ -26,13 +24,7 @@ export const Settings = () => {
       <div className="space-y-1">
         <button
           className="px-3 py-2 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"
-          onClick={() =>
-            deleteDB(DATABASE_NAME, {
-              blocked: () => {
-                window.location.reload();
-              },
-            })
-          }
+          onClick={() => resetDB(user.uid)}
         >
           Clear Local Cache
         </button>
