@@ -85,7 +85,7 @@ const TermsAndConditions = React.lazy(() => import("./pages/TermsAndConditions")
 type Route<ID extends string> = {
   id: ID;
   path: string;
-  component: React.LazyExoticComponent<(opts: { container: HTMLElement | null }) => JSX.Element>;
+  component: React.LazyExoticComponent<() => JSX.Element>;
   showTabs: boolean;
   protected: boolean;
   className?: string;
@@ -234,7 +234,7 @@ export const routes = createRoutes({
     component: Albums,
     protected: true,
     sidebar: true,
-    className: "py-2 overflow-y-auto",
+    className: "",
     mobileClassName: "",
     title: "Albums",
     showBack: true,
@@ -258,7 +258,7 @@ export const routes = createRoutes({
     component: Artists,
     protected: true,
     sidebar: true,
-    className: "py-2 overflow-y-auto",
+    className: "",
     mobileClassName: "",
     title: "Artists",
     showBack: true,
@@ -294,7 +294,7 @@ export const routes = createRoutes({
     component: Playlists,
     protected: true,
     sidebar: true,
-    className: "py-2 overflow-y-auto",
+    className: "",
     mobileClassName: "",
     title: "Playlists",
     showBack: true,

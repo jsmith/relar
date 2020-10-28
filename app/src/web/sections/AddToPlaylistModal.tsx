@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { Song } from "../../shared/universal/types";
 import { Input } from "../../components/Input";
 import { usePlaylistCreate } from "../../queries/playlists";
@@ -7,6 +7,8 @@ import { BlockAlert } from "../../components/BlockAlert";
 import { AddToPlaylistList } from "../../sections/AddToPlaylistList";
 import { onConditions } from "../../utils";
 import { useCoolPlaylists } from "../../db";
+import { createEmitter } from "../../events";
+import { useModal } from "react-modal-hook";
 
 export interface MetadataEditorProps {
   setDisplay: (display: boolean) => void;
@@ -75,4 +77,27 @@ export const AddToPlaylistEditor = ({ song, setDisplay }: MetadataEditorProps) =
       {playlistAddError && <BlockAlert type="error">{playlistAddError}</BlockAlert>}
     </Modal>
   );
+};
+
+const events = createEmitter<{ show: [Song] }>();
+
+export const showPlaylistAddModal = (song: Song) => {
+  events.emit("show", song);
+};
+
+export const usePlaylistAddModal = () => {
+  const song = useRef<Song>();
+  const [showAddPlaylistModal, hideAddPlaylistModal] = useModal(() =>
+    song.current ? (
+      <AddToPlaylistEditor setDisplay={() => hideAddPlaylistModal()} song={song.current} />
+    ) : null,
+  );
+
+  useEffect(() => {
+    return events.on("show", (newSong) => {
+      song.current = newSong;
+      showAddPlaylistModal();
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 };

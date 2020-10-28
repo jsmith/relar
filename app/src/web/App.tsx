@@ -6,7 +6,7 @@ import { Sidebar } from "../components/Sidebar";
 import { FaMusic } from "react-icons/fa";
 import classNames from "classnames";
 import { Player } from "./sections/Player";
-import { MdLibraryMusic, MdSearch, MdAddCircle, MdMusicNote } from "react-icons/md";
+import { MdLibraryMusic, MdSearch, MdAddCircle, MdMusicNote, MdShuffle } from "react-icons/md";
 import { AccountDropdown } from "./sections/AccountDropdown";
 import { isMobile, useDocumentTitle } from "../utils";
 import { Link } from "../components/Link";
@@ -21,6 +21,9 @@ import FocusTrap from "focus-trap-react";
 import { useStartupHooks } from "../startup";
 import { LogoIcon } from "../components/LogoIcon";
 import { LogoNText } from "../components/LogoNText";
+import { useMetadataEditor } from "../sections/MetadataEditor";
+import { usePlaylistAddModal } from "./sections/AddToPlaylistModal";
+import { LibraryHeader } from "./sections/LibraryHeader";
 
 export interface SideBarItem {
   label: string;
@@ -46,31 +49,11 @@ const sideLinks = [
   },
 ];
 
-const libraryLinks = [
-  {
-    label: "Songs",
-    route: routes.songs,
-  },
-  {
-    label: "Playlists",
-    route: routes.playlists,
-  },
-  {
-    label: "Artists",
-    route: routes.artists,
-  },
-  {
-    label: "Albums",
-    route: routes.albums,
-  },
-];
-
 export const App = (_: React.Props<{}>) => {
   const { isRoute, goTo, routeId } = useRouter();
   const { user, loading } = useUser();
   const [uploadDisplay, setUploadDisplay] = useState(false);
   const [queueDisplay, setQueueDisplay] = useState(false);
-  const [container, setContainer] = useState<HTMLDivElement | null>(null);
   const playerRef = useRef<HTMLDivElement | null>(null);
 
   const route = useMemo(() => Object.values(routes).find((route) => route.id === routeId), [
@@ -80,6 +63,8 @@ export const App = (_: React.Props<{}>) => {
   useDocumentTitle(route?.title ? `${route.title} | Relar` : "Relar");
 
   useStartupHooks();
+  useMetadataEditor();
+  usePlaylistAddModal();
 
   const closeQueue = useCallback(() => setQueueDisplay(false), []);
 
@@ -135,34 +120,14 @@ export const App = (_: React.Props<{}>) => {
               </div>
             }
           >
-            <div ref={(ref) => setContainer(ref)} className="h-full absolute inset-0 flex flex-col">
+            <div className="h-full absolute inset-0 flex flex-col">
               {(isRoute(routes.songs) ||
                 isRoute(routes.artists) ||
                 isRoute(routes.albums) ||
-                isRoute(routes.playlists)) && (
-                <ul
-                  className="flex space-x-4 text-xl sticky top-0 z-10 px-5"
-                  style={{ backgroundColor: bgApp }}
-                >
-                  {/* FIXME accessible */}
-                  {libraryLinks.map(({ label, route }) => (
-                    <li
-                      key={label}
-                      className={classNames(
-                        // FIXME bold
-                        "my-2 border-gray-600 cursor-pointer hover:text-gray-800",
-                        isRoute(route) ? "border-b-2 text-gray-700" : " text-gray-600",
-                      )}
-                      onClick={() => goTo(route)}
-                    >
-                      {label}
-                    </li>
-                  ))}
-                </ul>
-              )}
+                isRoute(routes.playlists)) && <LibraryHeader />}
               <div className={classNames(route.className, "flex-grow flex")}>
                 <React.Suspense fallback={<LoadingSpinner />}>
-                  <route.component container={container} />
+                  <route.component />
                 </React.Suspense>
               </div>
             </div>
@@ -176,7 +141,7 @@ export const App = (_: React.Props<{}>) => {
         <Player toggleQueue={() => setQueueDisplay(!queueDisplay)} refFunc={playerRef} />
       </UploadModal>
     ) : route?.id ? (
-      <route.component container={container} />
+      <route.component />
     ) : (
       <div className="flex flex-col text-black w-full flex-grow justify-center items-center">
         <div>This is a 404</div>

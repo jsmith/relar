@@ -10,7 +10,7 @@ import {
   MdRemoveFromQueue,
   MdAddToQueue,
 } from "react-icons/md";
-import { MetadataEditor } from "../../sections/MetadataEditor";
+import { MetadataEditor, showSongEditor } from "../../sections/MetadataEditor";
 import { useModal } from "react-modal-hook";
 import { LikedIcon } from "../../components/LikedIcon";
 import { IconButton } from "../../components/IconButton";
@@ -21,11 +21,12 @@ import { fmtMSS } from "../../utils";
 import { Link } from "../../components/Link";
 import { getAlbumRouteParams, getArtistRouteParams, routes } from "../../routes";
 import { link } from "../../classes";
-import { AddToPlaylistEditor } from "./AddToPlaylistModal";
+import { AddToPlaylistEditor, showPlaylistAddModal } from "./AddToPlaylistModal";
 import Skeleton from "react-loading-skeleton";
 import { useQueue, SetQueueSource, SongInfo, checkQueueItemsEqual } from "../../queue";
 import { Audio } from "@jsmith21/svg-loaders-react";
-import RecycledList from "react-recycled-scrolling";
+import { FixedSizeList as List } from "react-window";
+import AutoSizer from "react-virtualized-auto-sizer";
 
 const widths = {
   title: { flexGrow: 1, minWidth: 0 },
@@ -107,6 +108,8 @@ export interface SongTableRowProps<T extends SongInfo> {
   children?: React.ReactNode;
   includeDateAdded?: boolean;
   index: number;
+  style: CSSProperties;
+  beforeShowModal?: () => void;
 }
 
 export const SongTableRow = <T extends SongInfo>({
@@ -118,15 +121,10 @@ export const SongTableRow = <T extends SongInfo>({
   paused,
   includeDateAdded,
   index,
+  style,
+  beforeShowModal,
 }: SongTableRowProps<T>) => {
   const [focusedPlay, setFocusedPlay] = useState(false);
-  const [showEditorModal, hideEditorModal] = useModal(
-    () => <MetadataEditor setDisplay={() => hideEditorModal()} song={song} onSuccess={() => {}} />,
-    [song],
-  );
-  const [showAddPlaylistModal, hideAddPlaylistModal] = useModal(() => (
-    <AddToPlaylistEditor setDisplay={() => hideAddPlaylistModal()} song={song} />
-  ));
   const { confirmAction } = useConfirmAction();
   const setLiked = useLikeSong(song);
   const deleteSong = useDeleteSong();
@@ -145,14 +143,16 @@ export const SongTableRow = <T extends SongInfo>({
         label: "Add To Playlist",
         icon: MdPlaylistAdd,
         onClick: () => {
-          showAddPlaylistModal();
+          beforeShowModal && beforeShowModal();
+          showPlaylistAddModal(song);
         },
       },
       {
         label: "Edit Info",
         icon: MdEdit,
         onClick: () => {
-          showEditorModal();
+          beforeShowModal && beforeShowModal();
+          showSongEditor(song);
         },
       },
       {
@@ -172,7 +172,7 @@ export const SongTableRow = <T extends SongInfo>({
       },
       ...extraItems,
     ];
-  }, [actions, confirmAction, deleteSong, index, showAddPlaylistModal, showEditorModal, song]);
+  }, [actions, beforeShowModal, confirmAction, deleteSong, index, song]);
 
   const artist = song.artist && (
     <Link
@@ -205,6 +205,7 @@ export const SongTableRow = <T extends SongInfo>({
       // h-full to take up entire parent (set by recycle view)
       className="group hover:bg-gray-300 text-gray-700 text-sm flex items-center h-full"
       onClick={() => setSong(song)}
+      style={style}
     >
       <Cell className="flex space-x-2 items-center pl-3" style={widths.title}>
         <div className="w-5 h-5 relative flex-shrink-0">
@@ -305,7 +306,6 @@ export interface SongTableProps<T extends SongInfo> {
    */
   songs?: T[];
   loadingRows?: number;
-  container: HTMLElement | null;
   actions?: SongTableItem<T>[];
 
   includeDateAdded?: boolean;
@@ -314,16 +314,18 @@ export interface SongTableProps<T extends SongInfo> {
   source: SetQueueSource;
 
   mode?: "regular" | "condensed";
+
+  beforeShowModal?: () => void;
 }
 
 export const SongTable = function <T extends SongInfo>({
   songs,
   loadingRows = 5,
-  container,
   actions,
   source,
   mode = "regular",
   includeDateAdded,
+  beforeShowModal,
 }: SongTableProps<T>) {
   const { setQueue, playing: notPaused, dequeue, enqueue, songInfo } = useQueue();
   const actionsWithAddRemove = useMemo(() => {
@@ -352,14 +354,15 @@ export const SongTable = function <T extends SongInfo>({
         .map((_, i) => i);
     }
 
-    return songs.map((song, index) => ({ song, index }));
+    return songs;
   }, [loadingRows, songs]);
 
-  const rowRenderer = useCallback(
-    (row: { song: T; index: number } | number) => {
-      if (typeof row === "number") {
+  const Row = useCallback(
+    ({ index, style }: { index: number; style: CSSProperties }) => {
+      const value = rows[index];
+      if (typeof value === "number") {
         return (
-          <div key={row}>
+          <div key={value} style={style}>
             <LoadingCell />
             <LoadingCell />
             <LoadingCell />
@@ -367,28 +370,40 @@ export const SongTable = function <T extends SongInfo>({
         );
       }
 
-      const { song, index } = row;
       const playing = checkQueueItemsEqual(
-        { song, id: song.playlistId ?? song.id, source },
+        { song: value, id: value.playlistId ?? value.id, source },
         songInfo,
       );
 
       // The key is the index rather than the song ID as the song could > 1
       return (
         <SongTableRow
-          song={song}
+          style={style}
+          song={value}
           index={index}
           setSong={() => setQueue({ songs: songs ?? [], source, index })}
-          key={`${song.id}///${index}`}
+          key={`${value.id}///${index}`}
           actions={actionsWithAddRemove}
           mode={mode}
           playing={playing}
           paused={!notPaused}
           includeDateAdded={includeDateAdded}
+          beforeShowModal={beforeShowModal}
         />
       );
     },
-    [actionsWithAddRemove, includeDateAdded, mode, notPaused, setQueue, songInfo, songs, source],
+    [
+      actionsWithAddRemove,
+      includeDateAdded,
+      mode,
+      notPaused,
+      rows,
+      setQueue,
+      songInfo,
+      songs,
+      source,
+      beforeShowModal,
+    ],
   );
 
   return (
@@ -413,12 +428,19 @@ export const SongTable = function <T extends SongInfo>({
         <HeaderCol label="" className="py-2" style={widths.liked} />
       </div>
       <div className="flex-grow flex">
-        <RecycledList
-          attrList={rows}
-          itemFn={rowRenderer}
-          itemHeight={48}
-          className="relative w-full"
-        />
+        <AutoSizer>
+          {({ height, width }) => (
+            <List
+              itemCount={rows.length}
+              itemSize={48}
+              className="relative w-full"
+              height={height}
+              width={width}
+            >
+              {Row}
+            </List>
+          )}
+        </AutoSizer>
       </div>
     </div>
   );

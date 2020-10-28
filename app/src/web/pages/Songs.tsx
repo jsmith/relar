@@ -4,12 +4,12 @@ import { EmptyState } from "../../components/EmptyState";
 import { useCoolSongs } from "../../db";
 import { SongTable } from "../sections/SongTable";
 
-export const Songs = ({ container }: { container: HTMLElement | null }) => {
+export const Songs = () => {
   const songs = useCoolSongs();
   return songs?.length === 0 ? (
     <EmptyState icon={RiMusicLine}>No songs found. Upload a few tunes to get started :)</EmptyState>
   ) : (
-    <SongTable songs={songs} container={container} source={{ type: "library" }} />
+    <SongTable songs={songs} source={{ type: "library" }} />
   );
 };
 

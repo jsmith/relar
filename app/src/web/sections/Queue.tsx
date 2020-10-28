@@ -27,7 +27,6 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
       () => queue.map(({ song, id }): SongInfo => ({ ...song, playlistId: id })),
       [queue],
     );
-    const [container, setContainer] = useState<HTMLDivElement | null>(null);
     const ref = useRef<HTMLDivElement | null>(null);
     const combined = useCombinedRefs(ref, forwarded);
 
@@ -107,7 +106,6 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
               <Button label="Clear" invert height="h-8" onClick={clear} />
             </div>
             <div
-              ref={setContainer}
               style={{
                 // 48 is the size of the table row. This must be kept in sync.
                 height: `${Math.max(songs.length, 5) * 48}px`,
@@ -118,9 +116,9 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
             >
               <SongTable
                 songs={songs}
-                container={container}
                 source={{ type: "queue" }}
                 mode="condensed"
+                beforeShowModal={close}
               />
             </div>
           </>

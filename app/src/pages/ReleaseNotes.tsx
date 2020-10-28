@@ -117,6 +117,16 @@ const changelog = create([
       "Fixed bug where resetting local cache caused songs to never load",
     ],
   },
+  {
+    version: "0.9.0",
+    date: "October 28 2020",
+    fixes: [
+      "Improved album/artist/playlists scrolling",
+      "Using headphones to play/pause music now updates the UI correctly",
+      "Fixed bug where trying to edit metadata in the queue crashed the app",
+    ],
+    features: ["Added button that shuffles your entire library"],
+  },
 ]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (
