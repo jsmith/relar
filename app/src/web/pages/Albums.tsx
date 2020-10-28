@@ -4,6 +4,7 @@ import { LoadingSpinner } from "../../components/LoadingSpinner";
 import { useCoolAlbums } from "../../db";
 import { EmptyState } from "../../components/EmptyState";
 import { RiAlbumLine } from "react-icons/ri";
+import { GridTempTest } from "../../components/GridTempTest";
 
 export const Albums = () => {
   const albums = useCoolAlbums();
@@ -13,15 +14,16 @@ export const Albums = () => {
   }
 
   return (
-    <div className="flex flex-wrap px-5 w-full overflow-y-auto" style={{ height: "max-content" }}>
-      {albums.length > 0 ? (
-        albums.map((album) => <AlbumCard className="mx-1" key={album.id} album={album} />)
-      ) : (
-        <EmptyState icon={RiAlbumLine}>
-          No albums found. Set the "Album" attribute on a song using the metadata editor.
-        </EmptyState>
-      )}
-    </div>
+    // <div className="flex flex-wrap px-5 w-full overflow-y-auto" style={{ height: "max-content" }}>
+    //   {albums.length > 0 ? (
+    //     albums.map((album) => <AlbumCard className="mx-1" key={album.id} album={album} />)
+    //   ) : (
+    //     <EmptyState icon={RiAlbumLine}>
+    //       No albums found. Set the "Album" attribute on a song using the metadata editor.
+    //     </EmptyState>
+    //   )}
+    // </div>
+    <GridTempTest />
   );
 };
 

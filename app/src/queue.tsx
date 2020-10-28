@@ -329,6 +329,8 @@ export const QueueProvider = (props: React.Props<{}>) => {
         }
       }
 
+      firebase.analytics().logEvent("play_song", { song_id: song.id });
+
       userData.song(song.id).update(update).catch(captureAndLogError);
       setSongInfo({ song, id: item.id, source });
     },
