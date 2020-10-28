@@ -189,7 +189,7 @@ export const App = () => {
         {/* See https://stackoverflow.com/questions/33636796/chrome-safari-not-filling-100-height-of-flex-parent */}
         <div className="flex-grow min-h-0 relative flex">
           <React.Suspense fallback={<LoadingSpinner />}>
-            <route.component container={null} />
+            <route.component />
           </React.Suspense>
         </div>
         {route.showTabs && <ButtonTabs />}

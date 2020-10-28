@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { CSSProperties, useState } from "react";
 import { MdPlayArrow, MdPlayCircleFilled } from "react-icons/md";
 import classNames from "classnames";
 import { Collage, CollageProps } from "./Collage";
@@ -12,9 +12,11 @@ export interface ThumbnailCardProps {
   onClick?: () => void;
   play?: () => void;
   className?: string;
+  style?: CSSProperties;
 }
 
 export const ThumbnailCard = ({
+  style,
   objects,
   title,
   subtitle,
@@ -24,19 +26,23 @@ export const ThumbnailCard = ({
   type,
 }: ThumbnailCardProps) => {
   const [focused, setFocused] = useState(false);
-  const height = "h-24 lg:h-32";
   const isMobile = useIsMobile();
 
   return (
     <div
       className={classNames(
         "flex flex-col rounded-md cursor-pointer relative group",
-        "text-xs lg:text-sm w-24 lg:w-32 flex-shrink-0",
+        "text-xs lg:text-sm flex-shrink-0",
         className,
       )}
       onClick={onClick}
+      style={{
+        ...style,
+        // I check the style.height property since the height is sometimes undefined sadly
+        height: style?.height ? style.height : undefined,
+      }}
     >
-      <Collage className={height} objects={objects} type={type} size="128" />
+      <Collage style={{ height: style?.width }} objects={objects} type={type} size="128" />
       <div
         className="truncate mt-1 lg:mt-2 text-gray-900 font-bold"
         tabIndex={0}
@@ -52,9 +58,9 @@ export const ThumbnailCard = ({
         <div
           className={classNames(
             "absolute inset-0 group-hover:opacity-100 flex items-center justify-center",
-            height,
             focused ? "opacity-100" : "opacity-0",
           )}
+          style={{ height: style?.width }}
         >
           <button
             onFocus={() => setFocused(true)}

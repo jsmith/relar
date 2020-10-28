@@ -140,7 +140,10 @@ export const QueueContext = createContext<{
   _setRef: (el: AudioControls | null) => void;
   shuffle: boolean;
   toggleShuffle: () => void;
+  setShuffle: (value: boolean) => void;
   stopPlaying: () => void;
+  playIfNotPlaying: () => void;
+  pauseIfPlaying: () => void;
 }>({
   queue: [],
   setQueue: async () => {},
@@ -162,6 +165,9 @@ export const QueueContext = createContext<{
   shuffle: false,
   toggleShuffle: () => {},
   stopPlaying: () => {},
+  playIfNotPlaying: () => {},
+  pauseIfPlaying: () => {},
+  setShuffle: () => {},
 });
 
 export interface AudioControls {
@@ -177,7 +183,10 @@ export interface AudioControls {
 export const QueueProvider = (props: React.Props<{}>) => {
   const ref = useRef<AudioControls | null>(null);
   const [queue, setQueueState] = useState<QueueItem[]>([]);
-  const [shuffle, setShuffle] = useLocalStorage<"true" | "false">("player-shuffle", "true");
+  const [shuffle, setShuffle, shuffleRef] = useLocalStorage<"true" | "false">(
+    "player-shuffle",
+    "true",
+  );
   const current = useRef<{
     queue: QueueItem[];
     mappings:
@@ -193,9 +202,8 @@ export const QueueProvider = (props: React.Props<{}>) => {
     index: undefined,
   });
   const [songInfo, setSongInfo, songInfoRef] = useStateWithRef<QueueItem | undefined>(undefined); // currently playing song
-  const [mode, setMode] = useLocalStorage<QueuePlayMode>("player-mode", "none");
-  const { user } = useUser();
-  const [playing, setPlaying] = useState<boolean>(false);
+  const [mode, setMode, modeRef] = useLocalStorage<QueuePlayMode>("player-mode", "none");
+  const [playing, setPlaying, playingRef] = useStateWithRef<boolean>(false);
   const isMobile = useIsMobile();
   /** The volume from 0 to 100 */
   const [volumeString, setVolumeString] = useLocalStorage<string>(
@@ -262,10 +270,22 @@ export const QueueProvider = (props: React.Props<{}>) => {
   }, [playing]);
 
   const toggleState = useCallback(() => {
-    if (playing) ref.current?.pause();
+    if (playingRef.current) ref.current?.pause();
     else ref.current?.play();
-    setPlaying(!playing);
-  }, [playing]);
+    setPlaying(!playingRef.current);
+  }, [playingRef, setPlaying]); // aka []
+
+  const playIfNotPlaying = useCallback(() => {
+    if (playingRef.current) return;
+    ref.current?.play();
+    setPlaying(true);
+  }, [playingRef, setPlaying]);
+
+  const pauseIfPlaying = useCallback(() => {
+    if (!playingRef.current) return;
+    ref.current?.pause();
+    setPlaying(false);
+  }, [playingRef, setPlaying]);
 
   useHotkeys(
     "space",
@@ -285,16 +305,12 @@ export const QueueProvider = (props: React.Props<{}>) => {
     setCurrentTime(0);
     ref.current?.setSrc(null);
     current.current.index = undefined;
-  }, [setSongInfo]);
+    current.current.mappings = undefined;
+    current.current.queue = [];
+  }, [setPlaying, setSongInfo]); // aka []
 
   const changeSongIndex = useCallback(
     async (index: number) => {
-      if (!user) {
-        console.warn("The user is undefined in queue > changeSongIndex");
-        stopPlaying();
-        return;
-      }
-
       current.current.index = index;
       const item: QueueItem | undefined = current.current.queue[index];
 
@@ -310,7 +326,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
       const { song, source } = item;
       const userData = getUserDataOrError();
       console.info(`Changing song to index ${index} (title: ${song.title}, id: ${song.id})`);
-      const downloadUrl = await tryToGetSongDownloadUrlOrLog(user, userData.song(song.id), song);
+      const downloadUrl = await tryToGetSongDownloadUrlOrLog(userData.song(song.id), song);
       if (!downloadUrl) return;
 
       const update: Partial<Song> = {
@@ -329,10 +345,12 @@ export const QueueProvider = (props: React.Props<{}>) => {
         }
       }
 
+      firebase.analytics().logEvent("play_song", { song_id: song.id });
+
       userData.song(song.id).update(update).catch(captureAndLogError);
       setSongInfo({ song, id: item.id, source });
     },
-    [setSongInfo, stopPlaying, user],
+    [setSongInfo, stopPlaying], // aka []
   );
 
   /**
@@ -347,25 +365,25 @@ export const QueueProvider = (props: React.Props<{}>) => {
         setPlaying(true);
       };
 
-      if (!force && mode === "repeat-one") {
+      if (!force && modeRef.current === "repeat-one") {
         // This condition shouldn't happen
         if (current.current.index === undefined) return;
         // If we are just repeating the current song
         changeSongIndexAndPlay(current.current.index);
       } else if (index >= current.current.queue.length) {
-        console.info(`The end of the queue has been reached in mode -> ${mode}`);
+        console.info(`The end of the queue has been reached in mode -> ${modeRef.current}`);
         // If we are at the last song
-        if (mode === "none") stopPlaying();
+        if (modeRef.current === "none") stopPlaying();
         else changeSongIndexAndPlay(0);
       } else if (index < 0) {
-        if (mode === "none") stopPlaying();
+        if (modeRef.current === "none") stopPlaying();
         else changeSongIndexAndPlay(current.current.queue.length - 1);
       } else {
         // Else we are somewheres in the middle
         changeSongIndexAndPlay(index);
       }
     },
-    [mode, changeSongIndex, stopPlaying],
+    [modeRef, changeSongIndex, setPlaying, stopPlaying], // aka []
   );
 
   const enqueue = useCallback((song: Song) => {
@@ -446,14 +464,14 @@ export const QueueProvider = (props: React.Props<{}>) => {
       // It's important that we do this before shuffling
       await changeSongIndex(index ?? 0);
 
-      if (source.type !== "queue" && shuffle === "true") {
+      if (source.type !== "queue" && shuffleRef.current === "true") {
         shuffleSongs();
       }
 
       ref.current?.play();
       setPlaying(true);
     },
-    [changeSongIndex, shuffle, shuffleSongs],
+    [changeSongIndex, setPlaying, shuffleRef, shuffleSongs], // aka []
   );
 
   // The ?? don't actually matter since we check to see if the index is currently defined in "tryToGoTo" function
@@ -495,7 +513,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
   }, [stopPlaying]);
 
   const toggleShuffle = useCallback(() => {
-    if (shuffle === "true") {
+    if (shuffleRef.current === "true") {
       const { queue, mappings, index } = current.current;
 
       // It's technically passible this is undefined
@@ -514,7 +532,16 @@ export const QueueProvider = (props: React.Props<{}>) => {
       shuffleSongs();
       setShuffle("true");
     }
-  }, [setShuffle, shuffle, shuffleSongs]);
+  }, [setShuffle, shuffleRef, shuffleSongs]); // aka []
+
+  const setShuffleBoolean = useCallback(
+    (value: boolean) => {
+      if (value && shuffleRef.current === "true") return;
+      else if (!value && shuffleRef.current === "false") return;
+      toggleShuffle();
+    },
+    [shuffleRef, toggleShuffle],
+  ); // aka []
 
   useHotkeys("right", () => current.current.index !== undefined && next(), [next]);
   useHotkeys(
@@ -550,6 +577,9 @@ export const QueueProvider = (props: React.Props<{}>) => {
         toggleShuffle,
         dequeue,
         stopPlaying,
+        playIfNotPlaying,
+        pauseIfPlaying,
+        setShuffle: setShuffleBoolean,
       }}
     >
       {props.children}
@@ -559,7 +589,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
 
 export const QueueAudio = () => {
   const { Portal } = usePortal();
-  const { _setRef, _nextAutomatic } = useQueue();
+  const { _setRef, _nextAutomatic, playIfNotPlaying, pauseIfPlaying } = useQueue();
 
   return (
     <Portal>
@@ -583,8 +613,11 @@ export const QueueAudio = () => {
               }),
             );
         }}
-        // onTimeUpdate={(e) => setCurrentTime((e.target as HTMLAudioElement).currentTime)}
         onEnded={_nextAutomatic}
+        // These are triggered if we call .pause() or if the system pauses the music
+        // ie. a user clicks play/pause using their headphones
+        onPlay={playIfNotPlaying}
+        onPause={pauseIfPlaying}
       >
         Your browser does not support HTML5 Audio...
       </audio>

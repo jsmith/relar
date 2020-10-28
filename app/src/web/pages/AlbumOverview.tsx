@@ -4,7 +4,7 @@ import { SongsOverview } from "../sections/SongsOverview";
 import { useAlbumAttributes } from "../../utils";
 import { useAlbumIdFromParams } from "../../routes";
 
-export const AlbumOverview = ({ container }: { container: HTMLElement | null }) => {
+export const AlbumOverview = () => {
   const albumId = useAlbumIdFromParams();
   const album = useAlbum(albumId);
   const songs = useAlbumSongs(albumId);
@@ -13,7 +13,6 @@ export const AlbumOverview = ({ container }: { container: HTMLElement | null }) 
   return (
     <SongsOverview
       songs={songs}
-      container={container}
       title={name}
       source={{ type: "album", id: albumId, sourceHumanName: album?.album ?? "" }}
       infoPoints={[artist]}

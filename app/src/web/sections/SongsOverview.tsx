@@ -12,7 +12,6 @@ import { useSongsDuration } from "../../queries/songs";
 import { ContextMenuItem, ContextMenu } from "../../components/ContextMenu";
 
 export interface SongsOverviewProps<T extends SongInfo> {
-  container: HTMLElement | null;
   /**
    * Define this if you can rename the title. It should return whether or not the rename was successful.
    */
@@ -29,7 +28,6 @@ export interface SongsOverviewProps<T extends SongInfo> {
 }
 
 export const SongsOverview = <T extends SongInfo>({
-  container,
   onRename,
   onDelete,
   title,
@@ -145,7 +143,6 @@ export const SongsOverview = <T extends SongInfo>({
       <div className="flex-grow flex">
         <SongTable
           songs={songs}
-          container={container}
           actions={songActions}
           source={source}
           includeDateAdded={includeDateAdded}

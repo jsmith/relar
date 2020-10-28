@@ -6,6 +6,7 @@ import { clientDb } from "./shared/universal/utils";
 import firebase from "firebase/app";
 import { createEmitter } from "./events";
 import { captureMessage, Severity } from "@sentry/browser";
+import { useStateWithRef } from "./utils";
 
 const withPerformanceAndAnalytics = async <T>(
   cb: () => Promise<T[]>,
@@ -179,6 +180,7 @@ export const useCoolDB = () => {
   const { user } = useUser();
 
   useEffect(() => {
+    const disposers: Array<() => void> = [];
     const init = async () => {
       if (!user) return;
       cache = {};
@@ -407,21 +409,27 @@ export const useCoolDB = () => {
         );
       };
 
-      await watchModel("albums", albums);
-      await watchModel("songs", songs);
-      await watchModel("artists", artists);
-      await watchModel("playlists", playlists);
+      disposers.push(await watchModel("albums", albums));
+      disposers.push(await watchModel("songs", songs));
+      disposers.push(await watchModel("artists", artists));
+      disposers.push(await watchModel("playlists", playlists));
     };
 
     init();
+    return () => {
+      disposers.forEach((dispose) => dispose());
+      disposers.splice(0, disposers.length);
+    };
   }, [user]);
 };
 
 const useCoolItems = function <T extends IndexDBModels>(model: T) {
-  const [items, setItems] = useState<IndexDBTypeMap[T][]>();
+  const [items, setItems, itemsRef] = useStateWithRef<IndexDBTypeMap[T][] | undefined>(
+    cache[model] as IndexDBTypeMap[T][],
+  );
 
   useEffect(() => {
-    if (cache[model]) {
+    if (cache[model] && !itemsRef.current) {
       console.debug(`Initializing ${model} to cache`, cache[model]);
       setItems(cache[model] as IndexDBTypeMap[T][]);
     }
@@ -430,7 +438,7 @@ const useCoolItems = function <T extends IndexDBModels>(model: T) {
       console.debug(`Updating ${model}`);
       setItems(items as IndexDBTypeMap[T][]);
     });
-  }, [model]);
+  }, [model, setItems, itemsRef]);
 
   return items;
 };

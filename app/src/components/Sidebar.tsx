@@ -9,18 +9,18 @@ export const Sidebar = (
     className?: string;
   } & React.Props<null>,
 ) => {
-  const [docked, setDocked] = useState(mql.matches);
+  // const [docked, setDocked] = useState(mql.matches);
   // const [open, setOpen] = useState(false);
 
-  useEffect(() => {
-    const mediaQueryChanged = () => {
-      // setOpen(false);
-      setDocked(mql.matches);
-    };
+  // useEffect(() => {
+  //   const mediaQueryChanged = () => {
+  //     // setOpen(false);
+  //     // setDocked(mql.matches);
+  //   };
 
-    mql.addListener(mediaQueryChanged);
-    return () => mql.removeListener(mediaQueryChanged);
-  }, []);
+  //   mql.addEventListener("change", mediaQueryChanged);
+  //   return () => mql.removeEventListener("change", mediaQueryChanged);
+  // }, []);
 
   // FIXME slide menu https://github.com/negomi/react-burger-menu
   return (
