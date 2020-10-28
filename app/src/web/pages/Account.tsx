@@ -155,7 +155,7 @@ export const Account = () => {
           />
         </TabPanel>
         {/* <TabPanel className="text-gray-800" selectedClassName="flex-grow">
-          <RecycledList itemHeight={48} itemFn={renderAction} attrList={} />
+          <List itemHeight={48} itemFn={renderAction} attrList={} />
         </TabPanel> */}
         <TabPanel className="text-gray-800 space-y-2" selectedClassName="flex-grow">
           <h1 className="text-2xl">Billing</h1>

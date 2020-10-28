@@ -4,7 +4,7 @@ import { SongsOverview } from "../sections/SongsOverview";
 import { useGeneratedTypeSongs } from "../../queries/songs";
 import { GeneratedType, generatedTypeToName } from "../../queue";
 
-export const Generated = ({ container }: { container: HTMLElement | null }) => {
+export const Generated = () => {
   const { params } = useRouter();
   // FIXME validation
   const { generatedType } = params as { generatedType: GeneratedType };
@@ -13,7 +13,6 @@ export const Generated = ({ container }: { container: HTMLElement | null }) => {
   return (
     <SongsOverview
       songs={songs}
-      container={container}
       title={generatedTypeToName[generatedType]}
       includeDateAdded={generatedType === "recently-added"}
       source={{ type: "generated", id: generatedType }}

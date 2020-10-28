@@ -1,11 +1,11 @@
-import type { Playlist } from "../shared/universal/types";
+import type { Playlist, Song } from "../shared/universal/types";
 import { serverTimestamp, useUserData } from "../firestore";
 import * as uuid from "uuid";
 import { useCallback, useMemo } from "react";
 import { useSongLookup } from "./songs";
 import type { SongInfo } from "../queue";
 import firebase from "firebase/app";
-import { useCoolPlaylists } from "../db";
+import { useCoolPlaylists, useCoolSongs } from "../db";
 
 export const usePlaylistCreate = () => {
   const userData = useUserData();
@@ -36,6 +36,7 @@ export const usePlaylistAdd = () => {
 
   return useCallback(
     async ({ playlistId, songId }: { playlistId: string; songId: string }) => {
+      // TODO add check before!! In case of dup
       return await firebase.firestore().runTransaction(async (transaction) => {
         const playlist = userData.playlist(playlistId);
         const snap = await transaction.get(playlist);
@@ -72,22 +73,40 @@ export const usePlaylist = (playlistId: string | undefined) => {
   ]);
 };
 
+export const getPlaylistSongs = (
+  songs: Playlist["songs"],
+  lookup: Record<string, Song>,
+): SongInfo[] | undefined =>
+  songs
+    // Since lookup could be empty if the songs haven't loaded yet
+    // Or if a song has been deleted (we don't remove songs from playlists automatically yet)
+    // Or for a variety of other possible reasons that I haven't thought of yet
+    ?.filter(({ songId }) => songId in lookup)
+    ?.map(({ songId, id }): SongInfo & { playlistId: string } => ({
+      ...lookup[songId],
+      playlistId: id,
+    }));
+
 export const usePlaylistSongs = (playlist: Playlist | undefined) => {
   const lookup = useSongLookup();
 
-  return useMemo(
-    () =>
-      playlist?.songs
-        // Since lookup could be empty if the songs haven't loaded yet
-        // Or if a song has been deleted (we don't remove songs from playlists automatically yet)
-        // Or for a variety of other possible reasons that I haven't thought of yet
-        ?.filter(({ songId }) => songId in lookup)
-        ?.map(({ songId, id }): SongInfo & { playlistId: string } => ({
-          ...lookup[songId],
-          playlistId: id,
-        })),
-    [playlist?.songs, lookup],
-  );
+  return useMemo(() => (playlist?.songs ? getPlaylistSongs(playlist.songs, lookup) : []), [
+    playlist?.songs,
+    lookup,
+  ]);
+};
+
+export const usePlaylistSongsLookup = () => {
+  const playlists = useCoolPlaylists();
+  const songLookup = useSongLookup();
+
+  return useMemo(() => {
+    const lookup: Record<string, SongInfo[]> = {};
+    playlists?.forEach((playlist) => {
+      lookup[playlist.id] = getPlaylistSongs(playlist.songs, songLookup) ?? [];
+    });
+    return lookup;
+  }, [playlists, songLookup]);
 };
 
 export const usePlaylistRemoveSong = (playlistId: string | undefined) => {

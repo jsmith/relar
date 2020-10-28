@@ -123,6 +123,14 @@ export const getAlbumAttributes = (albumId: string) => {
   };
 };
 
+export const getDisplayAlbumAttributes = (albumId: string) => {
+  const split = albumId.split(ALBUM_ID_DIVIDER);
+  return {
+    albumArtist: split[0] ? split[0] : "Unknown Artist",
+    name: split[1] ? split[1] : "Unknown Album",
+  };
+};
+
 export const isDefined = <T>(value: T | undefined | null): value is T =>
   value !== null && value !== undefined;
 

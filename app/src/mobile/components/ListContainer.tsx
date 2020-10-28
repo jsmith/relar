@@ -1,7 +1,8 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { CSSProperties, useCallback, useEffect, useRef } from "react";
 import classNames from "classnames";
 import { motion, useMotionValue, useTransform } from "framer-motion";
-import RecycledList from "react-recycled-scrolling";
+import { FixedSizeList as List } from "react-window";
+import AutoSizer from "react-virtualized-auto-sizer";
 
 export type ListContainerMode = "regular" | "condensed";
 
@@ -119,12 +120,12 @@ export const ListContainer = function <T, K extends keyof T, E>({
     };
   }, [clearTimer, disableNavigator, resetTimer]);
 
-  const rowRenderer = useCallback(
-    ({ song, index }: { song: T; index: number }) => (
+  const RowWrapper = useCallback(
+    ({ index, style }: { index: number; style: CSSProperties }) => (
       <Row
         key={index}
-        snapshot={song}
-        item={song}
+        snapshot={items![index]}
+        item={items![index]}
         index={index}
         items={items ?? []}
         mode={mode}
@@ -137,7 +138,13 @@ export const ListContainer = function <T, K extends keyof T, E>({
   return (
     <div className={classNames("overflow-y-scroll", className)} ref={container}>
       {/* TODO test mobile */}
-      <RecycledList attrList={items} itemFn={rowRenderer} itemHeight={height} />
+      <AutoSizer>
+        {({ height, width }) => (
+          <List itemCount={items?.length ?? 0} itemSize={height} height={height} width={width}>
+            {RowWrapper}
+          </List>
+        )}
+      </AutoSizer>
       {!disableNavigator && (
         <motion.div
           className={classNames("absolute h-full top-0 right-0 py-1 pr-1")}

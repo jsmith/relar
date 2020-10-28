@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { CSSProperties, useMemo } from "react";
 import { Thumbnail } from "./Thumbnail";
 import { ThumbnailObject, ThumbnailType, ThumbnailSize } from "../queries/thumbnail";
 import classNames from "classnames";
@@ -8,10 +8,18 @@ export interface CollageProps {
   objects: ThumbnailObject[] | ThumbnailObject | undefined;
   type: ThumbnailType;
   className?: string;
+  style?: CSSProperties;
   setAverageColor?: (color: string) => void;
 }
 
-export const Collage = ({ setAverageColor, size, objects, className, type }: CollageProps) => {
+export const Collage = ({
+  setAverageColor,
+  size,
+  objects,
+  className,
+  type,
+  style,
+}: CollageProps) => {
   // Remove any objects that don't have artwork, limit to 4 pieces of art, and only show unique
   const filtered = useMemo(() => {
     if (!objects) return [];
@@ -48,6 +56,7 @@ export const Collage = ({ setAverageColor, size, objects, className, type }: Col
         className={className}
         object={filtered[0]}
         size={size}
+        style={style}
         setAverageColor={setAverageColor}
       />
     );
@@ -55,7 +64,7 @@ export const Collage = ({ setAverageColor, size, objects, className, type }: Col
 
   // else show a collage of 4 photos
   return (
-    <div className={classNames("relative", className)}>
+    <div className={classNames("relative", className)} style={style}>
       <Thumbnail
         type={type}
         className="absolute left-0 top-0"
