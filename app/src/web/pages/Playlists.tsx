@@ -1,27 +1,46 @@
 import React from "react";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
-import { PlaylistCard } from "../../sections/PlaylistCard";
 import { useCoolPlaylists } from "../../db";
 import { EmptyState } from "../../components/EmptyState";
 import { RiPlayList2Fill } from "react-icons/ri";
 import { MdMoreVert } from "react-icons/md";
+import { ThumbnailCardGrid } from "../../components/ThumbnailCardGrid";
+import { usePlaylistSongsLookup } from "../../queries/playlists";
+import { songsCount } from "../../utils";
+import { useRouter } from "@graywolfai/react-tiniest-router";
+import { routes } from "../../routes";
+import { useQueue } from "../../queue";
 
 export const Playlists = () => {
   const playlists = useCoolPlaylists();
+  const lookup = usePlaylistSongsLookup();
+  const { goTo } = useRouter();
+  const { setQueue } = useQueue();
+
   if (!playlists) {
     return <LoadingSpinner />;
   }
 
   return (
-    <div className="flex flex-wrap px-5 w-full">
+    <div className="w-full">
       {playlists.length > 0 ? (
-        playlists.map((playlist) => (
-          <PlaylistCard
-            className="mx-1"
-            playlist={playlist}
-            key={`${playlist.id}/${playlist.updatedAt.toMillis()}`}
-          />
-        ))
+        <ThumbnailCardGrid
+          items={playlists}
+          lookup={lookup}
+          getTitle={(playlist) => playlist.name}
+          getSubtitle={(playlist) => songsCount(playlist.songs?.length)}
+          onClick={(playlist) => goTo(routes.playlist, { playlistId: playlist.id })}
+          play={(playlist) =>
+            setQueue({
+              songs: lookup[playlist.id],
+              source: {
+                type: "playlist",
+                id: playlist.id,
+                sourceHumanName: playlist.name,
+              },
+            })
+          }
+        />
       ) : (
         <EmptyState icon={RiPlayList2Fill}>
           No playlists found. Click on the "

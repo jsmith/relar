@@ -13,7 +13,7 @@ import { useConfirmAction } from "../../confirm-actions";
 import { routes } from "../../routes";
 import { SongsOverview } from "../sections/SongsOverview";
 
-export const PlaylistOverview = ({ container }: { container: HTMLElement | null }) => {
+export const PlaylistOverview = () => {
   const { params, goTo } = useRouter();
   // FIXME validation
   const { playlistId } = params as { playlistId: string };
@@ -27,7 +27,6 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
   return (
     <SongsOverview
       songs={playlistSongs}
-      container={container}
       title={playlist?.name}
       source={{ type: "playlist", id: playlistId, sourceHumanName: playlist?.name ?? "" }}
       infoPoints={playlist ? [`Created on ${fmtToDate(playlist.createdAt)}`] : []}
@@ -35,7 +34,9 @@ export const PlaylistOverview = ({ container }: { container: HTMLElement | null 
         {
           label: "Remove From Playlist",
           icon: HiOutlineTrash,
-          onClick: (song) => removeSong(song.playlistId),
+          // This should always succeed
+          // The check is just for TS
+          onClick: (song) => song.playlistId && removeSong(song.playlistId),
         },
       ]}
       onRename={(name) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { Song, MetadataAPI } from "../shared/universal/types";
 import { OkCancelModal } from "../components/OkCancelModal";
 import { Input } from "../components/Input";
@@ -8,6 +8,8 @@ import { BlockAlert } from "../components/BlockAlert";
 import { useSongRef } from "../firestore";
 import { Thumbnail } from "../components/Thumbnail";
 import { parseIntOr } from "../utils";
+import { useModal } from "react-modal-hook";
+import { createEmitter } from "../events";
 
 export const PositionInformation = ({
   label,
@@ -173,4 +175,33 @@ export const MetadataEditor = ({ song, setDisplay, onSuccess }: MetadataEditorPr
       {error && <BlockAlert type="error">{error}</BlockAlert>}
     </OkCancelModal>
   );
+};
+
+const events = createEmitter<{ show: [Song] }>();
+
+export const showSongEditor = (song: Song) => {
+  events.emit("show", song);
+};
+
+export const useMetadataEditor = () => {
+  const song = useRef<Song>();
+  const [showEditorModal, hideEditorModal] = useModal(
+    () =>
+      song.current ? (
+        <MetadataEditor
+          setDisplay={() => hideEditorModal()}
+          song={song.current}
+          onSuccess={() => {}}
+        />
+      ) : null,
+    [],
+  );
+
+  useEffect(() => {
+    return events.on("show", (newSong) => {
+      song.current = newSong;
+      showEditorModal();
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 };

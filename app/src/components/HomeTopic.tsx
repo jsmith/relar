@@ -6,7 +6,7 @@ import classNames from "classnames";
 export interface HomeTopicProps {
   title: string;
   subTitle?: string;
-  children: JSX.Element[];
+  children: JSX.Element;
   route: RouteType;
   params?: RouterStateType["params"];
   queryParams?: RouterStateType["queryParams"];
@@ -42,11 +42,8 @@ export const HomeTopic = ({
         />
       </div>
 
-      <div className={classNames("flex space-x-3 overflow-x-auto", wrapperClassName)}>
-        {children.length === 0 ? emptyText : children}
-        {/* This is so the items don't end right at the edge of the screen */}
-        {/* This pushes the items out just a bit more */}
-        <div className="w-1 flex-shrink-0" />
+      <div className={wrapperClassName} style={{ minHeight: "10px" }}>
+        {children}
       </div>
     </div>
   );

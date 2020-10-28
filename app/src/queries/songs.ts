@@ -7,6 +7,7 @@ import { serverTimestamp, useUserData } from "../firestore";
 import { useCallback, useMemo } from "react";
 import { useCoolSongs } from "../db";
 import { GeneratedType } from "../queue";
+import { getDefinedUser } from "../auth";
 
 export const useRecentlyPlayedSongs = () => {
   const songs = useCoolSongs();
@@ -58,10 +59,10 @@ export const useDeleteSong = () => {
 };
 
 export const tryToGetSongDownloadUrlOrLog = async (
-  user: firebase.User,
   ref: firebase.firestore.DocumentReference<Song>,
   data: Song,
 ): Promise<string | undefined> => {
+  const user = getDefinedUser();
   if (data.downloadUrl) {
     return data.downloadUrl;
   }

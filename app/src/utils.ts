@@ -7,6 +7,7 @@ import {
   MutableRefObject,
   useState,
   useEffect,
+  RefObject,
 } from "react";
 import * as Sentry from "@sentry/browser";
 import tiny from "tinycolor2";
@@ -308,10 +309,12 @@ const debouncedStorageSet = debounce(500, Storage.set.bind(Storage));
 export function useLocalStorage<T extends string>(
   key: string,
   defaultValue: T,
-): [T, (value: T) => void];
-export function useLocalStorage<T extends string>(key: string): [T | undefined, (value: T) => void];
+): [T, (value: T) => void, RefObject<T>];
+export function useLocalStorage<T extends string>(
+  key: string,
+): [T | undefined, (value: T) => void, RefObject<T | undefined>];
 export function useLocalStorage<T extends string>(key: string, defaultValue?: T) {
-  const [value, setValue] = useState<T | undefined>(defaultValue);
+  const [value, setValue, ref] = useStateWithRef<T | undefined>(defaultValue);
 
   useEffect(() => {
     // FIXME use Record
@@ -320,17 +323,17 @@ export function useLocalStorage<T extends string>(key: string, defaultValue?: T)
         setValue(value as T);
       }
     });
-  }, [key]);
+  }, [key, setValue]);
 
   const setValueAndStore = useCallback(
     (value: T) => {
       setValue(value);
       debouncedStorageSet({ key, value });
     },
-    [key],
+    [key, setValue],
   );
 
-  return [value, setValueAndStore];
+  return [value, setValueAndStore, ref];
 }
 
 export function useOnClickOutside(
