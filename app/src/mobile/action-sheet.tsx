@@ -1,13 +1,13 @@
 import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
-import type { IconType } from "react-icons/lib";
+import { IconType } from "react-icons/lib";
 import { createEmitter } from "../events";
 import classNames from "classnames";
-import type { RouterStateType, RouteType } from "@graywolfai/react-tiniest-router";
 import { Link } from "../components/Link";
 import { isDefined } from "../shared/universal/utils";
+import { NavigatorRoutes } from "../routes";
 
-export type ActionSheetItem = {
+export type ActionSheetItem<K extends keyof NavigatorRoutes = keyof NavigatorRoutes> = {
   label: string;
   icon: IconType;
 } & (
@@ -17,16 +17,19 @@ export type ActionSheetItem = {
     }
   | {
       type: "link";
-      route: RouteType;
-      params?: RouterStateType["params"];
+      route: K;
+      // FIXME not type safe
+      params?: NavigatorRoutes[K]["params"];
     }
 );
 
-const emitter = createEmitter<{ show: [Array<ActionSheetItem | undefined>] }>();
+const emitter = createEmitter<{
+  show: [Array<ActionSheetItem | undefined>];
+}>();
 
-export const openActionSheet = (items: Array<ActionSheetItem | undefined>) => {
+export function openActionSheet(items: Array<ActionSheetItem | undefined>) {
   emitter.emit("show", items);
-};
+}
 
 export const ActionSheet = () => {
   const [items, setItems] = useState<ActionSheetItem[]>();

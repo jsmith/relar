@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "../components/Button";
 import firebase from "firebase/app";
-import { useRouter } from "@graywolfai/react-tiniest-router";
-import { routes } from "../routes";
+import { navigateTo } from "../routes";
 import { useUser, signInWithEmailAndPassword } from "../auth";
 import { CardPage } from "../components/CardPage";
 import { Input } from "../components/Input";
@@ -15,13 +14,12 @@ export const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string>();
-  const { goTo } = useRouter();
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
-      goTo(routes.home);
+      navigateTo("home");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -35,7 +33,7 @@ export const Login = () => {
         method: result.value.credential?.signInMethod,
         uid: result.value.user?.uid,
       });
-      goTo(routes.home);
+      navigateTo("home");
     } else {
       setError(result.error.message);
     }
@@ -49,7 +47,7 @@ export const Login = () => {
       footer={
         <div className="space-x-2 flex justify-center items-center h-full text-sm md:text-base">
           <span>{"Don't have an account?"}</span>
-          <Link route={routes.signup} label="Sign Up" />
+          <Link route="signup" label="Sign Up" />
         </div>
       }
     >
@@ -71,7 +69,7 @@ export const Login = () => {
         />
         {error && <BlockAlert type="error">{error}</BlockAlert>}
         <div>
-          <Link route={routes.forgotPassword} label="Forgot your password?" />
+          <Link route="forgotPassword" label="Forgot your password?" />
         </div>
         <Button
           loading={loading}

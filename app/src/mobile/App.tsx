@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import { getDefinedUser, useUser } from "../auth";
-import { useRouter } from "@graywolfai/react-tiniest-router";
-import { routes } from "../routes";
+import { navigateTo, routes, useNavigator } from "../routes";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { HiOutlineCog } from "react-icons/hi";
 import { ButtonTabs } from "./sections/BottomTabs";
@@ -54,7 +53,7 @@ class Controls implements AudioControls {
     }
 
     const { src, song } = opts;
-    const cover = await tryToGetDownloadUrlOrLog(getDefinedUser(), song, "song", "256");
+    const cover = await tryToGetDownloadUrlOrLog(getDefinedUser(), song, "256");
 
     await NativeAudio.preload({
       path: src,
@@ -83,24 +82,9 @@ class Controls implements AudioControls {
 const controls = new Controls();
 
 export const App = () => {
-  const { routeId, goTo } = useRouter();
+  const { routeId } = useNavigator("home"); // "home" is just because the argument is required
   const { loading, user } = useUser();
-  const {
-    _setRef,
-    _nextAutomatic,
-    songInfo,
-    toggleState,
-    next,
-    previous,
-    stopPlaying,
-  } = useQueue();
-  const thumbnail = useThumbnail(songInfo?.song, "song", "128");
-
-  useEffect(() => {
-    if (thumbnail) {
-      NativeAudio.setAlbumArt({ url: thumbnail });
-    }
-  }, [thumbnail]);
+  const { _setRef, _nextAutomatic, toggleState, next, previous, stopPlaying } = useQueue();
 
   useStartupHooks();
 
@@ -112,11 +96,11 @@ export const App = () => {
 
   useEffect(() => {
     if (!loading && user && route?.protected === false) {
-      goTo(routes.home);
+      navigateTo("home");
     } else if (!loading && !user && route?.protected === true) {
-      goTo(routes.hero);
+      navigateTo("hero");
     }
-  }, [goTo, loading, route?.protected, user]);
+  }, [loading, route?.protected, user]);
 
   useEffect(() => {
     const { remove: dispose1 } = NativeAudio.addListener("complete", _nextAutomatic);
@@ -149,7 +133,7 @@ export const App = () => {
       <div className="flex flex-col">
         <div>This is a 404</div>
         <div>
-          Take me <Link route={routes.home} label="home" />?
+          Take me <Link route="home" label="home" />?
         </div>
       </div>
     );
@@ -175,11 +159,11 @@ export const App = () => {
             {route.showBack ? (
               <BackButton className="z-10 p-1" />
             ) : (
-              <LogoNText textClassName="font-bold" logoClassName="" />
+              <LogoNText className="space-x-1" textClassName="font-bold" logoClassName="" />
             )}
 
             {route.id !== "settings" && (
-              <button className="z-10 p-1" onClick={() => goTo(routes.settings)}>
+              <button className="z-10 p-1" onClick={() => navigateTo("settings")}>
                 <HiOutlineCog className="w-6 h-6" />
               </button>
             )}

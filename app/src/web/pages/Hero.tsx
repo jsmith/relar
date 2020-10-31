@@ -3,7 +3,6 @@ import { Footer } from "../../sections/Footer";
 import { PersonMusic } from "../../illustrations/PersonMusic";
 import { Link } from "../../components/Link";
 import { button } from "../../classes";
-import { routes } from "../../routes";
 import { Feature } from "../../components/Feature";
 import { HiOutlineCloudDownload } from "react-icons/hi";
 import { HeartBeat } from "../../illustrations/HeartBeat";
@@ -20,7 +19,7 @@ const faq = [
   ],
   [
     "Are there any limits to the size of each file?",
-    "Each song is currently limited to 10MB. Larger files will be supported before the official release.",
+    "Each song is currently limited to 20 MB. Larger files will be supported before the official release.",
   ],
   [
     "Do you actually have iOS and Android apps?",
@@ -92,11 +91,7 @@ export const Hero = () => {
           />
           <div className="h-5" />
           <div className="flex justify-center">
-            <Link
-              label="Beta Sign Up →"
-              className={button({ color: "purple" })}
-              route={routes.signup}
-            />
+            <Link label="Beta Sign Up →" className={button({ color: "purple" })} route="signup" />
           </div>
           <div className="h-16" />
           <div className="text-gray-800 space-y-4">

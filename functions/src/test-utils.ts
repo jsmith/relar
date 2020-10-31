@@ -1,14 +1,12 @@
 import { admin } from "./admin";
-import { removeUndefined } from "./utils";
-import { adminDb } from "./shared/node/utils";
-import { Song, Album, Artist, Playlist } from "./shared/universal/types";
+import { adminDb, serverTimestamp } from "./shared/node/utils";
+import { Song, Playlist } from "./shared/universal/types";
 import axios from "axios";
 import * as uuid from "uuid";
-import { createAlbumId } from "./shared/universal/utils";
 import "uvu";
 import assert from "uvu/assert";
-import type firebase from "firebase";
-import { firestore } from "firebase-admin";
+import * as firebase from "@firebase/rules-unit-testing";
+import { removedUndefinedValues } from "./shared/universal/utils";
 
 /** Call this function with things you don't want to be removed (ie. side effects) */
 export const noOp = (...args: any[]) => {};
@@ -16,11 +14,11 @@ export const noOp = (...args: any[]) => {};
 export type StorageBucket = ReturnType<admin.storage.Storage["bucket"]>;
 export type StorageFile = ReturnType<StorageBucket["file"]>;
 
-export const createTestSong = (song: Partial<Song> & { hash: string }): Song => {
+export const createTestSong = (song?: Partial<Song>): Song => {
   // Remove undefined values for equality checks
-  return removeUndefined({
+  return removedUndefinedValues({
     id: "",
-    title: "",
+    title: "T",
     liked: false,
     fileName: "",
     played: 0,
@@ -43,9 +41,10 @@ export const createTestSong = (song: Partial<Song> & { hash: string }): Song => 
       no: null,
       of: null,
     },
-    createdAt: admin.firestore.Timestamp.fromDate(new Date()),
-    updatedAt: admin.firestore.Timestamp.fromDate(new Date()),
+    createdAt: 0 as any,
+    updatedAt: 0 as any,
     deleted: false,
+    hash: "",
     ...song,
   });
 };
@@ -86,34 +85,11 @@ export const songOne = {
   title: "one",
 };
 
-export const songTwoAlbumId = createAlbumId({
-  artist: "Old Ar",
-  albumArtist: "Old AA",
-  albumName: "Old Al",
-});
-
 export const songTwo = {
   title: "two",
   artist: "Old Ar",
   albumArtist: "Old AA",
   albumName: "Old Al",
-  albumId: songTwoAlbumId,
-};
-
-export const songTwoAlbum: Album = {
-  id: songTwoAlbumId,
-  album: songTwo.albumName,
-  albumArtist: songTwo.albumArtist,
-  artwork: undefined,
-  updatedAt: 0 as any,
-  deleted: false,
-};
-
-export const songTwoArtist: Artist = {
-  id: songTwoAlbumId,
-  name: songTwoAlbumId,
-  updatedAt: 0 as any,
-  deleted: false,
 };
 
 export const createAndUploadTestSong = async (songId: string, options: Partial<Song>) => {
@@ -132,8 +108,8 @@ export const createAndUploadPlaylist = async (
     id: uuid.v4(),
     name,
     songs: songs.map((snapshot) => ({ songId: snapshot.id, id: uuid.v4() })),
-    createdAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
-    updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
     deleted: false,
   };
 

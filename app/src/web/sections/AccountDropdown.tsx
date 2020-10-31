@@ -3,8 +3,7 @@ import { useSelect } from "downshift";
 import { AiOutlineUser } from "react-icons/ai";
 import classNames from "classnames";
 import { FaCaretDown } from "react-icons/fa";
-import { useRouter } from "@graywolfai/react-tiniest-router";
-import { routes } from "../../routes";
+import { navigateTo } from "../../routes";
 import { useDefinedUser } from "../../auth";
 import { useModal } from "react-modal-hook";
 import { Feedback } from "../../sections/Feedback";
@@ -24,7 +23,6 @@ export interface AccountDropdownProps {
 
 export const AccountDropdown = ({ className }: AccountDropdownProps) => {
   // FIXME use headless UI
-  const { goTo } = useRouter();
   const user = useDefinedUser();
   const [show, close] = useModal(() => <Feedback onExit={close} />);
 
@@ -34,13 +32,13 @@ export const AccountDropdown = ({ className }: AccountDropdownProps) => {
     onSelectedItemChange: (j) => {
       switch (j.selectedItem) {
         case "Settings":
-          goTo(routes.account);
+          navigateTo("account");
           break;
         case "Beta Guide":
-          goTo(routes["beta-guide"]);
+          navigateTo("beta-guide");
           break;
         case "Release Notes":
-          goTo(routes["release-notes"]);
+          navigateTo("release-notes");
           break;
         case "Log Out":
           firebase.analytics().logEvent("logout");

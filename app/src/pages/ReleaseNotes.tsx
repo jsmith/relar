@@ -127,6 +127,18 @@ const changelog = create([
     ],
     features: ["Added button that shuffles your entire library"],
   },
+  {
+    version: "0.10.0",
+    date: "October 30 2020",
+    features: [
+      "Optimizing storage of albums and artists",
+      "Added artwork in the song table",
+      "Added genre tab",
+      "Improved cover art and audio file client side caching",
+      "Added duplicate check before adding to a song to a playlist",
+      "Automatically scrolling to the playing song",
+    ],
+  },
 ]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (

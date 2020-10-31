@@ -1,9 +1,7 @@
 import React from "react";
 import { Link } from "../../components/Link";
 import { button } from "../../classes";
-import { routes } from "../../routes";
 import classNames from "classnames";
-import { LogoIcon } from "../../components/LogoIcon";
 import { LogoNText } from "../../components/LogoNText";
 
 export const Hero = () => {
@@ -23,9 +21,9 @@ export const Hero = () => {
       <Link
         label="Beta Sign Up →"
         className={classNames(button({ color: "purple", invert: true }), "text-xl")}
-        route={routes.signup}
+        route="signup"
       />
-      <Link label="Login" className="mt-5 uppercase text-xl" route={routes.login} />
+      <Link label="Login" className="mt-5 uppercase text-xl" route="login" />
     </div>
   );
 };

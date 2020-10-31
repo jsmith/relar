@@ -11,11 +11,19 @@ import {
 } from "react";
 import * as Sentry from "@sentry/browser";
 import tiny from "tinycolor2";
-import { getAlbumAttributes } from "./shared/universal/utils";
 import { useSnackbar } from "react-simple-snackbar";
 import { Plugins } from "@capacitor/core";
-import { Album } from "./shared/universal/types";
 import { debounce } from "throttle-debounce";
+import {
+  FirestoreTimestamp,
+  Playlist,
+  Song,
+  UploadAction,
+  UserData,
+  UserFeedback,
+} from "./shared/universal/types";
+import { createPath } from "./shared/universal/utils";
+import firebase from "firebase/app";
 
 const { Storage } = Plugins;
 
@@ -279,7 +287,7 @@ export const pluralSongs = (count: number | undefined) => (count === 1 ? "song" 
 
 export const songsCount = (count: number | undefined) => `${count ?? 0} ${pluralSongs(count)}`;
 
-export const fmtToDate = (timestamp: firebase.firestore.Timestamp) =>
+export const fmtToDate = (timestamp: FirestoreTimestamp) =>
   new Date(timestamp.toMillis()).toLocaleDateString("en", {
     month: "short",
     day: "numeric",
@@ -637,16 +645,6 @@ export const useMySnackbar = () => {
   return open;
 };
 
-export const useAlbumAttributes = (album?: Album) => {
-  return useMemo(() => {
-    const { albumArtist } = album ? getAlbumAttributes(album.id) : { albumArtist: undefined };
-    return {
-      name: album?.album ? album.album : "Unknown Album",
-      artist: album?.albumArtist ? album.albumArtist : albumArtist ? albumArtist : "Unknown Artist",
-    };
-  }, [album]);
-};
-
 export const parseIntOr = <T>(value: string | undefined, defaultValue: T) => {
   if (value === undefined) return defaultValue;
   const parsed = parseInt(value);
@@ -664,3 +662,50 @@ export function useStateWithRef<T>(value: T): [T, (value: T) => void, React.Muta
 
   return [state, setStateAndRef, ref];
 }
+
+type DocumentReference<T> = firebase.firestore.DocumentReference<T>;
+type CollectionReference<T> = firebase.firestore.CollectionReference<T>;
+
+export const isDefinedSnapshot = <T>(
+  snapshot: firebase.firestore.DocumentSnapshot<T>,
+): snapshot is firebase.firestore.QueryDocumentSnapshot<T> => snapshot.exists;
+
+export const clientDb = (userId: string) => {
+  const db = firebase.firestore();
+  const path = createPath().append("user_data").append(userId);
+
+  return {
+    userId,
+    song: (songId: string) =>
+      db.doc(path.append("songs").append(songId).build()) as DocumentReference<Song>,
+    songs: () => db.collection(path.append("songs").build()) as CollectionReference<Song>,
+    doc: () => db.doc(path.build()) as DocumentReference<UserData>,
+    playlists: () =>
+      db.collection(`user_data/${userId}/playlists`) as CollectionReference<Playlist>,
+    playlist: (id: string) =>
+      db.doc(`user_data/${userId}/playlists/${id}`) as DocumentReference<Playlist>,
+    feedback: (id: string) =>
+      db.doc(`user_data/${userId}/feedback/${id}`) as DocumentReference<UserFeedback>,
+    actions: () =>
+      db.collection(`user_data/${userId}/actions`) as CollectionReference<UploadAction>,
+  };
+};
+
+export const clientStorage = (storage: firebase.storage.Storage, userId: string) => {
+  const path = createPath().append(userId);
+
+  return {
+    artworks: (hash: string, type: "jpg" | "png") => {
+      const artworksPath = path.append("song_artwork").append(hash);
+      return {
+        original: () => storage.ref(artworksPath.append(`artwork.${type}`).build()),
+        "32": () => storage.ref(artworksPath.append(`thumb@32_artwork.${type}`).build()),
+        "64": () => storage.ref(artworksPath.append(`thumb@64_artwork.${type}`).build()),
+        "128": () => storage.ref(artworksPath.append(`thumb@128_artwork.${type}`).build()),
+        "256": () => storage.ref(artworksPath.append(`thumb@256_artwork.${type}`).build()),
+      };
+    },
+    song: (songId: string, fileName: string) =>
+      storage.ref(path.append("songs").append(songId).append(fileName).build()),
+  };
+};

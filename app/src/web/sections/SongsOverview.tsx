@@ -85,8 +85,7 @@ export const SongsOverview = <T extends SongInfo>({
       >
         <Collage
           size="256"
-          objects={songs}
-          type="song"
+          songs={songs}
           className="w-48 h-48 lg:w-64 lg:h-64 flex-shrink-0"
           setAverageColor={setAverageColor}
         />

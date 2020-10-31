@@ -3,11 +3,9 @@ import { HomeTopic } from "../../components/HomeTopic";
 import { useRecentlyAddedSongs, useLikedSongs, useRecentlyPlayedSongs } from "../../queries/songs";
 import { SongRow } from "../../sections/SongRow";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
-import { routes } from "../../routes";
 import { MusicalNote } from "../../illustrations/MusicalNote";
 import { MdAddCircle } from "react-icons/md";
 import { useCoolSongs } from "../../db";
-import { HiOutlineHeart } from "react-icons/hi";
 
 export const Home = () => {
   const recentlyAddedSongs = useRecentlyAddedSongs();
@@ -45,7 +43,7 @@ export const Home = () => {
         <HomeTopic
           title="Recently Played"
           subTitle="Your recently played songs will appear here."
-          route={routes.generated}
+          route="generated"
           params={{ generatedType: "recently-played" }}
           wrapperClassName=""
           textClassName="px-5"
@@ -57,7 +55,7 @@ export const Home = () => {
       <HomeTopic
         title="Recently Added"
         subTitle="Your recently uploaded songs will appear here."
-        route={routes.generated}
+        route="generated"
         params={{ generatedType: "recently-added" }}
         wrapperClassName=""
         textClassName="px-5"
@@ -69,7 +67,7 @@ export const Home = () => {
         <HomeTopic
           title="Liked Songs"
           subTitle="All of your liked songs will come here <3"
-          route={routes.generated}
+          route="generated"
           params={{ generatedType: "liked" }}
           wrapperClassName=""
           textClassName="px-5"

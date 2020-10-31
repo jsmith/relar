@@ -54,19 +54,14 @@ export const Slider = ({
         },
       });
     } else {
-      console.log("onTouchstart");
       const disposer = addEventListeners({
         touchmove: (e) => {
-          console.log("onTouchMove", e.touches[0], e.touches.length);
           move(e.touches[0].clientX);
         },
         touchend: () => {
-          console.log("onTouchEnd");
           disposer.dispose();
         },
       });
-
-      console.log("Added listeners!");
     }
   };
 

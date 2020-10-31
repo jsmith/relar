@@ -1,6 +1,6 @@
 {
   "name": "app",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "scripts": {
     "clean": "rm -rf build",
     "cp-mobile": "cp index.mobile.html public/index.html",
@@ -36,6 +36,7 @@
     "focus-trap-react": "^8.1.0",
     "framer-motion": "^2.7.6",
     "idb": "^5.0.6",
+    "mitt": "^2.1.0",
     "neverthrow": "^2.7.1",
     "react": "^16.13.1",
     "react-accessible-dropdown-menu-hook": "^2.1.1",

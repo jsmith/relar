@@ -3,32 +3,33 @@ import { FixedSizeGrid as Grid, FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { ThumbnailCard } from "./ThumbnailCard";
 import { SongInfo } from "../queue";
+import { Song } from "../shared/universal/types";
 
 const mql = window.matchMedia(`(min-width: 1024px)`);
 
 const GUTTER_SIZE = 8;
 const PADDING_LEFT = 10;
 
-export interface ThumbnailCardGridProps<T extends { id: string }> {
+export interface ThumbnailCardGridProps<T extends { songs: Song[] | undefined }> {
   items: T[];
   getTitle: (item: T, index: number) => string;
   getSubtitle: (item: T, index: number) => string;
-  lookup: Record<string, SongInfo[] | SongInfo>;
   onClick: (item: T, index: number) => void;
   force?: "row";
   limit?: number;
   play: (item: T, index: number) => void;
+  padding?: number;
 }
 
-export const ThumbnailCardGrid = function <T extends { id: string }>({
+export const ThumbnailCardGrid = function <T extends { songs: Song[] | undefined }>({
   items,
   getTitle,
   getSubtitle,
-  lookup,
   onClick,
   play,
   force,
   limit,
+  padding = PADDING_LEFT,
 }: ThumbnailCardGridProps<T>) {
   const columnCount = useRef(5);
   const [sizes, setSizes] = useState({ row: 210, col: 140 });
@@ -76,13 +77,12 @@ export const ThumbnailCardGrid = function <T extends { id: string }>({
       if (!item) return null;
       return (
         <ThumbnailCard
-          objects={lookup[item.id]}
+          songs={item.songs}
           title={getTitle(item, index)}
           subtitle={getSubtitle(item, index)}
-          type="song"
           style={{
             ...style,
-            left: style.left + GUTTER_SIZE + PADDING_LEFT,
+            left: style.left + GUTTER_SIZE + padding,
             top: style.top + GUTTER_SIZE,
             width: style.width - GUTTER_SIZE,
             height: style.height - GUTTER_SIZE,
@@ -93,7 +93,7 @@ export const ThumbnailCardGrid = function <T extends { id: string }>({
       );
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [items, lookup],
+    [items],
   );
 
   return (

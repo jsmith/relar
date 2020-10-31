@@ -1,14 +1,17 @@
 import React, { useMemo } from "react";
-import type { Song } from "../shared/universal/types";
-import { useRouter } from "@graywolfai/react-tiniest-router";
-import { goToAlbum } from "../routes";
+import { navigateTo } from "../routes";
 import { GeneratedType, useQueue } from "../queue";
 import { useIsMobile } from "../utils";
 import { useGeneratedTypeSongs } from "../queries/songs";
 import { ThumbnailCardGrid } from "../components/ThumbnailCardGrid";
 
-export const SongRow = ({ generatedType }: { generatedType: GeneratedType }) => {
-  const { goTo } = useRouter();
+export const SongRow = ({
+  generatedType,
+  padding,
+}: {
+  generatedType: GeneratedType;
+  padding?: number;
+}) => {
   const { setQueue } = useQueue();
   const isMobile = useIsMobile();
   const songs = useGeneratedTypeSongs(generatedType);
@@ -21,20 +24,20 @@ export const SongRow = ({ generatedType }: { generatedType: GeneratedType }) => 
     });
   };
 
-  const lookup = useMemo(() => {
-    const lookup: Record<string, Song> = {};
-    songs?.forEach((song) => (lookup[song.id] = song));
-    return lookup;
-  }, [songs]);
+  const displaySongs = useMemo(
+    () => songs?.slice(0, 10).map((song) => ({ ...song, songs: [song] })) ?? [],
+    [songs],
+  );
 
   return (
     <ThumbnailCardGrid
-      items={songs ?? []}
-      limit={10}
-      lookup={lookup}
+      padding={padding}
+      items={displaySongs}
       getTitle={(song) => song.title}
       getSubtitle={(song) => (song.artist ? song.artist : "Unknown Artist")}
-      onClick={(song, index) => (isMobile ? playSong(index) : goToAlbum(goTo, song.albumId))}
+      onClick={(_, index) =>
+        isMobile ? playSong(index) : navigateTo("generated", { generatedType })
+      }
       play={(_, index) => playSong(index)}
       force="row"
     />

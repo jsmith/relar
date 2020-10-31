@@ -1,10 +1,11 @@
-import React from "react";
+import React, { CSSProperties } from "react";
 import { MdMoreVert } from "react-icons/md";
 import { ActionSheetItem, openActionSheet } from "../action-sheet";
-import { Thumbnail, ThumbnailProps } from "../../components/Thumbnail";
+import { Thumbnail } from "../../components/Thumbnail";
 import classNames from "classnames";
 import type { ListContainerMode } from "../components/ListContainer";
 import { Audio } from "@jsmith21/svg-loaders-react";
+import { Song } from "../../shared/universal/types";
 
 export type MusicListItemState = "not-playing" | "playing" | "paused";
 
@@ -13,19 +14,19 @@ export const MusicListItem = ({
   onClick,
   title,
   subTitle,
-  object,
+  song,
   mode,
-  type,
+  style,
   state = "not-playing",
 }: {
   title: string;
   subTitle?: string;
-  object: ThumbnailProps["object"];
-  type: ThumbnailProps["type"];
+  song: Song | undefined;
   actionItems?: Array<ActionSheetItem | undefined>;
   onClick: () => void;
   mode: ListContainerMode;
   state?: MusicListItemState;
+  style?: CSSProperties;
 }) => {
   return (
     <div
@@ -35,6 +36,7 @@ export const MusicListItem = ({
       )}
       tabIndex={0}
       onClick={onClick}
+      style={style}
     >
       <div
         className={classNames(
@@ -53,7 +55,7 @@ export const MusicListItem = ({
             disabled={state === "paused"}
           />
         ) : (
-          <Thumbnail object={object} className="w-full h-full" size="64" type={type} />
+          <Thumbnail song={song} className="w-full h-full" size="64" />
         )}
       </div>
       <div className="flex flex-col min-w-0 flex-grow text-left justify-center">

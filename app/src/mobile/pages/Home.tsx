@@ -3,7 +3,6 @@ import { HomeTopic } from "../../components/HomeTopic";
 import { useRecentlyAddedSongs, useLikedSongs, useRecentlyPlayedSongs } from "../../queries/songs";
 import { SongRow } from "../../sections/SongRow";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
-import { routes } from "../../routes";
 import { MusicalNote } from "../../illustrations/MusicalNote";
 
 export const Home = () => {
@@ -33,35 +32,35 @@ export const Home = () => {
   }
 
   return (
-    <div className="space-y-4 px-3 lg:px-5 py-1 overflow-y-scroll">
+    <div className="space-y-4 px-3 lg:px-5 py-1 overflow-y-scroll w-full">
       <HomeTopic
         title="Recently Played"
         subTitle=""
-        route={routes.generated}
+        route="generated"
         params={{ generatedType: "recently-played" }}
         wrapperClassName="-mx-2 lg:-mx-5 px-2 lg:px-5"
       >
-        <SongRow generatedType="recently-played" />
+        <SongRow generatedType="recently-played" padding={0} />
       </HomeTopic>
 
       <HomeTopic
         title="Recently Added"
         subTitle=""
-        route={routes.generated}
+        route="generated"
         params={{ generatedType: "recently-added" }}
         wrapperClassName="-mx-2 lg:-mx-5 px-2 lg:px-5"
       >
-        <SongRow generatedType="recently-added" />
+        <SongRow generatedType="recently-added" padding={0} />
       </HomeTopic>
 
       <HomeTopic
         title="Liked Songs"
         subTitle=""
-        route={routes.generated}
+        route="generated"
         params={{ generatedType: "liked" }}
         wrapperClassName="-mx-2 lg:-mx-5 px-2 lg:px-5"
       >
-        <SongRow generatedType="liked" />
+        <SongRow generatedType="liked" padding={0} />
       </HomeTopic>
     </div>
   );

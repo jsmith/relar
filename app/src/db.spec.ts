@@ -15,26 +15,4 @@ test("test IndexedDB basic operations", async () => {
   assert.equal(await db.getValue("songs", "wow"), undefined);
 });
 
-test.only("wow", async () => {
-  // const db = new IndexedDb("test");
-  // await db.createObjectStore([]);
-  // const items = (await db.getAllValue("songs")) as Song[];
-  // const collection = clientDb("tester").songs();
-  // const snapshot = await new Promise((resolve, reject) => {
-  //   try {
-  //     const dispose = collection.where("createdAt", ">=", Date.now()).onSnapshot((snapshot) => {
-  //       dispose();
-  //       resolve(snapshot);
-  //     });
-  //   } catch (e) {
-  //     reject(e);
-  //   }
-  // });
-  // console.log(snapshot);
-  // assert.not(snapshot);
-  // const lastUpdated = new Date((await db.getValue("lastUpdated", "songs")) ?? 0);
-  // assert.equal(lastUpdated.valueOf(), 0);
-  // collection.orderBy("updatedAt", "asc").where("updatedAt", ">=", lastUpdated);
-});
-
 test.run();

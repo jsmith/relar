@@ -1,4 +1,4 @@
-import React, { CSSProperties, useCallback, useEffect, useRef } from "react";
+import React, { CSSProperties, Ref, useCallback, useEffect, useRef } from "react";
 import classNames from "classnames";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { FixedSizeList as List } from "react-window";
@@ -36,6 +36,7 @@ const letters = [
 ];
 
 export interface ListContainerRowProps<T> {
+  style: CSSProperties;
   item: T;
   index: number;
   items: Array<T>;
@@ -51,10 +52,12 @@ export interface ListContainerProps<T, K extends keyof T, E> {
   className?: string;
   disableNavigator?: boolean;
   extra: E;
+  // This is the react-window outerRef
+  outerRef?: Ref<HTMLDivElement>;
 }
 
 export const ListContainer = function <T, K extends keyof T, E>({
-  height,
+  height: rowHeight,
   items,
   sortKey,
   row: Row,
@@ -62,6 +65,7 @@ export const ListContainer = function <T, K extends keyof T, E>({
   className,
   disableNavigator,
   extra,
+  outerRef,
 }: ListContainerProps<T, K, E>) {
   const container = useRef<HTMLDivElement | null>(null);
   const timer = useRef<NodeJS.Timeout>();
@@ -103,10 +107,10 @@ export const ListContainer = function <T, K extends keyof T, E>({
 
       resetTimer();
 
-      console.log(`Scrolling to ${height * index} (${height} * ${index})`);
-      container.current.scrollTop = height * index;
+      console.log(`Scrolling to ${rowHeight * index} (${rowHeight} * ${index})`);
+      container.current.scrollTop = rowHeight * index;
     },
-    [height, items, resetTimer, sortKey],
+    [rowHeight, items, resetTimer, sortKey],
   );
 
   useEffect(() => {
@@ -123,6 +127,7 @@ export const ListContainer = function <T, K extends keyof T, E>({
   const RowWrapper = useCallback(
     ({ index, style }: { index: number; style: CSSProperties }) => (
       <Row
+        style={style}
         key={index}
         snapshot={items![index]}
         item={items![index]}
@@ -136,47 +141,55 @@ export const ListContainer = function <T, K extends keyof T, E>({
   );
 
   return (
-    <div className={classNames("overflow-y-scroll", className)} ref={container}>
-      {/* TODO test mobile */}
-      <AutoSizer>
-        {({ height, width }) => (
-          <List itemCount={items?.length ?? 0} itemSize={height} height={height} width={width}>
+    <AutoSizer>
+      {({ height, width }) => (
+        <div className={className} ref={container}>
+          <List
+            itemCount={items?.length ?? 0}
+            itemSize={rowHeight}
+            height={height}
+            width={width}
+            outerRef={outerRef}
+          >
             {RowWrapper}
           </List>
-        )}
-      </AutoSizer>
-      {!disableNavigator && (
-        <motion.div
-          className={classNames("absolute h-full top-0 right-0 py-1 pr-1")}
-          style={{ pointerEvents }}
-        >
-          <motion.div
-            className={classNames(
-              "sticky h-full rounded-lg bg-gray-800 text-gray-200 p-1 bg-opacity-75  flex flex-col text-2xs justify-between ease-in-out duration-500 transform transition-opacity",
-            )}
-            style={{ opacity }}
-          >
-            {letters.map((letter) => (
-              <button
-                key={letter}
-                className="uppercase select-none focus:outline-none text-lg"
-                onTouchStart={() => scrollTo(letter)}
-                onMouseDown={() => scrollTo(letter)}
-                onTouchMove={(e) => {
-                  const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
-                  const letter = el?.getAttribute("letter");
-                  if (letter) scrollTo(letter);
-                }}
-                onDragStart={(e) => e.preventDefault()}
-                // @ts-ignore
-                letter={letter}
+          {!disableNavigator && (
+            <motion.div
+              className={classNames("absolute h-full top-0 right-0 py-1 pr-1")}
+              style={{ pointerEvents }}
+            >
+              <motion.div
+                className={classNames(
+                  "sticky h-full rounded-lg bg-gray-800 text-gray-200 p-1 bg-opacity-75  flex flex-col text-2xs justify-between ease-in-out duration-500 transform transition-opacity",
+                )}
+                style={{ opacity }}
               >
-                {letter}
-              </button>
-            ))}
-          </motion.div>
-        </motion.div>
+                {letters.map((letter) => (
+                  <button
+                    key={letter}
+                    className="uppercase select-none focus:outline-none text-lg"
+                    onTouchStart={() => scrollTo(letter)}
+                    onMouseDown={() => scrollTo(letter)}
+                    onTouchMove={(e) => {
+                      const el = document.elementFromPoint(
+                        e.touches[0].clientX,
+                        e.touches[0].clientY,
+                      );
+                      const letter = el?.getAttribute("letter");
+                      if (letter) scrollTo(letter);
+                    }}
+                    onDragStart={(e) => e.preventDefault()}
+                    // @ts-ignore
+                    letter={letter}
+                  >
+                    {letter}
+                  </button>
+                ))}
+              </motion.div>
+            </motion.div>
+          )}
+        </div>
       )}
-    </div>
+    </AutoSizer>
   );
 };

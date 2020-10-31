@@ -1,7 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { RouterContextType, RouteType, useRouter } from "@graywolfai/react-tiniest-router";
 import { isMobile, IS_WEB_VIEW } from "./utils";
-import { ALBUM_ID_DIVIDER } from "./shared/universal/utils";
+import { createEmitter } from "./events";
+import { GeneratedType } from "./queue";
+import { Song } from "./shared/universal/types";
+import { getAlbumArtistFromSong } from "./queries/album";
+const Genres = React.lazy(() => import("./web/pages/Genres"));
+const GenreOverview = React.lazy(() => import("./web/pages/GenreOverview"));
 const ReleaseNotes = React.lazy(() => import("./pages/ReleaseNotes"));
 const BetaGuide = React.lazy(() => import("./pages/BetaGuide"));
 const Login = React.lazy(() => import("./pages/Login"));
@@ -89,7 +94,7 @@ type Route<ID extends string> = {
   showTabs: boolean;
   protected: boolean;
   className?: string;
-  mobileClassName: string;
+  mobileClassName?: string;
   sidebar: boolean;
   title: string | false;
   showBack: boolean;
@@ -99,16 +104,148 @@ type Route<ID extends string> = {
 
 const createRoutes = <K extends string>(routes: Record<K, Route<K>>) => routes;
 
-export interface CustomRoute extends RouteType {
-  protected: boolean;
-  sidebar: boolean;
-  className: string;
-  title: string;
-}
+export type NavigatorRoutes = {
+  hero: {
+    params: {};
+    queryParams: {};
+  };
+
+  account: {
+    params: {};
+    queryParams: {};
+  };
+  login: {
+    params: {};
+    queryParams: {};
+  };
+  signup: {
+    params: {};
+    queryParams: {};
+  };
+  forgotPassword: {
+    params: {};
+    queryParams: {};
+  };
+  forgotPasswordSuccess: {
+    params: {};
+    queryParams: {};
+  };
+  home: {
+    params: {};
+    queryParams: {};
+  };
+  search: {
+    params: {};
+    queryParams: {};
+  };
+  songs: {
+    params: {};
+    queryParams: {};
+  };
+  albums: {
+    params: {};
+    queryParams: {};
+  };
+  album: {
+    params: { album: string; artist: string };
+    queryParams: {};
+  };
+  "release-notes": {
+    params: {};
+    queryParams: {};
+  };
+  terms: {
+    params: {};
+    queryParams: {};
+  };
+  privacy: {
+    params: {};
+    queryParams: {};
+  };
+  artists: {
+    params: {};
+    queryParams: {};
+  };
+  artist: {
+    params: { artistName: string };
+    queryParams: {};
+  };
+  invite: {
+    params: { invite: string };
+    queryParams: {};
+  };
+  playlist: {
+    params: { playlistId: string };
+    queryParams: {};
+  };
+  playlists: {
+    params: {};
+    queryParams: {};
+  };
+  "beta-guide": {
+    params: {};
+    queryParams: {};
+  };
+  generated: {
+    params: { generatedType: GeneratedType };
+    queryParams: {};
+  };
+  settings: {
+    params: {};
+    queryParams: {};
+  };
+  library: {
+    params: {};
+    queryParams: {};
+  };
+  genres: {
+    params: {};
+    queryParams: {};
+  };
+  genre: {
+    params: { genre: string };
+    queryParams: {};
+  };
+};
+
+const emitter = createEmitter<{
+  navigate: [
+    Route<keyof NavigatorRoutes>,
+    RouterContextType["params"] | undefined,
+    RouterContextType["queryParams"] | undefined,
+  ];
+}>();
+
+export const navigateTo = <K extends keyof NavigatorRoutes>(
+  route: K,
+  params?: NavigatorRoutes[K]["params"],
+  queryParams?: NavigatorRoutes[K]["queryParams"],
+) => {
+  emitter.emit("navigate", routes[route], params, queryParams);
+};
+
+export const useNavigator = <K extends keyof NavigatorRoutes>(_route: K) => {
+  return useRouter() as {
+    isRoute: (route: RouteType) => boolean;
+    routeId: keyof NavigatorRoutes;
+    params: NavigatorRoutes[K]["params"];
+    queryParams: NavigatorRoutes[K]["queryParams"];
+  };
+};
+
+export const useNavigation = () => {
+  const { goTo } = useRouter();
+  useEffect(() => {
+    return emitter.on("navigate", (route, params, queryParams) => {
+      goTo(route, params, queryParams);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+};
 
 // FIXME how can we make titles dynamic?? It would be nice to have something generic
 // But the easiest solution would probably be some kind of hook
-export const routes = createRoutes({
+export const routes = createRoutes<keyof NavigatorRoutes>({
   hero: {
     id: "hero",
     path: "/",
@@ -129,7 +266,6 @@ export const routes = createRoutes({
     protected: true,
     sidebar: false,
     className: "py-2",
-    mobileClassName: "",
     title: "Account",
     showBack: false,
     showTabs: false,
@@ -141,7 +277,6 @@ export const routes = createRoutes({
     protected: false,
     sidebar: false,
     className: "py-2",
-    mobileClassName: "",
     title: "Login",
     showBack: true,
     showTabs: false,
@@ -153,7 +288,6 @@ export const routes = createRoutes({
     protected: false,
     sidebar: false,
     className: "py-2",
-    mobileClassName: "",
     title: "Sign Up",
     showBack: true,
     showTabs: false,
@@ -165,7 +299,6 @@ export const routes = createRoutes({
     protected: false,
     sidebar: false,
     className: "py-2",
-    mobileClassName: "",
     title: "Forgot Password",
     showBack: true,
     showTabs: false,
@@ -177,7 +310,6 @@ export const routes = createRoutes({
     protected: false,
     sidebar: false,
     className: "py-2",
-    mobileClassName: "",
     title: "Forgot Password Confirmation",
     showBack: false,
     showTabs: false,
@@ -189,7 +321,6 @@ export const routes = createRoutes({
     protected: true,
     sidebar: true,
     className: "py-2 overflow-y-auto",
-    mobileClassName: "",
     title: "Home",
     showBack: false,
     showTabs: true,
@@ -201,7 +332,6 @@ export const routes = createRoutes({
     protected: true,
     sidebar: true,
     className: "py-2",
-    mobileClassName: "",
     title: "Search",
     showBack: false,
     showTabs: true,
@@ -212,7 +342,6 @@ export const routes = createRoutes({
     component: Songs,
     protected: true,
     sidebar: true,
-    mobileClassName: "",
     title: "Songs",
     showBack: true,
     showTabs: true,
@@ -223,7 +352,6 @@ export const routes = createRoutes({
     component: ReleaseNotes,
     protected: false,
     sidebar: false,
-    mobileClassName: "",
     title: "ReleaseNotes",
     showBack: true,
     showTabs: false,
@@ -234,8 +362,6 @@ export const routes = createRoutes({
     component: Albums,
     protected: true,
     sidebar: true,
-    className: "",
-    mobileClassName: "",
     title: "Albums",
     showBack: true,
     showTabs: true,
@@ -246,8 +372,6 @@ export const routes = createRoutes({
     component: AlbumOverview,
     protected: true,
     sidebar: true,
-    className: "",
-    mobileClassName: "",
     title: "Album",
     showBack: true,
     showTabs: true,
@@ -258,8 +382,6 @@ export const routes = createRoutes({
     component: Artists,
     protected: true,
     sidebar: true,
-    className: "",
-    mobileClassName: "",
     title: "Artists",
     showBack: true,
     showTabs: true,
@@ -270,8 +392,6 @@ export const routes = createRoutes({
     component: ArtistOverview,
     protected: true,
     sidebar: true,
-    className: "",
-    mobileClassName: "",
     title: "Artist",
     showBack: true,
     showTabs: true,
@@ -282,8 +402,6 @@ export const routes = createRoutes({
     component: Invite,
     protected: false,
     sidebar: false,
-    className: "",
-    mobileClassName: "",
     title: "Invite",
     showBack: false,
     showTabs: false,
@@ -294,8 +412,6 @@ export const routes = createRoutes({
     component: Playlists,
     protected: true,
     sidebar: true,
-    className: "",
-    mobileClassName: "",
     title: "Playlists",
     showBack: true,
     showTabs: true,
@@ -306,8 +422,6 @@ export const routes = createRoutes({
     component: PlaylistOverview,
     protected: true,
     sidebar: true,
-    className: "",
-    mobileClassName: "",
     title: "Playlist",
     showBack: true,
     showTabs: true,
@@ -318,8 +432,6 @@ export const routes = createRoutes({
     component: BetaGuide,
     protected: false,
     sidebar: false,
-    className: "",
-    mobileClassName: "",
     title: "Beta Guide",
     showBack: true,
     showTabs: false,
@@ -330,8 +442,6 @@ export const routes = createRoutes({
     component: Generated,
     protected: true,
     sidebar: true,
-    className: "",
-    mobileClassName: "",
     title: "Generated",
     showBack: true,
     showTabs: true,
@@ -342,8 +452,6 @@ export const routes = createRoutes({
     component: PrivacyPolicy,
     protected: false,
     sidebar: false,
-    className: "",
-    mobileClassName: "",
     title: "Privacy Policy",
     showBack: false,
     showTabs: false,
@@ -354,8 +462,6 @@ export const routes = createRoutes({
     component: TermsAndConditions,
     protected: false,
     sidebar: false,
-    className: "",
-    mobileClassName: "",
     title: "Terms and Conditions",
     showBack: false,
     showTabs: false,
@@ -366,8 +472,6 @@ export const routes = createRoutes({
     component: Settings,
     protected: true,
     sidebar: false,
-    className: "",
-    mobileClassName: "",
     title: "Settings",
     showBack: true,
     showTabs: false,
@@ -381,34 +485,48 @@ export const routes = createRoutes({
     showTabs: true,
     protected: true,
     sidebar: false,
-    className: "",
-    mobileClassName: "",
+  },
+  genres: {
+    id: "genres",
+    path: "/library/genres",
+    component: Genres,
+    protected: true,
+    sidebar: true,
+    title: "Genres",
+    showBack: true,
+    showTabs: true,
+  },
+  genre: {
+    id: "genre",
+    path: "/library/genres/:genre",
+    component: GenreOverview,
+    protected: true,
+    sidebar: true,
+    title: "Genre",
+    showBack: true,
+    showTabs: true,
   },
 });
 
-export const goToAlbum = (goTo: RouterContextType["goTo"], albumId: string | undefined) => {
-  goTo(routes.album, getAlbumRouteParams(albumId));
-};
-
-export const getAlbumRouteParams = (albumId: string | undefined) => {
-  const [artist, album] = albumId ? albumId.split(ALBUM_ID_DIVIDER) : ["", ""];
-  return { album: encodeURIComponent(album), artist: encodeURIComponent(artist) };
+export const getAlbumRouteParams = (song: Song) => {
+  return {
+    album: encodeURIComponent(song.albumName ?? ""),
+    artist: encodeURIComponent(getAlbumArtistFromSong(song)),
+  };
 };
 
 export const getArtistRouteParams = (artistName: string) => {
   return { artistName: encodeURIComponent(artistName) };
 };
 
-export const useAlbumIdFromParams = (): string => {
-  const { params } = useRouter();
+export const useAlbumParams = () => {
+  const { params } = useNavigator("album");
+
   // Since the regex can return undefined if the group is empty, we need to handle this situation
-  const { artist: artistName, album: albumName } = params as {
-    artist: string | undefined;
-    album: string | undefined;
+  return {
+    artist: decodeURIComponent(params.artist ?? ""),
+    album: decodeURIComponent(params.album ?? ""),
   };
-  return `${decodeURIComponent(artistName ?? "")}${ALBUM_ID_DIVIDER}${decodeURIComponent(
-    albumName ?? "",
-  )}`;
 };
 
 export const useArtistNameFromParams = (): string => {

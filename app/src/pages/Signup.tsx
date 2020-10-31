@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Button } from "../components/Button";
-import { routes } from "../routes";
 import { CardPage } from "../components/CardPage";
 import { Input } from "../components/Input";
 import { Link } from "../components/Link";
@@ -25,7 +24,7 @@ export const Signup = () => {
     setLoading(true);
     setError("");
     const result = await getOrUnknownError(() =>
-      betaBackend().post("/beta-signup", { email, firstName, device }),
+      betaBackend.post("/beta-signup", { email, firstName, device }),
     );
 
     setLoading(false);
@@ -61,7 +60,7 @@ export const Signup = () => {
       footer={
         <div className="space-x-2 flex justify-center items-center h-full">
           <span>{"Already have an account?"}</span>
-          <Link route={routes.signup} label="Login" />
+          <Link route="signup" label="Login" />
         </div>
       }
     >

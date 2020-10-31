@@ -1,39 +1,49 @@
 import { useMemo } from "react";
-import { useCoolArtists, useCoolSongs } from "../db";
+import { useCoolSongs } from "../db";
 import { Song } from "../shared/universal/types";
 
-export const useArtist = (artistId?: string) => {
-  const artists = useCoolArtists();
-  return useMemo(() => artists?.find(({ id }) => id === artistId), [artistId, artists]);
-};
+export interface Artist {
+  name: string;
+  songs: Song[];
+}
 
-export const useArtistSongLookup = () => {
+export const useArtistLookup = () => {
   const songs = useCoolSongs();
   return useMemo(() => {
-    const lookup: Record<string, Song[]> = {};
+    const lookup: Record<string, Artist> = {};
     songs?.forEach((song) => {
       if (!song.artist) return;
-      if (!lookup[song.artist]) lookup[song.artist] = [];
-      lookup[song.artist].push(song);
+      if (!lookup[song.artist])
+        lookup[song.artist] = {
+          name: song.artist,
+          songs: [],
+        };
+
+      lookup[song.artist].songs.push(song);
     });
+
     return lookup;
   }, [songs]);
 };
 
-export const useArtistSongs = (artistName: string) => {
-  const songs = useCoolSongs();
-
-  return useMemo(
-    () =>
-      songs?.filter((song) => song.artist === artistName || song.albumArtist === artistName) ?? [],
-    [songs, artistName],
-  );
+export const useArtists = () => {
+  const lookup = useArtistLookup();
+  return useMemo(() => Object.values(lookup).sort((a, b) => a.name.localeCompare(b.name)), [
+    lookup,
+  ]);
 };
 
-export const usePopularArtistSongs = (artistName: string) => {
-  const songs = useArtistSongs(artistName);
+export function useArtist(artistName: string): Artist;
+export function useArtist(artistName: string | undefined): Artist | undefined;
+export function useArtist(artistName?: string) {
+  const lookup = useArtistLookup();
+  return useMemo(() => (artistName ? lookup[artistName] : undefined), [artistName, lookup]);
+}
 
-  return useMemo(() => songs.sort((a, b) => (a.played ?? 0) - (b.played ?? 0)).slice(0, 5), [
-    songs,
+export const usePopularArtistSongs = (artistName: string) => {
+  const artist = useArtist(artistName);
+
+  return useMemo(() => artist.songs.sort((a, b) => (a.played ?? 0) - (b.played ?? 0)).slice(0, 5), [
+    artist,
   ]);
 };

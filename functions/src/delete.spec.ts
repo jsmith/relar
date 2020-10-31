@@ -1,39 +1,25 @@
 import { adminDb, deleteAllUserData } from "./shared/node/utils";
-import { testFunctions } from "./configure-tests";
-import {
-  createAndUploadTestSong,
-  createAndUploadPlaylist,
-  songTwo,
-  songTwoAlbum,
-  songTwoArtist,
-  assertDeleted,
-} from "./test-utils";
+import { createAndUploadTestSong, createAndUploadPlaylist, songTwo } from "./test-utils";
 import { test } from "uvu";
 import assert from "uvu/assert";
-
-// This must go *after* the `functions` init call
 import { onDeleteSong } from "./delete";
-
-const db = adminDb("testUser");
+import functions from "firebase-functions-test";
 
 test.before.each(async () => {
-  await deleteAllUserData(undefined, "testUser");
+  await deleteAllUserData("testUser");
 });
 
-test("deletes album & artist, decrements song count, and deletes playlist items", async () => {
-  const wrapped = testFunctions.wrap(onDeleteSong);
+test("decrements song count and deletes song playlist", async () => {
+  const db = adminDb("testUser");
+  const wrapped = functions().wrap(onDeleteSong);
   const before = await createAndUploadTestSong("test1", songTwo);
   const after = await createAndUploadTestSong("test2", { ...songTwo, deleted: true });
   const playlist = await createAndUploadPlaylist("playlist name", [after]);
   await db.doc().set({ songCount: 1, firstName: "", device: "android" });
-  await db.album(songTwo.albumId).create(songTwoAlbum);
-  await db.artist(songTwo.artist).create(songTwoArtist);
   await wrapped(
     { before: await before.get(), after: await after.get() },
     { params: { userId: "testUser" } },
   );
-  await assertDeleted(db.album(songTwo.albumId));
-  await assertDeleted(db.artist(songTwo.artist));
   await assert.equal((await db.doc().get()).data(), {
     songCount: 0,
     firstName: "",

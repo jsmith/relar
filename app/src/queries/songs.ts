@@ -1,8 +1,7 @@
 import firebase from "firebase/app";
-import { clientStorage } from "../shared/universal/utils";
 import { Song } from "../shared/universal/types";
 import { getDownloadURL } from "../storage";
-import { captureAndLogError, captureAndLog } from "../utils";
+import { captureAndLogError, captureAndLog, clientStorage } from "../utils";
 import { serverTimestamp, useUserData } from "../firestore";
 import { useCallback, useMemo } from "react";
 import { useCoolSongs } from "../db";
