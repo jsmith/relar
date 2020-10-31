@@ -1,28 +1,20 @@
-import { useRouter } from "@graywolfai/react-tiniest-router";
 import React from "react";
 import { onConditions, useMySnackbar } from "../../utils";
 import { SongsOverview } from "../sections/SongsOverview";
-import {
-  usePlaylist,
-  usePlaylistDelete,
-  usePlaylistRename,
-  usePlaylistSongs,
-} from "../../queries/playlists";
+import { usePlaylist, usePlaylistDelete, usePlaylistRename } from "../../queries/playlists";
 import { Modals } from "@capacitor/core";
-import { routes } from "../../routes";
+import { navigateTo, useNavigator } from "../../routes";
 
 export const PlaylistOverview = () => {
-  const { params, goTo } = useRouter();
-  const { playlistId } = params as { playlistId: string };
-  const playlist = usePlaylist(playlistId);
-  const rename = usePlaylistRename(playlistId);
-  const deletePlaylist = usePlaylistDelete(playlistId);
-  const songs = usePlaylistSongs(playlist);
+  const { params } = useNavigator("playlist");
+  const playlist = usePlaylist(params.playlistId);
+  const rename = usePlaylistRename(params.playlistId);
+  const deletePlaylist = usePlaylistDelete(params.playlistId);
   const open = useMySnackbar();
 
   return (
     <SongsOverview
-      songs={songs}
+      songs={playlist?.songs}
       title={playlist?.name}
       onRename={(name) => {
         onConditions(
@@ -42,12 +34,12 @@ export const PlaylistOverview = () => {
         if (confirmed) {
           onConditions(
             () => deletePlaylist(),
-            () => goTo(routes.playlists),
+            () => navigateTo("playlists"),
             () => open("Something went wrong when deleting your playlist"),
           );
         }
       }}
-      source={{ type: "playlist", id: playlistId, sourceHumanName: playlist?.name ?? "" }}
+      source={{ type: "playlist", id: params.playlistId, sourceHumanName: playlist?.name ?? "" }}
     />
   );
 };

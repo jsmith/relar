@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import type { Song, MetadataAPI } from "../shared/universal/types";
+import { Song } from "../shared/universal/types";
 import { OkCancelModal } from "../components/OkCancelModal";
 import { Input } from "../components/Input";
-import { metadataBackend, getOrUnknownError } from "../backend";
+import { getOrUnknownError } from "../backend";
 import { useDefinedUser } from "../auth";
 import { BlockAlert } from "../components/BlockAlert";
-import { useSongRef } from "../firestore";
+import { serverTimestamp, undefinedToDelete, useSongRef, useUserData } from "../firestore";
 import { Thumbnail } from "../components/Thumbnail";
-import { parseIntOr } from "../utils";
+import { captureAndLog, parseIntOr } from "../utils";
 import { useModal } from "react-modal-hook";
 import { createEmitter } from "../events";
 
@@ -51,11 +51,10 @@ export const PositionInformation = ({
 export interface MetadataEditorProps {
   setDisplay: (display: boolean) => void;
   song: Song;
-  onSuccess: (song: Song) => void;
 }
 
-export const MetadataEditor = ({ song, setDisplay, onSuccess }: MetadataEditorProps) => {
-  const user = useDefinedUser();
+export const MetadataEditor = ({ song, setDisplay }: MetadataEditorProps) => {
+  const userData = useUserData();
   const ref = useSongRef(song);
   const [title, setTitle] = useState("");
   const [artist, setArtist] = useState("");
@@ -85,7 +84,7 @@ export const MetadataEditor = ({ song, setDisplay, onSuccess }: MetadataEditorPr
   const submit = async () => {
     setError("");
 
-    const update: MetadataAPI["/edit"]["POST"]["body"]["update"] = {
+    const update: Partial<Song> = undefinedToDelete({
       title: title,
       artist: artist,
       albumArtist: albumArtist,
@@ -100,37 +99,20 @@ export const MetadataEditor = ({ song, setDisplay, onSuccess }: MetadataEditorPr
         no: diskNo,
         of: diskOf,
       },
-    };
+      updatedAt: serverTimestamp(),
+    });
 
-    const idToken = await user.getIdToken();
-    const result = await getOrUnknownError(() =>
-      metadataBackend().post("/edit", {
-        idToken,
-        songId: song.id,
-        update,
-      }),
-    );
-
-    if (result.data.type === "success") {
-      setDisplay(false);
-
-      ref.get().then((snapshot) => {
-        const data = snapshot.data();
-        if (data) {
-          // setData(data);
-          onSuccess(data);
-        }
-      });
-
+    if (!update.title) {
+      setError("A title is required.");
       return;
     }
 
-    switch (result.data.code) {
-      case "missing-title":
-        setError("A title is required.");
-        break;
-      default:
-        setError("An unknown error occurred. Please try again!");
+    try {
+      await userData.song(song.id).update(update);
+      setDisplay(false);
+    } catch (e) {
+      captureAndLog(e, { location: "updating metadata" });
+      setError("An unknown error occurred. Please try again!");
     }
   };
 
@@ -140,6 +122,7 @@ export const MetadataEditor = ({ song, setDisplay, onSuccess }: MetadataEditorPr
       initialFocus="#title-input"
       onCancel={() => setDisplay(false)}
       onOk={submit}
+      wrapperClassName="space-y-2"
     >
       <div className="flex space-x-4">
         <div className="space-y-2 w-3/5">
@@ -152,7 +135,7 @@ export const MetadataEditor = ({ song, setDisplay, onSuccess }: MetadataEditorPr
         </div>
         <div className="w-2/5 space-y-2">
           <div className="space-y-1">
-            <Thumbnail size="128" type="song" object={song} className="w-32 h-32" />
+            <Thumbnail size="128" song={song} className="w-32 h-32" />
             <p className="text-xs text-gray-700">The thumbnail is not yet editable.</p>
           </div>
           <PositionInformation
@@ -188,11 +171,7 @@ export const useMetadataEditor = () => {
   const [showEditorModal, hideEditorModal] = useModal(
     () =>
       song.current ? (
-        <MetadataEditor
-          setDisplay={() => hideEditorModal()}
-          song={song.current}
-          onSuccess={() => {}}
-        />
+        <MetadataEditor setDisplay={() => hideEditorModal()} song={song.current} />
       ) : null,
     [],
   );

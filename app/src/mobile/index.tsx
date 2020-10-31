@@ -18,16 +18,12 @@ import { App } from "./App";
 import { Router } from "@graywolfai/react-tiniest-router";
 import { routes } from "../routes";
 import { UserProvider } from "../auth";
-import { setBaseUrls } from "../backend";
 import { QueueProvider } from "../queue";
 import "../tailwind.css";
 import "../common.css";
 import { SlideUpScreenContainer } from "./slide-up-screen";
 import { StatusBarProvider } from "./status-bar";
 import SnackbarProvider from "react-simple-snackbar";
-
-// Make sure to set the base URLs before the backend is used
-setBaseUrls(env);
 
 ReactDOM.render(
   <React.StrictMode>

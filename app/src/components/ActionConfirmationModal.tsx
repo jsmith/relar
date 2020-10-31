@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { Modal } from "./Modal";
-import { useDefinedUser, useUser } from "../auth";
+import React, { useState } from "react";
+import { useUser } from "../auth";
 import { BsExclamationTriangle } from "react-icons/bs";
 import { Input } from "./Input";
-import { ErrorTemplate } from "./ErrorTemplate";
 import { BlockAlert } from "./BlockAlert";
 import { OkCancelModal } from "./OkCancelModal";
 

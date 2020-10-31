@@ -1,4 +1,4 @@
-import React, { useMemo, useState, CSSProperties, useRef, useCallback } from "react";
+import React, { useMemo, useState, CSSProperties, useCallback, useRef, useEffect } from "react";
 import classNames from "classnames";
 import {
   MdMusicNote,
@@ -10,8 +10,7 @@ import {
   MdRemoveFromQueue,
   MdAddToQueue,
 } from "react-icons/md";
-import { MetadataEditor, showSongEditor } from "../../sections/MetadataEditor";
-import { useModal } from "react-modal-hook";
+import { showSongEditor } from "../../sections/MetadataEditor";
 import { LikedIcon } from "../../components/LikedIcon";
 import { IconButton } from "../../components/IconButton";
 import { ContextMenu, ContextMenuItem } from "../../components/ContextMenu";
@@ -19,14 +18,21 @@ import { useConfirmAction } from "../../confirm-actions";
 import { useLikeSong, useDeleteSong } from "../../queries/songs";
 import { fmtMSS } from "../../utils";
 import { Link } from "../../components/Link";
-import { getAlbumRouteParams, getArtistRouteParams, routes } from "../../routes";
+import { getAlbumRouteParams, getArtistRouteParams } from "../../routes";
 import { link } from "../../classes";
-import { AddToPlaylistEditor, showPlaylistAddModal } from "./AddToPlaylistModal";
+import { showPlaylistAddModal } from "./AddToPlaylistModal";
 import Skeleton from "react-loading-skeleton";
-import { useQueue, SetQueueSource, SongInfo, checkQueueItemsEqual } from "../../queue";
+import {
+  useQueue,
+  SetQueueSource,
+  SongInfo,
+  checkQueueItemsEqual,
+  checkSourcesEqual,
+} from "../../queue";
 import { Audio } from "@jsmith21/svg-loaders-react";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
+import { Thumbnail } from "../../components/Thumbnail";
 
 const widths = {
   title: { flexGrow: 1, minWidth: 0 },
@@ -140,7 +146,7 @@ export const SongTableRow = <T extends SongInfo>({
 
     return [
       {
-        label: "Add To Playlist",
+        label: "Add to Playlist",
         icon: MdPlaylistAdd,
         onClick: () => {
           beforeShowModal && beforeShowModal();
@@ -182,12 +188,12 @@ export const SongTableRow = <T extends SongInfo>({
         mode === "condensed" && "text-2xs",
       )}
       label={song.artist}
-      route={routes.artist}
+      route="artist"
       params={getArtistRouteParams(song.artist)}
     />
   );
 
-  const album = song.albumId && song.albumName && (
+  const album = song.albumName && (
     <Link
       className={classNames(
         link({ color: "" }),
@@ -195,8 +201,8 @@ export const SongTableRow = <T extends SongInfo>({
         mode === "condensed" && "text-2xs",
       )}
       label={song.albumName}
-      route={routes.album}
-      params={getAlbumRouteParams(song.albumId)}
+      route="album"
+      params={getAlbumRouteParams(song)}
     />
   );
 
@@ -208,7 +214,7 @@ export const SongTableRow = <T extends SongInfo>({
       style={style}
     >
       <Cell className="flex space-x-2 items-center pl-3" style={widths.title}>
-        <div className="w-5 h-5 relative flex-shrink-0">
+        <div className="w-8 h-8 relative flex-shrink-0 flex items-center justify-center">
           {playing ? (
             <Audio
               className="w-full h-4 text-purple-500 flex-shrink-0"
@@ -217,20 +223,22 @@ export const SongTableRow = <T extends SongInfo>({
             />
           ) : (
             <>
-              <MdMusicNote
+              <Thumbnail
+                song={song}
+                size="32"
                 className={classNames(
-                  "w-5 h-5 group-hover:opacity-0 absolute",
-                  focusedPlay && "opacity-0",
+                  "w-8 h-8 absolute group-hover:opacity-25",
+                  focusedPlay && "opacity-25",
                 )}
               />
               <button
                 title={`Play ${song.title}`}
-                className="focus:opacity-100 group-hover:opacity-100 opacity-0"
+                className="focus:opacity-100 group-hover:opacity-100 opacity-0 bg-transparent z-10 text-gray-800 focus:outline-none"
                 onFocus={() => setFocusedPlay(true)}
                 onBlur={() => setFocusedPlay(false)}
                 onClick={() => {}}
               >
-                <MdPlayArrow className="w-5 h-5" />
+                <MdPlayArrow className="w-8 h-8" />
               </button>
             </>
           )}
@@ -327,6 +335,7 @@ export const SongTable = function <T extends SongInfo>({
   includeDateAdded,
   beforeShowModal,
 }: SongTableProps<T>) {
+  const ref = useRef<List | null>(null);
   const { setQueue, playing: notPaused, dequeue, enqueue, songInfo } = useQueue();
   const actionsWithAddRemove = useMemo(() => {
     const actionsWithAddRemove = actions ? [...actions] : [];
@@ -357,12 +366,17 @@ export const SongTable = function <T extends SongInfo>({
     return songs;
   }, [loadingRows, songs]);
 
+  useEffect(() => {
+    if (!songInfo || !songInfo.jump || !checkSourcesEqual(songInfo.source, source)) return;
+    ref.current?.scrollToItem(songInfo.index);
+  }, [songInfo, source]);
+
   const Row = useCallback(
     ({ index, style }: { index: number; style: CSSProperties }) => {
       const value = rows[index];
       if (typeof value === "number") {
         return (
-          <div key={value} style={style}>
+          <div style={style}>
             <LoadingCell />
             <LoadingCell />
             <LoadingCell />
@@ -382,7 +396,6 @@ export const SongTable = function <T extends SongInfo>({
           song={value}
           index={index}
           setSong={() => setQueue({ songs: songs ?? [], source, index })}
-          key={`${value.id}///${index}`}
           actions={actionsWithAddRemove}
           mode={mode}
           playing={playing}
@@ -429,17 +442,20 @@ export const SongTable = function <T extends SongInfo>({
       </div>
       <div className="flex-grow flex">
         <AutoSizer>
-          {({ height, width }) => (
-            <List
-              itemCount={rows.length}
-              itemSize={48}
-              className="relative w-full"
-              height={height}
-              width={width}
-            >
-              {Row}
-            </List>
-          )}
+          {({ height, width }) => {
+            return (
+              <List
+                ref={ref}
+                itemCount={rows.length}
+                itemSize={48}
+                className="relative w-full"
+                height={height}
+                width={width}
+              >
+                {Row}
+              </List>
+            );
+          }}
         </AutoSizer>
       </div>
     </div>

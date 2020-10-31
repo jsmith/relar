@@ -11,6 +11,7 @@ export interface NativeAudioPlugin {
    * Load a file so that it is ready to play. This wipes away all previous info center information.
    */
   preload(options: PreloadOptions): Promise<void>;
+  // TODO remove!!!
   /**
    * Set the album art of the currently playing song.
    */

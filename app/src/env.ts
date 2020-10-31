@@ -5,7 +5,6 @@ const get = (key: string): string => {
 
 export const env = {
   betaBaseUrl: get("SNOWPACK_PUBLIC_AUTH_URL"),
-  metadataBaseUrl: get("SNOWPACK_PUBLIC_METADATA_URL"),
   apiKey: get("SNOWPACK_PUBLIC_API_KEY"),
   authDomain: get("SNOWPACK_PUBLIC_AUTH_DOMAIN"),
   databaseURL: get("SNOWPACK_PUBLIC_DATABASE_URL"),

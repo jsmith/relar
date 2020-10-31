@@ -1,6 +1,5 @@
 import React, { useMemo, useState, useCallback, useRef } from "react";
-import { routes } from "../routes";
-import { useRouter } from "@graywolfai/react-tiniest-router";
+import { navigateTo, routes, useNavigator } from "../routes";
 import { useUser } from "../auth";
 import { Sidebar } from "../components/Sidebar";
 import { FaMusic } from "react-icons/fa";
@@ -19,7 +18,6 @@ import { QueueAudio } from "../queue";
 import { Queue } from "./sections/Queue";
 import FocusTrap from "focus-trap-react";
 import { useStartupHooks } from "../startup";
-import { LogoIcon } from "../components/LogoIcon";
 import { LogoNText } from "../components/LogoNText";
 import { useMetadataEditor } from "../sections/MetadataEditor";
 import { usePlaylistAddModal } from "./sections/AddToPlaylistModal";
@@ -34,23 +32,23 @@ const sideLinks = [
   {
     label: "Home",
     icon: FaMusic,
-    route: routes.home,
+    route: "home",
   },
   {
     label: "Search",
     icon: MdSearch,
-    route: routes.search,
+    route: "search",
   },
   {
     // FIXME save most recent inner tab
     label: "Library",
     icon: MdLibraryMusic,
-    route: routes.songs,
+    route: "songs",
   },
-];
+] as const;
 
 export const App = (_: React.Props<{}>) => {
-  const { isRoute, goTo, routeId } = useRouter();
+  const { isRoute, routeId } = useNavigator("home"); // "home" is just because something is required
   const { user, loading } = useUser();
   const [uploadDisplay, setUploadDisplay] = useState(false);
   const [queueDisplay, setQueueDisplay] = useState(false);
@@ -73,7 +71,7 @@ export const App = (_: React.Props<{}>) => {
   }
 
   if (route?.protected && !user) {
-    goTo(routes.login);
+    navigateTo("login");
     // This is important
     // If we don't do this we will still try to load components which will break things
     return <LoadingSpinner className="h-screen" />;
@@ -98,9 +96,9 @@ export const App = (_: React.Props<{}>) => {
                         tabIndex={0}
                         className={classNames(
                           "flex py-2 px-5 items-center hover:bg-gray-800 cursor-pointer focus:outline-none focus:bg-gray-700",
-                          isRoute(route) ? "bg-gray-800" : undefined,
+                          route === routeId ? "bg-gray-800" : undefined,
                         )}
-                        onClick={() => goTo(route)}
+                        onClick={() => navigateTo(route)}
                         key={label}
                       >
                         <Icon className="w-6 h-6" />
@@ -124,7 +122,8 @@ export const App = (_: React.Props<{}>) => {
               {(isRoute(routes.songs) ||
                 isRoute(routes.artists) ||
                 isRoute(routes.albums) ||
-                isRoute(routes.playlists)) && <LibraryHeader />}
+                isRoute(routes.playlists) ||
+                isRoute(routes.genres)) && <LibraryHeader />}
               <div className={classNames(route.className, "flex-grow flex")}>
                 <React.Suspense fallback={<LoadingSpinner />}>
                   <route.component />
@@ -146,7 +145,7 @@ export const App = (_: React.Props<{}>) => {
       <div className="flex flex-col text-black w-full flex-grow justify-center items-center">
         <div>This is a 404</div>
         <div>
-          Take me <Link route={routes.home} label="home" />?
+          Take me <Link route="home" label="home" />?
         </div>
       </div>
     );
@@ -156,7 +155,7 @@ export const App = (_: React.Props<{}>) => {
       <SkipNavLink className="text-gray-800" />
       <div className="flex bg-gray-900 items-center h-16 px-3 sm:px-5 flex-shrink-0 space-x-2">
         <Link
-          route={routes.hero}
+          route="hero"
           className="flex items-center space-x-2 focus:outline-none border border-transparent focus:border-gray-300 rounded"
           label={
             <LogoNText
@@ -169,7 +168,7 @@ export const App = (_: React.Props<{}>) => {
         {user && <div className="text-purple-500 text-2xl">|</div>}
         {user && (
           <Link
-            route={routes.home}
+            route="home"
             className={link({ color: "text-white hover:text-purple-400" })}
             label={
               <div className="space-x-1">
@@ -187,12 +186,12 @@ export const App = (_: React.Props<{}>) => {
             <Link
               className={button({ color: "purple", padding: "px-2 py-2 sm:px-4", invert: true })}
               label="Login"
-              route={routes.login}
+              route="login"
             />
             <Link
               className={button({ color: "purple", padding: "px-2 py-2 sm:px-4" })}
               label="Sign Up"
-              route={routes.signup}
+              route="signup"
             />
           </div>
         )}

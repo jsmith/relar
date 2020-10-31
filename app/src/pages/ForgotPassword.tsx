@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "../components/Button";
-import { useRouter } from "@graywolfai/react-tiniest-router";
-import { routes } from "../routes";
-import { useUser, sendPasswordResetEmail } from "../auth";
+import { sendPasswordResetEmail } from "../auth";
 import { CardPage } from "../components/CardPage";
 import { Input } from "../components/Input";
 import { Link } from "../components/Link";
@@ -27,7 +25,7 @@ export const ForgotPassword = () => {
       footer={
         <div className="space-x-2 flex justify-center items-center h-full">
           <span>{"🤔 Remember it?"}</span>
-          <Link route={routes.login} label="Login" />
+          <Link route="login" label="Login" />
         </div>
       }
     >
@@ -36,7 +34,7 @@ export const ForgotPassword = () => {
         <BlockAlert type="success">
           If your account exists, an email was just sent to{" "}
           <span className="font-bold">{email}</span>. After resetting your password, you should be
-          able to <Link label="login" route={routes.login} /> :)
+          able to <Link label="login" route="login" /> :)
         </BlockAlert>
       ) : (
         <>

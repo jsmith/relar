@@ -1,7 +1,6 @@
 import React from "react";
 import classNames from "classnames";
 import { Link } from "../components/Link";
-import { routes } from "../routes";
 import { link } from "../classes";
 
 export const H1 = ({ l, className }: { l: string; className?: string }) => (
@@ -57,8 +56,8 @@ export const BetaGuide = () => {
 
         <H2 l="Getting Started" />
         <P>
-          After <Link route={routes.login} label="logging in" /> to the platform, follow the
-          instructions to upload for your audio files (see the{" "}
+          After <Link route="login" label="logging in" /> to the platform, follow the instructions
+          to upload for your audio files (see the{" "}
           <a href="#limitations" className={link()}>
             Limitations
           </a>{" "}

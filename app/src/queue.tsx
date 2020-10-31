@@ -3,7 +3,6 @@ import { createContext } from "react";
 import type { Song } from "./shared/universal/types";
 import { tryToGetSongDownloadUrlOrLog } from "./queries/songs";
 import usePortal from "react-useportal";
-import { useUser } from "./auth";
 import {
   useLocalStorage,
   captureAndLogError,
@@ -49,10 +48,12 @@ export const isGeneratedType = (value: string): value is GeneratedType =>
 export type SetQueueSource =
   | { type: "album" | "artist" | "playlist"; id: string; sourceHumanName: string }
   | { type: "generated"; id: GeneratedType }
+  | { type: "genre"; id: string }
   | { type: "library" | "manuel" | "queue" };
 
 export interface QueueItem {
   song: Song;
+  index: number;
   source: SetQueueSource;
   /** The temporary song ID. */
   id: string;
@@ -78,8 +79,8 @@ export const checkSourcesEqual = (a: SetQueueSource | undefined, b: SetQueueSour
       a.type === b.type;
 
 export const checkQueueItemsEqual = (
-  a: QueueItem | undefined,
-  b: QueueItem | undefined,
+  a: Omit<QueueItem, "index"> | undefined,
+  b: Omit<QueueItem, "index"> | undefined,
 ): boolean => {
   if (a === undefined || b === undefined) return false;
   if (a.id !== b.id) return false;
@@ -90,6 +91,7 @@ export const checkQueueItemsEqual = (
     case "artist":
     case "generated":
     case "playlist":
+    case "genre":
       return a.source.type === b.source.type && a.source.id === b.source.id;
     case "queue":
       return true;
@@ -117,8 +119,8 @@ export const QueueContext = createContext<{
    * shuffled index).
    */
   dequeue: (index: number) => void;
-  /** The current song. */
-  songInfo: QueueItem | undefined;
+  /** The current song. "jump" indicates whether the song list should jump to the item when it changes */
+  songInfo: (QueueItem & { jump: boolean }) | undefined;
   next: () => void;
   /** Call this when the songs finishes. For internal use only. */
   _nextAutomatic: () => void;
@@ -201,7 +203,9 @@ export const QueueProvider = (props: React.Props<{}>) => {
     mappings: undefined,
     index: undefined,
   });
-  const [songInfo, setSongInfo, songInfoRef] = useStateWithRef<QueueItem | undefined>(undefined); // currently playing song
+  const [songInfo, setSongInfo, songInfoRef] = useStateWithRef<
+    (QueueItem & { jump: boolean }) | undefined
+  >(undefined); // currently playing song
   const [mode, setMode, modeRef] = useLocalStorage<QueuePlayMode>("player-mode", "none");
   const [playing, setPlaying, playingRef] = useStateWithRef<boolean>(false);
   const isMobile = useIsMobile();
@@ -310,7 +314,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
   }, [setPlaying, setSongInfo]); // aka []
 
   const changeSongIndex = useCallback(
-    async (index: number) => {
+    async (index: number, jump = false) => {
       current.current.index = index;
       const item: QueueItem | undefined = current.current.queue[index];
 
@@ -348,7 +352,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
       firebase.analytics().logEvent("play_song", { song_id: song.id });
 
       userData.song(song.id).update(update).catch(captureAndLogError);
-      setSongInfo({ song, id: item.id, source });
+      setSongInfo({ song, id: item.id, source, index: item.index, jump });
     },
     [setSongInfo, stopPlaying], // aka []
   );
@@ -358,9 +362,9 @@ export const QueueProvider = (props: React.Props<{}>) => {
    * repeat if the mode is set to "repeat-one".
    */
   const tryToGoTo = useCallback(
-    (index: number, force: boolean) => {
+    (index: number, force: boolean, jump: boolean) => {
       const changeSongIndexAndPlay = async (index: number) => {
-        await changeSongIndex(index);
+        await changeSongIndex(index, jump);
         ref.current?.play();
         setPlaying(true);
       };
@@ -389,7 +393,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
   const enqueue = useCallback((song: Song) => {
     const newQueue: QueueItem[] = [
       ...current.current.queue,
-      { song, source: { type: "manuel" }, id: uuid.v4() },
+      { song, source: { type: "manuel" }, id: uuid.v4(), index: current.current.queue.length },
     ];
 
     if (current.current.mappings) {
@@ -425,7 +429,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
 
       if (current.current.index === index) {
         console.info(`The song being removed is the current song. Restarting index (${index})`);
-        tryToGoTo(index, true);
+        tryToGoTo(index, true, true);
       } else if (current.current.index !== undefined && current.current.index > index) {
         const newIndex = current.current.index - 1;
         current.current.index = newIndex;
@@ -452,10 +456,11 @@ export const QueueProvider = (props: React.Props<{}>) => {
       // Only set if the type isn't "queue"
       // If it is "queue", just change the index
       if (source.type !== "queue") {
-        const newQueue: QueueItem[] = songs.map((song) => ({
+        const newQueue: QueueItem[] = songs.map((song, index) => ({
           song,
           source: source,
           id: song.playlistId ?? song.id,
+          index,
         }));
         setQueueState(newQueue);
         current.current = { queue: newQueue, index: undefined, mappings: undefined };
@@ -475,13 +480,15 @@ export const QueueProvider = (props: React.Props<{}>) => {
   );
 
   // The ?? don't actually matter since we check to see if the index is currently defined in "tryToGoTo" function
-  const next = useCallback(() => tryToGoTo((current.current.index ?? 0) + 1, true), [tryToGoTo]);
+  const next = useCallback(() => tryToGoTo((current.current.index ?? 0) + 1, true, true), [
+    tryToGoTo,
+  ]);
   const previous = useCallback(async () => {
     if (!ref.current) return;
     const currentTime = await ref.current.getCurrentTime();
     if (currentTime <= 4) {
       // If less than 4 seconds, go to the previous song
-      tryToGoTo((current.current.index ?? 0) - 1, true);
+      tryToGoTo((current.current.index ?? 0) - 1, true, true);
     } else {
       // If not just restart the song
       setCurrentTime(0);
@@ -489,9 +496,10 @@ export const QueueProvider = (props: React.Props<{}>) => {
     }
   }, [tryToGoTo]);
 
-  const _nextAutomatic = useCallback(() => tryToGoTo((current.current.index ?? 0) + 1, false), [
-    tryToGoTo,
-  ]);
+  const _nextAutomatic = useCallback(
+    () => tryToGoTo((current.current.index ?? 0) + 1, false, false),
+    [tryToGoTo],
+  );
 
   const seekTime = useCallback((seconds: number) => {
     setCurrentTime(seconds);

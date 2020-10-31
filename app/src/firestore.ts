@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { getGlobalUser, useDefinedUser } from "./auth";
 import { Song } from "./shared/universal/types";
-import { clientDb } from "./shared/universal/utils";
+import { clientDb } from "./utils";
 import firebase from "firebase/app";
 
 export const useUserData = () => {
@@ -22,3 +22,13 @@ export const getUserDataOrError = () => {
 
 export const serverTimestamp = () =>
   firebase.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp;
+
+export function undefinedToDelete<T>(obj: T): T {
+  for (const propName in obj) {
+    if (obj[propName] === undefined) {
+      obj[propName] = firebase.firestore.FieldValue.delete() as any;
+    }
+  }
+
+  return obj;
+}

@@ -116,6 +116,14 @@ firebase deploy --only storage:rules
 gsutil cors set storage.json gs://relar-staging.appspot.com # or gs://relar-production.appspot.com
 ```
 
+### Cache Control
+
+This is set automatically but if you want to batch update... it's kinda slow though!
+
+```
+gsutil setmeta -r -h "Cache-control: private, max-age=86400" gs://relar-staging.appspot.com # or gs://relar-production.appspot.com
+```
+
 ## Resources
 
 - https://medium.com/firebase-developers/the-secrets-of-firestore-fieldvalue-servertimestamp-revealed-29dd7a38a82b

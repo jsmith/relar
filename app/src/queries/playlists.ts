@@ -6,6 +6,50 @@ import { useSongLookup } from "./songs";
 import type { SongInfo } from "../queue";
 import firebase from "firebase/app";
 import { useCoolPlaylists, useCoolSongs } from "../db";
+import { Modal } from "../components/Modal";
+import { Modals } from "@capacitor/core";
+
+export const getPlaylistSongs = (
+  songs: Playlist["songs"],
+  lookup: Record<string, Song>,
+): SongInfo[] | undefined =>
+  songs
+    // Since lookup could be empty if the songs haven't loaded yet
+    // Or if a song has been deleted (we don't remove songs from playlists automatically yet)
+    // Or for a variety of other possible reasons that I haven't thought of yet
+    ?.filter(({ songId }) => songId in lookup)
+    ?.map(({ songId, id }): SongInfo & { playlistId: string } => ({
+      ...lookup[songId],
+      playlistId: id,
+    }));
+
+export type PlaylistWithSongs = Omit<Playlist, "songs"> & {
+  songs: SongInfo[] | undefined;
+};
+
+export const usePlaylistLookup = () => {
+  const lookup = useSongLookup();
+  const playlists = useCoolPlaylists();
+  return useMemo(() => {
+    const playlistLookup: Record<string, PlaylistWithSongs> = {};
+    playlists?.forEach((playlist) => {
+      playlistLookup[playlist.id] = {
+        ...playlist,
+        songs: getPlaylistSongs(playlist.songs, lookup),
+      };
+    });
+
+    return playlistLookup;
+  }, [lookup, playlists]);
+};
+
+export const usePlaylists = () => {
+  const lookup = usePlaylistLookup();
+  return useMemo(
+    () => Object.values(lookup).sort((a, b) => a.createdAt.seconds - b.createdAt.seconds),
+    [lookup],
+  );
+};
 
 export const usePlaylistCreate = () => {
   const userData = useUserData();
@@ -36,13 +80,20 @@ export const usePlaylistAdd = () => {
 
   return useCallback(
     async ({ playlistId, songId }: { playlistId: string; songId: string }) => {
-      // TODO add check before!! In case of dup
       return await firebase.firestore().runTransaction(async (transaction) => {
         const playlist = userData.playlist(playlistId);
         const snap = await transaction.get(playlist);
         const data = snap.data();
         if (!data) {
           return;
+        }
+
+        if (data.songs?.find((item) => item.songId === songId)) {
+          const { value } = await Modals.confirm({
+            title: "Add to Playlist",
+            message: "The song is already present in this playlist. Do you want to add it again?",
+          });
+          if (!value) return;
         }
 
         const newItem = { songId, id: uuid.v4() };
@@ -65,48 +116,8 @@ export const usePlaylistAdd = () => {
 };
 
 export const usePlaylist = (playlistId: string | undefined) => {
-  const playlists = useCoolPlaylists();
-
-  return useMemo(() => playlists?.find((playlist) => playlist.id === playlistId), [
-    playlistId,
-    playlists,
-  ]);
-};
-
-export const getPlaylistSongs = (
-  songs: Playlist["songs"],
-  lookup: Record<string, Song>,
-): SongInfo[] | undefined =>
-  songs
-    // Since lookup could be empty if the songs haven't loaded yet
-    // Or if a song has been deleted (we don't remove songs from playlists automatically yet)
-    // Or for a variety of other possible reasons that I haven't thought of yet
-    ?.filter(({ songId }) => songId in lookup)
-    ?.map(({ songId, id }): SongInfo & { playlistId: string } => ({
-      ...lookup[songId],
-      playlistId: id,
-    }));
-
-export const usePlaylistSongs = (playlist: Playlist | undefined) => {
-  const lookup = useSongLookup();
-
-  return useMemo(() => (playlist?.songs ? getPlaylistSongs(playlist.songs, lookup) : []), [
-    playlist?.songs,
-    lookup,
-  ]);
-};
-
-export const usePlaylistSongsLookup = () => {
-  const playlists = useCoolPlaylists();
-  const songLookup = useSongLookup();
-
-  return useMemo(() => {
-    const lookup: Record<string, SongInfo[]> = {};
-    playlists?.forEach((playlist) => {
-      lookup[playlist.id] = getPlaylistSongs(playlist.songs, songLookup) ?? [];
-    });
-    return lookup;
-  }, [playlists, songLookup]);
+  const lookup = usePlaylistLookup();
+  return useMemo(() => (playlistId ? lookup[playlistId] : undefined), [playlistId, lookup]);
 };
 
 export const usePlaylistRemoveSong = (playlistId: string | undefined) => {

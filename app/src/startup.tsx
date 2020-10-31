@@ -1,18 +1,18 @@
-import React from "react";
-import { useRouter } from "@graywolfai/react-tiniest-router";
 import { useCallback, useEffect } from "react";
 import { useUser, useUserChange } from "./auth";
 import firebase from "firebase/app";
 import * as Sentry from "@sentry/browser";
 import { useCoolDB } from "./db";
 import { onConditions, useMySnackbar, useOnlineStatus } from "./utils";
+import { useNavigation, useNavigator } from "./routes";
 
 export const useStartupHooks = () => {
-  const { routeId } = useRouter();
+  const { routeId } = useNavigator("home"); // "home" is just because something is required
   const { loading } = useUser();
   const open = useMySnackbar();
 
   useCoolDB();
+  useNavigation();
 
   useEffect(() => {
     if (loading) return;

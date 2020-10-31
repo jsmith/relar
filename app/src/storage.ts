@@ -2,7 +2,7 @@ import firebase from "firebase/app";
 import { useDefinedUser } from "./auth";
 import { useMemo } from "react";
 import { Result, ok, err } from "neverthrow";
-import { clientStorage } from "./shared/universal/utils";
+import { clientStorage } from "./utils";
 
 export type StorageErrorCode =
   | "storage/unknown" // An unknown error occurred.

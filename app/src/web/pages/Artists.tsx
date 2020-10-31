@@ -1,18 +1,14 @@
 import React from "react";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
-import { useCoolArtists } from "../../db";
 import { AiOutlineUser } from "react-icons/ai";
 import { EmptyState } from "../../components/EmptyState";
-import { ThumbnailCardGrid } from "../../components/ThumbnailCardGrid";
-import { useArtistSongLookup } from "../../queries/artist";
-import { useRouter } from "@graywolfai/react-tiniest-router";
-import { getArtistRouteParams, routes } from "../../routes";
+import { navigateTo } from "../../routes";
 import { useQueue } from "../../queue";
+import { ThumbnailCardGrid } from "../../components/ThumbnailCardGrid";
+import { useArtists } from "../../queries/artist";
 
 export const Artists = () => {
-  const artists = useCoolArtists();
-  const lookup = useArtistSongLookup();
-  const { goTo } = useRouter();
+  const artists = useArtists();
   const { setQueue } = useQueue();
 
   if (!artists) {
@@ -24,16 +20,15 @@ export const Artists = () => {
       {artists.length > 0 ? (
         <ThumbnailCardGrid
           items={artists}
-          lookup={lookup}
           getTitle={(artist) => artist.name}
           getSubtitle={() => ""}
           play={(artist) => {
             setQueue({
-              songs: lookup[artist.id],
+              songs: artist.songs,
               source: { type: "artist", id: artist.name, sourceHumanName: artist.name },
             });
           }}
-          onClick={(artist) => goTo(routes.artist, getArtistRouteParams(artist.name))}
+          onClick={(artist) => navigateTo("artist", { artistName: artist.name })}
         />
       ) : (
         <EmptyState icon={AiOutlineUser}>

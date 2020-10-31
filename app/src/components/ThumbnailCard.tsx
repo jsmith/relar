@@ -1,12 +1,12 @@
 import React, { CSSProperties, useState } from "react";
 import { MdPlayArrow, MdPlayCircleFilled } from "react-icons/md";
 import classNames from "classnames";
-import { Collage, CollageProps } from "./Collage";
+import { Collage } from "./Collage";
 import { useIsMobile } from "../utils";
+import { Song } from "../shared/universal/types";
 
 export interface ThumbnailCardProps {
-  objects: CollageProps["objects"];
-  type: CollageProps["type"];
+  songs: Song[] | undefined;
   title: string;
   subtitle: string | undefined;
   onClick?: () => void;
@@ -17,13 +17,12 @@ export interface ThumbnailCardProps {
 
 export const ThumbnailCard = ({
   style,
-  objects,
+  songs,
   title,
   subtitle,
   onClick,
   className,
   play,
-  type,
 }: ThumbnailCardProps) => {
   const [focused, setFocused] = useState(false);
   const isMobile = useIsMobile();
@@ -42,7 +41,7 @@ export const ThumbnailCard = ({
         height: style?.height ? style.height : undefined,
       }}
     >
-      <Collage style={{ height: style?.width }} objects={objects} type={type} size="128" />
+      <Collage style={{ height: style?.width }} songs={songs} size="128" />
       <div
         className="truncate mt-1 lg:mt-2 text-gray-900 font-bold"
         tabIndex={0}
@@ -53,7 +52,9 @@ export const ThumbnailCard = ({
         {title}
       </div>
       {/* FIXME do we want this to truncate? */}
-      <div className="truncate lg:mt-1 text-gray-600">{subtitle}</div>
+      <div className="truncate lg:mt-1 text-gray-600" title={subtitle}>
+        {subtitle}
+      </div>
       {!isMobile && (
         <div
           className={classNames(
@@ -69,7 +70,7 @@ export const ThumbnailCard = ({
               e.stopPropagation();
               play && play();
             }}
-            className="bg-purple-500 text-white rounded-full p-1 hover:scale-110 transform"
+            className="bg-purple-500 text-white rounded-full p-1 hover:scale-110 transform focus:scale-110 focus:outline-none"
           >
             <MdPlayArrow className={classNames("w-10 h-10")} />
           </button>

@@ -1,21 +1,21 @@
 import React from "react";
 import { Link } from "./Link";
-import type { RouteType, RouterStateType } from "@graywolfai/react-tiniest-router";
 import classNames from "classnames";
+import { NavigatorRoutes } from "../routes";
 
-export interface HomeTopicProps {
+export interface HomeTopicProps<K extends keyof NavigatorRoutes> {
   title: string;
   subTitle?: string;
   children: JSX.Element;
-  route: RouteType;
-  params?: RouterStateType["params"];
-  queryParams?: RouterStateType["queryParams"];
+  route: K;
+  params?: NavigatorRoutes[K]["params"];
+  queryParams?: NavigatorRoutes[K]["queryParams"];
   wrapperClassName?: string;
   textClassName?: string;
   emptyText?: React.ReactNode;
 }
 
-export const HomeTopic = ({
+export const HomeTopic = function <K extends keyof NavigatorRoutes>({
   title,
   subTitle,
   children,
@@ -24,8 +24,7 @@ export const HomeTopic = ({
   queryParams,
   wrapperClassName,
   textClassName,
-  emptyText,
-}: HomeTopicProps) => {
+}: HomeTopicProps<K>) {
   return (
     <div className="space-y-2 lg:space-y-3">
       <div className={classNames("flex justify-between items-center", textClassName)}>

@@ -1,7 +1,5 @@
 import supertest from "supertest";
 import { adminDb, betaSignups, deleteCollection } from "./shared/node/utils";
-import { testFunctions } from "./configure-tests";
-import { noOp } from "./test-utils";
 import { admin } from "./admin";
 
 import { app } from "./auth";
@@ -11,7 +9,6 @@ import assert from "uvu/assert";
 
 const firestore = admin.firestore();
 const auth = admin.auth();
-noOp(testFunctions);
 
 test.before.each(async () => {
   await deleteCollection(await firestore.collection("beta_signups"));

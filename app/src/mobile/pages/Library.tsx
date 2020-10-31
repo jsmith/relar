@@ -1,7 +1,6 @@
 import React from "react";
-import type { RouteType } from "@graywolfai/react-tiniest-router";
-import type { IconType } from "react-icons/lib";
-import { routes } from "../../routes";
+import { IconType } from "react-icons/lib";
+import { NavigatorRoutes } from "../../routes";
 import { Link } from "../../components/Link";
 import { HiChevronRight } from "react-icons/hi";
 import { AiOutlineUser } from "react-icons/ai";
@@ -10,7 +9,7 @@ import { RiAlbumLine, RiPlayList2Fill, RiMusicLine } from "react-icons/ri";
 export interface LibraryLink {
   icon: IconType;
   label: string;
-  route: RouteType;
+  route: keyof NavigatorRoutes;
 }
 
 export const Library = () => {
@@ -18,22 +17,22 @@ export const Library = () => {
     {
       icon: RiMusicLine,
       label: "Songs",
-      route: routes.songs,
+      route: "songs",
     },
     {
       icon: AiOutlineUser,
       label: "Artists",
-      route: routes.artists,
+      route: "artists",
     },
     {
       icon: RiAlbumLine,
       label: "Albums",
-      route: routes.albums,
+      route: "albums",
     },
     {
       icon: RiPlayList2Fill,
       label: "Playlists",
-      route: routes.playlists,
+      route: "playlists",
     },
   ];
 

@@ -1,50 +1,33 @@
 import { getDownloadURL } from "../storage";
-import { useDefinedUser, useUser } from "../auth";
-import { Album, Artwork, Song } from "../shared/universal/types";
-import { clientStorage } from "../shared/universal/utils";
+import { useUser } from "../auth";
+import { Song } from "../shared/universal/types";
 import * as Sentry from "@sentry/browser";
 import { useEffect, useState, useMemo } from "react";
 import firebase from "firebase/app";
 import { getUserDataOrError, serverTimestamp } from "../firestore";
-import { captureAndLog } from "../utils";
-
-export type ThumbnailType = "song" | "album";
+import { captureAndLog, clientStorage } from "../utils";
 
 export type ThumbnailSize = "32" | "64" | "128" | "256";
 
-export interface ThumbnailObject {
-  id: string;
-  artwork: Artwork | undefined;
-  updatedAt: firebase.firestore.Timestamp;
-}
-
-export const useThumbnail = (
-  object: ThumbnailObject | undefined,
-  type: ThumbnailType,
-  size: ThumbnailSize = "32",
-) => {
-  const objects = useMemo(() => (object ? [object] : []), [object]);
-  const thumbnails = useThumbnails(objects, type, size);
+export const useThumbnail = (song: Song | undefined, size: ThumbnailSize = "32") => {
+  const objects = useMemo(() => (song ? [song] : []), [song]);
+  const thumbnails = useThumbnails(objects, size);
   return thumbnails[0];
 };
 
-export const useThumbnails = (
-  objects: Array<ThumbnailObject>,
-  type: ThumbnailType,
-  size: ThumbnailSize = "32",
-) => {
+export const useThumbnails = (songs: Array<Song>, size: ThumbnailSize = "32") => {
   const { user } = useUser();
   const [thumbnails, setThumbnails] = useState<Array<string | undefined>>([]);
 
   useEffect(() => {
     if (!user) return;
     let ignore = false;
-    const thumbnails = objects.map((object) => tryToGetDownloadUrlOrLog(user, object, type, size));
+    const thumbnails = songs.map((song) => tryToGetDownloadUrlOrLog(user, song, size));
     Promise.all(thumbnails).then((thumbnails) => !ignore && setThumbnails(thumbnails));
     return () => {
       ignore = true;
     };
-  }, [user, objects, size, type]);
+  }, [user, songs, size]);
 
   return thumbnails;
 };
@@ -64,8 +47,7 @@ const keyLookup = {
  */
 export const tryToGetDownloadUrlOrLog = async (
   user: firebase.User,
-  data: ThumbnailObject,
-  type: ThumbnailType,
+  data: Song,
   size: ThumbnailSize,
 ): Promise<string | undefined> => {
   if (!data || !data.artwork) {
@@ -87,13 +69,12 @@ export const tryToGetDownloadUrlOrLog = async (
     clientStorage(firebase.storage(), user.uid).artworks(artwork.hash, artwork.type)[size](),
   );
 
-  const update: Partial<Album & Song> = {
+  const update: Partial<Song> = {
     artwork,
     updatedAt: serverTimestamp(),
   };
 
-  const ref =
-    type === "album" ? getUserDataOrError().album(data.id) : getUserDataOrError().song(data.id);
+  const ref = getUserDataOrError().song(data.id);
 
   if (result.isOk()) {
     artwork[key] = result.value;

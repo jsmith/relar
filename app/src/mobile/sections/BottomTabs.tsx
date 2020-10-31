@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from "react";
 import type { IconType } from "react-icons/lib";
 import type { RouteType } from "@graywolfai/react-tiniest-router";
 import { Link } from "../../components/Link";
-import { getAlbumRouteParams, getArtistRouteParams, routes } from "../../routes";
+import { getAlbumRouteParams, getArtistRouteParams, NavigatorRoutes, routes } from "../../routes";
 import { HiDotsHorizontal, HiHome, HiSearch, HiTrash } from "react-icons/hi";
 import {
   MdLibraryMusic,
@@ -39,7 +39,7 @@ export const Tab = ({
 }: {
   label: string;
   icon: IconType;
-  route: RouteType;
+  route: keyof NavigatorRoutes;
 }) => (
   <Link
     route={route}
@@ -154,8 +154,7 @@ export const ButtonTabs = () => {
           className="flex items-center space-x-2 flex-shrink-0 absolute w-full z-10"
         >
           <Thumbnail
-            type="song"
-            object={songInfo?.song}
+            song={songInfo?.song}
             size="256"
             style={{ height: `${MINIFIED_HEIGHT}px`, width: `${MINIFIED_HEIGHT}px` }}
             className="flex-shrink-0"
@@ -218,7 +217,7 @@ export const ButtonTabs = () => {
               className={classNames("flex-shrink-0", openQueue ? "w-16 h-16" : "w-48 h-48")}
               layout
             >
-              <Thumbnail object={songInfo?.song} type="song" size="256" className="w-full h-full" />
+              <Thumbnail song={songInfo?.song} size="256" className="w-full h-full" />
             </motion.div>
           </div>
 
@@ -304,7 +303,7 @@ export const ButtonTabs = () => {
                         ? {
                             label: "Go To Artist",
                             icon: AiOutlineUser,
-                            route: routes.artist,
+                            route: "artist",
                             type: "link",
                             params: getArtistRouteParams(songInfo.song.artist),
                           }
@@ -312,10 +311,9 @@ export const ButtonTabs = () => {
                       {
                         label: "Go to Album",
                         icon: RiAlbumLine,
-                        route: routes.album,
+                        route: "album",
                         type: "link",
-                        // FIXME
-                        params: getAlbumRouteParams(songInfo.song.albumId),
+                        params: getAlbumRouteParams(songInfo.song),
                       },
                       { label: "Clear Queue", icon: HiTrash, onClick: clear, type: "click" },
                     ]);
@@ -333,9 +331,9 @@ export const ButtonTabs = () => {
         style={{ height: tabsHeight }}
         className="safe-bottom bg-gray-900 flex justify-around text-white flex-shrink-0"
       >
-        <Tab label="Home" route={routes.home} icon={HiHome} />
-        <Tab label="Search" route={routes.search} icon={HiSearch} />
-        <Tab label="Library" route={routes.library} icon={MdLibraryMusic} />
+        <Tab label="Home" route="home" icon={HiHome} />
+        <Tab label="Search" route="search" icon={HiSearch} />
+        <Tab label="Library" route="library" icon={MdLibraryMusic} />
       </motion.div>
     </>
   );

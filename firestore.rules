@@ -1,6 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // FIXME add unit tests
     match /user_data/{userId} {
       function isUser() {
       	return userId == request.auth.uid
@@ -21,19 +22,32 @@ service cloud.firestore {
 
       match /songs/{songId} {
 				function validUpdate() {
-          // artwork is slightly insecure since we really only want to allow updates to "artwork.artworkDownloadUrl32"
-          return affectedKeys().hasOnly(['lastPlayed', 'played', 'liked', 'downloadUrl', 'artwork', 'whenLiked', 'updatedAt', 'deleted']) && affectedKeys().hasAll(['updatedAt'])
+          // Just check top level keys
+          return (
+            affectedKeys().hasOnly([
+              'lastPlayed',
+              'played',
+              'liked',
+              'downloadUrl',
+              'artwork',
+              'whenLiked',
+              'deleted',
+              'title',
+              'artist',
+              'albumArtist',
+              'albumName',
+              'genre',
+              'year',
+              'track',
+              'disk',
+              'updatedAt',
+            ]) && 
+            affectedKeys().hasAll(['updatedAt']) &&
+            debug(request.resource.data.title).size() > 0
+          )
         }
 
       	allow update: if isUser() && validUpdate()
-      }
-
-      match /albums/{albumId} {
-        function validUpdate() {
-          return affectedKeys().hasOnly(['artwork', 'updatedAt']) && affectedKeys().hasAll(['updatedAt'])
-        }
-
-        allow update: if isUser() && validUpdate()
       }
 
       match /playlists/{playlistId} {

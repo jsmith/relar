@@ -1,14 +1,13 @@
 import * as admin from "firebase-admin";
 import * as path from "path";
-import { createPath, createAlbumId, AlbumId, encodeFirebase } from "../universal/utils";
+import { createPath } from "../universal/utils";
 import {
-  Album,
   UserData,
-  Artist,
   Song,
   BetaSignup,
   Playlist,
   UploadAction,
+  FirestoreTimestamp,
 } from "../universal/types";
 import { GetFilesResponse } from "@google-cloud/storage";
 import * as fs from "fs";
@@ -18,34 +17,25 @@ import { err, ok, Result } from "neverthrow";
 export const deleteCollection = async (
   collection: FirebaseFirestore.CollectionReference<unknown>,
 ) => {
-  // console.log("Deleting " + collection.path + " collection...");
   const docs = await collection.get().then((r) => r.docs.map((doc) => doc.ref));
   await Promise.all(docs.map((doc) => doc.delete()));
 };
 
 export const deleteAllFiles = async ([files]: GetFilesResponse) => {
   const promises = files.map((file) => {
-    // console.log("Deleting " + file.name + " file...");
     return file.delete();
   });
 
   await Promise.all(promises);
 };
 
-export const deleteAllUserData = async (
-  storage: admin.storage.Storage | undefined,
-  userId: string,
-) => {
+export const deleteAllUserData = async (userId: string) => {
   await adminDb(userId).doc().delete();
   await deleteCollection(adminDb(userId).songs());
-  await deleteCollection(adminDb(userId).artists());
-  await deleteCollection(adminDb(userId).albums());
   await deleteCollection(adminDb(userId).playlists());
   await deleteCollection(adminDb(userId).actions());
 
-  if (!storage) {
-    return;
-  }
+  const storage = admin.storage();
 
   await storage
     .bucket()
@@ -103,30 +93,7 @@ export const adminDb = (userId: string) => {
       db.doc(`user_data/${userId}/actions/${actionId}`) as DocumentReference<UploadAction>,
     actions: () =>
       db.collection(`user_data/${userId}/actions`) as CollectionReference<UploadAction>,
-    albums: () => db.collection(path.append("albums").build()) as CollectionReference<Album>,
-    album: (albumId: AlbumId | string) =>
-      db.doc(
-        path
-          .append("albums")
-          .append(encodeFirebase(typeof albumId === "string" ? albumId : createAlbumId(albumId)))
-          .build(),
-      ) as DocumentReference<Album>,
-    artists: () => db.collection(path.append("artists").build()) as CollectionReference<Artist>,
-    artist: (artistName: string) =>
-      db.doc(
-        path.append("artists").append(encodeFirebase(artistName)).build(),
-      ) as DocumentReference<Artist>,
     doc: () => db.doc(path.build()) as DocumentReference<UserData>,
-    findAlbumSongs: (albumId: string) => {
-      const key: keyof Song = "albumId";
-      const value: Song["albumId"] = albumId;
-      return adminDb(userId).songs().where(key, "==", value).where("deleted", "==", false);
-    },
-    findArtistSongs: (name: string) => {
-      const key: keyof Song = "artist";
-      const value: Song["artist"] = name;
-      return adminDb(userId).songs().where(key, "==", value).where("deleted", "==", false);
-    },
     playlists: () =>
       db.collection(`user_data/${userId}/playlists`) as CollectionReference<Playlist>,
     playlist: (id: string) =>
@@ -161,3 +128,6 @@ export const md5Hash = (localFilePath: string): Promise<Result<string, Error>> =
     stream.on("end", () => resolve(ok(md5sum.digest("hex"))));
   });
 };
+
+export const serverTimestamp = () =>
+  (admin.firestore.FieldValue.serverTimestamp() as unknown) as FirestoreTimestamp;

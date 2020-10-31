@@ -1,7 +1,6 @@
 import React from "react";
 import { Footer } from "../sections/Footer";
 import { Link } from "../components/Link";
-import { routes } from "../routes";
 
 export const TermsAndConditions = () => {
   return (
@@ -80,7 +79,7 @@ export const TermsAndConditions = () => {
         <h2>Your Privacy</h2>
 
         <p>
-          Please read the <Link label="Privacy Policy" route={routes.privacy} />.
+          Please read the <Link label="Privacy Policy" route="privacy" />.
         </p>
 
         <h2>Reservation of Rights</h2>
