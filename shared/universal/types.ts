@@ -14,7 +14,14 @@ import {
 
 // FIXME remove createdAt for each model since firestore automatically stores the createdAt and updatedAt times
 
-export const Timestamp = Unknown.withGuard((x): x is firebase.firestore.Timestamp => true);
+export interface FirestoreTimestamp {
+  seconds: number;
+  nanoseconds: number;
+  toMillis: () => number;
+  toDate: () => Date;
+}
+
+export const Timestamp = Unknown.withGuard((x): x is FirestoreTimestamp => true);
 
 export const BetaDeviceType = Literal("ios").Or(Literal("android")).Or(Literal("none"));
 
@@ -106,11 +113,6 @@ export const SongType = Record({
   albumName: String.Or(Undefined),
 
   /**
-   * The album ID for querying purposes.
-   */
-  albumId: String.Or(Undefined),
-
-  /**
    * The album artist.
    */
   albumArtist: String.Or(Undefined),
@@ -173,25 +175,6 @@ export const SongType = Record({
 
 export type Song = Static<typeof SongType>;
 
-export const AlbumType = Record({
-  /**
-   * The ID. This is a concatenation of the album artist (or artist — this is very important) and album name.
-   * For example, if the album name was "Wow" and the album artist was "Jack", the resulting id
-   * would be "Jack<<<<<<<Wow".
-   */
-  id: String,
-  albumArtist: String.Or(Undefined),
-  album: String.Or(Undefined),
-  artwork: ArtworkType.Or(Undefined),
-
-  /** When the album was last updated. */
-  updatedAt: Timestamp,
-
-  deleted: Boolean,
-});
-
-export type Album = Static<typeof AlbumType>;
-
 export const BetaSignupType = Record({
   email: String,
   firstName: String,
@@ -218,23 +201,6 @@ export const UploadActionType = Record({
 });
 
 export type UploadAction = Static<typeof UploadActionType>;
-
-export const ArtistType = Record({
-  /** The id of the artist. Just the name for now. */
-  id: String,
-
-  /**
-   * The name of the artist. This is also the ID since artist names must be unique.
-   */
-  name: String,
-
-  /** When the artist was last updated. */
-  updatedAt: Timestamp,
-
-  deleted: Boolean,
-});
-
-export type Artist = Static<typeof ArtistType>;
 
 export const PlaylistType = Record({
   /** The ID of the playlist. */
@@ -323,31 +289,6 @@ export type BetaAPI = {
       response:
         | (Success & { uid: string })
         | KnownError<"invalid-token" | "invalid-password" | "already-have-account">
-        | UnknownError;
-    };
-  };
-};
-
-export type MetadataAPI = {
-  "/edit": {
-    POST: {
-      body: {
-        idToken: string;
-        songId: string;
-        update: {
-          title: string;
-          artist: string;
-          albumArtist: string;
-          albumName: string;
-          genre: string;
-          year: number | undefined;
-          track: PositionInformation;
-          disk: PositionInformation;
-        };
-      };
-      response:
-        | Success
-        | KnownError<"unauthorized" | "song-does-not-exist" | "missing-title">
         | UnknownError;
     };
   };

@@ -1,12 +1,11 @@
 import { openDB, IDBPDatabase, deleteDB } from "idb";
 import { useEffect, useMemo, useState } from "react";
 import { useUser } from "./auth";
-import { Album, Artist, Playlist, Song } from "./shared/universal/types";
-import { clientDb } from "./shared/universal/utils";
+import { Playlist, Song } from "./shared/universal/types";
 import firebase from "firebase/app";
 import { createEmitter } from "./events";
 import { captureMessage, Severity } from "@sentry/browser";
-import { useStateWithRef } from "./utils";
+import { useStateWithRef, clientDb } from "./utils";
 
 const withPerformanceAndAnalytics = async <T>(
   cb: () => Promise<T[]>,
@@ -31,14 +30,12 @@ const withPerformanceAndAnalytics = async <T>(
 let cache: { [path: string]: unknown[] | undefined } = {};
 const watchers = createEmitter<Record<string, [unknown, unknown]>>();
 
-export type IndexDBModels = "songs" | "albums" | "artists" | "playlists";
+export type IndexDBModels = "songs" | "playlists";
 
 export type IndexDBTypes = IndexDBModels | "lastUpdated";
 
 export type IndexDBTypeMap = {
   songs: Song;
-  albums: Album;
-  artists: Artist;
   playlists: Playlist;
 };
 
@@ -79,8 +76,6 @@ export class IndexedDb {
       upgrade(db, oldVersion, newVersion, transaction) {
         for (const { name: tableName, id } of [
           { name: "songs", id: "id" },
-          { name: "albums", id: "id" },
-          { name: "artists", id: "name" },
           { name: "playlists", id: "id" },
           { name: "lastUpdated", id: "name" },
         ]) {
@@ -189,8 +184,6 @@ export const useCoolDB = () => {
       const db = new IndexedDb(user.uid);
       await db.createObjectStore([]);
       const songs = clientDb(user.uid).songs();
-      const artists = clientDb(user.uid).artists();
-      const albums = clientDb(user.uid).albums();
       const playlists = clientDb(user.uid).playlists();
 
       const watchModel = async <M extends IndexDBModels>(
@@ -262,7 +255,7 @@ export const useCoolDB = () => {
         };
 
         const lastUpdatedDate = new Date(lastUpdated?.value ?? 0);
-        console.log(
+        console.info(
           `[${model}] Looking for data updated >= ${
             lastUpdated?.value ?? 0
           } (${lastUpdatedDate.toLocaleDateString("en", {
@@ -294,7 +287,7 @@ export const useCoolDB = () => {
             value: changesToProcess.length,
           });
 
-          console.log(
+          console.info(
             `[${model}] Got ${model} snapshot with ${changesToProcess.length} changes!`,
             changesToProcess,
           );
@@ -311,7 +304,9 @@ export const useCoolDB = () => {
               return;
             }
 
-            console.log(`[${model}] Adding document "${change.doc.id}" to the ${model} collection`);
+            console.info(
+              `[${model}] Adding document "${change.doc.id}" to the ${model} collection`,
+            );
 
             copy.push(data);
           };
@@ -324,7 +319,7 @@ export const useCoolDB = () => {
 
             // When any mutation comes that set "delete" to true remove our local copy
             if (data.deleted) {
-              console.log(
+              console.info(
                 `[${model}] Deleting document "${change.doc.id}" in the ${model} collection (index ${index})`,
               );
 
@@ -332,7 +327,7 @@ export const useCoolDB = () => {
               return;
             }
 
-            console.log(
+            console.info(
               `[${model}] Mutating document "${change.doc.id}" in the ${model} collection (index ${index})`,
             );
 
@@ -372,7 +367,7 @@ export const useCoolDB = () => {
             console.warn(warning);
           }
 
-          console.log(
+          console.info(
             `[${model}] The previous last updated time was ${latestLastUpdated}. Setting to ${maxUpdatedAt}.`,
           );
           // This should be fine but like... it all depends on how firebase manages snapshots
@@ -409,9 +404,7 @@ export const useCoolDB = () => {
         );
       };
 
-      disposers.push(await watchModel("albums", albums));
       disposers.push(await watchModel("songs", songs));
-      disposers.push(await watchModel("artists", artists));
       disposers.push(await watchModel("playlists", playlists));
     };
 
@@ -458,9 +451,6 @@ export const useChangedSongs = (cb: (songs: Song[]) => void) => {
 
 export const useCoolSongs = () =>
   useSort(useCoolItems("songs"), (a, b) => a.title.localeCompare(b.title));
-export const useCoolAlbums = () =>
-  useSort(useCoolItems("albums"), (a, b) => a.id.localeCompare(b.id));
-export const useCoolArtists = () =>
-  useSort(useCoolItems("artists"), (a, b) => a.name.localeCompare(b.name));
+
 export const useCoolPlaylists = () =>
   useSort(useCoolItems("playlists"), (a, b) => a.name.localeCompare(b.name));

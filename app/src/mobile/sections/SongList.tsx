@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { Ref, useMemo } from "react";
 import { MdAddToQueue, MdPlaylistAdd } from "react-icons/md";
 import { useDeleteSong } from "../../queries/songs";
 import { fmtMSS, onConditions, useMySnackbar } from "../../utils";
@@ -10,8 +10,8 @@ import {
 } from "../components/ListContainer";
 import { AiOutlineUser } from "react-icons/ai";
 import { RiAlbumLine } from "react-icons/ri";
-import { getAlbumRouteParams, getArtistRouteParams, routes } from "../../routes";
-import type { Song } from "../../shared/universal/types";
+import { getAlbumRouteParams, getArtistRouteParams } from "../../routes";
+import { Song } from "../../shared/universal/types";
 import { HiPlus, HiTrash } from "react-icons/hi";
 import { Modals } from "@capacitor/core";
 import { useSlideUpScreen } from "../slide-up-screen";
@@ -26,6 +26,7 @@ export interface SongListProps {
   className?: string;
   disableNavigator?: boolean;
   source: SetQueueSource;
+  outerRef?: Ref<HTMLDivElement>;
 }
 
 const AddToPlaylistMenu = ({ song, hide }: { song: Song; hide: () => void }) => {
@@ -47,6 +48,7 @@ const SongListRow = ({
   mode,
   source,
   index,
+  style,
 }: ListContainerRowProps<SongInfo> & {
   source: SetQueueSource;
 }) => {
@@ -88,6 +90,7 @@ const SongListRow = ({
 
   return (
     <MusicListItem
+      style={style}
       actionItems={[
         {
           type: "click",
@@ -113,20 +116,18 @@ const SongListRow = ({
           ? {
               label: "Go To Artist",
               icon: AiOutlineUser,
-              route: routes.artist,
+              route: "artist",
               type: "link",
               params: getArtistRouteParams(song.artist),
             }
           : undefined,
-        song.albumId
-          ? {
-              label: "Go to Album",
-              icon: RiAlbumLine,
-              route: routes.album,
-              type: "link",
-              params: getAlbumRouteParams(song.albumId),
-            }
-          : undefined,
+        {
+          label: "Go to Album",
+          icon: RiAlbumLine,
+          route: "album",
+          type: "link",
+          params: getAlbumRouteParams(song),
+        },
         {
           label: "Delete",
           icon: HiTrash,
@@ -153,15 +154,21 @@ const SongListRow = ({
       }
       title={song.title}
       subTitle={`${song.artist ?? "Unknown Artist"} • ${fmtMSS(song.duration / 1000)}`}
-      object={song}
+      song={song}
       mode={mode}
       state={state}
-      type="song"
     />
   );
 };
 
-export const SongList = ({ songs, mode, className, disableNavigator, source }: SongListProps) => {
+export const SongList = ({
+  songs,
+  mode,
+  className,
+  disableNavigator,
+  source,
+  outerRef,
+}: SongListProps) => {
   return (
     <ListContainer
       // FIXME this might not work in non condensed mode
@@ -173,6 +180,7 @@ export const SongList = ({ songs, mode, className, disableNavigator, source }: S
       className={className}
       disableNavigator={disableNavigator}
       extra={{ source }}
+      outerRef={outerRef}
     />
   );
 };

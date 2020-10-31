@@ -1,16 +1,13 @@
 import * as f from "firebase-functions";
-import { deleteAlbumIfSingleSong, deleteArtistSingleSong } from "./utils";
-import { adminDb, adminStorage, deleteAllUserData } from "./shared/node/utils";
-import { Sentry, setSentryUser, wrapAndReport } from "./sentry";
+import { adminDb, deleteAllUserData, serverTimestamp } from "./shared/node/utils";
+import { setSentryUser, wrapAndReport } from "./sentry";
 import { admin } from "./admin";
-import { Playlist, Song, SongType, UserData } from "./shared/universal/types";
-import { createAlbumId, decode } from "./shared/universal/utils";
-
-const db = admin.firestore();
+import { Playlist, SongType, UserData } from "./shared/universal/types";
+import { decode } from "./shared/universal/utils";
 
 export const onDeleteUser = f.auth.user().onDelete(async (user) => {
   setSentryUser({ id: user.uid, email: user.email });
-  await deleteAllUserData(admin.storage(), user.uid);
+  await deleteAllUserData(user.uid);
 });
 
 export const onDeleteSong = f.firestore.document("user_data/{userId}/songs/{songId}").onUpdate(
@@ -32,27 +29,20 @@ export const onDeleteSong = f.firestore.document("user_data/{userId}/songs/{song
     const userData = adminDb(userId).doc();
 
     const writes: Array<undefined | (() => void)> = [];
-    const albumId = createAlbumId(song);
-    await db.runTransaction(async (transaction) => {
-      writes.push(await deleteAlbumIfSingleSong({ db, userId, transaction, albumId }));
-      if (song.artist) {
-        writes.push(await deleteArtistSingleSong({ db, userId, transaction, artist: song.artist }));
-      }
-
+    await admin.firestore().runTransaction(async (transaction) => {
       const playlists = await transaction.get(adminDb(userId).playlists());
       playlists.forEach((playlist) => {
-        let found = false;
-        const songs: Playlist["songs"] = playlist.data().songs?.filter(({ songId }) => {
-          const keep = songId !== song.id;
-          if (!keep) found = true;
-          return keep;
-        });
+        const songs: Playlist["songs"] = playlist
+          .data()
+          .songs?.filter(({ songId }) => songId !== song.id);
 
         const update: Partial<Playlist> = {
           songs,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+          updatedAt: serverTimestamp(),
         };
-        if (found) writes.push(() => transaction.update(playlist.ref, update));
+
+        if (playlist.data().songs?.length !== songs?.length)
+          writes.push(() => transaction.update(playlist.ref, update));
       });
 
       const snap = await transaction.get(userData);

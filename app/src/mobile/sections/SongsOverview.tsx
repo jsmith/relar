@@ -1,10 +1,9 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { MdMoreVert, MdPlayArrow, MdPlayCircleFilled } from "react-icons/md";
-import { clamp, fmtMSS, songsCount, useWindowSize } from "../../utils";
+import { MdMoreVert, MdPlayArrow } from "react-icons/md";
+import { fmtMSS, songsCount, useWindowSize } from "../../utils";
 import { useSongsDuration } from "../../queries/songs";
-import { HiDownload, HiPencil, HiTrash } from "react-icons/hi";
+import { HiPencil, HiTrash } from "react-icons/hi";
 import { SongList } from "../sections/SongList";
-import { BackButton } from "../components/BackButton";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { ActionSheetItem, openActionSheet } from "../action-sheet";
 import { Collage, CollageProps } from "../../components/Collage";
@@ -12,38 +11,36 @@ import { SetQueueSource, SongInfo, useQueue, checkSourcesEqual } from "../../que
 import { Modals } from "@capacitor/core";
 import { Audio } from "@jsmith21/svg-loaders-react";
 import Skeleton from "react-loading-skeleton";
+import { Song } from "../../shared/universal/types";
 
 export interface SongsOverviewProps {
   title: string | undefined;
   subTitle?: string;
   infoPoints?: string[];
   onDelete?: () => Promise<void>;
-  objects?: CollageProps["objects"];
   songs: SongInfo[] | undefined;
   source: SetQueueSource;
   onRename?: (newValue: string) => void;
-  type?: CollageProps["type"];
 }
 
 export const SongsOverview = ({
   title,
   subTitle,
   infoPoints,
-  objects,
   songs,
   source,
   onRename,
   onDelete,
-  type = "song",
 }: SongsOverviewProps) => {
   const ref = useRef<HTMLDivElement | null>(null);
   const { width } = useWindowSize();
   const { setQueue, songInfo, playing, toggleState } = useQueue();
   const songDuration = useSongsDuration(songs);
   const scrollY = useMotionValue(0);
+  const outerRef = useRef<HTMLDivElement | null>(null);
   const topImage = useTransform(scrollY, (value) => Math.round(value * 0.2));
-  const opacity = useTransform(scrollY, (value) => clamp((width - value) / 50, 0, 1));
-  const display = useTransform(scrollY, (value) => (width - value <= 0 ? "none" : "block"));
+  // const opacity = useTransform(scrollY, (value) => clamp((width - value) / 50, 0, 1));
+  // const display = useTransform(scrollY, (value) => (width - value <= 0 ? "none" : "block"));
   const sourcesEqual = useMemo(() => checkSourcesEqual(songInfo?.source, source), [
     songInfo?.source,
     source,
@@ -52,7 +49,22 @@ export const SongsOverview = ({
   useEffect(() => {
     if (!ref.current) return;
     const local = ref.current;
-    const onScroll = () => scrollY.set(local.scrollTop);
+    const onScroll = () => {
+      // For debugging only
+      // console.debug(
+      //   local.scrollTop,
+      //   local.scrollHeight,
+      //   local.offsetHeight,
+      //   local.scrollHeight - local.scrollTop,
+      // );
+
+      if (outerRef.current) {
+        outerRef.current.style.overflow =
+          local.scrollHeight - local.scrollTop <= local.offsetHeight ? "auto" : "hidden";
+      }
+
+      scrollY.set(local.scrollTop);
+    };
     local.addEventListener("scroll", onScroll);
     return () => local.removeEventListener("scroll", onScroll);
   }, [scrollY]);
@@ -94,6 +106,11 @@ export const SongsOverview = ({
     return actionItems;
   }, [onDelete, onRename]);
 
+  useEffect(() => {
+    if (!outerRef.current) return;
+    outerRef.current.style.overflow = "hidden";
+  });
+
   return (
     <motion.div className="w-full overflow-y-scroll" ref={ref}>
       {/* <motion.div style={{ opacity, display }} className="z-10 fixed">
@@ -102,7 +119,7 @@ export const SongsOverview = ({
 
       <div style={{ width, height: width }} className="relative overflow-hidden">
         <motion.div className="absolute" style={{ width, height: width, top: topImage }}>
-          <Collage objects={objects ?? songs} size="256" className="h-full" type={type} />
+          <Collage songs={songs} size="256" className="h-full" />
         </motion.div>
       </div>
 
@@ -158,7 +175,7 @@ export const SongsOverview = ({
 
       <div className="border-t m-3" />
 
-      <SongList songs={songs} source={source} />
+      <SongList songs={songs} source={source} outerRef={outerRef} />
     </motion.div>
   );
 };

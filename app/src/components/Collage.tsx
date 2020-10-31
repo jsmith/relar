@@ -1,60 +1,52 @@
 import React, { CSSProperties, useMemo } from "react";
 import { Thumbnail } from "./Thumbnail";
-import { ThumbnailObject, ThumbnailType, ThumbnailSize } from "../queries/thumbnail";
+import { ThumbnailSize } from "../queries/thumbnail";
 import classNames from "classnames";
+import { Song } from "../shared/universal/types";
 
 export interface CollageProps {
   size: "128" | "256";
-  objects: ThumbnailObject[] | ThumbnailObject | undefined;
-  type: ThumbnailType;
+  songs: Song[] | Song | undefined;
   className?: string;
   style?: CSSProperties;
   setAverageColor?: (color: string) => void;
 }
 
-export const Collage = ({
-  setAverageColor,
-  size,
-  objects,
-  className,
-  type,
-  style,
-}: CollageProps) => {
-  // Remove any objects that don't have artwork, limit to 4 pieces of art, and only show unique
+export const Collage = ({ setAverageColor, size, songs, className, style }: CollageProps) => {
+  // Remove any songs that don't have artwork, limit to 4 pieces of art, and only show unique
   const filtered = useMemo(() => {
-    if (!objects) return [];
-    let local = objects;
+    if (!songs) return [];
+    let local = songs;
     if (!Array.isArray(local)) local = [local];
     const defined = local.filter((data) => data?.artwork);
 
     const seen = new Set<string>();
-    const unique: typeof objects = [];
-    for (const object of defined) {
+    const unique: typeof songs = [];
+    for (const song of defined) {
       if (unique.length >= 4) {
         break;
       }
 
-      const artwork = object.artwork;
+      const artwork = song.artwork;
       if (!artwork || seen.has(artwork.hash)) continue;
       seen.add(artwork.hash);
-      unique.push(object);
+      unique.push(song);
     }
 
     return unique;
-  }, [objects]);
+  }, [songs]);
 
   const individualImageSize: ThumbnailSize = useMemo(
     () => (filtered.length <= 1 ? size : size === "128" ? "64" : "128"),
     [size, filtered.length],
   );
 
-  // If 1 or 0 objects have artwork, show a regular thumbnail
+  // If 1 or 0 songs have artwork, show a regular thumbnail
   if (filtered.length <= 1) {
     return (
       <Thumbnail
-        type={type}
         className={className}
-        object={filtered[0]}
+        song={filtered[0]}
         size={size}
         style={style}
         setAverageColor={setAverageColor}
@@ -66,34 +58,30 @@ export const Collage = ({
   return (
     <div className={classNames("relative", className)} style={style}>
       <Thumbnail
-        type={type}
         className="absolute left-0 top-0"
         style={{ width: "50%", height: "50%" }}
-        object={filtered[0]}
+        song={filtered[0]}
         size={individualImageSize}
         setAverageColor={setAverageColor}
       />
       <Thumbnail
-        type={type}
         className="absolute right-0 top-0"
         style={{ width: "50%", height: "50%" }}
-        object={filtered[1]}
+        song={filtered[1]}
         size={individualImageSize}
         setAverageColor={setAverageColor}
       />
       <Thumbnail
-        type={type}
         className="absolute left-0 bottom-0"
         style={{ width: "50%", height: "50%" }}
-        object={filtered[2]}
+        song={filtered[2]}
         size={individualImageSize}
         setAverageColor={setAverageColor}
       />
       <Thumbnail
-        type={type}
         className="absolute right-0 bottom-0"
         style={{ width: "50%", height: "50%" }}
-        object={filtered[3]}
+        song={filtered[3]}
         size={individualImageSize}
         setAverageColor={setAverageColor}
       />

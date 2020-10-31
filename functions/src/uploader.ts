@@ -10,10 +10,10 @@ import { ObjectMetadata } from "firebase-functions/lib/providers/storage";
 import { Song, UserDataType, Artwork, UploadAction } from "./shared/universal/types";
 import { admin } from "./admin";
 import { env } from "./env";
-import { createAlbumId } from "./shared/universal/utils";
-import { adminDb, md5Hash } from "./shared/node/utils";
+import { adminDb, md5Hash, serverTimestamp } from "./shared/node/utils";
 import { wrapAndReport, setSentryUser, Sentry } from "./sentry";
 import * as uuid from "uuid";
+import { removedUndefinedValues } from "./shared/universal/utils";
 
 // This is where the max songs limit is set
 // To update this in production just update this value and
@@ -157,7 +157,18 @@ export const generateThumbs = f.storage.object().onFinalize(
       // Upload to GCS
       const destination = path.join(path.dirname(object.name), thumbName);
       console.info(`Uploading "${thumbPath}" to "${destination}"!`);
-      return bucket.upload(thumbPath, { destination });
+      return bucket.upload(thumbPath, {
+        destination,
+        metadata: {
+          // Set max-age to one day
+          // Eventually, we can increase this when we are more confident
+          // 1 day in seconds = 86400
+          // 1 week in seconds = 604800
+          // 1 month in seconds = 2629000
+          // 1 year in seconds = 31536000 (effectively infinite on internet time)
+          cacheControl: "private, max-age=86400",
+        },
+      });
     });
 
     return disposeAndUnwrap(
@@ -210,16 +221,18 @@ export const createSong = f.storage.object().onFinalize(
     const actionId = uuid.v4();
     const action = adminDb(userId).action(actionId);
 
-    await action.set({
-      id: actionId,
-      type: "upload",
-      fileName: path.basename(object.name),
-      songId: songId,
-      status: "pending",
-      updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
-      createdAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
-      message: undefined,
-    });
+    await action.set(
+      removedUndefinedValues({
+        id: actionId,
+        type: "upload",
+        fileName: path.basename(object.name),
+        songId: songId,
+        status: "pending",
+        updatedAt: serverTimestamp(),
+        createdAt: serverTimestamp(),
+        message: undefined,
+      }),
+    );
 
     const processError = async (error: ProcessingError) => {
       dispose();
@@ -227,7 +240,7 @@ export const createSong = f.storage.object().onFinalize(
       const update: Partial<UploadAction> = {
         // type is either "cancelled" or "error"
         status: error.type,
-        updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+        updatedAt: serverTimestamp(),
         message: error.message,
       };
 
@@ -256,7 +269,7 @@ export const createSong = f.storage.object().onFinalize(
 
       const update: Partial<UploadAction> = {
         status: "success",
-        updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+        updatedAt: serverTimestamp(),
       };
 
       await action.update(update);
@@ -277,8 +290,16 @@ export const createSong = f.storage.object().onFinalize(
     if (metadata.isErr()) return processError(metadata.error);
 
     try {
-      const userRef = db.collection("user_data").doc(userId);
-      const newSongRef = userRef.collection("songs").doc(songId);
+      const bucket = gcs.bucket(object.bucket);
+      const songFile = bucket.file(object.name);
+      await songFile.setMetadata({
+        // FIXME increase this value eventually
+        // There should be no reason we can't cache forever??? but also is that a bad idea??
+        cacheControl: "private, max-age=86400",
+      });
+
+      const userData = adminDb(userId);
+      const newSongRef = userData.song(songId);
 
       const duration = metadata.value.format.duration;
       if (duration === undefined) {
@@ -308,8 +329,7 @@ export const createSong = f.storage.object().onFinalize(
             message: `Duplicate detected`,
           });
 
-        const userData = adminDb(userId);
-        const res = await transaction.get(userRef);
+        const res = await transaction.get(userData.doc());
 
         const result = UserDataType.validate(res.data() ?? {});
         if (!result.success) {
@@ -368,7 +388,6 @@ export const createSong = f.storage.object().onFinalize(
             });
           }
 
-          const bucket = gcs.bucket(object.bucket);
           artwork = { hash: hashResult.value, type };
           const destination = `${userId}/song_artwork/${artwork.hash}/artwork.${type}`;
           const [artworkExists] = await bucket.file(destination).exists();
@@ -376,65 +395,24 @@ export const createSong = f.storage.object().onFinalize(
             console.info(`Artwork for song already exists: "${destination}"`);
           } else {
             console.info(`Uploading artwork from "${imageFilePath}" to "${destination}"!`);
-            await bucket.upload(imageFilePath, { destination });
+            await bucket.upload(imageFilePath, {
+              destination,
+            });
           }
-        }
-
-        const albumId = createAlbumId({
-          albumName: metadata.value.common.album,
-          albumArtist: metadata.value.common.albumartist,
-          artist: metadata.value.common.artist,
-        });
-
-        // reads must come before writes in a snapshot so the following reads are grouped together
-        const albumSnap = await transaction.get(userData.album(albumId));
-
-        const artistSnap = metadata.value.common.artist
-          ? await transaction.get(userData.artist(metadata.value.common.artist))
-          : undefined;
-
-        // Note that mutations begin here!
-        // No more reading beyond this point
-        let album = albumSnap.data();
-        if (!album) {
-          album = {
-            id: albumId,
-            album: metadata.value.common.album,
-            albumArtist: metadata.value.common.albumartist,
-            // If this is a new album, initialize the artwork hash the the hash
-            // of the artwork for this song. Note that this value may be undefined.
-            artwork,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
-            deleted: false,
-          };
-
-          transaction.set(albumSnap.ref, album);
-        }
-
-        let artist = artistSnap?.data();
-        if (!artist && artistSnap && metadata.value.common.artist) {
-          artist = {
-            id: metadata.value.common.artist,
-            name: metadata.value.common.artist,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
-            deleted: false,
-          };
-          transaction.set(artistSnap.ref, artist);
         }
 
         const fileName = path.basename(object.name);
         const defaultTitle = fileName.slice(0, fileName.lastIndexOf("."));
 
         // Now we can create the song!
-        const newSong: Song = {
+        const newSong: Song = removedUndefinedValues({
           fileName,
           id: songId,
           downloadUrl: undefined,
           title: metadata.value.common.title ?? defaultTitle,
-          artist: artist?.name,
-          albumName: album?.album,
-          albumArtist: album?.albumArtist,
-          albumId: album?.id,
+          artist: metadata.value.common.artist,
+          albumName: metadata.value.common.album,
+          albumArtist: metadata.value.common.albumartist,
           year: metadata.value.common.year,
           liked: false,
           whenLiked: undefined,
@@ -447,13 +425,13 @@ export const createSong = f.storage.object().onFinalize(
           // convert seconds -> milliseconds
           duration: Math.round(duration * 1000),
           createdAt: admin.firestore.FieldValue.serverTimestamp() as admin.firestore.Timestamp,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp() as firebase.firestore.Timestamp,
+          updatedAt: serverTimestamp(),
           deleted: false,
           hash: songHash.value,
-        };
+        });
 
         // Update the user information (ie. the # of songs)
-        transaction.set(userRef, result.value);
+        transaction.set(userData.doc(), result.value);
 
         // Finally create the new song
         transaction.set(newSongRef, newSong);

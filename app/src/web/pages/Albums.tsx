@@ -1,19 +1,14 @@
 import React from "react";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
-import { useCoolAlbums } from "../../db";
 import { EmptyState } from "../../components/EmptyState";
 import { RiAlbumLine } from "react-icons/ri";
-import { ThumbnailCardGrid } from "../../components/ThumbnailCardGrid";
-import { getDisplayAlbumAttributes } from "../../shared/universal/utils";
-import { goToAlbum } from "../../routes";
-import { useRouter } from "@graywolfai/react-tiniest-router";
-import { useAlbumSongsLookup } from "../../queries/album";
+import { navigateTo } from "../../routes";
 import { useQueue } from "../../queue";
+import { useAlbums } from "../../queries/album";
+import { ThumbnailCardGrid } from "../../components/ThumbnailCardGrid";
 
 export const Albums = () => {
-  const albums = useCoolAlbums();
-  const { goTo } = useRouter();
-  const lookup = useAlbumSongsLookup();
+  const albums = useAlbums();
   const { setQueue } = useQueue();
 
   if (!albums) {
@@ -25,13 +20,12 @@ export const Albums = () => {
       {albums.length > 0 ? (
         <ThumbnailCardGrid
           items={albums}
-          lookup={lookup}
-          getTitle={(album) => getDisplayAlbumAttributes(album.id).name}
-          getSubtitle={(album) => getDisplayAlbumAttributes(album.id).albumArtist}
-          onClick={(album) => goToAlbum(goTo, album.id)}
+          getTitle={(album) => album.album || "Unknown Album"}
+          getSubtitle={(album) => album.artist || "Unknown Artist"}
+          onClick={(album) => navigateTo("album", album)}
           play={(album) =>
             setQueue({
-              songs: lookup[album.id],
+              songs: album.songs,
               source: {
                 type: "album",
                 id: album.id,

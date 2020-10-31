@@ -1,21 +1,19 @@
 import React from "react";
-import { useRouter } from "@graywolfai/react-tiniest-router";
 import { SongsOverview } from "../sections/SongsOverview";
 import { useGeneratedTypeSongs } from "../../queries/songs";
-import { GeneratedType, generatedTypeToName } from "../../queue";
+import { generatedTypeToName } from "../../queue";
+import { useNavigator } from "../../routes";
 
 export const Generated = () => {
-  const { params } = useRouter();
-  // FIXME validation
-  const { generatedType } = params as { generatedType: GeneratedType };
-  const songs = useGeneratedTypeSongs(generatedType);
+  const { params } = useNavigator("generated");
+  const songs = useGeneratedTypeSongs(params.generatedType);
 
   return (
     <SongsOverview
       songs={songs}
-      title={generatedTypeToName[generatedType]}
-      // includeDateAdded={generatedType === "recently-added"}
-      source={{ type: "generated", id: generatedType }}
+      title={generatedTypeToName[params.generatedType]}
+      // includeDateAdded={params.generatedType === "recently-added"}
+      source={{ type: "generated", id: params.generatedType }}
     />
   );
 };

@@ -1,26 +1,31 @@
 import React, { useMemo } from "react";
-import { useRouter } from "@graywolfai/react-tiniest-router";
-import type { RouteType, RouterStateType } from "@graywolfai/react-tiniest-router";
+import { RouteType, RouterStateType } from "@graywolfai/react-tiniest-router";
 import classNames from "classnames";
 import { link } from "../classes";
+import { navigateTo, NavigatorRoutes, routes } from "../routes";
 
-export interface LinkProps {
+export interface LinkProps<K extends keyof NavigatorRoutes> {
   className?: string;
-  route: RouteType;
+  route: K;
   label?: React.ReactNode;
-  queryParams?: RouterStateType["queryParams"];
-  params?: RouterStateType["params"];
+  queryParams?: NavigatorRoutes[K]["queryParams"];
+  params?: NavigatorRoutes[K]["params"];
   onGo?: () => void;
 }
 
-export const Link = ({ route, label, className, params, queryParams, onGo }: LinkProps) => {
-  const { goTo } = useRouter();
-
+export const Link = function <K extends keyof NavigatorRoutes>({
+  route,
+  label,
+  className,
+  params,
+  queryParams,
+  onGo,
+}: LinkProps<K>) {
   const href = useMemo(() => {
-    let href = route.path;
+    let href = routes[route].path;
     Object.entries(params ?? {}).forEach(([key, value]) => {
       // the ?? is just to satisfy
-      href = href.replace(`:${key}`, typeof value === "string" ? value : value.join("/"));
+      href = href.replace(`:${key}`, value);
     });
 
     if (queryParams) {
@@ -32,7 +37,7 @@ export const Link = ({ route, label, className, params, queryParams, onGo }: Lin
     }
 
     return href;
-  }, [route.path, params, queryParams]);
+  }, [route, params, queryParams]);
 
   return (
     <a
@@ -41,7 +46,7 @@ export const Link = ({ route, label, className, params, queryParams, onGo }: Lin
       onClick={(e) => {
         if (!e.ctrlKey && !e.metaKey) {
           e.preventDefault();
-          goTo(route, params, queryParams);
+          navigateTo(route, params, queryParams);
           onGo && onGo();
         }
 

@@ -1,27 +1,25 @@
 import React, { useState } from "react";
 import { CardPage } from "../../components/CardPage";
 import { Link } from "../../components/Link";
-import { routes } from "../../routes";
+import { routes, useNavigator } from "../../routes";
 import { Input } from "../../components/Input";
-import { useRouter } from "@graywolfai/react-tiniest-router";
 import { BlockAlert } from "../../components/BlockAlert";
 import { Button } from "../../components/Button";
 import { betaBackend, getOrUnknownError } from "../../backend";
 import firebase from "firebase/app";
 
 export const Invite = () => {
-  const { params } = useRouter();
+  const { params } = useNavigator("invite");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const { invite } = params as { invite: string };
 
   const createAccount = async () => {
     setLoading(true);
     const response = await getOrUnknownError(() =>
-      betaBackend().post("/create-account", {
-        token: invite,
+      betaBackend.post("/create-account", {
+        token: params.invite,
         password: password,
       }),
     );
@@ -30,7 +28,7 @@ export const Invite = () => {
 
     const data = response.data;
     if (data.type === "success") {
-      firebase.analytics().logEvent("sign_up", { method: "email", invite });
+      firebase.analytics().logEvent("sign_up", { method: "email", invite: params.invite });
       setSuccess(true);
       return;
     }
@@ -60,7 +58,7 @@ export const Invite = () => {
       footer={
         <div className="space-x-2 flex justify-center items-center h-full">
           <span>{"Already have an account?"}</span>
-          <Link route={routes.login} label="Login" />
+          <Link route="login" label="Login" />
         </div>
       }
     >
@@ -72,8 +70,8 @@ export const Invite = () => {
       {success ? (
         <BlockAlert type="success">
           Your account has been successfully created :) You should now be able to{" "}
-          <Link route={routes.login} label="login" />. Also, have you seen our{" "}
-          <Link label="beta guide" route={routes["beta-guide"]} /> yet?
+          <Link route="login" label="login" />. Also, have you seen our{" "}
+          <Link label="beta guide" route="beta-guide" /> yet?
         </BlockAlert>
       ) : (
         <>

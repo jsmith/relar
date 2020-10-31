@@ -15,6 +15,7 @@ import { LikedIcon } from "../../components/LikedIcon";
 import { useLikeSong } from "../../queries/songs";
 import { SongTimeSlider } from "../../sections/SongTimeSlider";
 import { useQueue } from "../../queue";
+import { Link } from "../../components/Link";
 
 export interface PlayerProps {
   toggleQueue: () => void;
@@ -42,21 +43,22 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
     <div className="h-20 bg-gray-800 flex items-center px-4 z-10" ref={refFunc}>
       <div className="flex items-center space-x-3" style={{ width: "30%" }}>
         {songInfo?.song && (
-          <Thumbnail
-            className="w-12 h-12 flex-shrink-0"
-            object={songInfo?.song}
-            type="song"
-            size="64"
-          />
+          <Thumbnail className="w-12 h-12 flex-shrink-0" song={songInfo?.song} size="64" />
         )}
         {songInfo?.song && (
           <div className="min-w-0">
             <div className="text-gray-100 text-sm clamp-2" title={songInfo.song.title}>
               {songInfo.song.title}
             </div>
-            <div className="text-gray-300 text-xs truncate" title={songInfo.song.artist}>
-              {songInfo.song.artist}
-            </div>
+            {songInfo.song.artist && (
+              <Link
+                className="text-gray-300 text-xs truncate hover:underline focus:underline focus:outline-none"
+                // title={songInfo.song.artist}
+                route="artist"
+                params={{ artistName: songInfo.song.artist }}
+                label={songInfo.song.artist}
+              />
+            )}
           </div>
         )}
         {songInfo?.song && (

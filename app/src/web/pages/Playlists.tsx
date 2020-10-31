@@ -1,20 +1,16 @@
 import React from "react";
 import { LoadingSpinner } from "../../components/LoadingSpinner";
-import { useCoolPlaylists } from "../../db";
 import { EmptyState } from "../../components/EmptyState";
 import { RiPlayList2Fill } from "react-icons/ri";
 import { MdMoreVert } from "react-icons/md";
 import { ThumbnailCardGrid } from "../../components/ThumbnailCardGrid";
-import { usePlaylistSongsLookup } from "../../queries/playlists";
 import { songsCount } from "../../utils";
-import { useRouter } from "@graywolfai/react-tiniest-router";
-import { routes } from "../../routes";
+import { navigateTo } from "../../routes";
 import { useQueue } from "../../queue";
+import { usePlaylists } from "../../queries/playlists";
 
 export const Playlists = () => {
-  const playlists = useCoolPlaylists();
-  const lookup = usePlaylistSongsLookup();
-  const { goTo } = useRouter();
+  const playlists = usePlaylists();
   const { setQueue } = useQueue();
 
   if (!playlists) {
@@ -26,13 +22,12 @@ export const Playlists = () => {
       {playlists.length > 0 ? (
         <ThumbnailCardGrid
           items={playlists}
-          lookup={lookup}
           getTitle={(playlist) => playlist.name}
           getSubtitle={(playlist) => songsCount(playlist.songs?.length)}
-          onClick={(playlist) => goTo(routes.playlist, { playlistId: playlist.id })}
+          onClick={(playlist) => navigateTo("playlist", { playlistId: playlist.id })}
           play={(playlist) =>
             setQueue({
-              songs: lookup[playlist.id],
+              songs: playlist.songs ?? [],
               source: {
                 type: "playlist",
                 id: playlist.id,

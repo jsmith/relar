@@ -1,28 +1,25 @@
-import { useRouter } from "@graywolfai/react-tiniest-router";
 import React from "react";
 import { ListContainer, ListContainerRowProps } from "../components/ListContainer";
-import { goToAlbum } from "../../routes";
+import { navigateTo } from "../../routes";
 import { MusicListItem } from "../sections/MusicListItem";
-import { Album } from "../../shared/universal/types";
-import { useCoolAlbums } from "../../db";
+import { Album, useAlbums } from "../../queries/album";
 
-const AlbumRow = ({ item: album, mode }: ListContainerRowProps<Album>) => {
-  const { goTo } = useRouter();
-
+const AlbumRow = ({ item: album, mode, style }: ListContainerRowProps<Album>) => {
   return (
     <MusicListItem
-      title={album.album ? album.album : "Unknown Album"}
-      subTitle={album.albumArtist ? album.albumArtist : "Unknown Artist"}
-      object={album}
-      type="album"
-      onClick={() => goToAlbum(goTo, album.id)}
+      style={style}
+      title={album.album || "Unknown Album"}
+      subTitle={album.album || "Unknown Artist"}
+      // FIXME is this good for now
+      song={album.songs.filter((song) => !!song.artwork)[0]}
+      onClick={() => navigateTo("album", { album: album.album, artist: album.artist })}
       mode={mode}
     />
   );
 };
 
 export const Albums = () => {
-  const albums = useCoolAlbums();
+  const albums = useAlbums();
   return (
     <ListContainer
       height={73}

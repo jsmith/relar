@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "../components/Link";
 import { LogoIcon } from "../components/LogoIcon";
-import { routes } from "../routes";
 
 export const Footer = () => {
   return (
@@ -33,11 +32,11 @@ export const Footer = () => {
             Roadmap
           </a>
           <span>•</span>
-          <Link className="text-xs" route={routes["release-notes"]} label="Release Notes" />
+          <Link className="text-xs" route="release-notes" label="Release Notes" />
           <span>•</span>
-          <Link className="text-xs" route={routes.privacy} label="Privacy" />
+          <Link className="text-xs" route="privacy" label="Privacy" />
           <span>•</span>
-          <Link className="text-xs" route={routes.terms} label="Terms" />
+          <Link className="text-xs" route="terms" label="Terms" />
           <span>•</span>
           <a href="mailto:contact@relar.app" className="text-xs">
             Contact

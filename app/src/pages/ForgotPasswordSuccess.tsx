@@ -1,19 +1,18 @@
 import React, { useEffect } from "react";
-import { useRouter } from "@graywolfai/react-tiniest-router";
 import { CardPage } from "../components/CardPage";
-import { routes } from "../routes";
+import { navigateTo, routes, useNavigator } from "../routes";
 import * as Sentry from "@sentry/browser";
 import { sendPasswordResetEmail } from "../auth";
 import { MdEmail } from "react-icons/md";
 import { LinkButton } from "../components/LinkButton";
 
 export const ForgotPasswordSuccess = () => {
-  const { goTo, queryParams } = useRouter();
+  const { queryParams } = useNavigator("forgotPasswordSuccess");
   const { email } = queryParams as { email?: string };
 
   useEffect(() => {
     if (!email) {
-      goTo(routes.login);
+      navigateTo("login");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [email]);

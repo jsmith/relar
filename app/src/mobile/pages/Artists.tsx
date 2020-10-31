@@ -1,31 +1,25 @@
-import { useRouter } from "@graywolfai/react-tiniest-router";
 import React, { useMemo } from "react";
 import { ListContainer, ListContainerRowProps } from "../components/ListContainer";
-import { getArtistRouteParams, routes } from "../../routes";
+import { getArtistRouteParams, navigateTo } from "../../routes";
 import { MusicListItem } from "../sections/MusicListItem";
-import { Artist } from "../../shared/universal/types";
-import { useArtistSongs } from "../../queries/artist";
-import { useCoolArtists } from "../../db";
+import { Artist, useArtists } from "../../queries/artist";
 
-const ArtistRow = ({ item: artist, mode }: ListContainerRowProps<Artist>) => {
-  const { goTo } = useRouter();
-  const songs = useArtistSongs(artist.name);
-  // FIXME this is fine for now
-  const song = useMemo(() => songs.find((song) => !!song.artwork), [songs]);
+const ArtistRow = ({ item: artist, mode, style }: ListContainerRowProps<Artist>) => {
+  const song = useMemo(() => artist.songs.find((song) => !!song.artwork), [artist.songs]);
 
   return (
     <MusicListItem
+      style={style}
       title={artist.name}
-      object={song}
-      type="song"
-      onClick={() => goTo(routes.artist, getArtistRouteParams(artist.name))}
+      song={song}
+      onClick={() => navigateTo("artist", getArtistRouteParams(artist.name))}
       mode={mode}
     />
   );
 };
 
 export const Artists = () => {
-  const artists = useCoolArtists();
+  const artists = useArtists();
   return (
     <ListContainer
       height={73}

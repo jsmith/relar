@@ -32,13 +32,11 @@ import { QueueProvider } from "../queue";
 import { ConfirmActionProvider } from "../confirm-actions";
 import { ConfirmPasswordProvider } from "../confirm-password";
 import { ModalProvider } from "react-modal-hook";
-import { setBaseUrls } from "../backend";
 import "../firebase";
 import "../tailwind.css";
 import "../common.css";
 import SnackbarProvider from "react-simple-snackbar";
 
-setBaseUrls(env);
 ReactDOM.render(
   <React.StrictMode>
     <UserProvider>

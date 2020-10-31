@@ -1,26 +1,24 @@
+// Using small event library since creating your own event lib is actually error prone
+import mitt from "mitt";
+
 export interface Events {
   [name: string]: any[];
 }
 
 export const createEmitter = <E extends Events>() => {
-  const listeners: Partial<{ [K in keyof E]: Array<(...args: E[K]) => void> }> = {};
+  const emitter = mitt();
 
   return {
-    on: <K extends keyof E>(key: K, listener: (...args: E[K]) => void): (() => void) => {
-      if (!listeners[key]) {
-        listeners[key] = [];
-      }
+    on: <K extends keyof E & string>(key: K, listener: (...args: E[K]) => void): (() => void) => {
+      const wrapper = (args: any) => {
+        listener(...args);
+      };
+      emitter.on(key, wrapper);
 
-      listeners[key]!.push(listener);
-
-      // Ok so I was originally using splice but for some reason that was causing unexpected bugs
-      // Soooo, I am now using delete :)
-      return () => delete listeners[key]![listeners[key]!.indexOf(listener)];
+      return () => emitter.off(key, wrapper);
     },
-    emit: <K extends keyof E>(key: K, ...args: E[K]) => {
-      if (listeners[key]) {
-        listeners[key]!.forEach((listener) => listener(...args));
-      }
+    emit: <K extends keyof E & string>(key: K, ...args: E[K]) => {
+      emitter.emit(key, args);
     },
   };
 };

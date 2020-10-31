@@ -44,6 +44,9 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
         case "artist":
         case "playlist":
           return songInfo.source.sourceHumanName;
+        case "genre":
+          // The id is just the name of the genre
+          return songInfo.source.id;
         case "generated":
           return generatedTypeToName[songInfo.source.id];
         case "library":

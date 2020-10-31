@@ -1,21 +1,18 @@
 import React from "react";
-import { useAlbumSongs, useAlbum } from "../../queries/album";
+import { useAlbum } from "../../queries/album";
 import { SongsOverview } from "../sections/SongsOverview";
-import { useAlbumAttributes } from "../../utils";
-import { useAlbumIdFromParams } from "../../routes";
+import { useAlbumParams } from "../../routes";
 
 export const AlbumOverview = () => {
-  const albumId = useAlbumIdFromParams();
-  const album = useAlbum(albumId);
-  const songs = useAlbumSongs(albumId);
-  const { name, artist } = useAlbumAttributes(album);
+  const params = useAlbumParams();
+  const album = useAlbum(params);
 
   return (
     <SongsOverview
-      songs={songs}
-      title={name}
-      source={{ type: "album", id: albumId, sourceHumanName: album?.album ?? "" }}
-      infoPoints={[artist]}
+      songs={album.songs}
+      title={album.album || "Unknown Album"}
+      source={{ type: "album", id: album.id, sourceHumanName: album.album || "Unknown Albums" }}
+      infoPoints={[album.artist || "Unknown Artist"]}
     />
   );
 };

@@ -1,33 +1,36 @@
-import { useRouter } from "@graywolfai/react-tiniest-router";
 import classNames from "classnames";
 import React from "react";
 import { MdShuffle } from "react-icons/md";
 import { bgApp } from "../../classes";
 import { useCoolSongs } from "../../db";
 import { useQueue } from "../../queue";
-import { routes } from "../../routes";
+import { navigateTo, useNavigator } from "../../routes";
 
 const libraryLinks = [
   {
     label: "Songs",
-    route: routes.songs,
+    route: "songs",
   },
   {
     label: "Playlists",
-    route: routes.playlists,
+    route: "playlists",
   },
   {
     label: "Artists",
-    route: routes.artists,
+    route: "artists",
   },
   {
     label: "Albums",
-    route: routes.albums,
+    route: "albums",
   },
-];
+  {
+    label: "Genres",
+    route: "genres",
+  },
+] as const;
 
 export const LibraryHeader = () => {
-  const { isRoute, goTo } = useRouter();
+  const { routeId } = useNavigator("home"); // "home" is because the arg is required
   const songs = useCoolSongs();
   const { setQueue, setShuffle } = useQueue();
 
@@ -40,9 +43,9 @@ export const LibraryHeader = () => {
             className={classNames(
               // FIXME bold
               "my-2 border-gray-600 cursor-pointer hover:text-gray-800",
-              isRoute(route) ? "border-b-2 text-gray-700" : " text-gray-600",
+              route === routeId ? "border-b-2 text-gray-700" : " text-gray-600",
             )}
-            onClick={() => goTo(route)}
+            onClick={() => navigateTo(route)}
           >
             {label}
           </li>
