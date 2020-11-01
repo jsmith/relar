@@ -139,6 +139,16 @@ const changelog = create([
       "Automatically scrolling to the playing song",
     ],
   },
+  {
+    version: "0.11.0",
+    date: "November 1 2020",
+    features: [
+      "Added the ability to search songs, artist and albums",
+      "Added several new keyboard shortcuts",
+      "Added keyboard shortcut summary page (see account dropdown)",
+    ],
+    fixes: ["Tab navigation bug fix"],
+  },
 ]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (

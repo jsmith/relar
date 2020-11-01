@@ -22,30 +22,15 @@ import { LogoNText } from "../components/LogoNText";
 import { useMetadataEditor } from "../sections/MetadataEditor";
 import { usePlaylistAddModal } from "./sections/AddToPlaylistModal";
 import { LibraryHeader } from "./sections/LibraryHeader";
+import { useModal } from "react-modal-hook";
+import { SearchModal } from "../sections/SearchModal";
+import { useShortcuts } from "../shortcuts";
+import { New } from "../components/New";
 
 export interface SideBarItem {
   label: string;
   onClick: () => void;
 }
-
-const sideLinks = [
-  {
-    label: "Home",
-    icon: FaMusic,
-    route: "home",
-  },
-  {
-    label: "Search",
-    icon: MdSearch,
-    route: "search",
-  },
-  {
-    // FIXME save most recent inner tab
-    label: "Library",
-    icon: MdLibraryMusic,
-    route: "songs",
-  },
-] as const;
 
 export const App = (_: React.Props<{}>) => {
   const { isRoute, routeId } = useNavigator("home"); // "home" is just because something is required
@@ -63,6 +48,12 @@ export const App = (_: React.Props<{}>) => {
   useStartupHooks();
   useMetadataEditor();
   usePlaylistAddModal();
+  const [open, close] = useModal(() => <SearchModal onExit={close} />);
+
+  useShortcuts({
+    openSearch: open,
+    toggleQueue: () => setQueueDisplay((value) => !value),
+  });
 
   const closeQueue = useCallback(() => setQueueDisplay(false), []);
 
@@ -76,6 +67,31 @@ export const App = (_: React.Props<{}>) => {
     // If we don't do this we will still try to load components which will break things
     return <LoadingSpinner className="h-screen" />;
   }
+
+  const sideLinks = [
+    {
+      label: "Home",
+      new: false,
+      icon: FaMusic,
+      type: "link",
+      route: "home",
+    },
+    {
+      label: "Search",
+      new: true,
+      icon: MdSearch,
+      type: "click",
+      onClick: () => open(),
+    },
+    {
+      // FIXME save most recent inner tab
+      label: "Library",
+      new: false,
+      icon: MdLibraryMusic,
+      type: "link",
+      route: "songs",
+    },
+  ] as const;
 
   const content =
     route?.sidebar && !isMobile() ? (
@@ -91,19 +107,26 @@ export const App = (_: React.Props<{}>) => {
               <div className="h-full bg-gray-900 w-56">
                 <nav>
                   <ul>
-                    {sideLinks.map(({ icon: Icon, route, label }) => (
-                      <li
+                    {sideLinks.map((link) => (
+                      <button
                         tabIndex={0}
                         className={classNames(
                           "flex py-2 px-5 items-center hover:bg-gray-800 cursor-pointer focus:outline-none focus:bg-gray-700",
-                          route === routeId ? "bg-gray-800" : undefined,
+                          "w-full",
+                          link.type === "link" && link.route === routeId
+                            ? "bg-gray-800"
+                            : undefined,
                         )}
-                        onClick={() => navigateTo(route)}
-                        key={label}
+                        onClick={() =>
+                          link.type === "link" ? navigateTo(link.route) : link.onClick()
+                        }
+                        key={link.label}
                       >
-                        <Icon className="w-6 h-6" />
-                        <span className="ml-4">{label}</span>
-                      </li>
+                        <link.icon className="w-6 h-6" />
+                        <span className="ml-4">{link.label}</span>
+                        <div className="flex-grow" />
+                        {link.new && <New />}
+                      </button>
                     ))}
                   </ul>
                 </nav>
@@ -180,7 +203,7 @@ export const App = (_: React.Props<{}>) => {
         )}
         <div className="flex-grow" />
         {user ? (
-          <AccountDropdown className="z-10" />
+          <AccountDropdown />
         ) : (
           <div className="flex space-x-2 items-center sm:text-base text-sm">
             <Link

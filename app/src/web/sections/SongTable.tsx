@@ -208,7 +208,6 @@ export const SongTableRow = <T extends SongInfo>({
 
   return (
     <div
-      // h-full to take up entire parent (set by recycle view)
       className="group hover:bg-gray-300 text-gray-700 text-sm flex items-center h-full"
       onClick={() => setSong(song)}
       style={style}
@@ -236,6 +235,7 @@ export const SongTableRow = <T extends SongInfo>({
                 className="focus:opacity-100 group-hover:opacity-100 opacity-0 bg-transparent z-10 text-gray-800 focus:outline-none"
                 onFocus={() => setFocusedPlay(true)}
                 onBlur={() => setFocusedPlay(false)}
+                // This click event is handled by the <div>
                 onClick={() => {}}
               >
                 <MdPlayArrow className="w-8 h-8" />

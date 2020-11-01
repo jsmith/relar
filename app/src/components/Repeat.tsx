@@ -4,12 +4,12 @@ import classNames from "classnames";
 import { MdRepeatOne, MdRepeat } from "react-icons/md";
 
 export interface RepeatProps {
-  setMode: (mode: QueuePlayMode) => void;
+  toggleMode: () => void;
   mode: QueuePlayMode;
   iconClassName?: string;
 }
 
-export const Repeat = ({ iconClassName, setMode, mode }: RepeatProps) => {
+export const Repeat = ({ iconClassName, toggleMode, mode }: RepeatProps) => {
   return (
     <button
       title={
@@ -22,9 +22,7 @@ export const Repeat = ({ iconClassName, setMode, mode }: RepeatProps) => {
       className={classNames(
         mode === "none" ? "text-gray-300 hover:text-gray-100" : "text-purple-400",
       )}
-      onClick={() =>
-        setMode(mode === "none" ? "repeat" : mode === "repeat" ? "repeat-one" : "none")
-      }
+      onClick={toggleMode}
     >
       {mode === "repeat-one" ? (
         <MdRepeatOne className={iconClassName} />
