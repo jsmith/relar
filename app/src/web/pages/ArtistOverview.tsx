@@ -9,7 +9,7 @@ export const ArtistOverview = () => {
 
   return (
     <SongsOverview
-      songs={artist.songs}
+      songs={artist?.songs}
       title={artistName}
       source={{ type: "artist", id: artistName, sourceHumanName: artistName }}
     />

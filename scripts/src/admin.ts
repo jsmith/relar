@@ -4,6 +4,7 @@ import * as serviceAccountStaging from "../../serviceAccountKey.relar-staging.js
 import * as path from "path";
 import * as os from "os";
 import * as fs from "fs";
+import { ensureDirExists } from "./utils";
 
 const argv = process.argv.slice(0);
 let environment: "staging" | "production" = "staging";
@@ -29,12 +30,10 @@ if (index !== -1) {
   });
 }
 
-const directory = path.join(os.homedir(), ".relar", `${environment}_songs`);
+const directory = path.join(os.homedir(), ".relar", environment);
+const songsDirectory = path.join(directory, "songs");
+const artworkDirectory = path.join(directory, "artwork");
+ensureDirExists(songsDirectory);
+ensureDirExists(artworkDirectory);
 
-try {
-  fs.mkdirSync(directory, { recursive: true });
-} catch {
-  // Ignore exists
-}
-
-export { admin, argv, environment, directory };
+export { admin, argv, environment, songsDirectory, artworkDirectory };

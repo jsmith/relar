@@ -33,8 +33,6 @@ export const useArtists = () => {
   ]);
 };
 
-export function useArtist(artistName: string): Artist;
-export function useArtist(artistName: string | undefined): Artist | undefined;
 export function useArtist(artistName?: string) {
   const lookup = useArtistLookup();
   return useMemo(() => (artistName ? lookup[artistName] : undefined), [artistName, lookup]);
@@ -43,7 +41,8 @@ export function useArtist(artistName?: string) {
 export const usePopularArtistSongs = (artistName: string) => {
   const artist = useArtist(artistName);
 
-  return useMemo(() => artist.songs.sort((a, b) => (a.played ?? 0) - (b.played ?? 0)).slice(0, 5), [
-    artist,
-  ]);
+  return useMemo(
+    () => artist?.songs.sort((a, b) => (a.played ?? 0) - (b.played ?? 0)).slice(0, 5),
+    [artist],
+  );
 };

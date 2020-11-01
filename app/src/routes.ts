@@ -11,6 +11,7 @@ const ReleaseNotes = React.lazy(() => import("./pages/ReleaseNotes"));
 const BetaGuide = React.lazy(() => import("./pages/BetaGuide"));
 const Login = React.lazy(() => import("./pages/Login"));
 const Settings = React.lazy(() => import("./mobile/pages/Settings"));
+// FIXME this is def not what we want to show on mobile
 const Search = React.lazy(() => import("./pages/Search"));
 const Signup = React.lazy(() => import("./pages/Signup"));
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
@@ -136,7 +137,9 @@ export type NavigatorRoutes = {
   };
   search: {
     params: {};
-    queryParams: {};
+    queryParams: {
+      query: string;
+    };
   };
   songs: {
     params: {};
@@ -509,9 +512,16 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
 });
 
 export const getAlbumRouteParams = (song: Song) => {
+  return getAlbumParams({
+    album: song.albumName ?? "",
+    artist: getAlbumArtistFromSong(song),
+  });
+};
+
+export const getAlbumParams = ({ artist, album }: { artist: string; album: string }) => {
   return {
-    album: encodeURIComponent(song.albumName ?? ""),
-    artist: encodeURIComponent(getAlbumArtistFromSong(song)),
+    album: encodeURIComponent(album),
+    artist: encodeURIComponent(artist),
   };
 };
 

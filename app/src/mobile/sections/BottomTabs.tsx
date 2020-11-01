@@ -66,7 +66,7 @@ export const ButtonTabs = () => {
   const disabledPan = useRef(false);
   const {
     mode,
-    setMode,
+    toggleMode,
     shuffle,
     toggleShuffle,
     toggleState,
@@ -260,7 +260,7 @@ export const ButtonTabs = () => {
             </motion.div>
             <SongTimeSlider duration={songInfo?.song.duration} />
             <div className="flex justify-around items-center">
-              <Repeat mode={mode} setMode={setMode} iconClassName="w-8 h-8" />
+              <Repeat mode={mode} toggleMode={toggleMode} iconClassName="w-8 h-8" />
               <button onClick={previous} className="focus:outline-none">
                 <MdSkipPrevious className="text-gray-200 w-12 h-12" />
               </button>

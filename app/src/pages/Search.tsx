@@ -1,27 +1,27 @@
-import React from "react";
-import { PuttingThingsTogether } from "../illustrations/PuttingThingsTogether";
-import { link } from "../classes";
+import React, { useEffect, useState } from "react";
+import { RiMusicLine } from "react-icons/ri";
+import { EmptyState } from "../components/EmptyState";
+import { useCoolSongs } from "../db";
+import { useNavigator } from "../routes";
+import { SearchResults, useSearch } from "../search";
+import { SongTable } from "../web/sections/SongTable";
 
 export const Search = () => {
-  // FIXME search analytics event
-  // See https://support.google.com/firebase/answer/6317498?hl=en&ref_topic=6317484
-  return (
-    <div className="flex flex-col items-center justify-center space-y-5 w-full">
-      <PuttingThingsTogether className="mx-5 max-w-xs" />
-      <p className="text-gray-700 mx-5 max-w-lg text-center text-sm lg:text-base">
-        The search functionality is currently in progress. Make sure to check out our{" "}
-        <a
-          className={link()}
-          rel="noreferrer"
-          target="_blank"
-          href="https://github.com/jsmith/relar-roadmap/projects/1"
-        >
-          roadmap
-        </a>
-        !
-      </p>
-      {/* <div>SEARCH</div> */}
-    </div>
+  const { queryParams } = useNavigator("search");
+  const { query } = queryParams;
+  const songs = useCoolSongs();
+  const [results, setResults] = useState<SearchResults>();
+  const search = useSearch({ text: { current: query }, songs, setResults, numItems: Infinity });
+
+  useEffect(() => {
+    search();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return results?.songs.length === 0 ? (
+    <EmptyState icon={RiMusicLine}>No songs found. Try a different search?</EmptyState>
+  ) : (
+    <SongTable songs={results?.songs} source={{ type: "manuel" }} />
   );
 };
 

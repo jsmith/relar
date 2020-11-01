@@ -57,7 +57,7 @@ export const ContentEditable = ({
       className={classNames(
         className,
         "outline-none border border-transparent focus:border-gray-500 focus:shadow-sm",
-        "bg-transparent border border-transparent rounded px-1",
+        "bg-transparent border border-transparent rounded px-1 -mx-1",
         // disabled ? undefined : "hover:border-gray-400",
       )}
       onFocus={() => {

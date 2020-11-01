@@ -317,10 +317,10 @@ const debouncedStorageSet = debounce(500, Storage.set.bind(Storage));
 export function useLocalStorage<T extends string>(
   key: string,
   defaultValue: T,
-): [T, (value: T) => void, RefObject<T>];
+): [T, (value: T) => void, MutableRefObject<T>];
 export function useLocalStorage<T extends string>(
   key: string,
-): [T | undefined, (value: T) => void, RefObject<T | undefined>];
+): [T | undefined, (value: T) => void, MutableRefObject<T | undefined>];
 export function useLocalStorage<T extends string>(key: string, defaultValue?: T) {
   const [value, setValue, ref] = useStateWithRef<T | undefined>(defaultValue);
 

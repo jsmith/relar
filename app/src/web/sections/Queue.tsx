@@ -60,12 +60,16 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
 
     const style: CSSProperties = visible
       ? {
+          visibility: "visible",
           transitionDuration: ".35s",
           transitionTimingFunction: "cubic-bezier(0,0,0,1.2)",
           transform: "translateY(0)",
           opacity: 1,
         }
       : {
+          // Super important for disabling tab navigation
+          // See https://stackoverflow.com/questions/57513046/how-to-skip-focus-on-hidden-group-of-elements
+          visibility: "hidden",
           transitionDuration: "0.2s",
           transitionTimingFunction: "cubic-bezier(.66,-.41,1,1)",
           transform: "translateY(100px)",
@@ -77,6 +81,7 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
       <div
         ref={combined}
         className="absolute bg-white shadow-xl max-w-full"
+        tabIndex={-1}
         style={{
           width: "600px",
           right: "8px",
@@ -111,7 +116,8 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
             <div
               style={{
                 // 48 is the size of the table row. This must be kept in sync.
-                height: `${Math.max(songs.length, 5) * 48}px`,
+                // 36 is the height of the header. Must also be kept in sync.
+                height: `${Math.max(songs.length, 5) * 48 + 36}px`,
                 // 300px is just from trial and error
                 maxHeight: `calc(100vh - 300px)`,
               }}

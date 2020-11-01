@@ -33,7 +33,7 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
     next,
     previous,
     mode,
-    setMode,
+    toggleMode,
     shuffle,
     toggleShuffle,
   } = useQueue();
@@ -61,17 +61,11 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
             )}
           </div>
         )}
-        {songInfo?.song && (
-          <LikedIcon
-            className="text-gray-300 hover:text-gray-100"
-            liked={songInfo?.song.liked}
-            setLiked={setLiked}
-          />
-        )}
+        {songInfo?.song && <LikedIcon liked={songInfo?.song.liked} setLiked={setLiked} />}
       </div>
       <div className="w-2/5 flex flex-col items-center">
         <div className="space-x-2 flex items-center">
-          <Repeat mode={mode} setMode={setMode} iconClassName="w-6 h-6" />
+          <Repeat mode={mode} toggleMode={toggleMode} iconClassName="w-6 h-6" />
           <button
             title="Previous Song"
             className={
