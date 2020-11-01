@@ -149,7 +149,7 @@ export const changeEmail = async (
   confirmPassword: () => Promise<boolean>,
 ): Promise<Result<string | undefined, string>> => {
   if (newEmail === "") {
-    return err("Uhhh could you give us something to work with? Thanks.");
+    return err("Did you mean to submit an empty form?");
   }
 
   if (user.email === newEmail) {

@@ -12,7 +12,6 @@ import {
   useStateWithRef,
 } from "./utils";
 import firebase from "firebase/app";
-import { useHotkeys } from "react-hotkeys-hook";
 import { createEmitter } from "./events";
 import * as uuid from "uuid";
 import { captureException } from "@sentry/browser";
@@ -98,7 +97,9 @@ export const checkQueueItemsEqual = (
     case "library":
       return b.source.type === a.source.type;
     case "manuel":
-      throw Error("????????");
+      // I'm currently using "manuel" when searching
+      // throw Error("????????");
+      return false;
   }
 };
 
@@ -126,9 +127,11 @@ export const QueueContext = createContext<{
   _nextAutomatic: () => void;
   previous: () => void;
   mode: QueuePlayMode;
-  setMode: (mode: QueuePlayMode) => void;
+  toggleMode: () => void;
   /** Seek to a desired position in the current song. */
   seekTime: (time: number) => void;
+  /** Seek to a desired position in a song by specifying an offset */
+  deltaCurrentTime: (delta: number) => void;
   /** Whether the current song is playing. */
   playing: boolean;
   /** Toggle the playing state. */
@@ -136,7 +139,7 @@ export const QueueContext = createContext<{
   /** The current volume from 0 to 100. Useful for UI purposes. */
   volume: number;
   /** Set the state and change the volume value in the <audio> element. */
-  setVolume: (value: number) => void;
+  setVolume: (value: number | ((current: number) => number)) => void;
   clear: () => void;
   /** Set the ref. For internal use only. */
   _setRef: (el: AudioControls | null) => void;
@@ -156,8 +159,9 @@ export const QueueContext = createContext<{
   _nextAutomatic: () => {},
   previous: () => {},
   mode: "none",
-  setMode: () => {},
+  toggleMode: () => {},
   seekTime: () => {},
+  deltaCurrentTime: () => {},
   playing: false,
   toggleState: () => {},
   volume: 100,
@@ -210,18 +214,21 @@ export const QueueProvider = (props: React.Props<{}>) => {
   const [playing, setPlaying, playingRef] = useStateWithRef<boolean>(false);
   const isMobile = useIsMobile();
   /** The volume from 0 to 100 */
-  const [volumeString, setVolumeString] = useLocalStorage<string>(
+  const [volumeString, setVolumeString, volumeStringRef] = useLocalStorage<string>(
     "player-volume",
     isMobile ? "100" : "80",
   );
   const setVolume = useCallback(
-    (value: number) => {
+    (value: number | ((value: number) => number)) => {
+      if (typeof value === "function") {
+        value = value(+volumeStringRef.current);
+      }
       setVolumeString("" + value);
       // HTML5 audio.volume is a value between 0 and 1
       // See https://stackoverflow.com/questions/10075909/how-to-set-the-loudness-of-html5-audio
       if (ref.current) ref.current.setVolume(value / 100);
     },
-    [setVolumeString],
+    [setVolumeString, volumeStringRef],
   );
   const volume = useMemo(() => parseInt(volumeString), [volumeString]);
   useChangedSongs(
@@ -274,34 +281,25 @@ export const QueueProvider = (props: React.Props<{}>) => {
   }, [playing]);
 
   const toggleState = useCallback(() => {
+    if (current.current.index === undefined) return;
     if (playingRef.current) ref.current?.pause();
     else ref.current?.play();
     setPlaying(!playingRef.current);
   }, [playingRef, setPlaying]); // aka []
 
   const playIfNotPlaying = useCallback(() => {
+    if (current.current.index === undefined) return;
     if (playingRef.current) return;
     ref.current?.play();
     setPlaying(true);
   }, [playingRef, setPlaying]);
 
   const pauseIfPlaying = useCallback(() => {
+    if (current.current.index === undefined) return;
     if (!playingRef.current) return;
     ref.current?.pause();
     setPlaying(false);
   }, [playingRef, setPlaying]);
-
-  useHotkeys(
-    "space",
-    (e) => {
-      // This preventDefault is super important as we are taking
-      // over space to start/stop music
-      e.preventDefault();
-      if (current.current.index === undefined) return;
-      toggleState();
-    },
-    [toggleState],
-  );
 
   const stopPlaying = useCallback(() => {
     setPlaying(false);
@@ -479,12 +477,12 @@ export const QueueProvider = (props: React.Props<{}>) => {
     [changeSongIndex, setPlaying, shuffleRef, shuffleSongs], // aka []
   );
 
-  // The ?? don't actually matter since we check to see if the index is currently defined in "tryToGoTo" function
-  const next = useCallback(() => tryToGoTo((current.current.index ?? 0) + 1, true, true), [
-    tryToGoTo,
-  ]);
+  const next = useCallback(
+    () => current.current.index !== undefined && tryToGoTo(current.current.index + 1, true, true),
+    [tryToGoTo], // aka []
+  );
   const previous = useCallback(async () => {
-    if (!ref.current) return;
+    if (!ref.current || current.current.index === undefined) return;
     const currentTime = await ref.current.getCurrentTime();
     if (currentTime <= 4) {
       // If less than 4 seconds, go to the previous song
@@ -494,17 +492,28 @@ export const QueueProvider = (props: React.Props<{}>) => {
       setCurrentTime(0);
       ref.current.setCurrentTime(0);
     }
-  }, [tryToGoTo]);
+  }, [tryToGoTo]); // aka []
 
   const _nextAutomatic = useCallback(
-    () => tryToGoTo((current.current.index ?? 0) + 1, false, false),
-    [tryToGoTo],
+    () => current.current.index !== undefined && tryToGoTo(current.current.index + 1, false, false),
+    [tryToGoTo], // aka []
   );
 
   const seekTime = useCallback((seconds: number) => {
     setCurrentTime(seconds);
     if (ref.current) ref.current.setCurrentTime(seconds);
   }, []);
+
+  const deltaCurrentTime = useCallback(
+    async (delta) => {
+      if (!ref.current) return;
+      const currentTime = await ref.current.getCurrentTime();
+      // Note that this ignores the duration
+      // If the user goes too far (ie. set current time), the time will be temporary too high
+      seekTime(Math.max(currentTime + delta, 0));
+    },
+    [seekTime], // aka []
+  );
 
   const _setRef = useCallback(
     (el: AudioControls | null) => {
@@ -551,16 +560,11 @@ export const QueueProvider = (props: React.Props<{}>) => {
     [shuffleRef, toggleShuffle],
   ); // aka []
 
-  useHotkeys("right", () => current.current.index !== undefined && next(), [next]);
-  useHotkeys(
-    "left",
-    () => {
-      if (current.current.index) {
-        previous();
-      }
-    },
-    [previous],
-  );
+  const toggleMode = useCallback(() => {
+    setMode(
+      modeRef.current === "none" ? "repeat" : modeRef.current === "repeat" ? "repeat-one" : "none",
+    );
+  }, [modeRef, setMode]); // aka []
 
   return (
     <QueueContext.Provider
@@ -570,7 +574,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
         queue,
         songInfo,
         mode,
-        setMode,
+        toggleMode,
         next,
         previous,
         seekTime,
@@ -581,6 +585,7 @@ export const QueueProvider = (props: React.Props<{}>) => {
         _setRef,
         _nextAutomatic,
         clear,
+        deltaCurrentTime,
         shuffle: shuffle === "true",
         toggleShuffle,
         dequeue,

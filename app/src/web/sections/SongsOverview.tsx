@@ -90,7 +90,7 @@ export const SongsOverview = <T extends SongInfo>({
           setAverageColor={setAverageColor}
         />
 
-        <div className={classNames("ml-4", isLight ? "text-gray-700" : "text-gray-200")}>
+        <div className={classNames("ml-4", isLight ? "text-gray-800" : "text-gray-200")}>
           <div className="flex items-center">
             {title ? (
               <ContentEditable
