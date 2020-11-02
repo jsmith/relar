@@ -12,6 +12,7 @@
     "postversion",
     "recurse",
     "servor",
+    "signup",
     "unmount"
   ],
   "search.exclude": {

@@ -7,6 +7,7 @@ import { BlockAlert } from "../../components/BlockAlert";
 import { Button } from "../../components/Button";
 import { betaBackend, getOrUnknownError } from "../../backend";
 import firebase from "firebase/app";
+import { textGray600 } from "../../classes";
 
 export const Invite = () => {
   const { params } = useNavigator("invite");
@@ -63,7 +64,7 @@ export const Invite = () => {
       }
     >
       <h3>Beta Sign Up</h3>
-      <p className="text-gray-600">
+      <p className={textGray600}>
         The time has come to create your account :) Thank you so much for signing up and waiting for
         an invite.
       </p>

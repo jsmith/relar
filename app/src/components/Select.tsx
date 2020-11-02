@@ -1,5 +1,6 @@
 import React from "react";
 import classNames from "classnames";
+import { field } from "../classes";
 
 export interface SelectOption<T extends string> {
   value: T;
@@ -29,7 +30,7 @@ export const Select = function <T extends string>({
         onChange={(v) => {
           onSelect(v.target.value as T);
         }}
-        className={classNames("form-select mt-1 block w-full", className)}
+        className={classNames("form-select mt-1 block w-full", className, field())}
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>

@@ -10,11 +10,11 @@ export interface CardPageProps {
 
 export const CardPage = ({ children, footer, cardClassName }: CardPageProps) => {
   return (
-    <div className="flex flex-col items-center justify-center text-gray-700 bg-white md:bg-transparent w-full flex-grow">
+    <div className="flex flex-col items-center justify-center text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 md:bg-transparent w-full flex-grow">
       {/* CARD */}
       <div
         className={classNames(
-          "md:shadow-xl rounded-lg px-6 bg-white w-full max-w-sm space-y-4",
+          "md:shadow-xl rounded-lg px-6 bg-white dark:bg-gray-900 w-full max-w-sm space-y-4 border-transparent md:border dark:border-gray-800",
           cardClassName,
         )}
       >
