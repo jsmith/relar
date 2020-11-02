@@ -139,6 +139,11 @@ const changelog = create([
     features: ["Added dark mode", "Added keyboard shortcut to toggle dark mode and upload modal"],
     fixes: ["Small bug fixes"],
   },
+  {
+    version: "0.12.1",
+    date: "November 2 2020",
+    fixes: ["Fixed dark mode versions of login, signup and invite pages"],
+  },
 ]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (

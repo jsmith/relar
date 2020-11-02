@@ -28,6 +28,10 @@ import { useShortcuts } from "../shortcuts";
 import { New } from "../components/New";
 import { useDarkMode } from "../dark";
 
+export const LoadingPage = ({ className }: { className?: string }) => (
+  <LoadingSpinner className={classNames(className, "bg-white dark:bg-gray-900")} />
+);
+
 export interface SideBarItem {
   label: string;
   onClick: () => void;
@@ -61,14 +65,14 @@ export const App = () => {
   const closeQueue = useCallback(() => setQueueDisplay(false), []);
 
   if (loading) {
-    return <LoadingSpinner className="bg-white dark:bg-gray-800 h-screen" />;
+    return <LoadingPage className="h-screen" />;
   }
 
   if (route?.protected && !user) {
     navigateTo("login");
     // This is important
     // If we don't do this we will still try to load components which will break things
-    return <LoadingSpinner className="bg-white dark:bg-gray-800 h-screen" />;
+    return <LoadingPage className="h-screen" />;
   }
 
   const sideLinks = [
@@ -151,7 +155,7 @@ export const App = () => {
                 isRoute(routes.playlists) ||
                 isRoute(routes.genres)) && <LibraryHeader />}
               <div className={classNames(route.className, "flex-grow flex")}>
-                <React.Suspense fallback={<LoadingSpinner className="bg-white dark:bg-gray-800" />}>
+                <React.Suspense fallback={<LoadingPage />}>
                   <route.component />
                 </React.Suspense>
               </div>
@@ -226,9 +230,7 @@ export const App = () => {
         )}
       </div>
       <SkipNavContent />
-      <React.Suspense fallback={<LoadingSpinner className="bg-white dark:bg-gray-800 flex-grow" />}>
-        {content}
-      </React.Suspense>
+      <React.Suspense fallback={<LoadingPage className="flex-grow" />}>{content}</React.Suspense>
       {user && <QueueAudio />}
     </div>
   );

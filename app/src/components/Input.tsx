@@ -1,6 +1,7 @@
 import React from "react";
 import classNames from "classnames";
 import { isMobile, Keys, parseIntOr } from "../utils";
+import { field } from "../classes";
 
 export type InputProps = {
   label?: string;
@@ -38,10 +39,7 @@ export const Input = (props: InputProps) => {
         value={props.value ?? ""}
         type={props.type}
         id={props.inputId}
-        className={classNames(
-          "form-input w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200",
-          props.inputClassName,
-        )}
+        className={classNames("form-input w-full", field(), props.inputClassName)}
         placeholder={props.placeholder}
         onChange={(e) =>
           props.type === "number"

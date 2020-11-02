@@ -8,6 +8,8 @@ import { BlockAlert } from "../components/BlockAlert";
 import firebase from "firebase/app";
 import { Select } from "../components/Select";
 import { BetaDevice } from "../shared/universal/types";
+import { textGray600 } from "../classes";
+import classNames from "classnames";
 
 const BETA_TEXT =
   "Want to be apart of the beta? Sign up now and we'll add you to our testers list.";
@@ -65,7 +67,7 @@ export const Signup = () => {
       }
     >
       <h3>Beta Sign Up</h3>
-      <p className="text-gray-600 text-sm">{BETA_TEXT}</p>
+      <p className={classNames("text-gray-600", textGray600)}>{BETA_TEXT}</p>
       {success ? (
         <BlockAlert type="success">Success!! Thank you so much for signing up :)</BlockAlert>
       ) : (
