@@ -125,7 +125,7 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
           initialFocus="#upload-music-button"
           getApplicationNode={() => document.getElementById("root")!}
           underlayStyle={{ paddingTop: "2em" }}
-          dialogClass="absolute inset-0 m-8 rounded-lg bg-white z-10 p-5"
+          dialogClass="absolute inset-0 m-8 rounded-lg bg-white dark:bg-gray-900 z-10 p-5"
         >
           <input
             type="file"
@@ -138,7 +138,7 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
           {/* https://tailwindui.com/components/application-ui/overlays/modals */}
           <div className="border-2 border-dashed border-purple-400 h-full rounded px-1 py-3 overflow-y-auto">
             {files.length > 0 ? (
-              <div className="space-y-2 max-w-4xl mx-auto px-2">
+              <div className="space-y-2 max-w-4xl mx-auto px-2 text-gray-700 dark:text-gray-300">
                 <div className="flex flex-col divide-y divide-gray-400">
                   {files.map(({ file, task, action }, i) => (
                     <UploadRow
@@ -152,12 +152,12 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
                     />
                   ))}
                 </div>
-                <div className="text-center text-sm text-gray-700 pt-3">
+                <div className="text-center text-sm pt-3">
                   Getting errors? Hover your mouse over the icons (e.g. "
                   <MdErrorOutline className="w-4 h-4 inline" />
                   ") to get more information.
                 </div>
-                <div className="text-center text-sm text-gray-700 pb-3">
+                <div className="text-center text-sm pb-3">
                   Want to keep uploading? Click{" "}
                   <button
                     id="upload-music-button"
@@ -171,18 +171,18 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
               </div>
             ) : (
               <div className="flex items-center justify-center flex-col h-full">
-                <FiMusic className="w-20 h-20 text-purple-600" />
-                <h1 className="text-purple-800 text-2xl" id="modal-headline">
+                <FiMusic className="w-20 h-20 text-purple-500" />
+                <h1 className="text-purple-800 dark:text-purple-200 text-2xl" id="modal-headline">
                   Upload Your Music!
                 </h1>
-                <div className="text-purple-800 text-xm">
+                <div className="text-purple-800 dark:text-purple-200 text-xm">
                   Drag files or a folder to add them to your library.
                 </div>
-                <div className="text-purple-800 text-xm mt-8">or...</div>
+                <div className="text-purple-800 dark:text-purple-200 text-xm mt-8">or...</div>
 
                 <button
                   id="upload-music-button"
-                  className="border-2 border-purple-700 text-purple-700 p-2 mt-2 rounded"
+                  className="border border-purple-700 text-purple-700 dark:text-purple-200 dark:border-purple-200 p-2 mt-2 rounded focus:outline-none focus:bg-purple-200 focus:bg-opacity-25"
                   onClick={() => fileUpload.current && fileUpload.current.click()}
                 >
                   SELECT FROM YOUR COMPUTER

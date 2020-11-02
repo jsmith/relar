@@ -50,7 +50,7 @@ const ResultList = function <
       <div className="flex items-center space-x-2 min-w-0">
         {/* <Icon className="w-8 h-8 text-gray-600 flex-shrink-0" /> */}
         <Thumbnail song={item.song} size="64" className="w-10 h-10 flex-shrink-0" />
-        <div className="text-gray-700 leading-none space-y-2 text-left min-w-0">
+        <div className="text-gray-700 dark:text-gray-100 leading-none space-y-2 text-left min-w-0">
           <div className="font-bold truncate" title={item.title}>
             {item.title}
           </div>
@@ -59,7 +59,7 @@ const ResultList = function <
       </div>
 
       <div className="space-x-2 flex items-center opacity-0 group-hover:opacity-100 group-focus:opacity-100">
-        <div className="text-gray-600 border-b border-gray-500 border-dotted leading-tight capitalize">
+        <div className="text-gray-600 dark:text-gray-300 border-b border-gray-600 dark:border-gray-500 border-dotted leading-tight capitalize">
           {action}
         </div>
         <Shortcut text="↵" className="text-xl" />
@@ -68,18 +68,18 @@ const ResultList = function <
   );
 
   const className =
-    "flex items-center justify-between group hover:bg-gray-200 rounded-lg py-3 pl-2 pr-4 focus:bg-gray-200 focus:outline-none search-result w-full space-x-2";
+    "flex items-center justify-between group hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg py-3 pl-2 pr-4 focus:bg-gray-200 focus:outline-none search-result w-full space-x-2";
 
   return (
     <div className="w-full">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold">{title}</h2>
+        <h2 className="text-xl font-bold dark:text-gray-200">{title}</h2>
         {seeAllSearchTerm && (
           <Link
             route="search"
             queryParams={{ query: seeAllSearchTerm }}
             label="See All →"
-            className="hover:underline focus:outline-none focus:underline search-result"
+            className="hover:underline focus:outline-none focus:underline search-result dark:text-gray-300"
             onGo={onExit}
           />
         )}
@@ -192,11 +192,12 @@ export const SearchModal = ({ onExit }: { onExit: () => void }) => {
       onExit={onExit}
       initialFocus="#search"
       getApplicationNode={() => document.getElementById("root")!}
-      dialogClass="rounded-lg bg-white divide-y border-gray-400"
+      dialogClass="rounded-lg bg-white dark:bg-gray-800 divide-y dark:divide-gray-700 border-gray-400 dark:border-gray-700 border"
       underlayClass="flex items-center justify-center"
     >
       <div className="flex items-center space-x-3 px-4">
         <HiOutlineSearch className="w-8 h-8 text-gray-600" />
+        {/* Users definitely don't want autocomplete here */}
         <form
           autoComplete="off"
           className="flex flex-grow"
@@ -210,7 +211,7 @@ export const SearchModal = ({ onExit }: { onExit: () => void }) => {
               setSearchText(e.target.value);
               search();
             }}
-            className="my-5 focus:outline-none text-xl flex-grow"
+            className="my-5 focus:outline-none text-xl flex-grow dark:bg-gray-800 dark:text-gray-100"
             placeholder="What do you want to listen to?"
             onKeyDown={(e) => {
               if (e.key === "ArrowDown") {
@@ -228,7 +229,7 @@ export const SearchModal = ({ onExit }: { onExit: () => void }) => {
         layout
       >
         <motion.div
-          className="text-sm px-4 "
+          className="text-sm px-4 dark:text-gray-200"
           variants={{ visible: { opacity: 1 }, hidden: { opacity: 0 } }}
           initial={false}
           animate={searchText ? "hidden" : "visible"}

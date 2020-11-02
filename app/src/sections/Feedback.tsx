@@ -101,7 +101,7 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
     <Modal
       titleText="Add To Playlist"
       onExit={onExit}
-      className="space-y-2 max-w-full px-6 py-5"
+      className="space-y-2 max-w-full px-6 py-5 dark:text-gray-200"
       style={{ width: "30rem" }}
       loading={loading}
     >
@@ -136,7 +136,7 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
       ) : (
         <>
           <h1 className="font-bold text-xl">Have some feedback?</h1>
-          <p className="text-gray-700 text-xs">
+          <p className="text-gray-700 dark:text-gray-400 text-xs">
             Make sure to check out the{" "}
             <a
               className={link()}
@@ -183,7 +183,10 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
             </div>
             {type && (
               <textarea
-                className="border-gray-300 border rounded w-full py-1 px-2 mt-6"
+                className={classNames(
+                  "border-gray-300 dark:border-gray-700 border rounded w-full py-1 px-2 mt-6",
+                  "bg-gray-800",
+                )}
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
                 rows={3}

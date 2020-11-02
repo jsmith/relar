@@ -6,6 +6,7 @@ import { pluralSongs, fmtToDate, onConditions } from "../utils";
 import { HiChevronRight } from "react-icons/hi";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { useCoolPlaylists } from "../db";
+import classNames from "classnames";
 
 export const AddToPlaylistList = ({
   song,
@@ -34,7 +35,10 @@ export const AddToPlaylistList = ({
         return (
           <div
             key={playlist.id}
-            className="hover:bg-gray-300 py-2 px-3 md:px-2 cursor-pointer flex justify-between items-center"
+            className={classNames(
+              "hover:bg-gray-300 dark:hover:bg-gray-800 py-2 px-3 md:px-2 cursor-pointer flex justify-between",
+              "items-center focus:outline-none focus:bg-gray-300 dark:focus:bg-gray-800",
+            )}
             tabIndex={0}
             role="button"
             onClick={() => {
@@ -53,15 +57,15 @@ export const AddToPlaylistList = ({
             }}
           >
             <div>
-              <div className="text-purple-700">{playlist.name}</div>
-              <div className="text-gray-600 text-2xs md:text-base">
+              <div className="text-purple-700 dark:text-purple-300">{playlist.name}</div>
+              <div className="text-gray-600 dark:text-gray-400 text-2xs md:text-base">
                 {`${playlist.songs?.length ?? 0} ${pluralSongs(
                   playlist.songs?.length,
                 )} • Created on ${fmtToDate(playlist.createdAt)}`}
               </div>
             </div>
 
-            <HiChevronRight className="w-5 h-5 text-gray-600" />
+            <HiChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
           </div>
         );
       })}

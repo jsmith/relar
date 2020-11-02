@@ -85,10 +85,16 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
       ) : action?.status === "error" ? (
         <MdErrorOutline title={action.message} className="text-red-600 flex-shrink-0" />
       ) : action?.status === "success" ? (
-        <MdCheck title="Upload Complete" className="text-purple-700 w-5 h-5 flex-shrink-0" />
+        <MdCheck
+          title="Upload Complete"
+          className="text-purple-700 dark:text-purple-400 w-5 h-5 flex-shrink-0"
+        />
       ) : (
         <div title={progress < 100 ? "Uploading" : "Processing"}>
-          <Bars fill="currentColor" className="text-purple-700 w-6 h-4 flex-shrink-0" />
+          <Bars
+            fill="currentColor"
+            className="text-purple-700 dark:text-purple-400 w-6 h-4 flex-shrink-0"
+          />
         </div>
       )}
       <div className="min-w-0 truncate text-sm" title={file.name}>
@@ -97,7 +103,7 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
 
       <div className="flex-grow" />
       <div className="space-y-1 flex-shrink-0">
-        <div className="text-purple-700 text-xs flex items-center justify-end">
+        <div className="text-purple-700 dark:text-purple-400 text-xs flex items-center justify-end">
           <div className="uppercase">
             {progress < 100
               ? `${progress}% Complete`
@@ -109,7 +115,11 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
           </div>
         </div>
         <div className="w-56">
-          <ProgressBar value={progress} maxValue={100} foregroundClassName="bg-purple-700" />
+          <ProgressBar
+            value={progress}
+            maxValue={100}
+            foregroundClassName="bg-purple-700 dark:bg-purple-400"
+          />
         </div>
       </div>
     </div>

@@ -36,6 +36,7 @@ import "../firebase";
 import "../tailwind.css";
 import "../common.css";
 import SnackbarProvider from "react-simple-snackbar";
+import { DarkModeProvider } from "../dark";
 
 ReactDOM.render(
   <React.StrictMode>
@@ -47,7 +48,9 @@ ReactDOM.render(
             <ConfirmActionProvider>
               <ConfirmPasswordProvider>
                 <SnackbarProvider>
-                  <App />
+                  <DarkModeProvider>
+                    <App />
+                  </DarkModeProvider>
                 </SnackbarProvider>
               </ConfirmPasswordProvider>
             </ConfirmActionProvider>

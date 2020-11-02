@@ -36,14 +36,15 @@ export const LibraryHeader = () => {
 
   return (
     <div className="flex items-center justify-between px-5">
-      <ul className="flex space-x-4 text-xl sticky top-0 z-10" style={{ backgroundColor: bgApp }}>
+      <ul className="flex space-x-4 text-xl sticky top-0 z-10">
         {libraryLinks.map(({ label, route }) => (
           <li
             key={label}
             className={classNames(
-              // FIXME bold
-              "my-2 border-gray-600 cursor-pointer hover:text-gray-800",
-              route === routeId ? "border-b-2 text-gray-700" : " text-gray-600",
+              "my-2 border-gray-600 dark:border-gray-400 cursor-pointer hover:text-gray-800",
+              route === routeId
+                ? "border-b-2 text-gray-700 dark:text-gray-200"
+                : " text-gray-600 dark:text-gray-400",
             )}
             onClick={() => navigateTo(route)}
           >
@@ -52,7 +53,7 @@ export const LibraryHeader = () => {
         ))}
       </ul>
       <button
-        className="flex items-center space-x-1 text-gray-700 rounded hover:bg-gray-300 p-1 focus:outline-none focus:bg-gray-300"
+        className="flex items-center space-x-1 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-300 dark:hover:bg-gray-700 dark:focus:bg-gray-700 p-1 focus:outline-none focus:bg-gray-300 dark:hover:bg-gray-700"
         title="Shuffle Entire Library"
         onClick={() => {
           if (!songs) return;

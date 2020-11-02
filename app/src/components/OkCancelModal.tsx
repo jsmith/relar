@@ -34,13 +34,10 @@ export const OkCancelModal = ({
 
   return (
     <Modal titleText={titleText} onExit={onCancel} initialFocus={initialFocus} loading={loading}>
-      <div
-        className={classNames("bg-white px-5 pt-10 pb-5", wrapperClassName)}
-        style={wrapperStyle}
-      >
+      <div className={classNames("px-5 pt-10 pb-5", wrapperClassName)} style={wrapperStyle}>
         {children}
       </div>
-      <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+      <div className="bg-gray-50 dark:bg-transparent px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
         <span className="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
           <Button
             id="modal-confirm-button"

@@ -54,12 +54,14 @@ export const Hero = () => {
       <div className="py-16 px-10 md:px-20 lg:w-4/5 mx-auto flex-grow space-y-24">
         <div className="flex">
           <div className="space-y-5 sm:max-w-md">
-            <h1 className="text-gray-800 tracking-tight text-4xl font-bold tight">
+            <h1 className="text-gray-800 dark:text-gray-200 tracking-tight text-4xl font-bold tight">
               Your mp3 library.
             </h1>
-            <span className="text-purple-800 text-xl leading-none">Streamed everywhere.</span>
+            <span className="text-purple-800 dark:text-purple-500 text-xl leading-none">
+              Streamed everywhere.
+            </span>
             <div className="w-24 h-1 bg-purple-600" />
-            <div className="text-gray-600 text-sm">
+            <div className="text-gray-600 dark:text-gray-200 text-sm">
               Bummed out that Google Play Music is deprecated? Looking to host your mp3 collection
               online? Relar allows you to upload your curated audio file collection and stream to
               all of your devices.
@@ -94,14 +96,14 @@ export const Hero = () => {
             <Link label="Beta Sign Up →" className={button({ color: "purple" })} route="signup" />
           </div>
           <div className="h-16" />
-          <div className="text-gray-800 space-y-4">
+          <div className="text-gray-800 dark:text-gray-200 space-y-4">
             <h1 className="text-2xl font-bold text-center">Frequently Asked Question</h1>
             <div className="border-b border-gray-400" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {faq.map(([question, answer]) => (
                 <div key={question} className="">
                   <div className="font-bold">{question}</div>
-                  <div className="text-sm text-gray-600">{answer}</div>
+                  <div className="text-sm text-gray-600 dark:text-gray-300">{answer}</div>
                 </div>
               ))}
             </div>

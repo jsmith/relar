@@ -1,32 +1,32 @@
 import React from "react";
 import { Footer } from "../sections/Footer";
 import { Link } from "../components/Link";
+import { H1, H2, P, A } from "../components/markdown";
 
 export const TermsAndConditions = () => {
   return (
     <div className="overflow-y-scroll">
-      <div className="prose m-auto py-12">
-        <h1>Terms and Conditions</h1>
+      <div className="max-w-xl m-auto py-12 text-gray-700 dark:text-gray-300 px-4">
+        <H1>Terms and Conditions</H1>
 
-        <p>Welcome to Relar!</p>
+        <P>Welcome to Relar!</P>
 
-        <p>
-          These terms and conditions outline the rules and regulations for the use of Relar{`'`}s
+        <P>
+          These terms and conditions outline the rules and regulations for the use of Relar's
           Website, located at <a href="https://relar.app">https://relar.app</a>.
-        </p>
+        </P>
 
-        <p>
+        <P>
           By accessing this website we assume you accept these terms and conditions. Do not continue
           to use Relar if you do not agree to take all of the terms and conditions stated on this
           page.
-        </p>
+        </P>
 
-        <p>
+        <P>
           The following terminology applies to these Terms and Conditions, Privacy Statement and
-          Disclaimer Notice and all Agreements: {`"`}Client{`"`}, {`"`}You{`"`} and {`"`}Your{`"`}{" "}
-          refers to you, the person on this website and compliant to the Company’s terms and
-          conditions. {`"`}The Company{`"`}, {`"`}Ourselves{`"`}, {`"`}We{`"`}, {`"`}Our{`"`} and{" "}
-          {`"`}Us{`"`}, refers to our Company. {`"`}Party{`"`}, {`"`}Parties{`"`}, or {`"`}Us{`"`},
+          Disclaimer Notice and all Agreements: "Client", "You" and "Your" refers to you, the person
+          on this website and compliant to the Company’s terms and conditions. "The Company",
+          "Ourselves", "We", "Our" and "Us", refers to our Company. "Party", "Parties", or "Us",
           refers to both the Client and ourselves. All terms refer to the offer, acceptance and
           consideration of payment necessary to undertake the process of our assistance to the
           Client in the most appropriate manner for the express purpose of meeting the Client’s
@@ -34,31 +34,31 @@ export const TermsAndConditions = () => {
           subject to, prevailing law of Netherlands. Any use of the above terminology or other words
           in the singular, plural, capitalization and/or he/she or they, are taken as
           interchangeable and therefore as referring to same.
-        </p>
+        </P>
 
-        <h2>Cookies</h2>
+        <H2>Cookies</H2>
 
-        <p>
+        <P>
           We employ the use of cookies. By accessing Relar, you agreed to use cookies in agreement
-          with the Relar{`'`}s Privacy Policy.{" "}
-        </p>
+          with the Relar's Privacy Policy.{" "}
+        </P>
 
-        <p>
+        <P>
           Most interactive websites use cookies to let us retrieve the user’s details for each
           visit. Cookies are used by our website to enable the functionality of certain areas to
           make it easier for people visiting our website.
-        </p>
+        </P>
 
-        <h2>License</h2>
+        <H2>License</H2>
 
-        <p>
+        <P>
           Unless otherwise stated, Relar and/or its licensors own the intellectual property rights
           for all material on Relar. All intellectual property rights are reserved. You may access
           this from Relar for your own personal use subjected to restrictions set in these terms and
           conditions.
-        </p>
+        </P>
 
-        <p>You must not:</p>
+        <P>You must not:</P>
         <ul>
           <li>Republish material from Relar</li>
           <li>Sell, rent or sub-license material from Relar</li>
@@ -66,39 +66,39 @@ export const TermsAndConditions = () => {
           <li>Redistribute content from Relar</li>
         </ul>
 
-        <h2>Content Liability</h2>
+        <H2>Content Liability</H2>
 
-        <p>
+        <P>
           We shall not be hold responsible for any content that appears on your Website. You agree
           to protect and defend us against all claims that is rising on your Website. No audio files
           should appear on any Website that may be interpreted as libelous, obscene or criminal, or
           which infringes, otherwise violates, or advocates the infringement or other violation of,
           any third party rights.
-        </p>
+        </P>
 
-        <h2>Your Privacy</h2>
+        <H2>Your Privacy</H2>
 
-        <p>
+        <P>
           Please read the <Link label="Privacy Policy" route="privacy" />.
-        </p>
+        </P>
 
-        <h2>Reservation of Rights</h2>
+        <H2>Reservation of Rights</H2>
 
-        <p>
+        <P>
           We reserve the right to request that you remove all links or any particular link to our
           Website. You approve to immediately remove all links to our Website upon request. We also
           reserve the right to amen these terms and conditions and it’s linking policy at any time.
           By continuously linking to our Website, you agree to be bound to and follow these linking
           terms and conditions.
-        </p>
+        </P>
 
-        <h2>Disclaimer</h2>
+        <H2>Disclaimer</H2>
 
-        <p>
+        <P>
           To the maximum extent permitted by applicable law, we exclude all representations,
           warranties and conditions relating to our website and the use of this website. Nothing in
           this disclaimer will:
-        </p>
+        </P>
 
         <ul>
           <li>limit or exclude our or your liability for fraud or fraudulent misrepresentation;</li>
@@ -111,34 +111,34 @@ export const TermsAndConditions = () => {
           </li>
         </ul>
 
-        <p>
+        <P>
           The limitations and prohibitions of liability set in this Section and elsewhere in this
           disclaimer: (a) are subject to the preceding paragraph; and (b) govern all liabilities
           arising under the disclaimer, including liabilities arising in contract, in tort and for
           breach of statutory duty.
-        </p>
+        </P>
 
-        <p>
+        <P>
           As long as the website and the information and services on the website are provided free
           of charge, we will not be liable for any loss or damage of any nature.
-        </p>
+        </P>
 
-        <h2>Changes to this Document</h2>
-        <p>
+        <H2>Changes to this Document</H2>
+        <P>
           Relar has the discretion to update this document at any time. When updates are made, the{" "}
           <a href="#update-date">revision date</a> at the bottom of this page will be updated. By
           using this website you are agreeing to be bound by the current version of these terms of
           service.
-        </p>
+        </P>
 
-        <h2>Getting in Contact</h2>
-        <p>
+        <H2>Getting in Contact</H2>
+        <P>
           Questions about this document can be sent to <i>contact@relar.app</i>.
-        </p>
+        </P>
 
-        <p id="update-date" className="text-gray-600 text-sm pt-8">
+        <P id="update-date" className="text-sm pt-8">
           This document was last updated on October 25th, 2020.
-        </p>
+        </P>
       </div>
       <Footer />
     </div>

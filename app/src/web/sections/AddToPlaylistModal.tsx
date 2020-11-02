@@ -41,21 +41,24 @@ export const AddToPlaylistEditor = ({ song, setDisplay }: MetadataEditorProps) =
     <Modal
       titleText="Add To Playlist"
       onExit={() => setDisplay(false)}
-      className="space-y-2 max-w-full px-6 py-5"
+      className="space-y-2 max-w-full px-6 py-5 text-gray-800 dark:text-gray-200"
       style={{ width: "30rem" }}
       loading={loading}
     >
       <h1 className="text-xl">Add To Playlist</h1>
       {playlists && (
         <div className="relative">
-          <Input
-            inputId="playlist-add-input"
-            placeholder="Playlist name"
-            value={newPlaylistName}
-            onChange={setNewPlaylistName}
-            onEnter={createNewPlaylist}
-            autoFocus
-          />
+          {/* Users definitely don't want autocomplete here */}
+          <form autoComplete="off" onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}>
+            <Input
+              inputId="playlist-add-input"
+              placeholder="Playlist name"
+              value={newPlaylistName}
+              onChange={setNewPlaylistName}
+              onEnter={createNewPlaylist}
+              autoFocus
+            />
+          </form>
           <div className="absolute right-0 h-full flex flex-col justify-center top-0 mr-2">
             <button
               className="bg-purple-500 text-white px-2 py-1 rounded"

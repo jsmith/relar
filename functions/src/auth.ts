@@ -224,7 +224,7 @@ export const onBetaSignup = functions.firestore.document("beta_signups/{email}")
       text: `
 Hey ${firstName},
 
-You have successfully signed up for the Relar beta! I'm going to be slowly rolling things out over the coming weeks. Once it's your turn, I'll contact you with with a signup link :)
+You have successfully signed up for the Relar private beta! I'm going to be slowly rolling things out over the coming weeks. Once it's your turn, I'll contact you with with a signup link :)
 
 - Jacob
 `.trim(),

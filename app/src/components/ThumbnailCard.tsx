@@ -43,7 +43,7 @@ export const ThumbnailCard = ({
     >
       <Collage style={{ height: style?.width }} songs={songs} size="128" />
       <div
-        className="truncate mt-1 lg:mt-2 text-gray-900 font-bold"
+        className="truncate mt-1 lg:mt-2 text-gray-900 dark:text-gray-100 font-bold"
         tabIndex={0}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
@@ -52,7 +52,7 @@ export const ThumbnailCard = ({
         {title}
       </div>
       {/* FIXME do we want this to truncate? */}
-      <div className="truncate lg:mt-1 text-gray-600" title={subtitle}>
+      <div className="truncate lg:mt-1 text-gray-600 dark:text-gray-400" title={subtitle}>
         {subtitle}
       </div>
       {!isMobile && (

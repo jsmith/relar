@@ -1,28 +1,12 @@
 import React from "react";
-import classNames from "classnames";
 import { Link } from "../components/Link";
 import { link } from "../classes";
-
-export const H1 = ({ l, className }: { l: string; className?: string }) => (
-  <h1 className={classNames(className, "text-4xl font-bold")}>{l}</h1>
-);
-
-export const H2 = ({ l, className }: { l: string; className?: string }) => (
-  <h2 className={classNames(className, "text-2xl font-bold mt-3")}>{l}</h2>
-);
-
-export const P = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-  <p className={classNames("text-gray-700 text-sm mt-1", className)}>{children}</p>
-);
-
-export const LI = ({ children }: { children: React.ReactNode }) => (
-  <li className="text-sm text-gray-700">{children}</li>
-);
+import { H1, P, H2, LI } from "../components/markdown";
 
 export const BetaGuide = () => {
   return (
     <div className="overflow-y-auto min-h-0">
-      <div className="px-8 mx-auto max-w-3xl text-gray-800 w-full py-5 beta-guide ">
+      <div className="px-8 mx-auto max-w-3xl text-gray-800 dark:text-gray-200 w-full py-5 beta-guide ">
         <H1 l="Beta Guide" />
         <P>
           Thanks again for signing up to test the app through the beta program. This platform was

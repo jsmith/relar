@@ -1,9 +1,8 @@
 import React from "react";
-import { Menu, Transition } from "@headlessui/react";
+import { Menu, Transition, Switch } from "@headlessui/react";
 import { AiOutlineUser } from "react-icons/ai";
 import classNames from "classnames";
 import { FaCaretDown } from "react-icons/fa";
-import { navigateTo } from "../../routes";
 import { useDefinedUser } from "../../auth";
 import { useModal } from "react-modal-hook";
 import { Feedback } from "../../sections/Feedback";
@@ -11,25 +10,19 @@ import firebase from "firebase/app";
 import { Link } from "../../components/Link";
 import { New } from "../../components/New";
 import { openShortcuts } from "../../shortcuts";
-
-const ITEMS = [
-  "Settings" as const,
-  "Feedback" as const,
-  "Beta Guide" as const,
-  "Release Notes" as const,
-  "Log Out" as const,
-];
+import { useDarkMode } from "../../dark";
 
 export const classes = (active: boolean, additional?: string) =>
   classNames(
-    "w-full px-4 py-2 text-sm block text-gray-800 hover:bg-gray-200 text-left",
+    "w-full px-4 py-2 text-sm block hover:bg-gray-200 dark:hover:bg-gray-700 text-left",
     additional,
-    active && "bg-gray-200",
+    active && "bg-gray-200 dark:bg-gray-700",
   );
 
 export const AccountDropdown = () => {
   const user = useDefinedUser();
   const [show, close] = useModal(() => <Feedback onExit={close} />);
+  const [darkMode, setDarkMode] = useDarkMode();
 
   return (
     <div className="relative z-20">
@@ -37,7 +30,7 @@ export const AccountDropdown = () => {
         {({ open }) => (
           <>
             <span className="rounded-md shadow-sm">
-              <Menu.Button className="flex items-center text-xs space-x-2 focus:outline-none border border-transparent focus:border-gray-300 rounded p-1">
+              <Menu.Button className="flex items-center text-xs space-x-2 focus:outline-none border border-transparent focus:border-gray-600 rounded p-1">
                 <AiOutlineUser className="w-6 h-6 text-purple-500" />
                 <span className="hidden sm:block">{user.email}</span>
                 <FaCaretDown className="w-2" />
@@ -55,11 +48,15 @@ export const AccountDropdown = () => {
             >
               <Menu.Items
                 static
-                className="absolute right-0 w-56 mt-2 origin-top-right bg-white border border-gray-200 divide-y divide-gray-200 rounded-md shadow-lg outline-none"
+                className={classNames(
+                  "absolute right-0 w-56 mt-2 origin-top-right bg-white dark:bg-gray-900 border",
+                  "border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-700",
+                  "rounded-md shadow-lg outline-none dark:text-gray-300 text-gray-800",
+                )}
               >
                 <div className="px-4 py-3">
-                  <p className="text-sm text-gray-700">Signed in as</p>
-                  <p className="text-sm text-gray-900 truncate font-bold">{user.email}</p>
+                  <p className="text-sm">Signed in as</p>
+                  <p className="text-sm truncate font-bold">{user.email}</p>
                 </div>
 
                 <div className="py-1">
@@ -100,6 +97,32 @@ export const AccountDropdown = () => {
                       />
                     )}
                   </Menu.Item>
+                </div>
+
+                <div className="px-4 py-2">
+                  {/* TODO not accessible */}
+                  <Switch.Group as="div" className="flex items-center space-x-4 justify-between">
+                    <Switch.Label className="text-sm flex items-center space-x-2">
+                      <span>Dark Mode</span>
+                      <New />
+                    </Switch.Label>
+                    <Switch
+                      as="button"
+                      checked={darkMode}
+                      onChange={setDarkMode}
+                      className={`${
+                        darkMode ? "bg-purple-600" : "bg-gray-300"
+                      } relative inline-flex h-6 transition-colors duration-200 ease-in-out border-2 border-transparent rounded-full cursor-pointer w-10 focus:outline-none focus:shadow-outline`}
+                    >
+                      {({ checked }) => (
+                        <span
+                          className={`${
+                            checked ? "translate-x-4" : "translate-x-0"
+                          } inline-block w-5 h-5 transition duration-200 ease-in-out transform bg-white rounded-full`}
+                        />
+                      )}
+                    </Switch>
+                  </Switch.Group>
                 </div>
 
                 <div className="py-1">

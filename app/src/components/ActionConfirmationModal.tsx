@@ -41,7 +41,7 @@ export const ActionConfirmationModal = ({
       onOk={checkEmail}
       titleText={title}
       okTheme="red"
-      wrapperClassName="flex"
+      wrapperClassName="flex dark:text-gray-200"
     >
       <div className="px-3">
         <div className="bg-red-200 rounded-full p-2">
@@ -52,7 +52,7 @@ export const ActionConfirmationModal = ({
       <div className="flex flex-col space-y-2">
         <div>
           <h1 className="font-bold">{title}</h1>
-          <p className="text-sm text-gray-600">{subtitle}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{subtitle}</p>
         </div>
         {confirmEmail && (
           <Input

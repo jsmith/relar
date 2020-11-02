@@ -26,18 +26,20 @@ import { useModal } from "react-modal-hook";
 import { SearchModal } from "../sections/SearchModal";
 import { useShortcuts } from "../shortcuts";
 import { New } from "../components/New";
+import { useDarkMode } from "../dark";
 
 export interface SideBarItem {
   label: string;
   onClick: () => void;
 }
 
-export const App = (_: React.Props<{}>) => {
+export const App = () => {
   const { isRoute, routeId } = useNavigator("home"); // "home" is just because something is required
   const { user, loading } = useUser();
   const [uploadDisplay, setUploadDisplay] = useState(false);
   const [queueDisplay, setQueueDisplay] = useState(false);
   const playerRef = useRef<HTMLDivElement | null>(null);
+  const [darkMode] = useDarkMode();
 
   const route = useMemo(() => Object.values(routes).find((route) => route.id === routeId), [
     routeId,
@@ -53,19 +55,20 @@ export const App = (_: React.Props<{}>) => {
   useShortcuts({
     openSearch: open,
     toggleQueue: () => setQueueDisplay((value) => !value),
+    openUpload: () => setUploadDisplay(true),
   });
 
   const closeQueue = useCallback(() => setQueueDisplay(false), []);
 
   if (loading) {
-    return <LoadingSpinner className="h-screen" />;
+    return <LoadingSpinner className="bg-white dark:bg-gray-800 h-screen" />;
   }
 
   if (route?.protected && !user) {
     navigateTo("login");
     // This is important
     // If we don't do this we will still try to load components which will break things
-    return <LoadingSpinner className="h-screen" />;
+    return <LoadingSpinner className="bg-white dark:bg-gray-800 h-screen" />;
   }
 
   const sideLinks = [
@@ -111,7 +114,7 @@ export const App = (_: React.Props<{}>) => {
                       <button
                         tabIndex={0}
                         className={classNames(
-                          "flex py-2 px-5 items-center hover:bg-gray-800 cursor-pointer focus:outline-none focus:bg-gray-700",
+                          "flex py-2 px-5 items-center hover:bg-gray-800 cursor-pointer focus:outline-none focus:bg-gray-800",
                           "w-full",
                           link.type === "link" && link.route === routeId
                             ? "bg-gray-800"
@@ -148,7 +151,7 @@ export const App = (_: React.Props<{}>) => {
                 isRoute(routes.playlists) ||
                 isRoute(routes.genres)) && <LibraryHeader />}
               <div className={classNames(route.className, "flex-grow flex")}>
-                <React.Suspense fallback={<LoadingSpinner />}>
+                <React.Suspense fallback={<LoadingSpinner className="bg-white dark:bg-gray-800" />}>
                   <route.component />
                 </React.Suspense>
               </div>
@@ -174,12 +177,15 @@ export const App = (_: React.Props<{}>) => {
     );
 
   return (
-    <div className="h-screen text-white flex flex-col" style={{ backgroundColor: bgApp }}>
+    <div
+      className="h-screen text-white flex flex-col dark:bg-gray-800"
+      style={{ backgroundColor: darkMode ? undefined : bgApp }}
+    >
       <SkipNavLink className="text-gray-800" />
       <div className="flex bg-gray-900 items-center h-16 px-3 sm:px-5 flex-shrink-0 space-x-2">
         <Link
           route="hero"
-          className="flex items-center space-x-2 focus:outline-none border border-transparent focus:border-gray-300 rounded"
+          className="flex items-center space-x-2 focus:outline-none border border-transparent focus:border-gray-600 rounded"
           label={
             <LogoNText
               className="space-x-2"
@@ -220,7 +226,9 @@ export const App = (_: React.Props<{}>) => {
         )}
       </div>
       <SkipNavContent />
-      <React.Suspense fallback={<LoadingSpinner className="flex-grow" />}>{content}</React.Suspense>
+      <React.Suspense fallback={<LoadingSpinner className="bg-white dark:bg-gray-800 flex-grow" />}>
+        {content}
+      </React.Suspense>
       {user && <QueueAudio />}
     </div>
   );
