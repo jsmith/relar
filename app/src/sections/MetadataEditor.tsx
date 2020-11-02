@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { Song } from "../shared/universal/types";
 import { OkCancelModal } from "../components/OkCancelModal";
 import { Input } from "../components/Input";
-import { getOrUnknownError } from "../backend";
-import { useDefinedUser } from "../auth";
 import { BlockAlert } from "../components/BlockAlert";
 import { serverTimestamp, undefinedToDelete, useSongRef, useUserData } from "../firestore";
 import { Thumbnail } from "../components/Thumbnail";
@@ -25,15 +23,16 @@ export const PositionInformation = ({
   setNo: (value: number | null) => void;
 }) => {
   return (
-    <fieldset className="min-w-0">
+    <fieldset className="min-w-0 dark:text-gray-200">
       <legend>{label}</legend>
       <div className="flex items-center space-x-1">
+        {/* TODO refactor to input with just input and no label or something */}
         <input
           value={no ?? ""}
           type="number"
           onChange={(e) => setNo(e.target.value ? +e.target.value : null)}
           aria-label="Number"
-          className="min-w-0 form-input"
+          className="min-w-0 form-input dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
         />
         <span>of</span>
         <input
@@ -41,7 +40,7 @@ export const PositionInformation = ({
           type="number"
           onChange={(e) => setOf(e.target.value ? +e.target.value : null)}
           aria-label="Total"
-          className="min-w-0 form-input"
+          className="min-w-0 form-input dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
         />
       </div>
     </fieldset>
@@ -136,7 +135,9 @@ export const MetadataEditor = ({ song, setDisplay }: MetadataEditorProps) => {
         <div className="w-2/5 space-y-2">
           <div className="space-y-1">
             <Thumbnail size="128" song={song} className="w-32 h-32" />
-            <p className="text-xs text-gray-700">The thumbnail is not yet editable.</p>
+            <p className="text-xs text-gray-700 dark:text-gray-400">
+              The thumbnail is not yet editable.
+            </p>
           </div>
           <PositionInformation
             no={trackNo}

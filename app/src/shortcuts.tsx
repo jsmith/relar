@@ -7,6 +7,7 @@ import { HiOutlineX } from "react-icons/hi";
 import { useModal } from "react-modal-hook";
 import { link } from "./classes";
 import { Shortcut } from "./components/Shortcut";
+import { useDarkMode } from "./dark";
 import { createEmitter } from "./events";
 import { useLikeSong } from "./queries/songs";
 import { useQueue } from "./queue";
@@ -37,9 +38,9 @@ const navigateIfLessThanTimeout = (
   navigateTo(route);
 };
 
-type Shortcut = [string | string[], string];
+type ShortcutInfo = [string | string[], string];
 
-const col1: Shortcut[] = [
+const col1: ShortcutInfo[] = [
   ["space", "Play or pause"],
   ["←", "Go to previous song"],
   ["→", "Go to next song"],
@@ -48,26 +49,29 @@ const col1: Shortcut[] = [
   ["S", "Toggle shuffle"],
   ["R", "Toggle repeat"],
   ["L", "Like the playing track"],
-  ["?", "Show keyboard shortcuts"],
-  [["Shift", "Q"], "Toggle queue open or closed"],
+
   ["-", "Decrease volume"],
   ["=", "Increase volume"],
 ];
 
-const col2: Shortcut[] = [
+const col2: ShortcutInfo[] = [
   ["G then S", "Songs"],
   ["G then A", "Artists"],
   ["G then B", "Albums"],
   ["G then G", "Genres"],
   ["G then H", "Home"],
   ["G then P", "Playlists"],
+  ["?", "Show keyboard shortcuts"],
+  [["Shift", "Q"], "Toggle queue open/closed"],
+  [["Shift", "U"], "Open upload modal"],
+  [["Shift", "D"], "Toggle dark mode"],
 ];
 
 export const Shortcuts = ({
   shortcuts,
   className,
 }: {
-  shortcuts: Shortcut[];
+  shortcuts: ShortcutInfo[];
   className?: string;
 }) => {
   return (
@@ -101,9 +105,11 @@ export const openShortcuts = () => emitter.emit("open");
 export const useShortcuts = ({
   openSearch,
   toggleQueue,
+  openUpload,
 }: {
   openSearch: () => void;
   toggleQueue: () => void;
+  openUpload: () => void;
 }) => {
   const {
     setVolume,
@@ -117,6 +123,7 @@ export const useShortcuts = ({
   } = useQueue();
   const setLiked = useLikeSong(songInfo?.song);
   const whenG = useRef<number>();
+  const [_, setDarkMode, darkModeRef] = useDarkMode();
 
   const [feedbackShow, feedbackHide] = useModal(() => <Feedback onExit={feedbackHide} />);
   const [show, hide] = useModal(() => (
@@ -125,11 +132,11 @@ export const useShortcuts = ({
       onExit={hide}
       initialFocus="#modal-close"
       getApplicationNode={() => document.getElementById("root")!}
-      dialogClass="rounded-lg bg-white px-5 py-4 relative"
+      dialogClass="rounded-lg bg-white dark:text-gray-200 dark:bg-gray-900 px-5 py-4 relative"
       underlayClass="flex items-center justify-center"
     >
       <h1 className="text-xl font-bold">Keyboard Shortcuts</h1>
-      <p className="text-gray-700 text-xs">
+      <p className="text-gray-700 dark:text-gray-300 text-xs">
         Anything missing? Let me know using the{" "}
         <button
           onClick={() => {
@@ -144,7 +151,9 @@ export const useShortcuts = ({
       </p>
       <div className="flex text-xs space-x-2 mt-3">
         <Shortcuts shortcuts={col1} />
-        <Shortcuts shortcuts={col2} />
+        <div>
+          <Shortcuts shortcuts={col2} />
+        </div>
       </div>
       <button id="modal-close" className="absolute right-0 top-0 my-3 mx-4" onClick={hide}>
         <HiOutlineX className="w-4 h-4" />
@@ -169,6 +178,12 @@ export const useShortcuts = ({
   );
   useHotkeys("/", openSearch);
   useHotkeys("shift+q", toggleQueue);
+  useHotkeys("shift+d", () => setDarkMode(!darkModeRef.current));
+  useHotkeys("shift+u", () => {
+    // Hide to avoid weird react aria modal initialFocus error
+    hide();
+    openUpload();
+  });
 
   useHotkeys("g", () => {
     const now = Date.now();

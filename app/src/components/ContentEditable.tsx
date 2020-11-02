@@ -14,6 +14,11 @@ export interface ContentEditableProps {
   // onCancel?: (oldValue: string) => void;
 }
 
+// Known bug:
+// This looks bad when disabled on safari
+// Solution found here https://stackoverflow.com/questions/262158/disabled-input-text-color
+// don't seem to be working...
+// Since it's just color, IDC for now
 /**
  * An input that kinda looks like a normal div but can actually be edited.
  */

@@ -32,7 +32,7 @@ export const OverviewSection = ({
   return (
     <div>
       <h2 className="font-bold mt-4">{title}</h2>
-      <p className="text-xs text-gray-700">{subtitle}</p>
+      <p className="text-xs text-gray-700 dark:text-gray-400">{subtitle}</p>
       {children}
       {(info || error) && (
         <BlockAlert className="mt-2" type={info ? "info" : "error"}>
@@ -82,25 +82,34 @@ export const Account = () => {
 
   return (
     <div className="mx-6">
-      <Tabs className="max-w-2xl m-auto my-5 sm:my-10 p-4 rounded bg-white shadow-lg flex">
-        <TabList className="divide-y flex-shrink-0">
-          <Tab selectedClassName="bg-purple-100" className="cursor-pointer py-2 px-2 text-gray-800">
+      <Tabs className="max-w-2xl m-auto my-5 sm:my-10 p-4 rounded bg-white dark:bg-gray-900 shadow-lg flex">
+        <TabList className="divide-y dark:divide-gray-800 flex-shrink-0">
+          <Tab
+            selectedClassName="bg-purple-100 dark:bg-gray-800"
+            className="cursor-pointer py-2 px-2 text-gray-800 dark:text-gray-200"
+          >
             Account Overview
           </Tab>
-          {/* <Tab selectedClassName="bg-purple-100" className="cursor-pointer py-2 px-2 text-gray-800">
+          {/* <Tab selectedClassName="bg-purple-100 dark:bg-gray-800" className="cursor-pointer py-2 px-2 text-gray-800 dark:text-gray-200">
             Account History
           </Tab> */}
-          <Tab selectedClassName="bg-purple-100" className="cursor-pointer py-2 px-2 text-gray-800">
+          <Tab
+            selectedClassName="bg-purple-100 dark:bg-gray-800"
+            className="cursor-pointer py-2 px-2 text-gray-800 dark:text-gray-200"
+          >
             Billing
           </Tab>
-          <Tab selectedClassName="bg-purple-100" className="cursor-pointer py-2 px-2 text-gray-800">
+          <Tab
+            selectedClassName="bg-purple-100 dark:bg-gray-800"
+            className="cursor-pointer py-2 px-2 text-gray-800 dark:text-gray-200"
+          >
             Invoices
           </Tab>
         </TabList>
         <div className="w-4 flex-shrink-0" />
-        <TabPanel className="text-gray-800" selectedClassName="flex-grow">
+        <TabPanel className="text-gray-800 dark:text-gray-200" selectedClassName="flex-grow">
           <h1 className="text-2xl">Account Overview</h1>
-          <p className="text-xs text-gray-700">
+          <p className="text-xs text-gray-700 dark:text-gray-400">
             You are currently logged in as <span className="font-bold">{user.email}</span>
           </p>
           <OverviewSection
@@ -120,7 +129,7 @@ export const Account = () => {
           >
             <div className="flex items-baseline mt-3 flex-col space-y-1">
               <input
-                className="rounded py-1 px-2 border w-full"
+                className="rounded py-1 px-2 border w-full dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -154,10 +163,13 @@ export const Account = () => {
             }}
           />
         </TabPanel>
-        {/* <TabPanel className="text-gray-800" selectedClassName="flex-grow">
+        {/* <TabPanel className="text-gray-800 dark:text-gray-200" selectedClassName="flex-grow">
           <List itemHeight={48} itemFn={renderAction} attrList={} />
         </TabPanel> */}
-        <TabPanel className="text-gray-800 space-y-2" selectedClassName="flex-grow">
+        <TabPanel
+          className="text-gray-800 dark:text-gray-200 space-y-2"
+          selectedClassName="flex-grow"
+        >
           <h1 className="text-2xl">Billing</h1>
           <div className="rounded bg-blue-100 text-blue-700 p-3 text-sm">
             <span className="font-bold">You are currently enjoying the beta service for free.</span>{" "}
@@ -194,9 +206,9 @@ export const Account = () => {
             </div>
           </div> */}
         </TabPanel>
-        <TabPanel className="text-gray-800" selectedClassName="flex-grow">
+        <TabPanel className="text-gray-800 dark:text-gray-200" selectedClassName="flex-grow">
           <h1 className="text-2xl">Invoices</h1>
-          <h3 className="text-gray-700 font-bold">No Invoices Found</h3>
+          <h3 className="text-gray-700 dark:text-gray-400 font-bold">No Invoices Found</h3>
           <p className="text-sm text-gray-600">
             If you subscribe to the premium features, your invoices will appear here.
           </p>

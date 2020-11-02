@@ -40,7 +40,7 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
   const setLiked = useLikeSong(songInfo?.song);
 
   return (
-    <div className="h-20 bg-gray-800 flex items-center px-4 z-10" ref={refFunc}>
+    <div className="h-20 bg-gray-800 dark:bg-gray-950 flex items-center px-4 z-10" ref={refFunc}>
       <div className="flex items-center space-x-3" style={{ width: "30%" }}>
         {songInfo?.song && (
           <Thumbnail className="w-12 h-12 flex-shrink-0" song={songInfo?.song} size="64" />

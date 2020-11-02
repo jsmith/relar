@@ -29,14 +29,19 @@ export const Input = (props: InputProps) => {
   return (
     <label className={classNames("block", props.labelClassName)}>
       {props.label && (
-        <span className={classNames(props.spanClassName, "mb-1")}>{props.label}</span>
+        <span className={classNames(props.spanClassName, "mb-1 dark:text-gray-200")}>
+          {props.label}
+        </span>
       )}
       <input
         required={props.required}
         value={props.value ?? ""}
         type={props.type}
         id={props.inputId}
-        className={classNames("form-input w-full", props.inputClassName)}
+        className={classNames(
+          "form-input w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200",
+          props.inputClassName,
+        )}
         placeholder={props.placeholder}
         onChange={(e) =>
           props.type === "number"

@@ -355,7 +355,7 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
     component: ReleaseNotes,
     protected: false,
     sidebar: false,
-    title: "ReleaseNotes",
+    title: "Release Notes",
     showBack: true,
     showTabs: false,
   },

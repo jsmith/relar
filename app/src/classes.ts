@@ -34,6 +34,6 @@ export const button = ({
   );
 };
 
-export const link = ({ color = "text-blue-500" } = {}) => {
+export const link = ({ color = "text-blue-500 dark:text-blue-400" } = {}) => {
   return classNames(color, "cursor-pointer hover:underline focus:underline focus:outline-none");
 };

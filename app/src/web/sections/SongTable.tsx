@@ -56,7 +56,7 @@ export const HeaderCol = ({
   return (
     <div
       className={classNames(
-        "text-left text-gray-800 text-xs uppercase tracking-wider font-bold",
+        "text-left text-gray-800 dark:text-gray-200 text-xs uppercase tracking-wider font-bold",
         className,
       )}
       style={style}
@@ -78,10 +78,7 @@ export const Cell = ({
 }) => {
   return (
     <div
-      className={classNames(
-        "whitespace-no-wrap border-b border-gray-200 border-opacity-25 cursor-pointer min-w-0",
-        className,
-      )}
+      className={classNames("whitespace-no-wrap cursor-pointer min-w-0", className)}
       style={style}
     >
       {children}
@@ -208,7 +205,7 @@ export const SongTableRow = <T extends SongInfo>({
 
   return (
     <div
-      className="group hover:bg-gray-300 text-gray-700 text-sm flex items-center h-full"
+      className="group hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm flex items-center h-full"
       onClick={() => setSong(song)}
       style={style}
     >
@@ -232,7 +229,7 @@ export const SongTableRow = <T extends SongInfo>({
               />
               <button
                 title={`Play ${song.title}`}
-                className="focus:opacity-100 group-hover:opacity-100 opacity-0 bg-transparent z-10 text-gray-800 focus:outline-none"
+                className="focus:opacity-100 group-hover:opacity-100 opacity-0 bg-transparent z-10 text-gray-800 dark:text-gray-200 focus:outline-none"
                 onFocus={() => setFocusedPlay(true)}
                 onBlur={() => setFocusedPlay(false)}
                 // This click event is handled by the <div>
@@ -267,7 +264,7 @@ export const SongTableRow = <T extends SongInfo>({
             <IconButton
               icon={MdMoreVert}
               className="group-hover:w-8 focus:w-8 w-0 overflow-hidden py-1 pl-1 flex-shrink-0"
-              hoverClassName="hover:bg-gray-400 focus:bg-gray-400 focus:outline-none"
+              hoverClassName="hover:bg-gray-400 hover:bg-gray-600 focus:bg-gray-400 dark:focus:bg-gray-600 focus:outline-none"
               iconClassName="w-0 w-6 h-6"
               {...props}
             />
