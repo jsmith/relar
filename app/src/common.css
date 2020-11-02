@@ -73,3 +73,8 @@ body {
   -webkit-box-orient: vertical;
   display: -webkit-box;
 }
+
+/* This is just an extra option since dark mode is hard */
+.dark .dark\:bg-gray-950 {
+  background-color: #131821;
+}

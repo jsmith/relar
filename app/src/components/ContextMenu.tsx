@@ -48,10 +48,9 @@ export const ContextMenu = ({ className, items, button, menuClassName }: Context
         <div
           className={classNames(
             isOpen ? "display" : "hidden",
-            "absolute flex flex-col shadow divide-y",
+            "absolute flex flex-col shadow divide-y dark:divide-gray-800 bg-white dark:bg-gray-900 rounded",
             menuClassName,
           )}
-          style={{ backgroundColor: bgApp }}
           role="menu"
         >
           {items.map((item, i) => (
@@ -63,10 +62,13 @@ export const ContextMenu = ({ className, items, button, menuClassName }: Context
                 item.onClick();
                 setIsOpen(false);
               }}
-              className="p-2 hover:bg-gray-200 cursor-pointer flex items-center space-x-2"
+              className={classNames(
+                "p-2 hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer flex items-center space-x-2",
+                "dark:text-gray-200 text-gray-700",
+              )}
             >
-              <item.icon className="w-5 h-5 text-gray-700" />
-              <div className="text-gray-700">{item.label}</div>
+              <item.icon className="w-5 h-5" />
+              <div className="">{item.label}</div>
             </a>
           ))}
         </div>

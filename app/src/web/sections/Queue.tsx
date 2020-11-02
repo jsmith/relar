@@ -80,7 +80,7 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
     return (
       <div
         ref={combined}
-        className="absolute bg-white shadow-xl max-w-full"
+        className="absolute bg-white dark:bg-gray-900 rounded shadow-xl max-w-full"
         tabIndex={-1}
         style={{
           width: "600px",
@@ -91,7 +91,7 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
         }}
       >
         {queue.length === 0 ? (
-          <div className="flex flex-col items-center text-gray-700 my-10 space-y-1">
+          <div className="flex flex-col items-center text-gray-700 dark:text-gray-300 my-10 space-y-1">
             <MdQueueMusic className="w-10 h-10" />
             <div className="text-xl">Your queue is empty...</div>
             <div className="text-sm text-gray-600 mx-20 text-center">
@@ -103,7 +103,7 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
           </div>
         ) : (
           <>
-            <div className="text-gray-800 px-3 py-2 flex items-center border-b border-gray-300">
+            <div className="text-gray-800 dark:text-gray-200 px-3 py-2 flex items-center border-b border-gray-300 dark:border-gray-700">
               <div>
                 <div className="text-xl">Queue</div>
                 {humanReadableName && (
@@ -139,14 +139,16 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
             width: 0,
             height: 0,
             right: "18px",
-            border: "8px solid white",
+            borderWidth: "8px",
+            borderStyle: "solid",
             transformOrigin: "0 0",
             // -webkit-transform-origin: 0 0;
             transform: "rotate(-45deg)",
             // -webkit-transform: rotate(-45deg);
             boxShadow: "-12px 12px 15px 0px rgba(0,0,0,.24)",
           }}
-        ></div>
+          className="border-white dark:border-gray-900"
+        />
       </div>
     );
   },

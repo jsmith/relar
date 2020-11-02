@@ -37,16 +37,20 @@ export const Modal = ({
     >
       <div
         className={classNames(
-          "bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-xl sm:w-full",
+          "bg-white dark:bg-gray-900 rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-xl sm:w-full",
         )}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-headline"
         onClick={(e) => e.stopPropagation()}
       >
-        {loading && <div className="absolute bg-white opacity-75 inset-0 z-10" />}
+        {loading && <div className="absolute bg-white dark:bg-gray-800 opacity-75 inset-0 z-10" />}
         {loading && <LoadingSpinner className="absolute inset-0 z-10" />}
-        <button id="modal-close" className="absolute right-0 top-0 my-3 mx-4" onClick={onExit}>
+        <button
+          id="modal-close"
+          className="absolute right-0 top-0 my-3 mx-4 dark:text-gray-200"
+          onClick={onExit}
+        >
           <HiOutlineX className="w-4 h-4" />
         </button>
 

@@ -30,7 +30,7 @@ export const useGenres = () => {
   return useMemo(() => Object.values(lookup), [lookup]);
 };
 
-export const useGenre = (genre: string) => {
+export const useGenre = (genre: string): Genre | undefined => {
   const lookup = useGenreLookup();
   return lookup[genre];
 };

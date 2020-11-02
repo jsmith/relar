@@ -45,11 +45,11 @@ export const ConfirmPassword = ({ onCancel, onConfirm }: ConfirmPasswordProps) =
       initialFocus="#password-confirm-box"
       titleText="Confirm Password"
       okText="Confirm"
-      wrapperClassName="space-y-2"
+      wrapperClassName="space-y-2 dark:text-gray-200"
     >
       <div>
-        <h1>Confirm Your Password</h1>
-        <p className="text-sm text-gray-600">
+        <h1 className="font-bold">Confirm Your Password</h1>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           Why are we asking you about your password? We sometimes need to confirm your identity when
           you are performing sensitive operations :)
         </p>

@@ -9,9 +9,9 @@ export const GenreOverview = () => {
 
   return (
     <SongsOverview
-      songs={genre.songs}
-      title={genre.genre}
-      source={{ type: "genre", id: genre.genre }}
+      songs={genre?.songs}
+      title={params.genre}
+      source={{ type: "genre", id: params.genre }}
     />
   );
 };

@@ -4,6 +4,7 @@ import AutoSizer from "react-virtualized-auto-sizer";
 import { ThumbnailCard } from "./ThumbnailCard";
 import { SongInfo } from "../queue";
 import { Song } from "../shared/universal/types";
+import { isMobile } from "../utils";
 
 const mql = window.matchMedia(`(min-width: 1024px)`);
 
@@ -16,7 +17,6 @@ export interface ThumbnailCardGridProps<T extends { songs: Song[] | undefined }>
   getSubtitle: (item: T, index: number) => string;
   onClick: (item: T, index: number) => void;
   force?: "row";
-  limit?: number;
   play: (item: T, index: number) => void;
   padding?: number;
 }
@@ -28,7 +28,6 @@ export const ThumbnailCardGrid = function <T extends { songs: Song[] | undefined
   onClick,
   play,
   force,
-  limit,
   padding = PADDING_LEFT,
 }: ThumbnailCardGridProps<T>) {
   const columnCount = useRef(5);
@@ -71,7 +70,7 @@ export const ThumbnailCardGrid = function <T extends { songs: Song[] | undefined
         index = props.rowIndex * columnCount.current + props.columnIndex;
       }
 
-      const item = limit && index >= limit ? undefined : items[index];
+      const item = items[index];
       // This check is necessary since we *always* display row count * col count items
       // OR if we give a limit
       if (!item) return null;
@@ -99,16 +98,19 @@ export const ThumbnailCardGrid = function <T extends { songs: Song[] | undefined
   return (
     <AutoSizer style={{ minHeight: `${sizes.row}px` }}>
       {({ height, width }) => {
-        const nItems = limit ?? items.length;
+        const nItems = items.length;
         columnCount.current = Math.floor(width / sizes.col);
         const rowCount = Math.ceil(nItems / columnCount.current);
         return force === "row" ? (
           <List
             height={sizes.row}
-            itemCount={nItems}
+            // When on mobile, I want to show all of the items
+            // But on desktop I don't want the super ugly scroll bar
+            itemCount={isMobile() ? nItems : columnCount.current}
             itemSize={sizes.col}
             layout="horizontal"
             width={width}
+            className="overflow-hidden"
           >
             {Cell}
           </List>

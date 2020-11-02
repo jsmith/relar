@@ -18,7 +18,7 @@ const classes = {
   purple: {
     default:
       "border-transparent bg-purple-600 text-white focus:bg-purple-500 hover:bg-purple-500 focus:border-purple-700",
-    invert: "text-white border-purple-500 text-purple-600",
+    invert: "text-white border-purple-500 text-purple-500",
   },
   red: {
     default:
@@ -26,12 +26,17 @@ const classes = {
     invert: "text-white border-red-500",
   },
   none: {
-    default:
+    default: classNames(
       "border-gray-300 bg-white text-gray-700 focus:bg-gray-100 hover:bg-gray-100 focus:border-gray-500",
+      "dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:bg-gray-700",
+    ),
     invert: "text-white border-gray-100",
   },
   disabled: {
-    default: "border-gray-100 bg-gray-200 text-gray-500 cursor-not-allowed",
+    default: classNames(
+      "border-gray-100 bg-gray-200 text-gray-500 cursor-not-allowed",
+      "dark:bg-gray-800 dark:border-gray-700",
+    ),
     invert: "text-white border-gray-100",
   },
 };

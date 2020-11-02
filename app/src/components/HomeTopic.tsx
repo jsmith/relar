@@ -29,12 +29,14 @@ export const HomeTopic = function <K extends keyof NavigatorRoutes>({
     <div className="space-y-2 lg:space-y-3">
       <div className={classNames("flex justify-between items-center", textClassName)}>
         <div>
-          <div className="text-gray-800 text-xl md:text-2xl leading-tight">{title}</div>
-          <div className="text-gray-600 text-xs">{subTitle}</div>
+          <div className="text-gray-800 dark:text-gray-200 text-xl md:text-2xl leading-tight">
+            {title}
+          </div>
+          <div className="text-gray-600 dark:text-gray-400 text-xs">{subTitle}</div>
         </div>
         <Link
           label="See All →"
-          className="uppercase text-gray-700 hover:text-purple-700 focus:text-purple-700"
+          className="uppercase text-gray-700 dark:text-gray-300 hover:text-purple-700 focus:text-purple-700"
           route={route}
           params={params}
           queryParams={queryParams}
