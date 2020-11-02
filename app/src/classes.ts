@@ -37,3 +37,11 @@ export const button = ({
 export const link = ({ color = "text-blue-500 dark:text-blue-400" } = {}) => {
   return classNames(color, "cursor-pointer hover:underline focus:underline focus:outline-none");
 };
+
+export const field = () => {
+  return "dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200";
+};
+
+// This may or may not be useful
+// It's basically a way to support dark + light mode
+export const textGray600 = "text-gray-600 dark:text-gray-400";
