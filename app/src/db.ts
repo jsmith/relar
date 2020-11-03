@@ -119,6 +119,7 @@ export class IndexedDb {
     return result;
   }
 
+  // TODO batch these inserts to avoid exeptions
   public async putBulkValue(tableName: IndexDBTypes, values: object[]) {
     const tx = this.getOrError().transaction(tableName, "readwrite");
     const store = tx.objectStore(tableName);

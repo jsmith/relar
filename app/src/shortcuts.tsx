@@ -65,6 +65,7 @@ const col2: ShortcutInfo[] = [
   [["Shift", "Q"], "Toggle queue open/closed"],
   [["Shift", "U"], "Open upload modal"],
   [["Shift", "D"], "Toggle dark mode"],
+  ["/", "Open search modal"],
 ];
 
 export const Shortcuts = ({
@@ -207,7 +208,6 @@ export const useShortcuts = ({
   useHotkeys(
     "l",
     () => {
-      console.log("LIKE", songInfo?.song.liked);
       if (!songInfo?.song) return;
       setLiked(!songInfo.song.liked);
     },

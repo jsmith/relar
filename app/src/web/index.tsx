@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-globals */
+
 import { env } from "../env";
 import * as Sentry from "@sentry/browser";
 
@@ -68,3 +70,27 @@ ReactDOM.render(
 if (import.meta.hot) {
   import.meta.hot.accept();
 }
+
+export const register = () => {
+  if (!("serviceWorker" in navigator)) return;
+
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((registration) => {
+        // TODO
+        console.info("Service worker initialized successfully ✨", registration);
+      })
+      .catch((e) => {
+        console.error("Service worker failed to initialize ⚠");
+        Sentry.captureException(e);
+      });
+  });
+};
+
+export const unregister = () => {
+  if (!("serviceWorker" in navigator)) return;
+  navigator.serviceWorker.ready.then((registration) => registration.unregister());
+};
+
+register();

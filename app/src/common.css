@@ -31,12 +31,12 @@
 @font-face {
   font-family: "FiraMono";
   /* We need this since we mount src/shared to _dist_/shared */
-  src: url("/_dist_/fonts/FiraMono-Regular.ttf") format("truetype");
+  src: url("/_dist_/fonts/Apercu-Mono.ttf") format("truetype");
 }
 
 @font-face {
   font-family: "FiraMono";
-  src: url("/_dist_/fonts/FiraMono-Bold.ttf") format("truetype");
+  src: url("/_dist_/fonts/Apercu-MonoBold.ttf") format("truetype");
   font-weight: bold;
 }
 
@@ -77,4 +77,82 @@ body {
 /* This is just an extra option since dark mode is hard */
 .dark .dark\:bg-gray-950 {
   background-color: #131821;
+}
+
+@import url("https://fonts.googleapis.com/css?family=Fira+Mono:400");
+
+.glitch {
+  animation: glitch 3s linear infinite;
+}
+
+@keyframes glitch {
+  2%,
+  80%,
+  64% {
+    transform: translate(1px, 0) skew(0deg);
+  }
+  3%,
+  62% {
+    transform: translate(-1px, 0) skew(0deg);
+  }
+  70%,
+  61% {
+    transform: translate(0, 0) skew(2deg);
+  }
+  90% {
+    transform: translate(0, 0) skew(-2deg);
+  }
+  94% {
+    transform: translate(0, 0) skew(1deg);
+  }
+  96% {
+    transform: translate(0, 0) skew(-1deg);
+  }
+}
+
+.glitch:before,
+.glitch:after {
+  content: attr(title);
+  position: absolute;
+  left: 0;
+}
+
+.glitch:before {
+  animation: glitchTop 1s linear infinite;
+  clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+  -webkit-clip-path: polygon(0 0, 100% 0, 100% 33%, 0 33%);
+}
+
+@keyframes glitchTop {
+  2%,
+  64% {
+    transform: translate(2px, -2px);
+  }
+  4%,
+  60% {
+    transform: translate(-2px, 2px);
+  }
+  62% {
+    transform: translate(13px, -1px) skew(-13deg);
+  }
+}
+
+.glitch:after {
+  animation: glitchBotom 1.5s linear infinite;
+  clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+  -webkit-clip-path: polygon(0 67%, 100% 67%, 100% 100%, 0 100%);
+}
+
+@keyframes glitchBotom {
+  2%,
+  64% {
+    transform: translate(-2px, 0);
+  }
+  4%,
+  60% {
+    transform: translate(-2px, 0);
+  }
+  62% {
+    transform: translate(-22px, 5px) skew(21deg);
+  }
 }
