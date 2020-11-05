@@ -7,18 +7,17 @@
     "cp-web": "cp index.web.html public/index.html",
     "cp-cap-dev": "cp capacitor.dev.json capacitor.config.json",
     "cp-cap-prod": "cp capacitor.prod.json capacitor.config.json",
-    "dev:mobile": "npm run cp-mobile && npm run cp-cap-dev && SNOWPACK_PUBLIC_MOBILE=1 snowpack dev --config snowpack.mobile.json",
-    "build:mobile-production": "npm run tailwind:prod && npm run clean && npm run cp-mobile && npm run cp-cap-prod && SNOWPACK_PUBLIC_MOBILE=1 snowpack build --config snowpack.mobile.json",
-    "build:mobile-staging": "npm run tailwind:prod && npm run clean && npm run cp-mobile && npm run cp-cap-prod && SNOWPACK_PUBLIC_MOBILE=1 NODE_ENV=staging snowpack build --config snowpack.mobile.json",
-    "dev:web": "npm run cp-web && snowpack dev --config snowpack.web.json",
-    "build:web-production": "npm run tailwind:prod && npm run clean && npm run cp-web && snowpack build --config snowpack.web.json",
-    "build:web-staging": "npm run tailwind:prod && npm run clean && npm run cp-web && NODE_ENV=staging snowpack build --config snowpack.web.json",
+    "build:sw": "workbox injectManifest",
+    "dev:mobile": "npm run cp-mobile && npm run cp-cap-dev && SNOWPACK_PUBLIC_MOBILE=1 snowpack dev",
+    "build:mobile-production": "npm run clean && npm run cp-mobile && npm run cp-cap-prod && SNOWPACK_PUBLIC_MOBILE=1 snowpack build && npm run build:sw",
+    "build:mobile-staging": "npm run clean && npm run cp-mobile && npm run cp-cap-prod && SNOWPACK_PUBLIC_MOBILE=1 NODE_ENV=staging snowpack build && npm run build:sw",
+    "dev:web": "npm run cp-web && snowpack dev",
+    "build:web-production": "npm run clean && npm run cp-web && snowpack build && npm run build:sw",
+    "build:web-staging": "npm run clean && npm run cp-web && NODE_ENV=staging snowpack build && npm run build:sw",
     "test": "./test.sh",
     "check:formatting": "../node_modules/.bin/prettier --list-different \"**/*.{ts,tsx,js}\"",
     "check:lint": "../node_modules/.bin/eslint \"**/*.{ts,tsx}\"",
-    "check:types": "../node_modules/.bin/tsc --noEmit",
-    "tailwind:dev": "tailwind build src/tailwind.directives.css -o src/tailwind.css",
-    "tailwind:prod": "NODE_ENV=production tailwind build src/tailwind.directives.css -o src/tailwind.css"
+    "check:types": "../node_modules/.bin/tsc --noEmit"
   },
   "dependencies": {
     "@capacitor-community/native-audio": "file:../native-audio",
@@ -81,11 +80,14 @@
     "@types/throttle-debounce": "^2.1.0",
     "@types/tinycolor2": "^1.4.2",
     "@types/uuid": "^8.3.0",
+    "autoprefixer": "^9.8.6",
     "dotenv": "^8.2.0",
     "fake-indexeddb": "^3.1.2",
     "patch-package": "^6.2.2",
+    "postcss-cli": "^8.2.0",
     "react-test-renderer": "^16.13.1",
-    "snowpack": "^2.12.1",
-    "tailwindcss": "^1.8.10"
+    "snowpack": "^2.16.1",
+    "tailwindcss": "^1.8.10",
+    "workbox-cli": "^5.1.4"
   }
 }

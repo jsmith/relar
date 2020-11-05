@@ -10,6 +10,4 @@ capacitor.config.json
 **/fastlane/test_output
 
 build
-src/tailwind.css
-
 google-api-key.json

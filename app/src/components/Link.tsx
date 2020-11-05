@@ -43,6 +43,9 @@ export const Link = forwardRef<HTMLAnchorElement, LinkProps<keyof NavigatorRoute
         onClick={(e) => {
           if (!e.ctrlKey && !e.metaKey) {
             e.preventDefault();
+            // This is important since if there are any onClick listeners above this
+            // they won't be triggered which is *probably* ideal behavior
+            e.stopPropagation();
             navigateTo(route, params, queryParams);
             onGo && onGo();
           }
