@@ -159,6 +159,7 @@ export const App = () => {
                   >
                     <RiArrowDownCircleLine className="w-5 h-5" />
                     <div>Install App</div>
+                    <New />
                   </button>
                 )}
               </div>

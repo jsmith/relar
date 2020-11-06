@@ -86,12 +86,10 @@ export const Cell = ({
   );
 };
 
-export const LoadingCell = ({ width }: { width?: number }) => {
+export const LoadingCell = () => {
   return (
-    <Cell className="px-2 py-4" style={{}}>
-      <div className="pr-3">
-        <Skeleton width={width} />
-      </div>
+    <Cell className="px-2 py-3" style={{}}>
+      <Skeleton />
     </Cell>
   );
 };
@@ -374,8 +372,6 @@ export const SongTable = function <T extends SongInfo>({
       if (typeof value === "number") {
         return (
           <div style={style}>
-            <LoadingCell />
-            <LoadingCell />
             <LoadingCell />
           </div>
         );

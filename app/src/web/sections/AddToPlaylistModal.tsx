@@ -44,6 +44,7 @@ export const AddToPlaylistEditor = ({ song, setDisplay }: MetadataEditorProps) =
       className="space-y-2 max-w-full px-6 py-5 text-gray-800 dark:text-gray-200"
       style={{ width: "30rem" }}
       loading={loading}
+      initialFocus=""
     >
       <h1 className="text-xl">Add To Playlist</h1>
       {playlists && (

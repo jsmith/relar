@@ -38,8 +38,26 @@ import "../firebase";
 import "../tailwind.css";
 import "../common.css";
 import SnackbarProvider from "react-simple-snackbar";
-import { DarkModeProvider } from "../dark";
+import { DarkModeProvider, useDarkMode } from "../dark";
 import { registerWorker } from "../service-worker";
+import { SkeletonTheme } from "react-loading-skeleton";
+
+const SkeletonProvider = ({ children }: { children: React.ReactNode }) => {
+  const [darkMode] = useDarkMode();
+  const { color, highlightColor } = React.useMemo(
+    () => ({
+      color: darkMode ? "rgba(255, 255, 255, 0.05)" : undefined,
+      highlightColor: darkMode ? "rgba(255, 255, 255, 0.00)" : undefined,
+    }),
+    [darkMode],
+  );
+
+  return (
+    <SkeletonTheme color={color} highlightColor={highlightColor}>
+      {children}
+    </SkeletonTheme>
+  );
+};
 
 ReactDOM.render(
   <React.StrictMode>
@@ -48,15 +66,15 @@ ReactDOM.render(
         <QueueProvider>
           <ModalProvider>
             <Router routes={routes}>
-              {/* <SkeletonTheme color="rgb(255, 255, 255, 0.05)" highlightColor="rgb(255, 255, 255, 0.15)"> */}
               <ConfirmActionProvider>
                 <ConfirmPasswordProvider>
                   <SnackbarProvider>
-                    <App />
+                    <SkeletonProvider>
+                      <App />
+                    </SkeletonProvider>
                   </SnackbarProvider>
                 </ConfirmPasswordProvider>
               </ConfirmActionProvider>
-              {/* </SkeletonTheme> */}
             </Router>
           </ModalProvider>
         </QueueProvider>
