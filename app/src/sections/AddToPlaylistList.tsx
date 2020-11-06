@@ -33,14 +33,12 @@ export const AddToPlaylistList = ({
     <div className="rounded overflow-hidden">
       {playlists.map((playlist) => {
         return (
-          <div
+          <button
             key={playlist.id}
             className={classNames(
               "hover:bg-gray-300 dark:hover:bg-gray-800 py-2 px-3 md:px-2 cursor-pointer flex justify-between",
-              "items-center focus:outline-none focus:bg-gray-300 dark:focus:bg-gray-800",
+              "items-center focus:outline-none focus:bg-gray-300 dark:focus:bg-gray-800 w-full text-left",
             )}
-            tabIndex={0}
-            role="button"
             onClick={() => {
               setError("");
               setLoading(true);
@@ -66,7 +64,7 @@ export const AddToPlaylistList = ({
             </div>
 
             <HiChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-          </div>
+          </button>
         );
       })}
     </div>

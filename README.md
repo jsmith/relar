@@ -129,3 +129,11 @@ gsutil setmeta -r -h "Cache-control: private, max-age=86400" gs://relar-staging.
 - https://medium.com/firebase-developers/the-secrets-of-firestore-fieldvalue-servertimestamp-revealed-29dd7a38a82b
 - https://stackoverflow.com/questions/46806860/how-to-query-cloud-firestore-for-non-existing-keys-of-documents
 - https://medium.com/@varundudeja/showing-media-player-system-controls-on-notification-screen-in-ios-swift-4e27fbf73575
+
+## References
+
+Icons made by <a href="https://www.flaticon.com/authors/bqlqn" title="bqlqn">bqlqn</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
+
+## Favicons
+
+Use [realfavicongenerator](https://realfavicongenerator.net/) and [maskable](https://maskable.app/).

@@ -13,6 +13,8 @@ import { useLikeSong } from "./queries/songs";
 import { useQueue } from "./queue";
 import { navigateTo, NavigatorRoutes } from "./routes";
 import { Feedback } from "./sections/Feedback";
+import { showSongEditor } from "./sections/MetadataEditor";
+import { showPlaylistAddModal } from "./web/sections/AddToPlaylistModal";
 
 const NAVIGATION_TIMEOUT = 1000;
 
@@ -49,7 +51,8 @@ const col1: ShortcutInfo[] = [
   ["S", "Toggle shuffle"],
   ["R", "Toggle repeat"],
   ["L", "Like the playing track"],
-
+  ["P", "Open playlists modal"],
+  ["E", "Open metadata editor"],
   ["-", "Decrease volume"],
   ["=", "Increase volume"],
 ];
@@ -65,6 +68,7 @@ const col2: ShortcutInfo[] = [
   [["Shift", "Q"], "Toggle queue open/closed"],
   [["Shift", "U"], "Open upload modal"],
   [["Shift", "D"], "Toggle dark mode"],
+  ["/", "Open search modal"],
 ];
 
 export const Shortcuts = ({
@@ -207,11 +211,20 @@ export const useShortcuts = ({
   useHotkeys(
     "l",
     () => {
-      console.log("LIKE", songInfo?.song.liked);
       if (!songInfo?.song) return;
       setLiked(!songInfo.song.liked);
     },
     [songInfo],
+  );
+  useHotkeys("e", () => songInfo?.song && showSongEditor(songInfo.song), [songInfo?.song]);
+  useHotkeys(
+    "p",
+    (e) => {
+      if (!songInfo?.song) return;
+      e.stopImmediatePropagation();
+      showPlaylistAddModal(songInfo.song);
+    },
+    [songInfo?.song],
   );
 
   useEffect(() => {

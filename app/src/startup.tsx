@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useUser, useUserChange } from "./auth";
 import firebase from "firebase/app";
 import * as Sentry from "@sentry/browser";
@@ -10,6 +10,19 @@ export const useStartupHooks = () => {
   const { routeId } = useNavigator("home"); // "home" is just because something is required
   const { loading } = useUser();
   const open = useMySnackbar();
+  const installEvent = useRef<null | Event>(null);
+
+  useEffect(() => {
+    window.addEventListener("beforeinstallprompt", (e) => {
+      console.log("HELLO");
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      installEvent.current = e;
+      // Update UI notify the user they can install the PWA
+      // showInstallPromotion();
+    });
+  }, []);
 
   useCoolDB();
   useNavigation();
