@@ -83,9 +83,11 @@
     "autoprefixer": "^9.8.6",
     "dotenv": "^8.2.0",
     "fake-indexeddb": "^3.1.2",
+    "mobicon": "^3.0.0",
     "patch-package": "^6.2.2",
     "postcss-cli": "^8.2.0",
     "react-test-renderer": "^16.13.1",
+    "sharp": "^0.26.2",
     "snowpack": "^2.16.1",
     "tailwindcss": "^1.8.10",
     "workbox-cli": "^5.1.4"

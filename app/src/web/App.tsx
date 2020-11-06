@@ -27,6 +27,8 @@ import { SearchModal } from "../sections/SearchModal";
 import { useShortcuts } from "../shortcuts";
 import { New } from "../components/New";
 import { useDarkMode } from "../dark";
+import { useDeferredInstallPrompt } from "../service-worker";
+import { RiArrowDownCircleLine } from "react-icons/ri";
 
 export const LoadingPage = ({ className }: { className?: string }) => (
   <LoadingSpinner className={classNames(className, "bg-white dark:bg-gray-900")} />
@@ -63,6 +65,7 @@ export const App = () => {
   });
 
   const closeQueue = useCallback(() => setQueueDisplay(false), []);
+  const install = useDeferredInstallPrompt();
 
   if (loading) {
     return <LoadingPage className="h-screen" />;
@@ -111,7 +114,7 @@ export const App = () => {
           <Sidebar
             className="flex-grow"
             sidebar={
-              <div className="h-full bg-gray-900 w-56">
+              <div className="h-full bg-gray-900 w-56 flex flex-col">
                 <nav>
                   <ul>
                     {sideLinks.map((link) => (
@@ -145,6 +148,19 @@ export const App = () => {
                   <MdAddCircle className="w-6 h-6" />
                   <div className="ml-4">Upload Music</div>
                 </button>
+                <div className="flex-grow" />
+                {/* Custom install flow */}
+                {/* See https://web.dev/promote-install/ for more inspiration */}
+                {install && (
+                  <button
+                    className="flex space-x-2 items-center p-2 text-gray-400 hover:text-white hover:bg-gray-700"
+                    title="Install desktop app"
+                    onClick={install}
+                  >
+                    <RiArrowDownCircleLine className="w-5 h-5" />
+                    <div>Install App</div>
+                  </button>
+                )}
               </div>
             }
           >
@@ -193,7 +209,7 @@ export const App = () => {
           label={
             <LogoNText
               className="space-x-2"
-              logoClassName="w-8 h-8 text-purple-500"
+              logoClassName="w-6 h-6 text-purple-500"
               textClassName="sm:text-2xl text-xl tracking-wider"
             />
           }

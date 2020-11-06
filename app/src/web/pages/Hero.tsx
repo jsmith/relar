@@ -97,7 +97,7 @@ export const Hero = () => {
           <LogoNText
             logoClassName="w-16 h-16"
             textClassName="text-6xl"
-            className="space-x-3 mt-6"
+            className="space-x-3 mt-6 text-gray-800 dark:text-white"
             // justify="start"
             glitch
           />

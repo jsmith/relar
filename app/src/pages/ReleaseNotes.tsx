@@ -147,8 +147,8 @@ const changelog = create([
   {
     version: "0.13.0",
     date: "TODO",
-    features: ["Changed font to Apercu Mono", "Improved landing page"],
-    fixes: [""],
+    features: ["Changed font to Apercu Mono", "Improved landing page", "Added offline support"],
+    fixes: ["Search keyboard navigation & focus bugs"],
   },
 ]).reverse();
 

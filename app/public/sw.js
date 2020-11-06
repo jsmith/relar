@@ -9,6 +9,8 @@ importScripts("https://storage.googleapis.com/workbox-cdn/releases/5.1.2/workbox
 // CacheFirst
 // Go to the cache and don't refetch if they are there
 
+// test
+
 try {
   workbox.precaching.precacheAndRoute(self.__WB_MANIFEST);
 
@@ -17,7 +19,7 @@ try {
   workbox.routing.registerRoute(navigationRoute);
 } catch (e) {
   // Ignore errors
-  // Errors will happen during development since "self.__WB_MANIFEST" is undefined
+  // Errors will happen during development since __WB_MANIFEST is undefined
   // Also createHandlerBoundToURL will fail since "/index.html" would not have been pre-cached
   // So that I can actually develop this, I add this try/cache which works great
   // During production, this catch block is not used

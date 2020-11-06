@@ -1,11 +1,42 @@
 import * as Sentry from "@sentry/browser";
 import { emit } from "process";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createEmitter } from "./events";
 import { isMobile, IS_WEB_VIEW } from "./utils";
 
 // This is not really necessary but I have an eslint rule disallowing global variable use
 const navigator = window.navigator;
+
+/**
+ * The BeforeInstallPromptEvent is fired at the Window.onbeforeinstallprompt handler
+ * before a user is prompted to "install" a web site to a home screen on mobile.
+ *
+ * Got this type from stack overflow.
+ * https://stackoverflow.com/questions/51503754/typescript-type-beforeinstallpromptevent
+ */
+interface BeforeInstallPromptEvent extends Event {
+  /**
+   * Returns an array of DOMString items containing the platforms on which the event was dispatched.
+   * This is provided for user agents that want to present a choice of versions to the user such as,
+   * for example, "web" or "play" which would allow the user to chose between a web version or
+   * an Android version.
+   */
+  readonly platforms: Array<string>;
+
+  /**
+   * Returns a Promise that resolves to a DOMString containing either "accepted" or "dismissed".
+   */
+  readonly userChoice: Promise<{
+    outcome: "accepted" | "dismissed";
+    platform: string;
+  }>;
+
+  /**
+   * Allows a developer to show the install prompt at a time of their own choosing.
+   * This method returns a Promise.
+   */
+  prompt(): Promise<void>;
+}
 
 // The following variables can be global since they are not related to a user
 // ie. if the users change this data itself will not change
@@ -17,11 +48,11 @@ let registrationForUpdate: ServiceWorkerRegistration | undefined;
 
 // See info here on how to customize install
 // https://web.dev/customize-install/
-let deferredPrompt: Event | undefined;
+let deferredPrompt: BeforeInstallPromptEvent | undefined;
 
 const emitter = createEmitter<{
   setServiceWorker: [ServiceWorkerRegistration];
-  setDeferredPrompt: [Event];
+  setDeferredPrompt: [BeforeInstallPromptEvent];
 }>();
 
 // Make sure to store this information globally
@@ -36,7 +67,10 @@ emitter.on("setDeferredPrompt", (event) => {
 export const useDeferredInstallPrompt = () => {
   const [event, setEvent] = useState(deferredPrompt);
   useEffect(() => emitter.on("setDeferredPrompt", setEvent), []);
-  return event;
+  return useMemo(() => {
+    if (!event) return;
+    return () => event.prompt();
+  }, [event]);
 };
 
 /**
@@ -79,20 +113,19 @@ export const registerWorker = () => {
   if (isMobile()) return;
 
   window.addEventListener("beforeinstallprompt", (e) => {
-    console.log("beforeinstallprompt triggered", e);
-
     // Prevent the mini-infobar from appearing on mobile
+    // We actually aren't even installing the service worker on mobile
     e.preventDefault();
 
     // Stash the event so it can be triggered later.
-    emitter.emit("setDeferredPrompt", e);
+    // Cast since beforeinstallprompt is not widely supported yet
+    emitter.emit("setDeferredPrompt", e as BeforeInstallPromptEvent);
   });
 
   window.addEventListener("load", async () => {
     let registration: ServiceWorkerRegistration;
     try {
       registration = await navigator.serviceWorker.register("/sw.js");
-
       console.info("Service worker initialized successfully ✨");
     } catch (e) {
       console.error("Service worker failed to initialize ⚠");

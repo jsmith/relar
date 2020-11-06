@@ -135,6 +135,7 @@ export const useShortcuts = ({
       getApplicationNode={() => document.getElementById("root")!}
       dialogClass="rounded-lg bg-white dark:text-gray-200 dark:bg-gray-900 px-5 py-4 relative"
       underlayClass="flex items-center justify-center"
+      // FIXME maybe abstract this logic since it's only being used
     >
       <h1 className="text-xl font-bold">Keyboard Shortcuts</h1>
       <p className="text-gray-700 dark:text-gray-300 text-xs">

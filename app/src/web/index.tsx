@@ -43,25 +43,25 @@ import { registerWorker } from "../service-worker";
 
 ReactDOM.render(
   <React.StrictMode>
-    <UserProvider>
-      <QueueProvider>
-        <ModalProvider>
-          <Router routes={routes}>
-            {/* <SkeletonTheme color="rgb(255, 255, 255, 0.05)" highlightColor="rgb(255, 255, 255, 0.15)"> */}
-            <ConfirmActionProvider>
-              <ConfirmPasswordProvider>
-                <SnackbarProvider>
-                  <DarkModeProvider>
+    <DarkModeProvider>
+      <UserProvider>
+        <QueueProvider>
+          <ModalProvider>
+            <Router routes={routes}>
+              {/* <SkeletonTheme color="rgb(255, 255, 255, 0.05)" highlightColor="rgb(255, 255, 255, 0.15)"> */}
+              <ConfirmActionProvider>
+                <ConfirmPasswordProvider>
+                  <SnackbarProvider>
                     <App />
-                  </DarkModeProvider>
-                </SnackbarProvider>
-              </ConfirmPasswordProvider>
-            </ConfirmActionProvider>
-            {/* </SkeletonTheme> */}
-          </Router>
-        </ModalProvider>
-      </QueueProvider>
-    </UserProvider>
+                  </SnackbarProvider>
+                </ConfirmPasswordProvider>
+              </ConfirmActionProvider>
+              {/* </SkeletonTheme> */}
+            </Router>
+          </ModalProvider>
+        </QueueProvider>
+      </UserProvider>
+    </DarkModeProvider>
   </React.StrictMode>,
   document.getElementById("root"),
 );
