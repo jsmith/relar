@@ -29,4 +29,6 @@ jobs:
       - run: npm run build
         working-directory: native-audio
       - run: npx patch-package
+      - run: npx patch-package
+        working-directory: app
       - run: make checks
