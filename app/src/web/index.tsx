@@ -1,3 +1,5 @@
+/* eslint-disable no-restricted-globals */
+
 import { env } from "../env";
 import * as Sentry from "@sentry/browser";
 
@@ -36,29 +38,48 @@ import "../firebase";
 import "../tailwind.css";
 import "../common.css";
 import SnackbarProvider from "react-simple-snackbar";
-import { DarkModeProvider } from "../dark";
+import { DarkModeProvider, useDarkMode } from "../dark";
+import { registerWorker } from "../service-worker";
+import { SkeletonTheme } from "react-loading-skeleton";
+
+const SkeletonProvider = ({ children }: { children: React.ReactNode }) => {
+  const [darkMode] = useDarkMode();
+  const { color, highlightColor } = React.useMemo(
+    () => ({
+      color: darkMode ? "rgba(255, 255, 255, 0.05)" : undefined,
+      highlightColor: darkMode ? "rgba(255, 255, 255, 0.00)" : undefined,
+    }),
+    [darkMode],
+  );
+
+  return (
+    <SkeletonTheme color={color} highlightColor={highlightColor}>
+      {children}
+    </SkeletonTheme>
+  );
+};
 
 ReactDOM.render(
   <React.StrictMode>
-    <UserProvider>
-      <QueueProvider>
-        <ModalProvider>
-          <Router routes={routes}>
-            {/* <SkeletonTheme color="rgb(255, 255, 255, 0.05)" highlightColor="rgb(255, 255, 255, 0.15)"> */}
-            <ConfirmActionProvider>
-              <ConfirmPasswordProvider>
-                <SnackbarProvider>
-                  <DarkModeProvider>
-                    <App />
-                  </DarkModeProvider>
-                </SnackbarProvider>
-              </ConfirmPasswordProvider>
-            </ConfirmActionProvider>
-            {/* </SkeletonTheme> */}
-          </Router>
-        </ModalProvider>
-      </QueueProvider>
-    </UserProvider>
+    <DarkModeProvider>
+      <UserProvider>
+        <QueueProvider>
+          <ModalProvider>
+            <Router routes={routes}>
+              <ConfirmActionProvider>
+                <ConfirmPasswordProvider>
+                  <SnackbarProvider>
+                    <SkeletonProvider>
+                      <App />
+                    </SkeletonProvider>
+                  </SnackbarProvider>
+                </ConfirmPasswordProvider>
+              </ConfirmActionProvider>
+            </Router>
+          </ModalProvider>
+        </QueueProvider>
+      </UserProvider>
+    </DarkModeProvider>
   </React.StrictMode>,
   document.getElementById("root"),
 );
@@ -68,3 +89,5 @@ ReactDOM.render(
 if (import.meta.hot) {
   import.meta.hot.accept();
 }
+
+registerWorker();

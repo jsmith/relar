@@ -20,6 +20,7 @@ import { useQueue } from "../queue";
 import { Thumbnail } from "../components/Thumbnail";
 import { SearchResults, useSearch } from "../search";
 import { Shortcut } from "../components/Shortcut";
+import { useDarkMode } from "../dark";
 
 const ResultList = function <
   T extends { title: string; song: Song | undefined; subtitle: string | undefined }
@@ -68,7 +69,7 @@ const ResultList = function <
   );
 
   const className =
-    "flex items-center justify-between group hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg py-3 pl-2 pr-4 focus:bg-gray-200 focus:outline-none search-result w-full space-x-2";
+    "flex items-center justify-between group hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg py-3 pl-2 pr-4 focus:bg-gray-200 dark:focus:bg-gray-700 focus:outline-none search-result w-full space-x-2";
 
   return (
     <div className="w-full">
@@ -134,6 +135,10 @@ export const SearchModal = ({ onExit }: { onExit: () => void }) => {
   });
 
   const move = (event: KeyboardEvent, amount: number) => {
+    // Prevent scrolling and other things
+    // We are taking over these controls
+    event.preventDefault();
+
     // Isolate the node that we're after
     const currentNode = event.target as HTMLLinkElement;
     if (
@@ -150,7 +155,7 @@ export const SearchModal = ({ onExit }: { onExit: () => void }) => {
     ] as unknown) as HTMLLinkElement[];
 
     // Find the current tab index.
-    const currentIndex = allElements.findIndex((el) => currentNode.isEqualNode(el));
+    const currentIndex = allElements.findIndex((el) => currentNode === el);
 
     // focus the following element
     const targetIndex = currentIndex + amount;
@@ -215,7 +220,6 @@ export const SearchModal = ({ onExit }: { onExit: () => void }) => {
             placeholder="What do you want to listen to?"
             onKeyDown={(e) => {
               if (e.key === "ArrowDown") {
-                e.preventDefault();
                 move(e.nativeEvent, 1);
               }
             }}

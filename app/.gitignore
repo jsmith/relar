@@ -10,6 +10,7 @@ capacitor.config.json
 **/fastlane/test_output
 
 build
-src/tailwind.css
-
 google-api-key.json
+
+# Ignore since this is generated
+logo.png

@@ -14,5 +14,9 @@ module.exports = {
     opacity: ["responsive", "hover", "focus", "group-hover", "group-focus"],
   },
   plugins: [require("@tailwindcss/custom-forms")],
-  purge: ["./src/**/*.html", "./src/**/*.tsx", "./src/**/*.ts"],
+  purge: {
+    // I have to do this since tailwind only purges in "production" by default
+    enabled: process.env.NODE_ENV === "production" || process.env.NODE_ENV === "staging",
+    content: ["./src/**/*.html", "./src/**/*.tsx", "./src/**/*.ts"],
+  },
 };

@@ -1,6 +1,4 @@
 import React from "react";
-import { SiAudiomack } from "react-icons/si";
+import { Logo } from "../illustrations/Logo";
 
-export const LogoIcon = ({ className }: { className?: string }) => (
-  <SiAudiomack className={className} />
-);
+export const LogoIcon = ({ className }: { className?: string }) => <Logo className={className} />;

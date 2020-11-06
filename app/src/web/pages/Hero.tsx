@@ -7,11 +7,12 @@ import { Feature } from "../../components/Feature";
 import { HiOutlineCloudDownload } from "react-icons/hi";
 import { HeartBeat } from "../../illustrations/HeartBeat";
 import { CgUndo } from "react-icons/cg";
+import { LogoNText } from "../../components/LogoNText";
 
 const faq = [
   [
     "What file formats do you support?",
-    "Only mp3 files are supported at the moment but I plan to add support for other common file formats before the official release.",
+    "Only Mp3 files are supported at the moment but I plan to add support for other common file formats before the official release.",
   ],
   [
     "Are there any limits to the amount of uploaded songs?",
@@ -55,16 +56,16 @@ export const Hero = () => {
         <div className="flex">
           <div className="space-y-5 sm:max-w-md">
             <h1 className="text-gray-800 dark:text-gray-200 tracking-tight text-4xl font-bold tight">
-              Your mp3 library.
+              Your Mp3 library.
             </h1>
-            <span className="text-purple-800 dark:text-purple-500 text-xl leading-none">
+            <span className="text-purple-800 dark:text-purple-400 text-xl leading-none">
               Streamed everywhere.
             </span>
             <div className="w-24 h-1 bg-purple-600" />
             <div className="text-gray-600 dark:text-gray-200 text-sm">
-              Bummed out that Google Play Music is deprecated? Looking to host your mp3 collection
-              online? Relar allows you to upload your curated audio file collection and stream to
-              all of your devices.
+              Bummed out that Google Play Music is gone? Looking to host your mp3 collection online?
+              Relar allows you to upload your curated audio file collection and stream to all of
+              your devices.
             </div>
           </div>
           <div className="flex-grow" />
@@ -73,9 +74,10 @@ export const Hero = () => {
             <PersonMusic className="h-48 md:h-56" />
           </div>
         </div>
+
         <div className="mx-auto">
           <Feature
-            title="MP3 Support"
+            title="Mp3 Support"
             text="Upload your mp3 collection to our app using our web uploader."
             icon={HeartBeat}
           />
@@ -92,7 +94,14 @@ export const Hero = () => {
             icon={CgUndo}
           />
           <div className="h-5" />
-          <div className="flex justify-center">
+          <LogoNText
+            logoClassName="w-16 h-16"
+            textClassName="text-6xl"
+            className="space-x-3 mt-6 text-gray-800 dark:text-white"
+            // justify="start"
+            glitch
+          />
+          <div className="flex justify-center mt-3">
             <Link label="Beta Sign Up →" className={button({ color: "purple" })} route="signup" />
           </div>
           <div className="h-16" />

@@ -1,5 +1,5 @@
 import Fuse from "fuse.js";
-import { RefObject, useMemo } from "react";
+import { useMemo } from "react";
 import { throttle } from "throttle-debounce";
 import { getAlbumArtistFromSong } from "./queries/album";
 import { Song } from "./shared/universal/types";

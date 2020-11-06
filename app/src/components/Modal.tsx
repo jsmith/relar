@@ -3,6 +3,7 @@ import AriaModal from "react-aria-modal";
 import { LoadingSpinner } from "./LoadingSpinner";
 import classNames from "classnames";
 import { HiOutlineX } from "react-icons/hi";
+import { useDarkMode } from "../dark";
 
 export interface ModalProps {
   children: React.ReactNode;
@@ -34,6 +35,7 @@ export const Modal = ({
       initialFocus={initialFocus}
       getApplicationNode={() => document.getElementById("root")!}
       underlayStyle={{ paddingTop: "2em" }}
+      // underlayColor={darkModeRef.current ? "rgba(255, 255, 255, 0.1)" : undefined}
     >
       <div
         className={classNames(

@@ -11,6 +11,9 @@
   "mount": {
     "src/shared": "/_dist_/shared"
   },
+  "scripts": {
+    "build:css": "postcss"
+  },
   "exclude": ["**/src/shared/node/**", "**/load-env.ts"],
   "devOptions": {
     "port": 3000
