@@ -52,8 +52,8 @@ const changelog = create([
       "Fixed song rendering bug on Safari",
       "Fixed scrolling for albums, artists and playlists and home pages",
       "Other small styling fixes",
+      "Updated the beta guide with known issues",
     ],
-    features: ["Updated the beta guide with known issues"],
   },
   {
     version: "0.7.0",
@@ -143,6 +143,17 @@ const changelog = create([
     version: "0.12.1",
     date: "November 2 2020",
     fixes: ["Fixed dark mode versions of login, signup and invite pages"],
+  },
+  {
+    version: "0.13.0",
+    date: "November 6 2020",
+    features: [
+      "Changed font to Apercu Mono",
+      "Improved landing page",
+      "Added offline support",
+      'Added "Add to to Playlist" and "Edit Info" keyboard shortcuts',
+    ],
+    fixes: ["Search keyboard navigation & focus bugs"],
   },
 ]).reverse();
 

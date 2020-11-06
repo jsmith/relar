@@ -607,6 +607,8 @@ export const QueueAudio = () => {
   return (
     <Portal>
       <audio
+        // See https://developers.google.com/web/tools/workbox/guides/advanced-recipes#cached-av
+        crossOrigin="anonymous"
         ref={(el) => {
           if (el === null) _setRef(null);
           else

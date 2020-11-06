@@ -1,8 +1,9 @@
 import React, { useRef } from "react";
 import type { IconType } from "react-icons/lib";
 import classNames from "classnames";
-import { bgApp } from "../classes";
 import useDropdownMenu from "react-accessible-dropdown-menu-hook";
+
+// FIXME use headless
 
 export interface ItemProps {
   onKeyDown: (e: React.KeyboardEvent<HTMLAnchorElement>) => void;
