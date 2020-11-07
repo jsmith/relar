@@ -22,6 +22,7 @@ export const Thumbnail = ({ song, className, style, setAverageColor, size }: Thu
     <div
       className={classNames("bg-gray-400 lg:shadow-xl flex items-center justify-center", className)}
       style={style}
+      key={thumbnail}
     >
       {thumbnail ? (
         <img

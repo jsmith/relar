@@ -155,6 +155,12 @@ const changelog = create([
     ],
     fixes: ["Search keyboard navigation & focus bugs"],
   },
+  {
+    version: "0.14.0",
+    date: "November 7 2020",
+    features: ["Added the ability to upload files when providing feedback"],
+    fixes: ["Small bug fixes"],
+  },
 ]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (

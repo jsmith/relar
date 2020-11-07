@@ -7,7 +7,6 @@ import {
   MutableRefObject,
   useState,
   useEffect,
-  RefObject,
 } from "react";
 import * as Sentry from "@sentry/browser";
 import tiny from "tinycolor2";
@@ -24,6 +23,7 @@ import {
 } from "./shared/universal/types";
 import { createPath } from "./shared/universal/utils";
 import firebase from "firebase/app";
+import * as uuid from "uuid";
 
 const { Storage } = Plugins;
 
@@ -707,5 +707,25 @@ export const clientStorage = (storage: firebase.storage.Storage, userId: string)
     },
     song: (songId: string, fileName: string) =>
       storage.ref(path.append("songs").append(songId).append(fileName).build()),
+    feedbackUpload: (id: string, fileName: string) =>
+      // There is a small small chance of a duplicate
+      // I only use 10 since I really hate how long the strings are
+      // If there is a conflict, it isn't *that* big of an issue
+      storage.ref(`${userId}/feedback/${id}/${uuid.v4().slice(0, 8)}_${fileName}`),
   };
+};
+
+export const toFileArray = (fileList: FileList) => {
+  const files: File[] = [];
+  for (let i = 0; i < fileList.length; i++) files.push(fileList[i]);
+  return files;
+};
+
+// https://stackoverflow.com/a/28120564/13928257
+export const bytesToHumanReadable = (bytes: number) => {
+  if (bytes == 0) {
+    return "0B";
+  }
+  const e = Math.floor(Math.log(bytes) / Math.log(1024));
+  return (bytes / Math.pow(1024, e)).toFixed(2) + "" + " KMGTP".charAt(e) + "B";
 };
