@@ -262,7 +262,7 @@ export const SongTableRow = <T extends SongInfo>({
             <IconButton
               icon={MdMoreVert}
               className="group-hover:w-8 focus:w-8 w-0 overflow-hidden py-1 pl-1 flex-shrink-0"
-              hoverClassName="hover:bg-gray-400 hover:bg-gray-600 focus:bg-gray-400 dark:focus:bg-gray-600 focus:outline-none"
+              hoverClassName="hover:bg-gray-400 dark:hover:bg-gray-600 focus:bg-gray-400 dark:focus:bg-gray-600 focus:outline-none"
               iconClassName="w-0 w-6 h-6"
               {...props}
             />

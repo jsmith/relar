@@ -1,16 +1,14 @@
 import * as f from "firebase-functions";
-import * as os from "os";
 import * as path from "path";
 import sharp from "sharp";
 import * as fs from "fs-extra";
-import * as crypto from "crypto";
 import { Result, ok, err, ResultAsync, Err } from "neverthrow";
 import * as mm from "music-metadata";
 import { ObjectMetadata } from "firebase-functions/lib/providers/storage";
 import { Song, UserDataType, Artwork, UploadAction } from "./shared/universal/types";
 import { admin } from "./admin";
 import { env } from "./env";
-import { adminDb, md5Hash, serverTimestamp } from "./shared/node/utils";
+import { adminDb, md5Hash, serverTimestamp, createTmpDir } from "./shared/node/utils";
 import { wrapAndReport, setSentryUser, Sentry } from "./sentry";
 import * as uuid from "uuid";
 import { removedUndefinedValues } from "./shared/universal/utils";
@@ -94,21 +92,6 @@ const downloadObject = (tmpDir: string, bucket: string, name: string) => (): Res
       message: `Unknown error while downloading "${name}": ` + e,
     }),
   ).map(() => tmpFilePath);
-};
-
-const createTmpDir = async () => {
-  const token = crypto.randomBytes(32).toString("hex");
-  const tmpDir = path.join(os.tmpdir(), "functions", token);
-
-  // Ensure tmp dir exists
-  await fs.ensureDir(tmpDir);
-
-  return {
-    tmpDir,
-    dispose: () => {
-      fs.remove(tmpDir);
-    },
-  };
 };
 
 // For reference -> https://us-central1-relar-production.cloudfunctions.net/health

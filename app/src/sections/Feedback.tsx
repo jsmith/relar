@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Modal } from "../components/Modal";
-import { link } from "../classes";
+import { link, textGray600 } from "../classes";
 import { IssueOutlineOffset } from "../illustrations/IssueOutlineOffset";
 import classNames from "classnames";
 import { IdeaIcon } from "../illustrations/IdeaIcon";
@@ -10,6 +10,11 @@ import { serverTimestamp, useUserData } from "../firestore";
 import * as uuid from "uuid";
 import { BlockAlert } from "../components/BlockAlert";
 import { AirplaneIcon } from "../illustrations/AirplaneIcon";
+import { bytesToHumanReadable, captureAndLog, toFileArray } from "../utils";
+import { HiOutlineUpload, HiOutlineX } from "react-icons/hi";
+import { DragDiv } from "../components/DragDiv";
+import { useUserStorage } from "../storage";
+import { Link } from "../components/Link";
 
 export interface FeedbackProps {
   onExit: () => void;
@@ -56,6 +61,9 @@ const IconInput = ({
   );
 };
 
+// Maybe keep this in sync with the song size restriction?
+const twentyMb = 1024 * 1024 * 20;
+
 export const Feedback = ({ onExit }: FeedbackProps) => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -63,6 +71,20 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
   const userData = useUserData();
+  const storage = useUserStorage();
+  const fileUpload = useRef<HTMLInputElement | null>(null);
+  const [files, setFiles] = useState<Array<{ file: File; url: string }>>([]);
+
+  const addFiles = (fileList: FileList | null) => {
+    if (!fileList) {
+      return;
+    }
+
+    setFiles((current) => [
+      ...current,
+      ...toFileArray(fileList).map((file) => ({ file, url: URL.createObjectURL(file) })),
+    ]);
+  };
 
   const submitForm = async () => {
     // Just a sanity check! We disable the button anyway if these are not defined
@@ -71,9 +93,26 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
     const id = uuid.v4();
     const ref = userData.feedback(id);
 
+    // We don't tell users about this since it's unlikely they will try to upload this # of items
+    if (files.length > 50) {
+      setError("You can only upload a maximum of 50 items");
+      return;
+    }
+
     setError("");
     setLoading(true);
     try {
+      for (const { file } of files) {
+        if (file.size > twentyMb) {
+          setError(`"${file.name}" is larger than 20 MB`);
+          return;
+        }
+
+        const ref = storage.feedbackUpload(id, file.name);
+        await ref.put(file);
+      }
+
+      // TODO check size and put information blurb about size restriction
       await ref.set({
         id,
         feedback,
@@ -92,6 +131,7 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
 
   const reset = () => {
     setError("");
+    setFiles([]);
     setSuccess(false);
     setFeedback("");
     setType(undefined);
@@ -100,7 +140,17 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
   return (
     <Modal
       titleText="Add To Playlist"
-      onExit={onExit}
+      onExit={() => {
+        if (files.length > 0 || feedback) {
+          const result = confirm(
+            "Are you sure you want to close the feedback modal? You will lose your feedback.",
+          );
+
+          if (!result) return;
+        }
+
+        onExit();
+      }}
       className="space-y-2 max-w-full px-6 py-5 dark:text-gray-200"
       style={{ width: "30rem" }}
       loading={loading}
@@ -122,8 +172,8 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
                 rel="noreferrer"
               >
                 roadmap
-              </a>
-              .{" "}
+              </a>{" "}
+              and <Link route="release-notes" label="release notes" />.
             </p>
           </BlockAlert>
           <p className="text-center">
@@ -182,15 +232,87 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
               />
             </div>
             {type && (
-              <textarea
-                className={classNames(
-                  "border-gray-300 dark:border-gray-700 border rounded w-full py-1 px-2 mt-6",
-                  "bg-gray-800",
-                )}
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-                rows={3}
-              />
+              <>
+                <label className="text-gray-700 dark:text-gray-300">
+                  <span className="text-sm font-bold inline-block mt-6">Description*</span>
+
+                  <textarea
+                    className={classNames(
+                      "border-gray-300 dark:border-gray-700 border rounded w-full py-1 px-2",
+                      "dark:bg-gray-800",
+                    )}
+                    value={feedback}
+                    onChange={(e) => setFeedback(e.target.value)}
+                    rows={3}
+                    required
+                  />
+                </label>
+                <input
+                  type="file"
+                  multiple
+                  className="hidden"
+                  ref={fileUpload}
+                  onChange={(e) => addFiles(e.target.files)}
+                />
+                <label className="text-gray-700 dark:text-gray-300">
+                  <span className="text-sm font-bold leading-none">Attach File(s)</span>
+                  <p className="text-xs">
+                    Attach any screenshots or files that you think would help. Each file must be
+                    equal or less than 20MB.
+                  </p>
+                  <DragDiv
+                    className="rounded border border-dashed border-gray-400 dark:border-gray-600 flex items-center justify-center flex-col py-3 space-y-2 mt-2"
+                    addFiles={addFiles}
+                    dragOverClassName="bg-gray-200 dark:bg-gray-800"
+                  >
+                    <div className="text-sm ">
+                      Drag files or{" "}
+                      <button
+                        title="Upload feedback files"
+                        className={link()}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          fileUpload.current && fileUpload.current.click();
+                        }}
+                      >
+                        click here
+                      </button>
+                      !
+                    </div>
+                  </DragDiv>
+                </label>
+                <div className="divide-y dark:divide-gray-700 text-gray-700 dark:text-gray-300 py-1">
+                  {files.map(({ file, url }, i) => (
+                    <div key={i} className="flex py-2 items-center justify-between space-x-2">
+                      <div className="flex space-x-3 items-baseline min-w-0">
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={classNames("leading-none truncate min-w-0 text-sm", link())}
+                          title={file.name}
+                        >
+                          {file.name}
+                        </a>
+                        <div className={classNames("text-xs leading-none", textGray600)}>
+                          {bytesToHumanReadable(file.size)}
+                        </div>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setFiles((files) => [
+                            ...files.slice(0, i),
+                            ...files.slice(i + 1, files.length),
+                          ]);
+                        }}
+                      >
+                        <HiOutlineX className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
             <Button
               theme={type === undefined || !feedback ? "disabled" : "purple"}

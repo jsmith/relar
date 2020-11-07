@@ -133,7 +133,3 @@ gsutil setmeta -r -h "Cache-control: private, max-age=86400" gs://relar-staging.
 ## References
 
 Icons made by <a href="https://www.flaticon.com/authors/bqlqn" title="bqlqn">bqlqn</a> from <a href="https://www.flaticon.com/" title="Flaticon"> www.flaticon.com</a>
-
-## Favicons
-
-Use [realfavicongenerator](https://realfavicongenerator.net/) and [maskable](https://maskable.app/).

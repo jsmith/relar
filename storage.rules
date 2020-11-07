@@ -11,6 +11,10 @@ service firebase.storage {
       match /song_artwork/{songId}/{artworkFileName} {
       	allow get: if request.auth.uid == userId;
       }
+
+      match /feedback/{id}/{fileName} {
+        allow create: if request.auth.uid == userId && request.resource.size <= 20 * 1024 * 1024;
+      }
     }
   }
 }

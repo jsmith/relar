@@ -139,13 +139,11 @@ export const assertDeleted = async (
 };
 
 export const assertFileDoesNotExist = async (file: StorageFile) => {
-  // const file = storage.bucket().file(`testUser/song_artwork/${song?.artwork?.hash}/artwork.jpg`);
   const [exists] = await file.exists();
   assert.equal(exists, false);
 };
 
 export const assertFileExists = async (file: StorageFile) => {
-  // const file = storage.bucket().file(`testUser/song_artwork/${song?.artwork?.hash}/artwork.jpg`);
   const [exists] = await file.exists();
   assert.equal(exists, true);
 };
