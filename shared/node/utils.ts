@@ -10,8 +10,9 @@ import {
   FirestoreTimestamp,
 } from "../universal/types";
 import { GetFilesResponse } from "@google-cloud/storage";
-import * as fs from "fs";
+import * as fs from "fs-extra";
 import * as crypto from "crypto";
+import * as os from "os";
 import { err, ok, Result } from "neverthrow";
 
 export const deleteCollection = async (
@@ -131,3 +132,18 @@ export const md5Hash = (localFilePath: string): Promise<Result<string, Error>> =
 
 export const serverTimestamp = () =>
   (admin.firestore.FieldValue.serverTimestamp() as unknown) as FirestoreTimestamp;
+
+export const createTmpDir = async () => {
+  const token = crypto.randomBytes(32).toString("hex");
+  const tmpDir = path.join(os.tmpdir(), "functions", token);
+
+  // Ensure tmp dir exists
+  await fs.ensureDir(tmpDir);
+
+  return {
+    tmpDir,
+    dispose: () => {
+      fs.remove(tmpDir);
+    },
+  };
+};
