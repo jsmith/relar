@@ -283,13 +283,14 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
                 </label>
                 <div className="divide-y dark:divide-gray-700 text-gray-700 dark:text-gray-300 py-1">
                   {files.map(({ file, url }, i) => (
-                    <div key={i} className="flex py-2 items-center justify-between">
-                      <div className="flex space-x-3 items-baseline">
+                    <div key={i} className="flex py-2 items-center justify-between space-x-2">
+                      <div className="flex space-x-3 items-baseline min-w-0">
                         <a
                           href={url}
                           target="_blank"
                           rel="noreferrer"
-                          className={classNames("leading-none", link())}
+                          className={classNames("leading-none truncate min-w-0 text-sm", link())}
+                          title={file.name}
                         >
                           {file.name}
                         </a>
