@@ -8,8 +8,9 @@ import { useUserStorage } from "../storage";
 import firebase from "firebase/app";
 import { useUserData } from "../firestore";
 import { UploadAction } from "../shared/universal/types";
-import { useStateWithRef } from "../utils";
+import { toFileArray, useStateWithRef } from "../utils";
 import { MdErrorOutline } from "react-icons/md";
+import { DragDiv } from "../components/DragDiv";
 
 export interface UploadModalProps {
   children?: React.ReactNode;
@@ -17,12 +18,6 @@ export interface UploadModalProps {
   display: boolean;
   setDisplay: (display: boolean) => void;
 }
-
-const toFileArray = (fileList: FileList) => {
-  const files: File[] = [];
-  for (let i = 0; i < fileList.length; i++) files.push(fileList[i]);
-  return files;
-};
 
 export const UploadModal = ({ children, className, display, setDisplay }: UploadModalProps) => {
   const [files, setFiles, filesRef] = useStateWithRef<
@@ -34,7 +29,6 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
     }>
   >([]);
   const fileUpload = useRef<HTMLInputElement | null>(null);
-  const [count, setCount] = useState(0);
   const storage = useUserStorage();
   const createdSnapshot = useRef<(() => void) | null>(null);
   const userData = useUserData();
@@ -100,23 +94,7 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
   };
 
   return (
-    <div
-      className={className}
-      onDragOver={(e) => {
-        e.preventDefault();
-      }}
-      onDrop={(e) => {
-        e.preventDefault();
-        addFiles(e.dataTransfer.files);
-        setCount(Math.max(count - 1, 0));
-      }}
-      onDragEnter={(e) => {
-        e.preventDefault();
-        setDisplay(true);
-        setCount(count + 1);
-      }}
-      onDragLeave={() => setCount(Math.max(count - 1, 0))}
-    >
+    <DragDiv className={className} addFiles={addFiles} onDragEnter={() => setDisplay(true)}>
       {children}
       {display && (
         <AriaModal
@@ -192,6 +170,6 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
           </div>
         </AriaModal>
       )}
-    </div>
+    </DragDiv>
   );
 };

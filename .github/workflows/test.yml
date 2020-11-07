@@ -5,8 +5,8 @@ on: [pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    # Typically it takes less than 2 minutes to run all of the checks :)
-    timeout-minutes: 3
+    # Typically it takes ~ 3 minutes to run all of the checks :)
+    timeout-minutes: 4
 
     steps:
       - uses: actions/checkout@v2
