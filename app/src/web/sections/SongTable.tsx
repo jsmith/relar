@@ -42,22 +42,26 @@ const widths = {
   dateAdded: { flex: "0 0 100px" },
   duration: { flex: "0 0 60px" },
   liked: { flex: "0 0 50px" },
+  track: { flex: "0 0 40px" },
 };
 
 export const HeaderCol = ({
   label,
   className,
   style,
+  position = "left",
 }: {
   label: React.ReactNode;
   className?: string;
   style: CSSProperties;
+  position?: "left" | "center";
 }) => {
   return (
     <div
       className={classNames(
-        "text-left text-gray-800 dark:text-gray-200 text-xs uppercase tracking-wider font-bold",
+        "text-gray-800 dark:text-gray-200 text-xs uppercase tracking-wider font-bold py-2",
         className,
+        position === "left" ? "text-left" : "text-center",
       )}
       style={style}
     >
@@ -108,6 +112,7 @@ export interface SongTableRowProps<T extends SongInfo> {
   paused: boolean;
   children?: React.ReactNode;
   includeDateAdded?: boolean;
+  includeAlbumNumber?: boolean;
   index: number;
   style: CSSProperties;
   beforeShowModal?: () => void;
@@ -121,6 +126,7 @@ export const SongTableRow = <T extends SongInfo>({
   playing,
   paused,
   includeDateAdded,
+  includeAlbumNumber,
   index,
   style,
   beforeShowModal,
@@ -207,7 +213,15 @@ export const SongTableRow = <T extends SongInfo>({
       onClick={() => setSong(song)}
       style={style}
     >
-      <Cell className="flex space-x-2 items-center pl-3" style={widths.title}>
+      {includeAlbumNumber && (
+        <Cell style={widths.track} className="pl-2">
+          {song.track?.no}
+        </Cell>
+      )}
+      <Cell
+        className={classNames("flex space-x-2 items-center", !includeAlbumNumber && "pl-3")}
+        style={widths.title}
+      >
         <div className="w-8 h-8 relative flex-shrink-0 flex items-center justify-center">
           {playing ? (
             <Audio
@@ -281,7 +295,7 @@ export const SongTableRow = <T extends SongInfo>({
           {album}
         </Cell>
       )}
-      <Cell className="text-center truncate" style={widths.songCount}>
+      <Cell className="truncate" style={widths.songCount}>
         {`${song.played ?? ""}`}
       </Cell>
       {includeDateAdded && (
@@ -312,6 +326,7 @@ export interface SongTableProps<T extends SongInfo> {
   actions?: SongTableItem<T>[];
 
   includeDateAdded?: boolean;
+  includeAlbumNumber?: boolean;
 
   // Queue source
   source: SetQueueSource;
@@ -328,6 +343,7 @@ export const SongTable = function <T extends SongInfo>({
   source,
   mode = "regular",
   includeDateAdded,
+  includeAlbumNumber,
   beforeShowModal,
 }: SongTableProps<T>) {
   const ref = useRef<List | null>(null);
@@ -394,6 +410,7 @@ export const SongTable = function <T extends SongInfo>({
           playing={playing}
           paused={!notPaused}
           includeDateAdded={includeDateAdded}
+          includeAlbumNumber={includeAlbumNumber}
           beforeShowModal={beforeShowModal}
         />
       );
@@ -401,6 +418,7 @@ export const SongTable = function <T extends SongInfo>({
     [
       actionsWithAddRemove,
       includeDateAdded,
+      includeAlbumNumber,
       mode,
       notPaused,
       rows,
@@ -415,23 +433,22 @@ export const SongTable = function <T extends SongInfo>({
   return (
     <div className="text-gray-800 w-full flex flex-col">
       <div key={mode} className="flex">
+        {includeAlbumNumber && <HeaderCol label="#" className="pl-2" style={widths.track} />}
         <HeaderCol
           label={mode === "regular" ? "Title" : "Song"}
-          className="py-2 pl-10"
+          className={includeAlbumNumber ? "" : "pl-3"}
           style={widths.title}
         />
-        {mode === "regular" && <HeaderCol label="Artist" className="py-2" style={widths.artist} />}
-        {mode === "regular" && <HeaderCol label="Album" className="py-2" style={widths.album} />}
+        {mode === "regular" && <HeaderCol label="Artist" style={widths.artist} />}
+        {mode === "regular" && <HeaderCol label="Album" style={widths.album} />}
         <HeaderCol
-          label={<MdMusicNote className="w-5 h-5" />}
-          className="py-2"
+          label={<MdMusicNote className="w-5 h-5" style={{ marginLeft: "-0.15rem" }} />}
+          className=""
           style={widths.songCount}
         />
-        {includeDateAdded && (
-          <HeaderCol label="Date Added" className="py-2" style={widths.dateAdded} />
-        )}
-        <HeaderCol label="" className="py-2" style={widths.duration} />
-        <HeaderCol label="" className="py-2" style={widths.liked} />
+        {includeDateAdded && <HeaderCol label="Date Added" style={widths.dateAdded} />}
+        <HeaderCol label="" style={widths.duration} />
+        <HeaderCol label="" style={widths.liked} />
       </div>
       <div className="flex-grow flex">
         <AutoSizer>
