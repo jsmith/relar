@@ -21,7 +21,7 @@ jobs:
       - run: npm run build
         working-directory: native-audio
       - run: npm run build
-        working-directory: function
+        working-directory: functions
       - run: npm run build:web-production
         working-directory: app
 

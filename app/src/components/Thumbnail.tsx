@@ -26,6 +26,7 @@ export const Thumbnail = ({ song, className, style, setAverageColor, size }: Thu
     >
       {thumbnail ? (
         <img
+          key={thumbnail}
           // onLoad={onLoad}
           onLoad={async (e) => {
             if (!setAverageColor) return;

@@ -57,15 +57,19 @@ workbox.routing.registerRoute(
   }),
 );
 
-workbox.routing.registerRoute(
-  ({ url }) => {
-    return url.pathname.endsWith(".mp3");
-  },
-  new workbox.strategies.CacheFirst({
-    cacheName: "music",
-    plugins: [
-      new workbox.cacheableResponse.CacheableResponsePlugin({ statuses: [200] }),
-      new workbox.rangeRequests.RangeRequestsPlugin(),
-    ],
-  }),
-);
+// I assumed this was a good idea to cache mp3 files
+// But... it actually downloads the entire song
+// It would be worth looking into this further
+// An LRU cache would be cache
+// workbox.routing.registerRoute(
+//   ({ url }) => {
+//     return url.pathname.endsWith(".mp3");
+//   },
+//   new workbox.strategies.CacheFirst({
+//     cacheName: "music",
+//     plugins: [
+//       new workbox.cacheableResponse.CacheableResponsePlugin({ statuses: [200] }),
+//       new workbox.rangeRequests.RangeRequestsPlugin(),
+//     ],
+//   }),
+// );

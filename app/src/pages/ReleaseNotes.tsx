@@ -161,6 +161,12 @@ const changelog = create([
     features: ["Added the ability to upload files when providing feedback"],
     fixes: ["Small bug fixes"],
   },
+  {
+    version: "0.15.0",
+    date: "November 8 2020",
+    features: ["Added Chrome Media Session support"],
+    fixes: ["Fixed issue where songs were being downloaded before playback"],
+  },
 ]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (
