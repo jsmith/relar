@@ -25,6 +25,7 @@ export interface SongsOverviewProps<T extends SongInfo> {
   songActions?: SongTableItem<T>[];
   source: SetQueueSource;
   includeDateAdded?: boolean;
+  includeAlbumNumber?: boolean;
 }
 
 export const SongsOverview = <T extends SongInfo>({
@@ -36,6 +37,7 @@ export const SongsOverview = <T extends SongInfo>({
   songActions,
   source,
   includeDateAdded,
+  includeAlbumNumber,
 }: SongsOverviewProps<T>) => {
   const { setQueue } = useQueue();
   const [averageColor, setAverageColor] = useState("#cbd5e0");
@@ -145,6 +147,7 @@ export const SongsOverview = <T extends SongInfo>({
           actions={songActions}
           source={source}
           includeDateAdded={includeDateAdded}
+          includeAlbumNumber={includeAlbumNumber}
         />
       </div>
     </div>

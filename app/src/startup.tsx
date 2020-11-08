@@ -14,7 +14,6 @@ export const useStartupHooks = () => {
 
   useEffect(() => {
     window.addEventListener("beforeinstallprompt", (e) => {
-      console.log("HELLO");
       // Prevent the mini-infobar from appearing on mobile
       e.preventDefault();
       // Stash the event so it can be triggered later.
