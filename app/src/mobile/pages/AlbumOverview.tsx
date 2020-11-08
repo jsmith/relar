@@ -9,10 +9,10 @@ export const AlbumOverview = () => {
 
   return (
     <SongsOverview
-      songs={album.songs}
-      title={album.album || "Unknown Album"}
-      subTitle={album.artist || "Unknown Artist"}
-      source={{ type: "album", id: album.id, sourceHumanName: album?.album ?? "" }}
+      songs={album?.songs}
+      title={album?.album || "Unknown Album"}
+      subTitle={album?.artist || "Unknown Artist"}
+      source={{ type: "album", id: album?.id || "", sourceHumanName: album?.album ?? "" }}
     />
   );
 };

@@ -28,6 +28,8 @@ const main = async () => {
 
     await song.ref.update(update);
   }
+
+  await admin.auth().app.delete();
 };
 
 main();

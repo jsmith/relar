@@ -164,7 +164,7 @@ const changelog = create([
   {
     version: "0.15.0",
     date: "November 8 2020",
-    features: ["Added Chrome Media Session support"],
+    features: ["Added Chrome Media Session support", "Added album numbers to album page"],
     fixes: ["Fixed issue where songs were being downloaded before playback"],
   },
 ]).reverse();
