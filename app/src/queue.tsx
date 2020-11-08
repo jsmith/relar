@@ -17,6 +17,9 @@ import * as uuid from "uuid";
 import { captureException } from "@sentry/browser";
 import { getUserDataOrError, serverTimestamp } from "./firestore";
 import { useChangedSongs } from "./db";
+import { tryToGetDownloadUrlOrLog } from "./queries/thumbnail";
+import { getDefinedUser } from "./auth";
+import { isDefined } from "./shared/universal/utils";
 
 const emitter = createEmitter<{ updateCurrentTime: [number] }>();
 
@@ -146,6 +149,7 @@ export const QueueContext = createContext<{
   shuffle: boolean;
   toggleShuffle: () => void;
   setShuffle: (value: boolean) => void;
+  /** Stop playing and clear the state */
   stopPlaying: () => void;
   playIfNotPlaying: () => void;
   pauseIfPlaying: () => void;
@@ -602,21 +606,90 @@ export const QueueProvider = (props: React.Props<{}>) => {
 
 export const QueueAudio = () => {
   const { Portal } = usePortal();
-  const { _setRef, _nextAutomatic, playIfNotPlaying, pauseIfPlaying } = useQueue();
+  const {
+    _setRef,
+    _nextAutomatic,
+    playIfNotPlaying,
+    pauseIfPlaying,
+    next,
+    previous,
+    stopPlaying,
+  } = useQueue();
+
+  useEffect(() => {
+    const actionHandlers = [
+      ["play", playIfNotPlaying],
+      ["pause", pauseIfPlaying],
+      ["previoustrack", previous],
+      ["nexttrack", next],
+      ["stop", stopPlaying],
+    ] as const;
+
+    const setHandler = (action: MediaSessionAction, handler?: () => void) => {
+      try {
+        window.navigator.mediaSession?.setActionHandler(action, handler ?? null);
+      } catch (error) {
+        console.info(`The media session action "${action}" is not supported yet.`);
+      }
+    };
+
+    for (const [action, handler] of actionHandlers) {
+      setHandler(action, handler);
+    }
+    // Unsetting a media session action handler is as easy as setting it to null.
+
+    return () => {
+      for (const [action] of actionHandlers) {
+        setHandler(action);
+      }
+    };
+  });
 
   return (
     <Portal>
       <audio
+        // This is super important
+        // Opt-in to CORS
         // See https://developers.google.com/web/tools/workbox/guides/advanced-recipes#cached-av
-        crossOrigin="anonymous"
+        // crossOrigin="anonymous"
         ref={(el) => {
           if (el === null) _setRef(null);
           else
             _setRef(
               Object.assign(el, {
-                setSrc: async (opts: { src: string } | null) => {
+                setSrc: async (opts: { src: string; song: Song } | null) => {
                   if (opts) {
                     el.src = opts.src;
+                    const { song } = opts;
+
+                    // Great docs about this here -> https://web.dev/media-session/
+                    if (!window.navigator.mediaSession) return;
+                    const mediaSession = window.navigator.mediaSession;
+
+                    const sizes = ["128", "256"] as const;
+                    const thumbnails = sizes.map((size) =>
+                      tryToGetDownloadUrlOrLog(getDefinedUser(), song, size),
+                    );
+
+                    Promise.all(thumbnails)
+                      .then((thumbnails) =>
+                        thumbnails.filter(isDefined).map((src, i) => ({
+                          src,
+                          sizes: `${sizes[i]}x${sizes[i]}`,
+                          // We know it's defined at this point since we are working with the artwork
+                          // We need the conditional since type is "png" | "jpg" and "image/jpg" is
+                          // not valid
+                          type: `image/${song.artwork!.type === "png" ? "png" : "jpeg"}`,
+                        })),
+                      )
+                      .then((artwork) => {
+                        mediaSession.metadata = new MediaMetadata({
+                          title: song.title,
+                          artist: song.artist || "Unknown Artist",
+                          album: song.albumName || "Unknown Album",
+                          artwork,
+                        });
+                      });
                   } else {
                     // This is important since if the player is currently playing we need to make sure it stops
                     el.pause();

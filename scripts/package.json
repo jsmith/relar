@@ -8,6 +8,7 @@
     "dotenv": "^8.2.0",
     "firebase": "^7.20.0",
     "firebase-admin": "^9.0.0",
+    "fs-extra": "^9.0.1",
     "music-metadata": "^7.4.1",
     "neverthrow": "^2.7.1",
     "runtypes": "^4.3.0",
