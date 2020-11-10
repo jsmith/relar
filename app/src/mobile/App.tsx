@@ -47,7 +47,6 @@ class Controls implements AudioControls {
 
   async setSrc(opts: { src: string; song: Song } | null) {
     if (!opts) {
-      console.log("STOPPING");
       NativeAudio.stop();
       return;
     }

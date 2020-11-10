@@ -21,7 +21,6 @@ import {
   UserData,
   UserFeedback,
 } from "./shared/universal/types";
-import { createPath } from "./shared/universal/utils";
 import firebase from "firebase/app";
 import * as uuid from "uuid";
 
@@ -672,14 +671,13 @@ export const isDefinedSnapshot = <T>(
 
 export const clientDb = (userId: string) => {
   const db = firebase.firestore();
-  const path = createPath().append("user_data").append(userId);
 
   return {
     userId,
     song: (songId: string) =>
-      db.doc(path.append("songs").append(songId).build()) as DocumentReference<Song>,
-    songs: () => db.collection(path.append("songs").build()) as CollectionReference<Song>,
-    doc: () => db.doc(path.build()) as DocumentReference<UserData>,
+      db.doc(`user_data/${userId}/songs/${songId}`) as DocumentReference<Song>,
+    songs: () => db.collection(`user_data/${userId}/songs`) as CollectionReference<Song>,
+    doc: () => db.doc(`user_data/${userId}`) as DocumentReference<UserData>,
     playlists: () =>
       db.collection(`user_data/${userId}/playlists`) as CollectionReference<Playlist>,
     playlist: (id: string) =>
@@ -692,21 +690,19 @@ export const clientDb = (userId: string) => {
 };
 
 export const clientStorage = (storage: firebase.storage.Storage, userId: string) => {
-  const path = createPath().append(userId);
-
   return {
     artworks: (hash: string, type: "jpg" | "png") => {
-      const artworksPath = path.append("song_artwork").append(hash);
+      const artworksPath = `${userId}/song_artwork/${hash}`;
       return {
-        original: () => storage.ref(artworksPath.append(`artwork.${type}`).build()),
-        "32": () => storage.ref(artworksPath.append(`thumb@32_artwork.${type}`).build()),
-        "64": () => storage.ref(artworksPath.append(`thumb@64_artwork.${type}`).build()),
-        "128": () => storage.ref(artworksPath.append(`thumb@128_artwork.${type}`).build()),
-        "256": () => storage.ref(artworksPath.append(`thumb@256_artwork.${type}`).build()),
+        original: () => storage.ref(`${artworksPath}/artwork.${type}`),
+        "32": () => storage.ref(`${artworksPath}/thumb@32_artwork.${type}`),
+        "64": () => storage.ref(`${artworksPath}/thumb@64_artwork.${type}`),
+        "128": () => storage.ref(`${artworksPath}/thumb@128_artwork.${type}`),
+        "256": () => storage.ref(`${artworksPath}/thumb@256_artwork.${type}`),
       };
     },
     song: (songId: string, fileName: string) =>
-      storage.ref(path.append("songs").append(songId).append(fileName).build()),
+      storage.ref(`${userId}/songs/${songId}/${fileName}`),
     feedbackUpload: (id: string, fileName: string) =>
       // There is a small small chance of a duplicate
       // I only use 10 since I really hate how long the strings are
@@ -728,4 +724,25 @@ export const bytesToHumanReadable = (bytes: number) => {
   }
   const e = Math.floor(Math.log(bytes) / Math.log(1024));
   return (bytes / Math.pow(1024, e)).toFixed(2) + "" + " KMGTP".charAt(e) + "B";
+};
+
+/**
+ * I'm not sure if you need to do this on iOS but it works for android.
+ *
+ * See https://stackoverflow.com/questions/8335834/how-can-i-hide-the-android-keyboard-using-javascript
+ */
+export const closeMobileKeyboard = (element: HTMLInputElement) => {
+  element.readOnly = true;
+  element.disabled = true;
+
+  // element.attr('readonly', 'readonly'); // Force keyboard to hide on input field.
+  // element.attr('disabled', 'true'); // Force keyboard to hide on textarea field.
+  setTimeout(function () {
+    element.blur(); //actually close the keyboard
+    // Remove readonly attribute after keyboard is hidden.
+    element.readOnly = false;
+    element.disabled = false;
+    // element.removeAttr('readonly');
+    // element.removeAttr('disabled');
+  }, 100);
 };

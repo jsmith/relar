@@ -652,6 +652,7 @@ export const QueueAudio = () => {
         // Opt-in to CORS
         // See https://developers.google.com/web/tools/workbox/guides/advanced-recipes#cached-av
         // crossOrigin="anonymous"
+        // preload="metadata"
         ref={(el) => {
           if (el === null) _setRef(null);
           else

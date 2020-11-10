@@ -32,7 +32,7 @@ jobs:
 
       # - if: steps.changes.outputs.any_changed == 'true'
       - run: npm install --no-save firebase-tools
-      - run: firebase deploy --project production
+      - run: npx firebase deploy --project production
 
       # FIREBASE_TOKEN generated using firebase login:ci
       # See https://firebase.google.com/docs/cli#cli-ci-systems

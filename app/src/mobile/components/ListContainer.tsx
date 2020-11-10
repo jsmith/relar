@@ -107,7 +107,7 @@ export const ListContainer = function <T, K extends keyof T, E>({
 
       resetTimer();
 
-      console.log(`Scrolling to ${rowHeight * index} (${rowHeight} * ${index})`);
+      console.info(`Scrolling to ${rowHeight * index} (${rowHeight} * ${index})`);
       container.current.scrollTop = rowHeight * index;
     },
     [rowHeight, items, resetTimer, sortKey],

@@ -191,10 +191,7 @@ export const useShortcuts = ({
 
   useHotkeys("g", () => {
     const now = Date.now();
-    navigateIfLessThanTimeout(whenG, "genres", () => {
-      console.log("CURRENT");
-      whenG.current = now;
-    });
+    navigateIfLessThanTimeout(whenG, "genres", () => (whenG.current = now));
   });
 
   useHotkeys("-", () => setVolume((volume) => volume - 2));

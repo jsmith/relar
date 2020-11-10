@@ -111,6 +111,10 @@ export const SongsOverview = ({
     outerRef.current.style.overflow = "hidden";
   });
 
+  // TODO fix scrolling
+  // TODO fix icons + splash screen
+  // Work on improving animation. Google??
+
   return (
     <motion.div className="w-full overflow-y-scroll" ref={ref}>
       {/* <motion.div style={{ opacity, display }} className="z-10 fixed">

@@ -37,5 +37,5 @@ Promise.all(
     ]),
   )
   .then(() => [512, 152, 144, 128, 96, 72, 384].forEach((size) => fs.unlinkSync(create(size))))
-  .then(() => console.log(`✔ success`))
-  .catch((error) => console.log(`✖ ${error.message}`));
+  .then(() => console.info(`✔ success`))
+  .catch((error) => console.error(`✖ ${error.message}`));

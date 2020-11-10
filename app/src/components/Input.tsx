@@ -1,6 +1,6 @@
 import React from "react";
 import classNames from "classnames";
-import { isMobile, Keys, parseIntOr } from "../utils";
+import { Keys, parseIntOr } from "../utils";
 import { field } from "../classes";
 
 export type InputProps = {
@@ -13,6 +13,7 @@ export type InputProps = {
   onEnter?: () => void;
   autoFocus?: boolean;
   required?: boolean;
+  inputRef?: React.Ref<HTMLInputElement>;
 } & (
   | {
       type?: "email" | "password";
@@ -35,6 +36,7 @@ export const Input = (props: InputProps) => {
         </span>
       )}
       <input
+        ref={props.inputRef}
         required={props.required}
         value={props.value ?? ""}
         type={props.type}
@@ -47,9 +49,7 @@ export const Input = (props: InputProps) => {
             : props.onChange(e.target.value)
         }
         // Disable for mobile since users usually just want to exit their keyboard
-        onKeyDown={(e) =>
-          e.keyCode === Keys.Return && !isMobile() && props.onEnter && props.onEnter()
-        }
+        onKeyDown={(e) => e.keyCode === Keys.Return && props.onEnter && props.onEnter()}
         autoFocus={props.autoFocus}
       />
     </label>

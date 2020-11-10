@@ -200,7 +200,7 @@ export const useCoolDB = () => {
 
         let items: Item[];
         if (lastUpdated === undefined) {
-          console.log(
+          console.info(
             `[${model}] The last updated time was undefined. Fetching entire collection...`,
           );
 
@@ -215,9 +215,9 @@ export const useCoolDB = () => {
             model,
           );
 
-          console.log(`[${model}] Success! Got ${items.length} items from collection.`);
+          console.info(`[${model}] Success! Got ${items.length} items from collection.`);
           await db.putBulkValue(model, items);
-          console.log(`[${model}] Success! Wrote ${items.length} items to IndexedDB`);
+          console.info(`[${model}] Success! Wrote ${items.length} items to IndexedDB`);
 
           const maxUpdatedAt = getMaxUpdatedAt(items);
           lastUpdated = { name: model, value: maxUpdatedAt };
@@ -241,7 +241,7 @@ export const useCoolDB = () => {
             })),
           );
 
-          console.log(`[${model}] Loaded ${items.length} ${model} from IndexedDB`);
+          console.info(`[${model}] Loaded ${items.length} ${model} from IndexedDB`);
         }
 
         // Emit and cache right away so users get the items
