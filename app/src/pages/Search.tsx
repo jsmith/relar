@@ -11,7 +11,12 @@ export const Search = () => {
   const { query } = queryParams;
   const songs = useCoolSongs();
   const [results, setResults] = useState<SearchResults>();
-  const search = useSearch({ text: { current: query }, songs, setResults, numItems: Infinity });
+  const search = useSearch({
+    text: { current: query ?? "" },
+    songs,
+    setResults,
+    numItems: Infinity,
+  });
 
   useEffect(() => {
     search();
