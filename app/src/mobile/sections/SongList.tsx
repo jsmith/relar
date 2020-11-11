@@ -1,4 +1,4 @@
-import React, { Ref, useMemo } from "react";
+import React, { memo, Ref, useMemo } from "react";
 import { MdAddToQueue, MdPlaylistAdd } from "react-icons/md";
 import { useDeleteSong } from "../../queries/songs";
 import { fmtMSS, onConditions, useMySnackbar } from "../../utils";
@@ -19,6 +19,7 @@ import { usePlaylistCreate, usePlaylistRemoveSong } from "../../queries/playlist
 import { AddToPlaylistList } from "../../sections/AddToPlaylistList";
 import { MusicListItem, MusicListItemState } from "./MusicListItem";
 import { captureException } from "@sentry/browser";
+import { areEqual } from "react-window";
 
 export interface SongListProps {
   songs: SongInfo[] | undefined;
@@ -161,6 +162,8 @@ const SongListRow = ({
   );
 };
 
+const SongListRowMemo = memo(SongListRow, areEqual);
+
 export const SongList = ({
   songs,
   mode,
@@ -175,7 +178,7 @@ export const SongList = ({
       height={73}
       items={songs}
       sortKey="title"
-      row={SongListRow}
+      row={SongListRowMemo}
       mode={mode}
       className={className}
       disableNavigator={disableNavigator}

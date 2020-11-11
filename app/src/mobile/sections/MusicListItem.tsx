@@ -32,7 +32,7 @@ export const MusicListItem = ({
     <div
       className={classNames(
         "flex items-center space-x-2 w-full focus:outline-none",
-        mode === "regular" ? "p-1 border-b" : "py-1",
+        mode === "regular" ? "p-1 border-b" : "py-1 px-2",
       )}
       tabIndex={0}
       onClick={onClick}

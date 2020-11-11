@@ -6,7 +6,7 @@ import React, {
   forwardRef,
   MutableRefObject,
 } from "react";
-import { generatedTypeToName, SongInfo, useQueue } from "../../queue";
+import { generatedTypeToName, SongInfo, useHumanReadableName, useQueue } from "../../queue";
 import { SongTable } from "./SongTable";
 import { MdQueueMusic, MdMoreVert } from "react-icons/md";
 import { useOnClickOutside, useCombinedRefs } from "../../utils";
@@ -34,29 +34,7 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
 
     useHotkeys("escape", () => visible && close(), [visible]);
 
-    const humanReadableName = useMemo((): string | false => {
-      if (!songInfo?.source.type) {
-        return false;
-      }
-
-      switch (songInfo.source.type) {
-        case "album":
-        case "artist":
-        case "playlist":
-          return songInfo.source.sourceHumanName;
-        case "genre":
-          // The id is just the name of the genre
-          return songInfo.source.id;
-        case "generated":
-          return generatedTypeToName[songInfo.source.id];
-        case "library":
-          return "Library";
-        case "manuel":
-          return false;
-        case "queue":
-          return false;
-      }
-    }, [songInfo?.source]);
+    const humanReadableName = useHumanReadableName(songInfo);
 
     const style: CSSProperties = visible
       ? {

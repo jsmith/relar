@@ -1,8 +1,9 @@
-import React, { useMemo } from "react";
+import React, { memo, useMemo } from "react";
 import { ListContainer, ListContainerRowProps } from "../components/ListContainer";
 import { getArtistRouteParams, navigateTo } from "../../routes";
 import { MusicListItem } from "../sections/MusicListItem";
 import { Artist, useArtists } from "../../queries/artist";
+import { areEqual } from "react-window";
 
 const ArtistRow = ({ item: artist, mode, style }: ListContainerRowProps<Artist>) => {
   const song = useMemo(() => artist.songs.find((song) => !!song.artwork), [artist.songs]);
@@ -18,6 +19,8 @@ const ArtistRow = ({ item: artist, mode, style }: ListContainerRowProps<Artist>)
   );
 };
 
+export const ArtistRowMemo = memo(ArtistRow, areEqual);
+
 export const Artists = () => {
   const artists = useArtists();
   return (
@@ -25,7 +28,7 @@ export const Artists = () => {
       height={73}
       items={artists}
       sortKey="name"
-      row={ArtistRow}
+      row={ArtistRowMemo}
       extra={{}}
       className="w-full"
     />

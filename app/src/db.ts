@@ -119,14 +119,12 @@ export class IndexedDb {
     return result;
   }
 
-  // TODO batch these inserts to avoid exeptions
   public async putBulkValue(tableName: IndexDBTypes, values: object[]) {
     const tx = this.getOrError().transaction(tableName, "readwrite");
     const store = tx.objectStore(tableName);
     for (const value of values) {
-      const result = await store.put(value);
+      await store.put(value);
     }
-    return this.getAllValue(tableName);
   }
 
   public async deleteValue(tableName: string, id: string) {
@@ -181,7 +179,7 @@ export const useCoolDB = () => {
       if (!user) return;
       cache = {};
       // Use the name of the user so that the data from one user doesn't mess with the data from another user
-      // TODO is this secure?
+      // FIXME is this secure?
       const db = new IndexedDb(user.uid);
       await db.createObjectStore([]);
       const songs = clientDb(user.uid).songs();

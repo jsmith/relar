@@ -167,6 +167,11 @@ const changelog = create([
     features: ["Added Chrome Media Session support", "Added album numbers to album page"],
     fixes: ["Fixed issue where songs were being downloaded before playback"],
   },
+  {
+    version: "0.15.1",
+    date: "TODO and TODO version",
+    fixes: ["Small bug fixes and improvements"],
+  },
 ]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (

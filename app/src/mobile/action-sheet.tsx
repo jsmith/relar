@@ -18,7 +18,6 @@ export type ActionSheetItem<K extends keyof NavigatorRoutes = keyof NavigatorRou
   | {
       type: "link";
       route: K;
-      // FIXME not type safe
       params?: NavigatorRoutes[K]["params"];
     }
 );

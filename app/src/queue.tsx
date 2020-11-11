@@ -469,7 +469,8 @@ export const QueueProvider = (props: React.Props<{}>) => {
       }
 
       // It's important that we do this before shuffling
-      await changeSongIndex(index ?? 0);
+      // TODO test jumping
+      await changeSongIndex(index ?? 0, true);
 
       if (source.type !== "queue" && shuffleRef.current === "true") {
         shuffleSongs();
@@ -716,4 +717,30 @@ export const QueueAudio = () => {
 
 export const useQueue = () => {
   return useContext(QueueContext);
+};
+
+export const useHumanReadableName = (item: QueueItem | undefined) => {
+  return useMemo((): string | false => {
+    if (!item?.source.type) {
+      return false;
+    }
+
+    switch (item.source.type) {
+      case "album":
+      case "artist":
+      case "playlist":
+        return item.source.sourceHumanName;
+      case "genre":
+        // The id is just the name of the genre
+        return item.source.id;
+      case "generated":
+        return generatedTypeToName[item.source.id];
+      case "library":
+        return "Library";
+      case "manuel":
+        return false;
+      case "queue":
+        return false;
+    }
+  }, [item?.source]);
 };

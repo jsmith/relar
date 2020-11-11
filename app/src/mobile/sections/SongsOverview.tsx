@@ -51,17 +51,18 @@ export const SongsOverview = ({
     const local = ref.current;
     const onScroll = () => {
       // For debugging only
-      // console.debug(
-      //   local.scrollTop,
-      //   local.scrollHeight,
-      //   local.offsetHeight,
-      //   local.scrollHeight - local.scrollTop,
-      // );
+      console.info(
+        local.scrollTop,
+        local.scrollHeight,
+        local.offsetHeight,
+        local.scrollHeight - local.scrollTop,
+      );
 
       if (outerRef.current) {
-        outerRef.current.style.overflow =
-          local.scrollHeight - local.scrollTop <= local.offsetHeight ? "auto" : "hidden";
+        outerRef.current.style.pointerEvents =
+          local.scrollHeight - local.scrollTop <= local.offsetHeight ? "auto" : "none";
       }
+      // outerRef.current?.momu
 
       scrollY.set(local.scrollTop);
     };
@@ -111,9 +112,10 @@ export const SongsOverview = ({
     outerRef.current.style.overflow = "hidden";
   });
 
-  // TODO fix scrolling
+  // TODO fix scrolling on songs overview
+  // TODO remove framer motion in most places??
   // TODO fix icons + splash screen
-  // Work on improving animation. Google??
+  // TODO darkmode settings
 
   return (
     <motion.div className="w-full overflow-y-scroll" ref={ref}>
@@ -179,7 +181,7 @@ export const SongsOverview = ({
 
       <div className="border-t m-3" />
 
-      <SongList songs={songs} source={source} outerRef={outerRef} />
+      <SongList songs={songs} source={source} outerRef={outerRef} disableNavigator />
     </motion.div>
   );
 };

@@ -97,7 +97,7 @@ export const AccountDropdown = () => {
                 </div>
 
                 <div className="px-4 py-2">
-                  {/* TODO not accessible */}
+                  {/* FIXME not accessible */}
                   <Switch.Group as="div" className="flex items-center space-x-4 justify-between">
                     <Switch.Label className="text-sm flex items-center space-x-2">
                       <span>Dark Mode</span>

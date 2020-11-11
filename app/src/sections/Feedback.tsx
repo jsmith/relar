@@ -112,7 +112,6 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
         await ref.put(file);
       }
 
-      // TODO check size and put information blurb about size restriction
       await ref.set({
         id,
         feedback,

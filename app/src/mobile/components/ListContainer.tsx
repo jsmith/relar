@@ -47,7 +47,8 @@ export interface ListContainerProps<T, K extends keyof T, E> {
   height: number;
   items: Array<T> | undefined;
   sortKey: K;
-  row: (props: ListContainerRowProps<T> & E) => JSX.Element;
+  row: React.ComponentType<ListContainerRowProps<T> & E>;
+  // row: (props: ListContainerRowProps<T> & E) => JSX.Element;
   mode?: ListContainerMode;
   className?: string;
   disableNavigator?: boolean;
@@ -67,10 +68,11 @@ export const ListContainer = function <T, K extends keyof T, E>({
   extra,
   outerRef,
 }: ListContainerProps<T, K, E>) {
-  const container = useRef<HTMLDivElement | null>(null);
   const timer = useRef<NodeJS.Timeout>();
   const opacity = useMotionValue(0);
   const pointerEvents = useTransform(opacity, (value) => (value === 0 ? "none" : ""));
+  const listRef = useRef<List | null>(null);
+  const firstScroll = useRef(true);
 
   const clearTimer = useCallback(() => {
     if (timer.current === undefined) return;
@@ -78,6 +80,18 @@ export const ListContainer = function <T, K extends keyof T, E>({
   }, []);
 
   const resetTimer = useCallback(() => {
+    if (disableNavigator) return;
+
+    // Ok so "onScroll" triggers right away
+    // This sets opacity to 1 which is great but for some reason
+    // The opacity stays 0 in the DOM
+    // Sooooo, since "onScroll" *always* seems to trigger I disable the first event
+    // This seems to fix all of the issues
+    if (firstScroll.current) {
+      firstScroll.current = false;
+      return;
+    }
+
     if (opacity.get() === 0) {
       opacity.set(1);
     }
@@ -87,14 +101,14 @@ export const ListContainer = function <T, K extends keyof T, E>({
 
     timer.current = setTimeout(() => {
       opacity.set(0);
-    }, 1000);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    }, 100000);
+  }, [clearTimer, disableNavigator, opacity]);
 
   const scrollTo = useCallback(
     (letter: string) => {
       if (!items) return;
-      if (!container.current) return;
+      if (!listRef.current) return;
+      // if (firstScroll.current) return;
       letter = letter.toLowerCase();
       let index = items.length - 1;
       for (const [i, item] of items.entries()) {
@@ -107,22 +121,23 @@ export const ListContainer = function <T, K extends keyof T, E>({
 
       resetTimer();
 
-      console.info(`Scrolling to ${rowHeight * index} (${rowHeight} * ${index})`);
-      container.current.scrollTop = rowHeight * index;
+      console.info(`Scrolling to ${index * rowHeight} (${index} * ${rowHeight})`);
+      listRef.current.scrollTo(index * rowHeight);
     },
-    [rowHeight, items, resetTimer, sortKey],
+    [items, resetTimer, rowHeight, sortKey],
   );
 
   useEffect(() => {
-    if (!container.current || disableNavigator) return;
-    const local = container.current;
+    return clearTimer;
+  }, [clearTimer]);
 
-    local.addEventListener("scroll", resetTimer);
-    return () => {
-      local.removeEventListener("scroll", resetTimer);
-      clearTimer();
-    };
-  }, [clearTimer, disableNavigator, resetTimer]);
+  useEffect(
+    () =>
+      opacity.onChange((value) => {
+        console.log(value);
+      }),
+    [opacity],
+  );
 
   const RowWrapper = useCallback(
     ({ index, style }: { index: number; style: CSSProperties }) => (
@@ -143,13 +158,17 @@ export const ListContainer = function <T, K extends keyof T, E>({
   return (
     <AutoSizer>
       {({ height, width }) => (
-        <div className={className} ref={container}>
+        <div className={className}>
           <List
+            ref={listRef}
             itemCount={items?.length ?? 0}
             itemSize={rowHeight}
             height={height}
             width={width}
             outerRef={outerRef}
+            onScroll={() => {
+              resetTimer();
+            }}
           >
             {RowWrapper}
           </List>
@@ -160,14 +179,15 @@ export const ListContainer = function <T, K extends keyof T, E>({
             >
               <motion.div
                 className={classNames(
-                  "sticky h-full rounded-lg bg-gray-800 text-gray-200 p-1 bg-opacity-75  flex flex-col text-2xs justify-between ease-in-out duration-500 transform transition-opacity",
+                  "sticky h-full rounded-lg bg-gray-800 text-gray-200 p-1 bg-opacity-75",
+                  "flex flex-col text-2xs justify-between ease-in-out duration-500 transform transition-opacity",
                 )}
                 style={{ opacity }}
               >
                 {letters.map((letter) => (
                   <button
                     key={letter}
-                    className="uppercase select-none focus:outline-none text-lg"
+                    className="uppercase select-none focus:outline-none text-lg leading-none"
                     onTouchStart={() => scrollTo(letter)}
                     onMouseDown={() => scrollTo(letter)}
                     onTouchMove={(e) => {

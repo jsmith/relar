@@ -1,3 +1,8 @@
+html {
+  /* For mobile bug where the page was scrolling due to absolutely positioned player */
+  overflow: hidden;
+}
+
 /* This is for tbe BetaGuide component */
 .beta-guide li {
   position: relative;
@@ -155,4 +160,9 @@ body {
   62% {
     transform: translate(-22px, 5px) skew(21deg);
   }
+}
+
+.tester-temp {
+  /* transform: translateZ(0);
+  backface-visibility: hidden; */
 }

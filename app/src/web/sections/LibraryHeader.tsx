@@ -66,7 +66,7 @@ export const LibraryHeader = () => {
           });
         }}
       >
-        <span>Shuffle </span>
+        <span>Shuffle</span>
         <MdShuffle className="w-5 h-5" />
       </button>
     </div>
