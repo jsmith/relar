@@ -56,12 +56,12 @@ export const SlideUpScreenContainer = ({ children }: { children: React.ReactNode
   }, []);
 
   return (
-    <div className="bg-black">
-      <motion.div style={{ scale }} className="bg-white">
+    <div id="emptiness" className="bg-black">
+      <motion.div id="screen" style={{ scale }}>
         {children}
       </motion.div>
       <motion.div
-        className="absolute bg-gray-100 bottom-0 left-0 right-0 z-30 rounded-t-lg overflow-hidden"
+        className="fixed bg-gray-100 bottom-0 left-0 right-0 z-30 rounded-t-lg overflow-hidden"
         animate={content ? "showScreen" : "hideScreen"}
         initial={false}
         // touch-action: none to fix https://github.com/framer/motion/issues/281

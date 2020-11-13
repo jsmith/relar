@@ -1,4 +1,4 @@
-import React, { memo, Ref, useMemo } from "react";
+import React, { memo, MutableRefObject, Ref, useMemo } from "react";
 import { MdAddToQueue, MdPlaylistAdd } from "react-icons/md";
 import { useDeleteSong } from "../../queries/songs";
 import { fmtMSS, onConditions, useMySnackbar } from "../../utils";
@@ -27,7 +27,7 @@ export interface SongListProps {
   className?: string;
   disableNavigator?: boolean;
   source: SetQueueSource;
-  outerRef?: Ref<HTMLDivElement>;
+  outerRef?: MutableRefObject<HTMLDivElement | null>;
 }
 
 const AddToPlaylistMenu = ({ song, hide }: { song: Song; hide: () => void }) => {

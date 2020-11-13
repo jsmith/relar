@@ -1,0 +1,162 @@
+import React, { useState } from "react";
+import { getAlbumRouteParams, getArtistRouteParams, NavigatorRoutes } from "../../routes";
+import { HiChevronDown, HiDotsHorizontal, HiHome, HiSearch, HiTrash, HiX } from "react-icons/hi";
+import {
+  MdPauseCircleFilled,
+  MdPlayCircleFilled,
+  MdQueueMusic,
+  MdSkipNext,
+  MdSkipPrevious,
+} from "react-icons/md";
+import { Thumbnail } from "../../components/Thumbnail";
+import { Repeat } from "../../components/Repeat";
+import { SongTimeSlider } from "../../sections/SongTimeSlider";
+import { LikedIcon } from "../../components/LikedIcon";
+import { useHumanReadableName, useQueue } from "../../queue";
+import { Shuffle } from "../../components/Shuffle";
+import { useWindowSize } from "../../utils";
+import { openActionSheet } from "../action-sheet";
+import { RiAlbumLine } from "react-icons/ri";
+import classNames from "classnames";
+import { useTemporaryStatusBar } from "../status-bar";
+import { StatusBarStyle } from "@capacitor/core";
+import { Transition } from "@headlessui/react";
+import { SongList } from "./SongList";
+import { useLikeSong } from "../../queries/songs";
+import { AiOutlineUser } from "react-icons/ai";
+import { TextRotation } from "../components/TextRotation";
+
+export const BigPlayer = ({
+  show,
+  hide,
+  openQueue,
+}: {
+  show: boolean;
+  hide: () => void;
+  openQueue: () => void;
+}) => {
+  const [showPlayer, setShowPlayer] = useState(false);
+  const {
+    mode,
+    toggleMode,
+    shuffle,
+    toggleShuffle,
+    toggleState,
+    clear,
+    playing,
+    songInfo,
+    previous,
+    next,
+    queue,
+  } = useQueue();
+  const humanReadableName = useHumanReadableName(songInfo);
+  const setLiked = useLikeSong(songInfo?.song);
+
+  return (
+    <div
+      className={classNames(
+        "bg-gray-800 fixed inset-0 transition-transform transform duration-500 z-20 flex flex-col",
+        "pb-4 safe-top",
+        show ? "translate-y-0" : "translate-y-full",
+      )}
+      onTransitionEnd={() => setShowPlayer(show)}
+    >
+      {showPlayer && (
+        <>
+          <div className="flex text-gray-200">
+            <button
+              className="focus:outline-none p-4"
+              onClick={() => {
+                // Remove inner contents first to reduce animation lag
+                // This is important on low powered devices
+                setShowPlayer(false);
+                hide();
+              }}
+            >
+              <HiChevronDown className="w-6 h-6" />
+            </button>
+
+            <div className="flex-grow text-xs text-gray-300 flex justify-center items-center min-w-0">
+              <div className="truncate">{`Playing ${humanReadableName}`}</div>
+            </div>
+
+            <button
+              className="focus:outline-none p-4"
+              onClick={() => {
+                if (!songInfo) return;
+                openActionSheet([
+                  songInfo.song.artist
+                    ? {
+                        label: "Go To Artist",
+                        icon: AiOutlineUser,
+                        route: "artist",
+                        type: "link",
+                        params: getArtistRouteParams(songInfo.song.artist),
+                        onGo: hide,
+                      }
+                    : undefined,
+                  {
+                    label: "Go to Album",
+                    icon: RiAlbumLine,
+                    route: "album",
+                    type: "link",
+                    params: getAlbumRouteParams(songInfo.song),
+                    onGo: hide,
+                  },
+                  { label: "Clear Queue", icon: HiTrash, onClick: clear, type: "click" },
+                ]);
+              }}
+            >
+              <HiDotsHorizontal className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="flex w-full px-8 items-center justify-center flex-grow">
+            <Thumbnail song={songInfo?.song} size="256" className="w-48 h-48" />
+          </div>
+
+          {/* The mb-2 is there since the padding just wasn't cutting it on android mobile */}
+          <div className="w-full px-8 space-y-5 flex-shrink-0">
+            <div className="overflow-hidden">
+              <TextRotation
+                text={songInfo?.song.title ?? ""}
+                className="text-xl text-gray-100 font-bold"
+                on={show}
+              />
+              <div className="text-gray-300 text-opacity-75">{songInfo?.song.artist}</div>
+            </div>
+            <SongTimeSlider duration={songInfo?.song.duration} />
+            <div className="flex justify-around items-center">
+              <Repeat mode={mode} toggleMode={toggleMode} iconClassName="w-8 h-8" />
+              <button onClick={previous} className="focus:outline-none">
+                <MdSkipPrevious className="text-gray-200 w-12 h-12" />
+              </button>
+              <button onClick={toggleState} className="focus:outline-none">
+                {playing ? (
+                  <MdPauseCircleFilled className="text-gray-200 w-20 h-20" />
+                ) : (
+                  <MdPlayCircleFilled className="text-gray-200 w-20 h-20" />
+                )}
+              </button>
+
+              <button onClick={next} className="focus:outline-none">
+                <MdSkipNext className="text-gray-200 w-12 h-12" />
+              </button>
+              <Shuffle iconClassName="w-8 h-8" shuffle={shuffle} toggleShuffle={toggleShuffle} />
+            </div>
+            <div className="flex justify-between">
+              <LikedIcon
+                liked={songInfo?.song.liked}
+                setLiked={setLiked}
+                iconClassName="w-6 h-6"
+                className="focus:outline-none m-2"
+              />
+              <button className="focus:outline-none" onClick={openQueue}>
+                <MdQueueMusic className={classNames("w-6 h-6 text-gray-200 rounded m-2")} />
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};

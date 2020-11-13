@@ -51,7 +51,7 @@ export const Library = () => {
               <HiChevronRight />
             </>
           }
-          className="px-4 py-4 flex items-center justify-between border-b"
+          className="px-4 py-4 flex items-center justify-between border-b dark:border-gray-700"
         />
       ))}
     </div>

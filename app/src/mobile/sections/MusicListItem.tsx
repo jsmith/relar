@@ -32,7 +32,7 @@ export const MusicListItem = ({
     <div
       className={classNames(
         "flex items-center space-x-2 w-full focus:outline-none",
-        mode === "regular" ? "p-1 border-b" : "py-1 px-2",
+        mode === "regular" ? "p-1 border-b dark:border-gray-700" : "py-1 px-2",
       )}
       tabIndex={0}
       onClick={onClick}
@@ -65,6 +65,7 @@ export const MusicListItem = ({
       <button
         className="p-1"
         onClick={(e) => {
+          console.log(e);
           e.stopPropagation();
           if (!actionItems) return;
           openActionSheet(actionItems);

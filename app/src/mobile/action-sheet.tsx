@@ -19,6 +19,7 @@ export type ActionSheetItem<K extends keyof NavigatorRoutes = keyof NavigatorRou
       type: "link";
       route: K;
       params?: NavigatorRoutes[K]["params"];
+      onGo?: () => void;
     }
 );
 
@@ -64,7 +65,7 @@ export const ActionSheet = () => {
         }}
         initial={false}
         animate={items ? "showMenu" : "hideMenu"}
-        className="absolute bg-gray-100 shadow bottom-0 left-0 right-0 z-30 divide-y rounded-t-lg"
+        className="fixed bg-gray-100 shadow bottom-0 left-0 right-0 z-30 divide-y rounded-t-lg"
       >
         {items?.map((item) => {
           const children = (
@@ -91,7 +92,10 @@ export const ActionSheet = () => {
               route={item.route}
               params={item.params}
               className="flex px-2 py-3 space-x-3"
-              onGo={() => setItems(undefined)}
+              onGo={() => {
+                setItems(undefined);
+                item.onGo && item.onGo();
+              }}
             />
           );
         })}

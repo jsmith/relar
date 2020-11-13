@@ -13,6 +13,7 @@ const Login = React.lazy(() => import("./pages/Login"));
 const Settings = React.lazy(() => import("./mobile/pages/Settings"));
 // FIXME this is def not what we want to show on mobile
 const Search = React.lazy(() => import("./pages/Search"));
+const SearchMobile = React.lazy(() => import("./mobile/pages/Search"));
 const Signup = React.lazy(() => import("./pages/Signup"));
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
 const Home = React.lazy(() =>
@@ -140,6 +141,10 @@ export type NavigatorRoutes = {
     queryParams: {
       query: string;
     };
+  };
+  searchMobile: {
+    params: {};
+    queryParams: {};
   };
   songs: {
     params: {};
@@ -328,6 +333,19 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
     showBack: false,
     showTabs: true,
   },
+  searchMobile: {
+    id: "searchMobile",
+    // This is only on mobile where the address bar is hidden
+    // Because this path is ugly
+    path: "/search/mobile",
+    component: SearchMobile,
+    protected: true,
+    sidebar: true,
+    className: "py-2",
+    title: false,
+    showBack: false,
+    showTabs: true,
+  },
   search: {
     id: "search",
     path: "/search",
@@ -336,7 +354,7 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
     sidebar: true,
     className: "py-2",
     title: "Search",
-    showBack: false,
+    showBack: true,
     showTabs: true,
   },
   songs: {

@@ -431,7 +431,7 @@ export const SongTable = function <T extends SongInfo>({
   );
 
   return (
-    <div className="text-gray-800 w-full flex flex-col">
+    <div className="text-gray-800 w-full flex flex-col flex-grow">
       <div key={mode} className="flex">
         {includeAlbumNumber && <HeaderCol label="#" className="pl-2" style={widths.track} />}
         <HeaderCol

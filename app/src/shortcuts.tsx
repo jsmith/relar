@@ -201,7 +201,18 @@ export const useShortcuts = ({
   useHotkeys("a", () => navigateIfLessThanTimeout(whenG, "artists"));
   useHotkeys("b", () => navigateIfLessThanTimeout(whenG, "albums"));
   useHotkeys("h", () => navigateIfLessThanTimeout(whenG, "home"));
-  useHotkeys("p", () => navigateIfLessThanTimeout(whenG, "playlists"));
+
+  // TODO confirm works
+  useHotkeys(
+    "p",
+    (e) =>
+      navigateIfLessThanTimeout(whenG, "playlists", () => {
+        if (!songInfo?.song) return;
+        e.stopImmediatePropagation();
+        showPlaylistAddModal(songInfo.song);
+      }),
+    [songInfo?.song],
+  );
   useHotkeys("shift+/", show); // aka "?"
   useHotkeys("r", toggleMode);
   useHotkeys("s", toggleShuffle);
@@ -214,15 +225,6 @@ export const useShortcuts = ({
     [songInfo],
   );
   useHotkeys("e", () => songInfo?.song && showSongEditor(songInfo.song), [songInfo?.song]);
-  useHotkeys(
-    "p",
-    (e) => {
-      if (!songInfo?.song) return;
-      e.stopImmediatePropagation();
-      showPlaylistAddModal(songInfo.song);
-    },
-    [songInfo?.song],
-  );
 
   useEffect(() => {
     return emitter.on("open", show);

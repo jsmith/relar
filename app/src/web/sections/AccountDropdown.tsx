@@ -1,5 +1,5 @@
 import React from "react";
-import { Menu, Transition, Switch } from "@headlessui/react";
+import { Menu, Transition } from "@headlessui/react";
 import { AiOutlineUser } from "react-icons/ai";
 import classNames from "classnames";
 import { FaCaretDown } from "react-icons/fa";
@@ -14,6 +14,7 @@ import { useDarkMode } from "../../dark";
 import { useUpdatableServiceWorker } from "../../service-worker";
 import { env } from "../../env";
 import { Badge } from "../../components/Badge";
+import { Switch } from "../../components/Switch";
 
 export const classes = (active: boolean, additional?: string | false, disabled?: boolean) =>
   classNames(
@@ -103,22 +104,7 @@ export const AccountDropdown = () => {
                       <span>Dark Mode</span>
                       <New />
                     </Switch.Label>
-                    <Switch
-                      as="button"
-                      checked={darkMode}
-                      onChange={setDarkMode}
-                      className={`${
-                        darkMode ? "bg-purple-600" : "bg-gray-300"
-                      } relative inline-flex h-6 transition-colors duration-200 ease-in-out border-2 border-transparent rounded-full cursor-pointer w-10 focus:outline-none focus:shadow-outline`}
-                    >
-                      {({ checked }) => (
-                        <span
-                          className={`${
-                            checked ? "translate-x-4" : "translate-x-0"
-                          } inline-block w-5 h-5 transition duration-200 ease-in-out transform bg-white rounded-full`}
-                        />
-                      )}
-                    </Switch>
+                    <Switch checked={darkMode} onChange={setDarkMode} />
                   </Switch.Group>
                 </div>
 

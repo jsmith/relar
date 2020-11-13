@@ -1,5 +1,5 @@
-import { useRef, useEffect, useCallback } from "react";
-import { FixedSizeList } from "react-window";
+import { useRef, useEffect, useCallback, CSSProperties } from "react";
+import { FixedSizeList, ListOnScrollProps } from "react-window";
 import { throttle } from "throttle-debounce";
 
 const windowScrollPositionKey = {
@@ -18,7 +18,20 @@ const getScrollPosition = (axis: "x" | "y"): number =>
   document.body[documentScrollPositionKey[axis]] ||
   0;
 
-export const ContainerScroller = ({ children, throttleTime = 10 }: any) => {
+export interface ContainerScrollerChildrenOptions {
+  ref: React.MutableRefObject<FixedSizeList | null>;
+  outerRef: React.MutableRefObject<HTMLDivElement | null>;
+  style: CSSProperties;
+  onScroll: (props: any) => void;
+}
+
+export const ContainerScroller = ({
+  children,
+  throttleTime = 10,
+}: {
+  children: (opts: ContainerScrollerChildrenOptions) => JSX.Element;
+  throttleTime?: number;
+}) => {
   const ref = useRef<FixedSizeList | null>(null);
   const outerRef = useRef<HTMLDivElement | null>(null);
 
@@ -37,7 +50,7 @@ export const ContainerScroller = ({ children, throttleTime = 10 }: any) => {
   }, [throttleTime]);
 
   const onScroll = useCallback(
-    ({ scrollLeft, scrollTop, scrollOffset, scrollUpdateWasRequested }) => {
+    ({ scrollLeft, scrollTop, scrollOffset, scrollUpdateWasRequested }: any) => {
       if (!scrollUpdateWasRequested) return;
       const top = getScrollPosition("y");
       const left = getScrollPosition("x");

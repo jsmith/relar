@@ -32,42 +32,21 @@ export const SongsOverview = ({
   onRename,
   onDelete,
 }: SongsOverviewProps) => {
-  const ref = useRef<HTMLDivElement | null>(null);
   const { width } = useWindowSize();
   const { setQueue, songInfo, playing, toggleState } = useQueue();
   const songDuration = useSongsDuration(songs);
   const scrollY = useMotionValue(0);
   const outerRef = useRef<HTMLDivElement | null>(null);
-  const topImage = useTransform(scrollY, (value) => Math.round(value * 0.2));
-  // const opacity = useTransform(scrollY, (value) => clamp((width - value) / 50, 0, 1));
-  // const display = useTransform(scrollY, (value) => (width - value <= 0 ? "none" : "block"));
+  const topImage = useTransform(scrollY, (value) => Math.round(value * 0.3));
   const sourcesEqual = useMemo(() => checkSourcesEqual(songInfo?.source, source), [
     songInfo?.source,
     source,
   ]);
 
   useEffect(() => {
-    if (!ref.current) return;
-    const local = ref.current;
-    const onScroll = () => {
-      // For debugging only
-      console.info(
-        local.scrollTop,
-        local.scrollHeight,
-        local.offsetHeight,
-        local.scrollHeight - local.scrollTop,
-      );
-
-      if (outerRef.current) {
-        outerRef.current.style.pointerEvents =
-          local.scrollHeight - local.scrollTop <= local.offsetHeight ? "auto" : "none";
-      }
-      // outerRef.current?.momu
-
-      scrollY.set(local.scrollTop);
-    };
-    local.addEventListener("scroll", onScroll);
-    return () => local.removeEventListener("scroll", onScroll);
+    const onScroll = () => scrollY.set(window.scrollY);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, [scrollY]);
 
   const infoPointsString = useMemo(
@@ -107,25 +86,17 @@ export const SongsOverview = ({
     return actionItems;
   }, [onDelete, onRename]);
 
-  useEffect(() => {
-    if (!outerRef.current) return;
-    outerRef.current.style.overflow = "hidden";
-  });
-
-  // TODO fix scrolling on songs overview
   // TODO remove framer motion in most places??
   // TODO fix icons + splash screen
   // TODO darkmode settings
+  // TODO feedback on mobile
+  // TODO click out of slide up menu inset-0
 
   return (
-    <motion.div className="w-full overflow-y-scroll" ref={ref}>
-      {/* <motion.div style={{ opacity, display }} className="z-10 fixed">
-        <BackButton className="absolute top-0 text-gray-600 m-3" />
-      </motion.div> */}
-
+    <>
       <div style={{ width, height: width }} className="relative overflow-hidden">
-        <motion.div className="absolute" style={{ width, height: width, top: topImage }}>
-          <Collage songs={songs} size="256" className="h-full" />
+        <motion.div style={{ top: topImage }} className="absolute">
+          <Collage songs={songs} size="256" style={{ width, height: width }} />
         </motion.div>
       </div>
 
@@ -156,7 +127,7 @@ export const SongsOverview = ({
       <div className="mx-3 mt-1 flex items-center">
         <div>
           <div className="text-xs">{subTitle}</div>
-          <div className="text-xs text-gray-700">{infoPointsString}</div>
+          <div className="text-xs">{infoPointsString}</div>
         </div>
 
         <div className="flex-grow" />
@@ -167,21 +138,23 @@ export const SongsOverview = ({
         {/* <HiCheck className="w-5 h-5" style={{ padding: "0.15rem" }} /> */}
         {/* </button> */}
 
-        <button
-          className="p-1"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (!actionItems) return;
-            openActionSheet(actionItems);
-          }}
-        >
-          <MdMoreVert className="h-5 w-5" />
-        </button>
+        {actionItems.length > 0 && (
+          <button
+            className="p-1"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!actionItems) return;
+              openActionSheet(actionItems);
+            }}
+          >
+            <MdMoreVert className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
-      <div className="border-t m-3" />
+      <div className="border-t dark:border-gray-700  m-3" />
 
       <SongList songs={songs} source={source} outerRef={outerRef} disableNavigator />
-    </motion.div>
+    </>
   );
 };

@@ -23,16 +23,7 @@ export const AlbumRowMemo = memo(AlbumRow, areEqual);
 
 export const Albums = () => {
   const albums = useAlbums();
-  return (
-    <ListContainer
-      height={73}
-      items={albums}
-      sortKey="album"
-      row={AlbumRowMemo}
-      extra={{}}
-      className="w-full"
-    />
-  );
+  return <ListContainer height={73} items={albums} sortKey="album" row={AlbumRowMemo} extra={{}} />;
 };
 
 export default Albums;

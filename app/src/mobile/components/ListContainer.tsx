@@ -1,8 +1,9 @@
-import React, { CSSProperties, Ref, useCallback, useEffect, useRef } from "react";
+import React, { CSSProperties, MutableRefObject, Ref, useCallback, useEffect, useRef } from "react";
 import classNames from "classnames";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
+import { ContainerScroller, ContainerScrollerChildrenOptions } from "../ContainerScroller";
 
 export type ListContainerMode = "regular" | "condensed";
 
@@ -54,7 +55,7 @@ export interface ListContainerProps<T, K extends keyof T, E> {
   disableNavigator?: boolean;
   extra: E;
   // This is the react-window outerRef
-  outerRef?: Ref<HTMLDivElement>;
+  outerRef?: MutableRefObject<HTMLDivElement | null>;
 }
 
 export const ListContainer = function <T, K extends keyof T, E>({
@@ -131,14 +132,6 @@ export const ListContainer = function <T, K extends keyof T, E>({
     return clearTimer;
   }, [clearTimer]);
 
-  useEffect(
-    () =>
-      opacity.onChange((value) => {
-        console.log(value);
-      }),
-    [opacity],
-  );
-
   const RowWrapper = useCallback(
     ({ index, style }: { index: number; style: CSSProperties }) => (
       <Row
@@ -155,61 +148,69 @@ export const ListContainer = function <T, K extends keyof T, E>({
     [Row, extra, items, mode],
   );
 
-  return (
-    <AutoSizer>
-      {({ height, width }) => (
-        <div className={className}>
-          <List
-            ref={listRef}
-            itemCount={items?.length ?? 0}
-            itemSize={rowHeight}
-            height={height}
-            width={width}
-            outerRef={outerRef}
-            onScroll={() => {
-              resetTimer();
-            }}
+  const render = ({
+    ref,
+    outerRef: outerRefRef,
+    style,
+    onScroll,
+  }: Partial<ContainerScrollerChildrenOptions>) => (
+    <div className={className}>
+      <List
+        ref={(value) => {
+          if (ref) ref.current = value;
+          listRef.current = value;
+        }}
+        itemCount={items?.length ?? 0}
+        itemSize={rowHeight}
+        height={window.innerHeight}
+        width={window.innerWidth}
+        outerRef={(value) => {
+          if (outerRefRef) outerRefRef.current = value;
+          if (outerRef) outerRef.current = value;
+        }}
+        onScroll={(e) => {
+          resetTimer();
+          onScroll && onScroll(e);
+        }}
+        style={style}
+      >
+        {RowWrapper}
+      </List>
+      {!disableNavigator && (
+        <motion.div
+          className={classNames("absolute h-full top-0 right-0 py-1 pr-1")}
+          style={{ pointerEvents }}
+        >
+          <motion.div
+            className={classNames(
+              "sticky h-full rounded-lg bg-gray-800 text-gray-200 p-1 bg-opacity-75",
+              "flex flex-col text-2xs justify-between ease-in-out duration-500 transform transition-opacity",
+            )}
+            style={{ opacity }}
           >
-            {RowWrapper}
-          </List>
-          {!disableNavigator && (
-            <motion.div
-              className={classNames("absolute h-full top-0 right-0 py-1 pr-1")}
-              style={{ pointerEvents }}
-            >
-              <motion.div
-                className={classNames(
-                  "sticky h-full rounded-lg bg-gray-800 text-gray-200 p-1 bg-opacity-75",
-                  "flex flex-col text-2xs justify-between ease-in-out duration-500 transform transition-opacity",
-                )}
-                style={{ opacity }}
+            {letters.map((letter) => (
+              <button
+                key={letter}
+                className="uppercase select-none focus:outline-none text-lg leading-none"
+                onTouchStart={() => scrollTo(letter)}
+                onMouseDown={() => scrollTo(letter)}
+                onTouchMove={(e) => {
+                  const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+                  const letter = el?.getAttribute("letter");
+                  if (letter) scrollTo(letter);
+                }}
+                onDragStart={(e) => e.preventDefault()}
+                // @ts-ignore
+                letter={letter}
               >
-                {letters.map((letter) => (
-                  <button
-                    key={letter}
-                    className="uppercase select-none focus:outline-none text-lg leading-none"
-                    onTouchStart={() => scrollTo(letter)}
-                    onMouseDown={() => scrollTo(letter)}
-                    onTouchMove={(e) => {
-                      const el = document.elementFromPoint(
-                        e.touches[0].clientX,
-                        e.touches[0].clientY,
-                      );
-                      const letter = el?.getAttribute("letter");
-                      if (letter) scrollTo(letter);
-                    }}
-                    onDragStart={(e) => e.preventDefault()}
-                    // @ts-ignore
-                    letter={letter}
-                  >
-                    {letter}
-                  </button>
-                ))}
-              </motion.div>
-            </motion.div>
-          )}
-        </div>
+                {letter}
+              </button>
+            ))}
+          </motion.div>
+        </motion.div>
       )}
-    </AutoSizer>
+    </div>
   );
+
+  return <ContainerScroller>{render}</ContainerScroller>;
 };
