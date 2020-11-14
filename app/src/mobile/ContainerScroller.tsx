@@ -37,7 +37,7 @@ export const ContainerScroller = ({
 
   useEffect(() => {
     const handleWindowScroll = throttle(throttleTime, () => {
-      const { offsetTop = 0, offsetLeft = 0 } = outerRef.current || {};
+      const { offsetTop = 0 } = outerRef.current ?? {};
       const scrollTop = getScrollPosition("y") - offsetTop;
       ref.current && ref.current.scrollTo(scrollTop);
     });
@@ -49,21 +49,13 @@ export const ContainerScroller = ({
     };
   }, [throttleTime]);
 
-  const onScroll = useCallback(
-    ({ scrollLeft, scrollTop, scrollOffset, scrollUpdateWasRequested }: any) => {
-      if (!scrollUpdateWasRequested) return;
-      const top = getScrollPosition("y");
-      const left = getScrollPosition("x");
-      const { offsetTop = 0, offsetLeft = 0 } = outerRef.current || {};
-
-      scrollOffset += Math.min(top, offsetTop);
-      scrollTop += Math.min(top, offsetTop);
-      scrollLeft += Math.min(left, offsetLeft);
-
-      window.scrollTo(0, scrollOffset);
-    },
-    [],
-  );
+  const onScroll = useCallback(({ scrollOffset, scrollUpdateWasRequested }: any) => {
+    if (!scrollUpdateWasRequested) return;
+    const top = getScrollPosition("y");
+    const { offsetTop = 0 } = outerRef.current ?? {};
+    scrollOffset += Math.min(top, offsetTop);
+    window.scrollTo(0, scrollOffset);
+  }, []);
 
   return children({
     ref,

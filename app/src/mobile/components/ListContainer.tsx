@@ -3,6 +3,8 @@ import classNames from "classnames";
 import { FixedSizeList as List } from "react-window";
 import { ContainerScroller, ContainerScrollerChildrenOptions } from "../ContainerScroller";
 import { useStateWithRef } from "../../utils";
+import { SMALL_PLAYER_HEIGHT, TABS_HEIGHT, TOP_BAR_HEIGHT } from "../constants";
+import { useShowSmallPlayerPlaceholder } from "../sections/SmallPlayer";
 
 export type ListContainerMode = "regular" | "condensed";
 
@@ -72,6 +74,7 @@ export const ListContainer = function <T, K extends keyof T, E>({
   const listRef = useRef<List | null>(null);
   const firstScroll = useRef(true);
   const [renderLetters, setRenderLetters, renderLettersRef] = useStateWithRef(false);
+  const showSmallPlayerPlaceholder = useShowSmallPlayerPlaceholder();
 
   const clearTimer = useCallback(() => {
     if (timer.current === undefined) return;
@@ -100,7 +103,8 @@ export const ListContainer = function <T, K extends keyof T, E>({
 
     timer.current = setTimeout(() => {
       setRenderLetters(false);
-    }, 1500);
+    }, 1000000);
+    // }, 1500); TODO
   }, [clearTimer, disableNavigator, renderLettersRef, setRenderLetters]);
 
   const scrollTo = useCallback(
@@ -152,7 +156,7 @@ export const ListContainer = function <T, K extends keyof T, E>({
     style,
     onScroll,
   }: Partial<ContainerScrollerChildrenOptions>) => (
-    <div className={classNames(className, "relative")}>
+    <div className={className}>
       <List
         ref={(value) => {
           if (ref) ref.current = value;
@@ -177,22 +181,23 @@ export const ListContainer = function <T, K extends keyof T, E>({
       {!disableNavigator && (
         <div
           className={classNames(
-            // mt-12 matches the height of the the status bar
             // Safe top is also super important
-            "fixed top-0 right-0 pr-1 mt-12 safe-top",
+            "fixed top-0 right-0 pr-1 safe-top",
             !renderLetters && "pointer-events-none",
           )}
-          // 4.5 is the height of the tabs
-          // 3 is the height of the top bar
           // This is kinda hacky but it works
-          // Eventually, we could create a file of constants that could be imported
-          // This would make it easier to keep things in sync
-          // TODO mini player
-          style={{ height: "calc(100% - 7.5rem)" }}
+          // Once we improve scrolling to now use window scrolling, this should work
+          // I think it'll only take a bit of modifications to the ContainerScroller
+          style={{
+            height: `calc(100% - ${TOP_BAR_HEIGHT} - ${TABS_HEIGHT} - ${
+              showSmallPlayerPlaceholder ? SMALL_PLAYER_HEIGHT : "0px"
+            })`,
+            marginTop: TOP_BAR_HEIGHT,
+          }}
         >
           <div
             className={classNames(
-              "sticky h-full rounded-lg bg-gray-800 text-gray-200 p-1 bg-opacity-75",
+              "sticky h-full rounded-lg bg-gray-800 text-gray-200 py-1 bg-opacity-75",
               "flex flex-col text-2xs justify-between duration-500 transition-opacity",
               renderLetters ? "opacity-100" : "opacity-0",
             )}
@@ -200,7 +205,7 @@ export const ListContainer = function <T, K extends keyof T, E>({
             {letters.map((letter) => (
               <button
                 key={letter}
-                className="uppercase select-none focus:outline-none text-lg leading-none"
+                className="uppercase select-none focus:outline-none text-lg leading-none px-1"
                 onTouchStart={() => scrollTo(letter)}
                 onMouseDown={() => scrollTo(letter)}
                 onTouchMove={(e) => {

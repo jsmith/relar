@@ -1,20 +1,38 @@
 import classNames from "classnames";
-import React from "react";
+import React, { CSSProperties, useEffect, useState } from "react";
 import { MdPause, MdPlayArrow } from "react-icons/md";
 import { Thumbnail } from "../../components/Thumbnail";
+import { createEmitter } from "../../events";
 import { useQueue } from "../../queue";
+
+const emitter = createEmitter<{ show: [boolean] }>();
+
+export const setShowSmallPlayerPlaceholder = (value: boolean) => emitter.emit("show", value);
+
+let saved = false;
+emitter.on("show", (value) => (saved = value));
+
+// This is very hacky but it works
+// When possible, remove this since it's not intuitive
+export const useShowSmallPlayerPlaceholder = () => {
+  const [show, setShow] = useState(saved);
+  useEffect(() => emitter.on("show", (value) => setShow(value)), []);
+  return show;
+};
 
 export const SmallPlayer = ({
   className,
   thumbnailClassName,
   openBigPlayer,
-  // setFullyUp,
   onTransitionEnd,
+  style,
+  thumbnailStyle,
 }: {
   className?: string;
   thumbnailClassName?: string;
+  style?: CSSProperties;
+  thumbnailStyle?: CSSProperties;
   openBigPlayer: () => void;
-  // setFullyUp: (value: boolean) => void;
   onTransitionEnd: () => void;
 }) => {
   const { playing, toggleState, songInfo } = useQueue();
@@ -27,8 +45,14 @@ export const SmallPlayer = ({
       )}
       onTransitionEnd={onTransitionEnd}
       onClick={() => openBigPlayer()}
+      style={style}
     >
-      <Thumbnail song={songInfo?.song} size="256" className={thumbnailClassName} />
+      <Thumbnail
+        song={songInfo?.song}
+        size="256"
+        className={classNames(thumbnailClassName, "flex-shrink-0")}
+        style={thumbnailStyle}
+      />
       <div className="flex flex-col justify-center flex-grow">
         <div className="flex-grow text-gray-100 clamp-2 text-sm">{songInfo?.song.title}</div>
         <div className="flex-grow text-xs text-gray-300">{songInfo?.song.artist}</div>

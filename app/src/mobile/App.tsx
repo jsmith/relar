@@ -19,11 +19,15 @@ import { LogoNText } from "../components/LogoNText";
 import { Link } from "../components/Link";
 import { IconType } from "react-icons/lib";
 import { MdLibraryMusic } from "react-icons/md";
-import { SmallPlayer } from "./sections/SmallPlayer";
+import {
+  setShowSmallPlayerPlaceholder,
+  SmallPlayer,
+  useShowSmallPlayerPlaceholder,
+} from "./sections/SmallPlayer";
 import { Queue } from "./sections/Queue";
 import { BigPlayer } from "./sections/BigPlayer";
-import ReactTooltip from "react-tooltip";
 import { SlideUpScreen } from "./slide-up-screen";
+import { SMALL_PLAYER_HEIGHT, TABS_HEIGHT, TOP_BAR_HEIGHT } from "./constants";
 
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 
@@ -119,7 +123,7 @@ export const App = () => {
     stopPlaying,
     songInfo,
   } = useQueue();
-  const [showSmallPlayerPlaceholder, setShowSmallPlayerPlaceholder] = useState(false);
+  const showSmallPlayerPlaceholder = useShowSmallPlayerPlaceholder();
 
   useEffect(() => {
     // If songInfo === undefined, then remove the div immediately
@@ -195,9 +199,10 @@ export const App = () => {
           <>
             <div
               className={classNames(
-                "text-2xl flex justify-between items-center px-3 border-b h-12",
+                "text-2xl flex justify-between items-center px-3 border-b",
                 "fixed top-0 w-full z-10 safe-top dark:border-gray-700 bg-white dark:bg-gray-800",
               )}
+              style={{ height: TOP_BAR_HEIGHT }}
             >
               <div className="absolute inset-0 flex items-center justify-center">
                 <div>{route.title}</div>
@@ -222,7 +227,11 @@ export const App = () => {
             </div>
 
             {/* Placeholder */}
-            <div id="top-bar-placeholder" className="h-12 w-full flex-shrink-0 safe-top" />
+            <div
+              id="top-bar-placeholder"
+              className="w-full flex-shrink-0 safe-top"
+              style={{ height: TOP_BAR_HEIGHT }}
+            />
           </>
         )}
 
@@ -235,31 +244,34 @@ export const App = () => {
         {/* </div> */}
 
         {/* This div is force things to go upwards when the minified player is created */}
-        {/* h-20 should match the minified player */}
         {/* You might also be asking yourself, why make the minified player absolutely positioned */}
         {/* while also having this div to fill the same space. This is because the minified player's */}
         {/* height is immediately set while translating so you get this big white space for 300 ms */}
         {/* Instead, the transition happens *then* this div's height is set. When transitioning */}
         {/* down this div is immediately removed to avoid the white space */}
-        <div className={classNames("flex-shrink-0", showSmallPlayerPlaceholder ? "h-20" : "h-0")} />
+        <div
+          className="flex-shrink-0"
+          style={{ height: showSmallPlayerPlaceholder ? SMALL_PLAYER_HEIGHT : 0 }}
+        />
 
         {route.showTabs && (
           <>
-            <div className="flex-shrink-0" style={{ height: "4.5rem" }} />
+            <div className="flex-shrink-0" style={{ height: TABS_HEIGHT }} />
 
             {/* pointer-events-none since the container always takes up the full height of both elements */}
             {/* Even if one element is fully downwards */}
             <div className="fixed inset-x-0 bottom-0  flex flex-col justify-end pointer-events-none">
               <SmallPlayer
-                className="h-20 pointer-events-auto"
-                thumbnailClassName="h-20 w-20"
+                className="pointer-events-auto"
                 onTransitionEnd={() => songInfo && setShowSmallPlayerPlaceholder(true)}
                 openBigPlayer={() => setBigPlayerOpen(true)}
+                style={{ height: SMALL_PLAYER_HEIGHT }}
+                thumbnailStyle={{ height: SMALL_PLAYER_HEIGHT, width: SMALL_PLAYER_HEIGHT }}
               />
 
               <div
                 className="bg-gray-900 flex text-white relative z-10 flex-shrink-0 pointer-events-auto"
-                style={{ height: "4.5rem" }}
+                style={{ height: TABS_HEIGHT }}
               >
                 <Tab label="Home" route="home" icon={HiHome} />
                 <Tab label="Search" route="searchMobile" icon={HiSearch} />

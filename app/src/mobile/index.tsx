@@ -18,7 +18,6 @@ import { App } from "./App";
 import { Router } from "@graywolfai/react-tiniest-router";
 import { routes } from "../routes";
 import { UserProvider } from "../auth";
-import { QueueProvider } from "../queue";
 import "../tailwind.css";
 import "../common.css";
 import { StatusBarProvider } from "./status-bar";
@@ -30,13 +29,11 @@ ReactDOM.render(
     <DarkModeProvider>
       <Router routes={routes}>
         <UserProvider>
-          <QueueProvider>
-            <SnackbarProvider>
-              <StatusBarProvider>
-                <App />
-              </StatusBarProvider>
-            </SnackbarProvider>
-          </QueueProvider>
+          <SnackbarProvider>
+            <StatusBarProvider>
+              <App />
+            </StatusBarProvider>
+          </SnackbarProvider>
         </UserProvider>
       </Router>
     </DarkModeProvider>

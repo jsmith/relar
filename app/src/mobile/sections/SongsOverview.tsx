@@ -85,9 +85,7 @@ export const SongsOverview = ({
     return actionItems;
   }, [onDelete, onRename]);
 
-  // TODO fix icons + splash screen
-  // TODO Scroll broken when offset
-  // TODO Detect window scrolling context that you can use to not load images and load very simple node
+  // TODO localize updates
 
   return (
     <>
@@ -149,8 +147,7 @@ export const SongsOverview = ({
         )}
       </div>
 
-      <div className="border-t dark:border-gray-700  m-3" />
-
+      <div className="border-t dark:border-gray-700 m-3" />
       <SongList songs={songs} source={source} outerRef={outerRef} disableNavigator />
     </>
   );
