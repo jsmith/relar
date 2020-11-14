@@ -1,6 +1,7 @@
 import * as React from "react";
 import classNames from "classnames";
 import { ThreeDots } from "@jsmith21/svg-loaders-react";
+import { useState } from "react";
 
 export interface ButtonProps
   extends React.DetailedHTMLProps<
@@ -10,7 +11,6 @@ export interface ButtonProps
   label?: string;
   theme?: "purple" | "red" | "none" | "disabled";
   invert?: boolean;
-  loading?: boolean;
   height?: string;
 }
 
@@ -45,9 +45,10 @@ export const Button = ({
   invert,
   theme = "purple",
   height = "h-10",
-  loading,
+  onClick,
   ...props
 }: ButtonProps) => {
+  const [loading, setLoading] = useState(false);
   const className = invert
     ? classNames("bg-transparent", classes[theme].invert)
     : classNames("focus:outline-none", classes[theme].default);
@@ -62,6 +63,15 @@ export const Button = ({
         props.className,
         height,
       )}
+      onClick={async (e) => {
+        if (!onClick) return;
+        try {
+          setLoading(true);
+          await onClick(e);
+        } finally {
+          setLoading(false);
+        }
+      }}
       disabled={theme === "disabled"}
     >
       {loading ? <ThreeDots fill="currentColor" className="w-16 h-4" /> : props.label}

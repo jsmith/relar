@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import React, { useEffect, useState } from "react";
 import { IconType } from "react-icons/lib";
 import { createEmitter } from "../events";
@@ -33,39 +32,34 @@ export function openActionSheet(items: Array<ActionSheetItem | undefined>) {
 
 export const ActionSheet = () => {
   const [items, setItems] = useState<ActionSheetItem[]>();
+  const [display, setDisplay] = useState(false);
 
   useEffect(() => {
     return emitter.on("show", (items) => {
       const filtered = items.filter(isDefined);
       if (filtered.length === 0) return;
       setItems(filtered);
+      setDisplay(true);
     });
   }, []);
 
   return (
     <>
-      <motion.div
-        className={classNames("absolute inset-0 bg-gray-800 z-20", items ? "block" : "hidden")}
-        animate={items ? "showMenu" : "hideMenu"}
-        variants={{ showMenu: { opacity: 0.5 }, hideMenu: { opacity: 0.25 } }}
-        onClick={() => setItems(undefined)}
+      <div
+        className={classNames(
+          "fixed inset-0 bg-gray-800 z-20 transition-opacity duration-300",
+          display ? "opacity-50" : "opacity-0 pointer-events-none",
+        )}
+        onClick={() => setDisplay(false)}
       />
-      <motion.div
-        variants={{
-          showMenu: {
-            height: "auto",
-            paddingBottom: "env(safe-area-inset-bottom)",
-            transition: { type: "tween", ease: "easeInOut" },
-          },
-          hideMenu: {
-            height: 0,
-            paddingBottom: 0,
-            transition: { type: "tween", ease: "easeInOut" },
-          },
-        }}
-        initial={false}
-        animate={items ? "showMenu" : "hideMenu"}
-        className="fixed bg-gray-100 shadow bottom-0 left-0 right-0 z-30 divide-y rounded-t-lg"
+      <div
+        className={classNames(
+          "fixed bg-gray-100 dark:bg-gray-900 shadow bottom-0 left-0 right-0 z-30 divide-y",
+          "transition-transform transform duration-300 rounded-t-lg text-gray-800",
+          "dark:text-gray-200 divide-gray-300 dark:divide-gray-700",
+          display ? "translate-y-0" : "translate-y-full",
+        )}
+        onTransitionEnd={() => !display && setItems(undefined)}
       >
         {items?.map((item) => {
           const children = (
@@ -79,7 +73,7 @@ export const ActionSheet = () => {
               key={item.label}
               className="flex px-2 py-3 space-x-3"
               onClick={() => {
-                setItems(undefined);
+                setDisplay(false);
                 item.onClick();
               }}
             >
@@ -93,13 +87,13 @@ export const ActionSheet = () => {
               params={item.params}
               className="flex px-2 py-3 space-x-3"
               onGo={() => {
-                setItems(undefined);
+                setDisplay(false);
                 item.onGo && item.onGo();
               }}
             />
           );
         })}
-      </motion.div>
+      </div>
     </>
   );
 };

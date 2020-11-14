@@ -10,8 +10,8 @@ import { serverTimestamp, useUserData } from "../firestore";
 import * as uuid from "uuid";
 import { BlockAlert } from "../components/BlockAlert";
 import { AirplaneIcon } from "../illustrations/AirplaneIcon";
-import { bytesToHumanReadable, captureAndLog, toFileArray } from "../utils";
-import { HiOutlineUpload, HiOutlineX } from "react-icons/hi";
+import { bytesToHumanReadable, isMobile, toFileArray } from "../utils";
+import { HiOutlineX } from "react-icons/hi";
 import { DragDiv } from "../components/DragDiv";
 import { useUserStorage } from "../storage";
 import { Link } from "../components/Link";
@@ -64,8 +64,13 @@ const IconInput = ({
 // Maybe keep this in sync with the song size restriction?
 const twentyMb = 1024 * 1024 * 20;
 
-export const Feedback = ({ onExit }: FeedbackProps) => {
-  const [loading, setLoading] = useState(false);
+export const FeedbackSection = ({
+  setLoading,
+  className,
+}: {
+  setLoading?: (value: boolean) => void;
+  className?: string;
+}) => {
   const [success, setSuccess] = useState(false);
   const [type, setType] = useState<"idea" | "issue" | "other">();
   const [feedback, setFeedback] = useState("");
@@ -100,7 +105,7 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
     }
 
     setError("");
-    setLoading(true);
+    setLoading && setLoading(true);
     try {
       for (const { file } of files) {
         if (file.size > twentyMb) {
@@ -122,7 +127,7 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
       setError("An unknown error occurred while submitting feedback.");
       throw e;
     } finally {
-      setLoading(false);
+      setLoading && setLoading(false);
     }
 
     setSuccess(true);
@@ -136,24 +141,21 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
     setType(undefined);
   };
 
-  return (
-    <Modal
-      titleText="Add To Playlist"
-      onExit={() => {
-        if (files.length > 0 || feedback) {
-          const result = confirm(
-            "Are you sure you want to close the feedback modal? You will lose your feedback.",
-          );
-
-          if (!result) return;
-        }
-
-        onExit();
+  const uploadFileButton = (
+    <button
+      title="Upload feedback files"
+      className={link()}
+      onClick={(e) => {
+        e.preventDefault();
+        fileUpload.current && fileUpload.current.click();
       }}
-      className="space-y-2 max-w-full px-6 py-5 dark:text-gray-200"
-      style={{ width: "30rem" }}
-      loading={loading}
     >
+      {isMobile() ? "Click here" : "click here"}
+    </button>
+  );
+
+  return (
+    <div className={classNames("space-y-2 px-6 py-5 dark:text-gray-200", className)}>
       {success ? (
         <div className="space-y-4">
           <div className="flex justify-center">
@@ -185,7 +187,7 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
       ) : (
         <>
           <h1 className="font-bold text-xl">Have some feedback?</h1>
-          <p className="text-gray-700 dark:text-gray-400 text-xs">
+          <p className="text-gray-700 dark:text-gray-400 text-sm sm:text-xs">
             Make sure to check out the{" "}
             <a
               className={link()}
@@ -199,7 +201,7 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
             appreciated 🌟
           </p>
 
-          <form className="mt-10">
+          <form className="mt-10 space-y-2">
             <div className="flex justify-center space-x-6">
               {/* I had to add CSS :( Check out index.css */}
               <IconInput
@@ -264,20 +266,12 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
                     addFiles={addFiles}
                     dragOverClassName="bg-gray-200 dark:bg-gray-800"
                   >
-                    <div className="text-sm ">
-                      Drag files or{" "}
-                      <button
-                        title="Upload feedback files"
-                        className={link()}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          fileUpload.current && fileUpload.current.click();
-                        }}
-                      >
-                        click here
-                      </button>
-                      !
-                    </div>
+                    {isMobile() ? (
+                      <div className="text-sm ">{uploadFileButton} to upload files!</div>
+                    ) : (
+                      // TODO test web
+                      <div className="text-sm ">Drag files or {uploadFileButton}!</div>
+                    )}
                   </DragDiv>
                 </label>
                 <div className="divide-y dark:divide-gray-700 text-gray-700 dark:text-gray-300 py-1">
@@ -319,7 +313,8 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
               className="uppercase w-full mt-2"
               onClick={(e) => {
                 e.preventDefault();
-                submitForm();
+                // Return the promise so we get the loading animation
+                return submitForm();
               }}
             />
             {error && (
@@ -330,6 +325,6 @@ export const Feedback = ({ onExit }: FeedbackProps) => {
           </form>
         </>
       )}
-    </Modal>
+    </div>
   );
 };

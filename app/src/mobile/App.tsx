@@ -23,6 +23,7 @@ import { SmallPlayer } from "./sections/SmallPlayer";
 import { Queue } from "./sections/Queue";
 import { BigPlayer } from "./sections/BigPlayer";
 import ReactTooltip from "react-tooltip";
+import { SlideUpScreen } from "./slide-up-screen";
 
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 
@@ -275,6 +276,7 @@ export const App = () => {
       ></BigPlayer>
       <Queue show={showQueue} hide={() => setShowQueue(false)} />
       <ActionSheet />
+      <SlideUpScreen />
     </>
   );
 };

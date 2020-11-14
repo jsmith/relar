@@ -4,7 +4,7 @@ import AutoSizer from "react-virtualized-auto-sizer";
 import { ThumbnailCard } from "./ThumbnailCard";
 import { SongInfo } from "../queue";
 import { Song } from "../shared/universal/types";
-import { isMobile } from "../utils";
+import { isMobile, IS_WEB_VIEW } from "../utils";
 
 const mql = window.matchMedia(`(min-width: 1024px)`);
 
@@ -106,7 +106,7 @@ export const ThumbnailCardGrid = function <T extends { songs: Song[] | undefined
             height={sizes.row}
             // When on mobile, I want to show all of the items
             // But on desktop I don't want the super ugly scroll bar
-            itemCount={isMobile() ? nItems : columnCount.current}
+            itemCount={IS_WEB_VIEW ? nItems : columnCount.current}
             itemSize={sizes.col}
             layout="horizontal"
             width={width}

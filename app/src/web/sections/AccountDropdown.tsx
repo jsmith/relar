@@ -5,7 +5,7 @@ import classNames from "classnames";
 import { FaCaretDown } from "react-icons/fa";
 import { useDefinedUser } from "../../auth";
 import { useModal } from "react-modal-hook";
-import { Feedback } from "../../sections/Feedback";
+import { FeedbackModal } from "../../sections/FeedbackModal";
 import firebase from "firebase/app";
 import { Link } from "../../components/Link";
 import { New } from "../../components/New";
@@ -26,7 +26,7 @@ export const classes = (active: boolean, additional?: string | false, disabled?:
 
 export const AccountDropdown = () => {
   const user = useDefinedUser();
-  const [show, close] = useModal(() => <Feedback onExit={close} />);
+  const [show, close] = useModal(() => <FeedbackModal onExit={close} />);
   const [darkMode, setDarkMode] = useDarkMode();
   const update = useUpdatableServiceWorker();
 

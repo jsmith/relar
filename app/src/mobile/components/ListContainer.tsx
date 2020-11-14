@@ -1,9 +1,8 @@
-import React, { CSSProperties, MutableRefObject, Ref, useCallback, useEffect, useRef } from "react";
+import React, { CSSProperties, MutableRefObject, useCallback, useEffect, useRef } from "react";
 import classNames from "classnames";
-import { motion, useMotionValue, useTransform } from "framer-motion";
 import { FixedSizeList as List } from "react-window";
-import AutoSizer from "react-virtualized-auto-sizer";
 import { ContainerScroller, ContainerScrollerChildrenOptions } from "../ContainerScroller";
+import { useStateWithRef } from "../../utils";
 
 export type ListContainerMode = "regular" | "condensed";
 
@@ -70,10 +69,9 @@ export const ListContainer = function <T, K extends keyof T, E>({
   outerRef,
 }: ListContainerProps<T, K, E>) {
   const timer = useRef<NodeJS.Timeout>();
-  const opacity = useMotionValue(0);
-  const pointerEvents = useTransform(opacity, (value) => (value === 0 ? "none" : ""));
   const listRef = useRef<List | null>(null);
   const firstScroll = useRef(true);
+  const [renderLetters, setRenderLetters, renderLettersRef] = useStateWithRef(false);
 
   const clearTimer = useCallback(() => {
     if (timer.current === undefined) return;
@@ -93,17 +91,17 @@ export const ListContainer = function <T, K extends keyof T, E>({
       return;
     }
 
-    if (opacity.get() === 0) {
-      opacity.set(1);
+    if (renderLettersRef.current === false) {
+      setRenderLetters(true);
     }
 
     // Always clear. You never know 💁
     clearTimer();
 
     timer.current = setTimeout(() => {
-      opacity.set(0);
-    }, 100000);
-  }, [clearTimer, disableNavigator, opacity]);
+      setRenderLetters(false);
+    }, 1500);
+  }, [clearTimer, disableNavigator, renderLettersRef, setRenderLetters]);
 
   const scrollTo = useCallback(
     (letter: string) => {
@@ -154,7 +152,7 @@ export const ListContainer = function <T, K extends keyof T, E>({
     style,
     onScroll,
   }: Partial<ContainerScrollerChildrenOptions>) => (
-    <div className={className}>
+    <div className={classNames(className, "relative")}>
       <List
         ref={(value) => {
           if (ref) ref.current = value;
@@ -177,16 +175,27 @@ export const ListContainer = function <T, K extends keyof T, E>({
         {RowWrapper}
       </List>
       {!disableNavigator && (
-        <motion.div
-          className={classNames("absolute h-full top-0 right-0 py-1 pr-1")}
-          style={{ pointerEvents }}
+        <div
+          className={classNames(
+            // mt-12 matches the height of the the status bar
+            // Safe top is also super important
+            "fixed top-0 right-0 pr-1 mt-12 safe-top",
+            !renderLetters && "pointer-events-none",
+          )}
+          // 4.5 is the height of the tabs
+          // 3 is the height of the top bar
+          // This is kinda hacky but it works
+          // Eventually, we could create a file of constants that could be imported
+          // This would make it easier to keep things in sync
+          // TODO mini player
+          style={{ height: "calc(100% - 7.5rem)" }}
         >
-          <motion.div
+          <div
             className={classNames(
               "sticky h-full rounded-lg bg-gray-800 text-gray-200 p-1 bg-opacity-75",
-              "flex flex-col text-2xs justify-between ease-in-out duration-500 transform transition-opacity",
+              "flex flex-col text-2xs justify-between duration-500 transition-opacity",
+              renderLetters ? "opacity-100" : "opacity-0",
             )}
-            style={{ opacity }}
           >
             {letters.map((letter) => (
               <button
@@ -206,8 +215,8 @@ export const ListContainer = function <T, K extends keyof T, E>({
                 {letter}
               </button>
             ))}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
     </div>
   );

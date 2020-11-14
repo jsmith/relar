@@ -8,6 +8,7 @@ import { Switch } from "../../components/Switch";
 import { useDarkMode } from "../../dark";
 import { HiOutlineInformationCircle } from "react-icons/hi";
 import ReactTooltip from "react-tooltip";
+import { navigateTo } from "../../routes";
 
 export const Settings = () => {
   const user = useDefinedUser();
@@ -47,6 +48,17 @@ export const Settings = () => {
         <Switch checked={darkMode} onChange={setDarkMode} size="big" />
       </Switch.Group>
 
+      <div className="flex items-center space-x-2">
+        <span className="text-sm">Have any feedback?</span>
+        <div className="flex-grow" />
+        <button
+          className="px-3 py-1 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"
+          onClick={() => navigateTo("feedback")}
+        >
+          Feedback Form
+        </button>
+      </div>
+
       {/* {import.meta.env?.MODE !== "production" && (
         <button
           className="px-3 py-2 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"
@@ -57,14 +69,14 @@ export const Settings = () => {
         </button>
       )} */}
 
-      {import.meta.env?.MODE !== "production" && (
+      {/* {import.meta.env?.MODE !== "production" && (
         <button
           className="px-3 py-2 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"
           onClick={() => window.location.reload()}
         >
           Refresh
         </button>
-      )}
+      )} */}
 
       <div className="flex-grow" />
       <button

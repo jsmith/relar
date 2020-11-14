@@ -12,7 +12,7 @@ import { createEmitter } from "./events";
 import { useLikeSong } from "./queries/songs";
 import { useQueue } from "./queue";
 import { navigateTo, NavigatorRoutes } from "./routes";
-import { Feedback } from "./sections/Feedback";
+import { FeedbackModal } from "./sections/FeedbackModal";
 import { showSongEditor } from "./sections/MetadataEditor";
 import { showPlaylistAddModal } from "./web/sections/AddToPlaylistModal";
 
@@ -129,7 +129,7 @@ export const useShortcuts = ({
   const whenG = useRef<number>();
   const [_, setDarkMode, darkModeRef] = useDarkMode();
 
-  const [feedbackShow, feedbackHide] = useModal(() => <Feedback onExit={feedbackHide} />);
+  const [feedbackShow, feedbackHide] = useModal(() => <FeedbackModal onExit={feedbackHide} />);
   const [show, hide] = useModal(() => (
     <AriaModal
       titleText="Search"

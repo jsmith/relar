@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React from "react";
 import { HiOutlineSearch } from "react-icons/hi";
 import { Input } from "../../components/Input";
 import { useCoolSongs } from "../../db";
@@ -8,7 +8,7 @@ import { SearchResultsDisplay } from "../../sections/SearchResultsDisplay";
 import { useStateWithRef } from "../../utils";
 
 export const Search = () => {
-  // TODO save when navigating backwards
+  // FIXME save when navigating backwards
   const [text, setText, textRef] = useStateWithRef("");
   const songs = useCoolSongs();
   const [results, setResults, resultsRef] = useStateWithRef<SearchResults | undefined>(undefined);
@@ -16,15 +16,7 @@ export const Search = () => {
     text: textRef,
     songs,
     setResults,
-    // onSearch: useCallback(() => {
-    //   // This is so, when they search for the first time,
-    //   if (!resultsRef.current) {
-    //     setExpanding(true);
-    //   }
-    // }, [resultsRef]),
   });
-
-  console.log(results);
 
   return (
     <div className="p-3 flex-grow flex flex-col space-y-1">

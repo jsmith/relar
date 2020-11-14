@@ -15,7 +15,6 @@ export const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string>();
   const { user } = useUser();
-  const [loading, setLoading] = useState(false);
   const passwordRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -26,9 +25,7 @@ export const Login = () => {
   }, []);
 
   const login = useCallback(async () => {
-    setLoading(true);
     const result = await signInWithEmailAndPassword(email, password);
-    setLoading(false);
     if (result.isOk()) {
       firebase.analytics().logEvent("login", {
         method: result.value.credential?.signInMethod,
@@ -76,12 +73,7 @@ export const Login = () => {
         <div>
           <Link route="forgotPassword" label="Forgot your password?" />
         </div>
-        <Button
-          loading={loading}
-          label="Login"
-          className="w-full"
-          onClick={preventAndCall(login)}
-        />
+        <Button label="Login" className="w-full" onClick={preventAndCall(login)} />
       </div>
     </CardPage>
   );

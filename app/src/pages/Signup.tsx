@@ -20,19 +20,16 @@ export const Signup = () => {
   const [firstName, setFirstName] = useState("");
   const [device, setDevice] = useState<BetaDevice>("none");
   const [error, setError] = useState<string>();
-  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const emailRef = useRef<HTMLInputElement | null>(null);
   const selectRef = useRef<HTMLSelectElement | null>(null);
 
   const signup = async () => {
-    setLoading(true);
     setError("");
     const result = await getOrUnknownError(() =>
       betaBackend.post("/beta-signup", { email, firstName, device }),
     );
 
-    setLoading(false);
     if (result.data.type === "success") {
       firebase.analytics().logEvent("beta_sign_up", { method: "email" });
       setSuccess(true);
@@ -107,7 +104,6 @@ export const Signup = () => {
           <Button
             label="Sign Up"
             className="w-full"
-            loading={loading}
             onClick={(e) => {
               e.preventDefault();
               signup();

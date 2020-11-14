@@ -195,11 +195,11 @@ export const Mouse = {
   RIGHT: 2,
 };
 
-export const preventAndCall = <E extends { preventDefault: () => void }>(f: (e: E) => void) => (
+export const preventAndCall = <E extends { preventDefault: () => void }, T>(f: (e: E) => T) => (
   e: E,
-) => {
+): T => {
   e.preventDefault();
-  f(e);
+  return f(e);
 };
 
 export const useDocumentTitle = (title?: string, retainOnUnmount = false) => {

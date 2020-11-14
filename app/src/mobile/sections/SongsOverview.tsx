@@ -6,12 +6,11 @@ import { HiPencil, HiTrash } from "react-icons/hi";
 import { SongList } from "../sections/SongList";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { ActionSheetItem, openActionSheet } from "../action-sheet";
-import { Collage, CollageProps } from "../../components/Collage";
+import { Collage } from "../../components/Collage";
 import { SetQueueSource, SongInfo, useQueue, checkSourcesEqual } from "../../queue";
 import { Modals } from "@capacitor/core";
 import { Audio } from "@jsmith21/svg-loaders-react";
 import Skeleton from "react-loading-skeleton";
-import { Song } from "../../shared/universal/types";
 
 export interface SongsOverviewProps {
   title: string | undefined;
@@ -86,11 +85,9 @@ export const SongsOverview = ({
     return actionItems;
   }, [onDelete, onRename]);
 
-  // TODO remove framer motion in most places??
   // TODO fix icons + splash screen
-  // TODO darkmode settings
-  // TODO feedback on mobile
-  // TODO click out of slide up menu inset-0
+  // TODO Scroll broken when offset
+  // TODO Detect window scrolling context that you can use to not load images and load very simple node
 
   return (
     <>

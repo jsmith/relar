@@ -21,7 +21,7 @@ export const SmallPlayer = ({
   return (
     <div
       className={classNames(
-        "bg-gray-800 flex items-center space-x-2 transform transition-transform duration-300",
+        "bg-gray-800 dark:bg-gray-950 flex items-center space-x-2 transform transition-transform duration-300",
         className,
         songInfo ? "translate-y-0" : "translate-y-full",
       )}

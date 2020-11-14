@@ -31,6 +31,12 @@
   padding-top: env(safe-area-inset-top); /* iOS 11.2 */
 }
 
+html {
+  /* Got this from http://hollyschinsky.github.io/spotify-browser/module6.html */
+  /* Not sure that this does or if it's used but it doesn't seem to hurt */
+  -webkit-overflow-scrolling: touch;
+}
+
 @font-face {
   font-family: "FiraMono";
   /* We need this since we mount src/shared to _dist_/shared */

@@ -5,6 +5,7 @@ import { createEmitter } from "./events";
 import { GeneratedType } from "./queue";
 import { Song } from "./shared/universal/types";
 import { getAlbumArtistFromSong } from "./queries/album";
+const Feedback = React.lazy(() => import("./pages/Feedback"));
 const Genres = React.lazy(() => import("./web/pages/Genres"));
 const GenreOverview = React.lazy(() => import("./web/pages/GenreOverview"));
 const ReleaseNotes = React.lazy(() => import("./pages/ReleaseNotes"));
@@ -212,6 +213,11 @@ export type NavigatorRoutes = {
   };
   genre: {
     params: { genre: string };
+    queryParams: {};
+  };
+  // Only for mobile
+  feedback: {
+    params: {};
     queryParams: {};
   };
 };
@@ -524,6 +530,16 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
     protected: true,
     sidebar: true,
     title: "Genre",
+    showBack: true,
+    showTabs: true,
+  },
+  feedback: {
+    id: "feedback",
+    path: "/feedback",
+    component: Feedback,
+    protected: true,
+    sidebar: true,
+    title: "Feedback",
     showBack: true,
     showTabs: true,
   },

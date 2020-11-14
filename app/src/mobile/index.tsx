@@ -21,7 +21,6 @@ import { UserProvider } from "../auth";
 import { QueueProvider } from "../queue";
 import "../tailwind.css";
 import "../common.css";
-import { SlideUpScreenContainer } from "./slide-up-screen";
 import { StatusBarProvider } from "./status-bar";
 import SnackbarProvider from "react-simple-snackbar";
 import { DarkModeProvider } from "../dark";
@@ -32,13 +31,11 @@ ReactDOM.render(
       <Router routes={routes}>
         <UserProvider>
           <QueueProvider>
-            <SlideUpScreenContainer>
-              <SnackbarProvider>
-                <StatusBarProvider>
-                  <App />
-                </StatusBarProvider>
-              </SnackbarProvider>
-            </SlideUpScreenContainer>
+            <SnackbarProvider>
+              <StatusBarProvider>
+                <App />
+              </StatusBarProvider>
+            </SnackbarProvider>
           </QueueProvider>
         </UserProvider>
       </Router>
