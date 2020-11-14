@@ -2,7 +2,13 @@ import React, { memo, MutableRefObject, Ref, useMemo } from "react";
 import { MdAddToQueue, MdPlaylistAdd } from "react-icons/md";
 import { useDeleteSong } from "../../queries/songs";
 import { fmtMSS, onConditions, useMySnackbar } from "../../utils";
-import { checkQueueItemsEqual, SetQueueSource, SongInfo, useQueue } from "../../queue";
+import {
+  checkQueueItemsEqual,
+  Queue,
+  SetQueueSource,
+  SongInfo,
+  useIsPlayingSong,
+} from "../../queue";
 import {
   ListContainer,
   ListContainerMode,
@@ -54,7 +60,6 @@ const SongListRow = ({
   source: SetQueueSource;
 }) => {
   const deleteSong = useDeleteSong();
-  const { setQueue, enqueue, songInfo, playing } = useQueue();
   const createPlaylist = usePlaylistCreate();
   const removeSong = usePlaylistRemoveSong(source.type === "playlist" ? source.id : undefined);
   const open = useMySnackbar();
@@ -83,11 +88,8 @@ const SongListRow = ({
     },
   );
 
-  const state = useMemo((): MusicListItemState => {
-    const id = songs[index].playlistId ?? songs[index].id;
-    if (!checkQueueItemsEqual({ song, id, source }, songInfo)) return "not-playing";
-    return playing ? "playing" : "paused";
-  }, [index, playing, song, songInfo, songs, source]);
+  console.log("SongListRow", song.title);
+  const state = useIsPlayingSong({ song, source });
 
   return (
     <MusicListItem
@@ -97,7 +99,7 @@ const SongListRow = ({
           type: "click",
           icon: MdAddToQueue,
           label: "Add To Queue",
-          onClick: () => enqueue(song),
+          onClick: () => Queue.enqueue(song),
         },
         {
           label: "Add To Playlist",
@@ -147,7 +149,7 @@ const SongListRow = ({
         },
       ]}
       onClick={() =>
-        setQueue({
+        Queue.setQueue({
           source,
           songs: songs!,
           index: index,

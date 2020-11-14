@@ -3,7 +3,7 @@ import { MdMoreVert } from "react-icons/md";
 import { ActionSheetItem, openActionSheet } from "../action-sheet";
 import { Thumbnail } from "../../components/Thumbnail";
 import classNames from "classnames";
-import type { ListContainerMode } from "../components/ListContainer";
+import { ListContainerMode } from "../components/ListContainer";
 import { Audio } from "@jsmith21/svg-loaders-react";
 import { Song } from "../../shared/universal/types";
 
@@ -34,6 +34,8 @@ export const MusicListItem = ({
     const timeout = setTimeout(() => setRender(true), 500);
     return () => clearTimeout(timeout);
   }, []);
+
+  console.log("MusicListItem", title);
 
   return (
     <div

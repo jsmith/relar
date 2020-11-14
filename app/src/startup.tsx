@@ -5,7 +5,11 @@ import * as Sentry from "@sentry/browser";
 import { useCoolDB } from "./db";
 import { onConditions, useMySnackbar, useOnlineStatus } from "./utils";
 import { useNavigation, useNavigator } from "./routes";
+import { useTimeUpdater } from "./queue";
 
+/**
+ * Common hooks between the mobile and web app.
+ */
 export const useStartupHooks = () => {
   const { routeId } = useNavigator("home"); // "home" is just because something is required
   const { loading } = useUser();
@@ -23,6 +27,7 @@ export const useStartupHooks = () => {
     });
   }, []);
 
+  useTimeUpdater();
   useCoolDB();
   useNavigation();
 

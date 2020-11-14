@@ -15,20 +15,14 @@ import { LikedIcon } from "../../components/LikedIcon";
 import { IconButton } from "../../components/IconButton";
 import { ContextMenu, ContextMenuItem } from "../../components/ContextMenu";
 import { useConfirmAction } from "../../confirm-actions";
-import { useLikeSong, useDeleteSong } from "../../queries/songs";
+import { likeSong, useDeleteSong } from "../../queries/songs";
 import { fmtMSS } from "../../utils";
 import { Link } from "../../components/Link";
 import { getAlbumRouteParams, getArtistRouteParams } from "../../routes";
 import { link } from "../../classes";
 import { showPlaylistAddModal } from "./AddToPlaylistModal";
 import Skeleton from "react-loading-skeleton";
-import {
-  useQueue,
-  SetQueueSource,
-  SongInfo,
-  checkQueueItemsEqual,
-  checkSourcesEqual,
-} from "../../queue";
+import { SetQueueSource, SongInfo, checkSourcesEqual, Queue, useIsPlayingSong } from "../../queue";
 import { Audio } from "@jsmith21/svg-loaders-react";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -105,11 +99,10 @@ export interface SongTableItem<T extends SongInfo>
 
 export interface SongTableRowProps<T extends SongInfo> {
   song: T;
-  setSong: (song: T) => void;
+  setSong: () => void;
   actions: SongTableItem<T>[] | undefined;
   mode: "regular" | "condensed";
-  playing: boolean;
-  paused: boolean;
+  source: SetQueueSource;
   children?: React.ReactNode;
   includeDateAdded?: boolean;
   includeAlbumNumber?: boolean;
@@ -123,8 +116,7 @@ export const SongTableRow = <T extends SongInfo>({
   setSong,
   actions,
   mode,
-  playing,
-  paused,
+  source,
   includeDateAdded,
   includeAlbumNumber,
   index,
@@ -133,7 +125,7 @@ export const SongTableRow = <T extends SongInfo>({
 }: SongTableRowProps<T>) => {
   const [focusedPlay, setFocusedPlay] = useState(false);
   const { confirmAction } = useConfirmAction();
-  const setLiked = useLikeSong(song);
+  const isPlaying = useIsPlayingSong({ song, source });
   const deleteSong = useDeleteSong();
 
   const contextMenuItems = useMemo(() => {
@@ -210,7 +202,7 @@ export const SongTableRow = <T extends SongInfo>({
   return (
     <div
       className="group hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm flex items-center h-full"
-      onClick={() => setSong(song)}
+      onClick={setSong}
       style={style}
     >
       {includeAlbumNumber && (
@@ -223,11 +215,11 @@ export const SongTableRow = <T extends SongInfo>({
         style={widths.title}
       >
         <div className="w-8 h-8 relative flex-shrink-0 flex items-center justify-center">
-          {playing ? (
+          {isPlaying === "playing" || isPlaying === "paused" ? (
             <Audio
               className="w-full h-4 text-purple-500 flex-shrink-0"
               fill="currentColor"
-              disabled={paused}
+              disabled={isPlaying === "paused"}
             />
           ) : (
             <>
@@ -311,7 +303,7 @@ export const SongTableRow = <T extends SongInfo>({
         {fmtMSS(song.duration / 1000)}
       </Cell>
       <Cell className=" truncate" style={widths.liked}>
-        <LikedIcon liked={song.liked} setLiked={setLiked} />
+        <LikedIcon liked={song.liked} setLiked={(value) => likeSong(song, value)} />
       </Cell>
     </div>
   );
@@ -347,25 +339,24 @@ export const SongTable = function <T extends SongInfo>({
   beforeShowModal,
 }: SongTableProps<T>) {
   const ref = useRef<List | null>(null);
-  const { setQueue, playing: notPaused, dequeue, enqueue, songInfo } = useQueue();
   const actionsWithAddRemove = useMemo(() => {
     const actionsWithAddRemove = actions ? [...actions] : [];
     if (source.type === "queue") {
       actionsWithAddRemove.push({
         icon: MdRemoveFromQueue,
         label: "Remove From Queue",
-        onClick: (_, index) => dequeue(index),
+        onClick: (_, index) => Queue.dequeue(index),
       });
     } else {
       actionsWithAddRemove.push({
         icon: MdAddToQueue,
         label: "Add To Queue",
-        onClick: enqueue,
+        onClick: Queue.enqueue,
       });
     }
 
     return actionsWithAddRemove;
-  }, [actions, dequeue, enqueue, source.type]);
+  }, [actions, source.type]);
 
   const rows = useMemo(() => {
     if (!songs) {
@@ -377,10 +368,19 @@ export const SongTable = function <T extends SongInfo>({
     return songs;
   }, [loadingRows, songs]);
 
-  useEffect(() => {
-    if (!songInfo || !songInfo.jump || !checkSourcesEqual(songInfo.source, source)) return;
-    ref.current?.scrollToItem(songInfo.index);
-  }, [songInfo, source]);
+  useEffect(
+    () =>
+      Queue.onChangeCurrentlyPlaying((currentlyPlaying) => {
+        if (
+          !currentlyPlaying ||
+          !currentlyPlaying.jump ||
+          !checkSourcesEqual(currentlyPlaying.source, source)
+        )
+          return;
+        ref.current?.scrollToItem(currentlyPlaying.index);
+      }),
+    [source],
+  );
 
   const Row = useCallback(
     ({ index, style }: { index: number; style: CSSProperties }) => {
@@ -393,22 +393,15 @@ export const SongTable = function <T extends SongInfo>({
         );
       }
 
-      const playing = checkQueueItemsEqual(
-        { song: value, id: value.playlistId ?? value.id, source },
-        songInfo,
-      );
-
-      // The key is the index rather than the song ID as the song could > 1
       return (
         <SongTableRow
           style={style}
           song={value}
           index={index}
-          setSong={() => setQueue({ songs: songs ?? [], source, index })}
+          source={source}
+          setSong={() => Queue.setQueue({ songs: songs ?? [], source, index })}
           actions={actionsWithAddRemove}
           mode={mode}
-          playing={playing}
-          paused={!notPaused}
           includeDateAdded={includeDateAdded}
           includeAlbumNumber={includeAlbumNumber}
           beforeShowModal={beforeShowModal}
@@ -420,10 +413,7 @@ export const SongTable = function <T extends SongInfo>({
       includeDateAdded,
       includeAlbumNumber,
       mode,
-      notPaused,
       rows,
-      setQueue,
-      songInfo,
       songs,
       source,
       beforeShowModal,

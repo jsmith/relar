@@ -7,10 +7,17 @@ import { SongList } from "../sections/SongList";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { ActionSheetItem, openActionSheet } from "../action-sheet";
 import { Collage } from "../../components/Collage";
-import { SetQueueSource, SongInfo, useQueue, checkSourcesEqual } from "../../queue";
+import {
+  SetQueueSource,
+  SongInfo,
+  checkSourcesEqual,
+  useIsPlayingSource,
+  Queue,
+} from "../../queue";
 import { Modals } from "@capacitor/core";
 import { Audio } from "@jsmith21/svg-loaders-react";
 import Skeleton from "react-loading-skeleton";
+import { SourcePlayButton } from "../../sections/SourcePlayButton";
 
 export interface SongsOverviewProps {
   title: string | undefined;
@@ -32,15 +39,10 @@ export const SongsOverview = ({
   onDelete,
 }: SongsOverviewProps) => {
   const { width } = useWindowSize();
-  const { setQueue, songInfo, playing, toggleState } = useQueue();
   const songDuration = useSongsDuration(songs);
   const scrollY = useMotionValue(0);
   const outerRef = useRef<HTMLDivElement | null>(null);
   const topImage = useTransform(scrollY, (value) => Math.round(value * 0.3));
-  const sourcesEqual = useMemo(() => checkSourcesEqual(songInfo?.source, source), [
-    songInfo?.source,
-    source,
-  ]);
 
   useEffect(() => {
     const onScroll = () => scrollY.set(window.scrollY);
@@ -85,8 +87,6 @@ export const SongsOverview = ({
     return actionItems;
   }, [onDelete, onRename]);
 
-  // TODO localize updates
-
   return (
     <>
       <div style={{ width, height: width }} className="relative overflow-hidden">
@@ -96,27 +96,11 @@ export const SongsOverview = ({
       </div>
 
       <div className="relative">
-        <button
-          className="absolute top-0 right-0 mr-6 transform -translate-y-1/2 rounded-full bg-purple-500 w-12 h-12 flex items-center justify-center"
-          onClick={() => {
-            if (!songs) return;
-
-            if (sourcesEqual) {
-              toggleState();
-            } else {
-              setQueue({
-                songs,
-                source,
-              });
-            }
-          }}
-        >
-          {sourcesEqual ? (
-            <Audio className="w-6 h-4 text-white" fill="currentColor" disabled={!playing} />
-          ) : (
-            <MdPlayArrow className="text-white w-8 h-8 relative" />
-          )}
-        </button>
+        <SourcePlayButton
+          className="absolute top-0 right-0 mr-6 transform -translate-y-1/2"
+          songs={songs}
+          source={source}
+        />
       </div>
       <div className="font-bold text-lg mx-3 mt-2">{title || <Skeleton width={80} />}</div>
       <div className="mx-3 mt-1 flex items-center">

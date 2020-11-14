@@ -10,31 +10,18 @@ import {
   removeElementFromShuffled,
   useIsMobile,
   useStateWithRef,
+  getLocalStorage,
+  isMobile,
 } from "./utils";
 import firebase from "firebase/app";
 import { createEmitter } from "./events";
 import * as uuid from "uuid";
 import { captureException } from "@sentry/browser";
 import { getUserDataOrError, serverTimestamp } from "./firestore";
-import { useChangedSongs } from "./db";
 import { tryToGetDownloadUrlOrLog } from "./queries/thumbnail";
 import { getDefinedUser } from "./auth";
 import { isDefined } from "./shared/universal/utils";
-
-const emitter = createEmitter<{ updateCurrentTime: [number] }>();
-
-export const setCurrentTime = (currentTime: number) =>
-  emitter.emit("updateCurrentTime", currentTime);
-
-export const useCurrentTime = () => {
-  const [currentTime, setCurrentTime] = useState(0);
-
-  useEffect(() => {
-    return emitter.on("updateCurrentTime", setCurrentTime);
-  }, []);
-
-  return currentTime;
-};
+import { useChangedSongs } from "./db";
 
 export type GeneratedType = "recently-added" | "recently-played" | "liked";
 
@@ -112,73 +99,19 @@ export type SetQueueOptions = {
   source: SetQueueSource;
 };
 
-export type QueuePlayMode = "repeat" | "repeat-one" | "none";
+export type QueueRepeat = "repeat" | "repeat-one" | "none";
 
-export const QueueContext = createContext<{
-  queue: QueueItem[];
-  setQueue: (options: SetQueueOptions) => Promise<void>;
-  enqueue: (song: Song) => void;
-  /**
-   * Dequeue the given index. This will be the queue song index (meaning the index may be the
-   * shuffled index).
-   */
-  dequeue: (index: number) => void;
-  /** The current song. "jump" indicates whether the song list should jump to the item when it changes */
-  songInfo: (QueueItem & { jump: boolean }) | undefined;
-  next: () => void;
-  /** Call this when the songs finishes. For internal use only. */
-  _nextAutomatic: () => void;
-  previous: () => void;
-  mode: QueuePlayMode;
-  toggleMode: () => void;
-  /** Seek to a desired position in the current song. */
-  seekTime: (time: number) => void;
-  /** Seek to a desired position in a song by specifying an offset */
-  deltaCurrentTime: (delta: number) => void;
-  /** Whether the current song is playing. */
-  playing: boolean;
-  /** Toggle the playing state. */
-  toggleState: () => void;
-  /** The current volume from 0 to 100. Useful for UI purposes. */
-  volume: number;
-  /** Set the state and change the volume value in the <audio> element. */
-  setVolume: (value: number | ((current: number) => number)) => void;
-  clear: () => void;
-  /** Set the ref. For internal use only. */
-  _setRef: (el: AudioControls | null) => void;
-  shuffle: boolean;
-  toggleShuffle: () => void;
-  setShuffle: (value: boolean) => void;
-  /** Stop playing and clear the state */
-  stopPlaying: () => void;
-  playIfNotPlaying: () => void;
-  pauseIfPlaying: () => void;
-}>({
-  queue: [],
-  setQueue: async () => {},
-  enqueue: () => {},
-  dequeue: () => {},
-  songInfo: undefined,
-  next: () => {},
-  _nextAutomatic: () => {},
-  previous: () => {},
-  mode: "none",
-  toggleMode: () => {},
-  seekTime: () => {},
-  deltaCurrentTime: () => {},
-  playing: false,
-  toggleState: () => {},
-  volume: 100,
-  setVolume: () => {},
-  clear: () => {},
-  _setRef: () => {},
-  shuffle: false,
-  toggleShuffle: () => {},
-  stopPlaying: () => {},
-  playIfNotPlaying: () => {},
-  pauseIfPlaying: () => {},
-  setShuffle: () => {},
-});
+export type QueueState = "playing" | "paused";
+
+const emitter = createEmitter<{
+  updateCurrentTime: [number];
+  currentlyPlayingChange: [(QueueItem & { jump: boolean }) | undefined];
+  repeatChange: [QueueRepeat];
+  stateChange: [QueueState];
+  shuffleChange: [boolean];
+  queueItemsChange: [QueueItem[]];
+  volumeChange: [number];
+}>();
 
 export interface AudioControls {
   pause: () => void;
@@ -190,440 +123,555 @@ export interface AudioControls {
   setVolume(volume: number): void;
 }
 
-export const QueueProvider = (props: React.Props<{}>) => {
-  const ref = useRef<AudioControls | null>(null);
-  const [queue, setQueueState] = useState<QueueItem[]>([]);
-  const [shuffle, setShuffle, shuffleRef] = useLocalStorage<"true" | "false">(
-    "player-shuffle",
-    "true",
-  );
-  const current = useRef<{
-    queue: QueueItem[];
-    mappings:
-      | {
-          mappingTo: Record<number, number>;
-          mappingFrom: Record<number, number>;
-        }
-      | undefined;
-    index: number | undefined;
-  }>({
-    queue: [],
-    mappings: undefined,
-    index: undefined,
-  });
-  const [songInfo, setSongInfo, songInfoRef] = useStateWithRef<
-    (QueueItem & { jump: boolean }) | undefined
-  >(undefined); // currently playing song
-  const [mode, setMode, modeRef] = useLocalStorage<QueuePlayMode>("player-mode", "none");
-  const [playing, setPlaying, playingRef] = useStateWithRef<boolean>(false);
-  const isMobile = useIsMobile();
-  /** The volume from 0 to 100 */
-  const [volumeString, setVolumeString, volumeStringRef] = useLocalStorage<string>(
-    "player-volume",
-    isMobile ? "100" : "80",
-  );
-  const setVolume = useCallback(
-    (value: number | ((value: number) => number)) => {
-      if (typeof value === "function") {
-        value = value(+volumeStringRef.current);
+export const queueLogic = () => {
+  let ref: AudioControls | undefined;
+  let mapping:
+    | {
+        mappingTo: Record<number, number>;
+        mappingFrom: Record<number, number>;
       }
-      setVolumeString("" + value);
-      // HTML5 audio.volume is a value between 0 and 1
-      // See https://stackoverflow.com/questions/10075909/how-to-set-the-loudness-of-html5-audio
-      if (ref.current) ref.current.setVolume(value / 100);
-    },
-    [setVolumeString, volumeStringRef],
+    | undefined;
+  let index: number | undefined;
+
+  // QUEUE ITEMS
+  let queue: QueueItem[] = [];
+  const setQueueItems = (value: QueueItem[]) => {
+    queue = value;
+    emitter.emit("queueItemsChange", value);
+  };
+
+  // SHUFFLE
+  let shuffle: "true" | "false" = "false";
+  const setShuffle = (value: boolean) => {
+    shuffle = value ? "true" : "false";
+    setShuffleStorage(shuffle);
+    emitter.emit("shuffleChange", value);
+  };
+  const [getShuffleStorage, setShuffleStorage] = getLocalStorage<"true" | "false">(
+    "player-shuffle",
+    "false",
   );
-  const volume = useMemo(() => parseInt(volumeString), [volumeString]);
-  useChangedSongs(
-    useCallback(
-      (changed) => {
-        // There could be a more efficient way to do this
-        const lookup: Record<string, Song> = {};
-        changed.forEach((song) => {
-          lookup[song.id] = song;
-        });
+  getShuffleStorage().then((value) => setShuffle(value === "true"));
 
-        let doSet = false;
-        const queue = current.current.queue.map((song) => {
-          if (lookup[song.song.id]) {
-            doSet = true;
-            return { ...song, song: lookup[song.song.id] };
-          }
+  // CURRENTLY PLAYING
+  let currentlyPlaying: (QueueItem & { jump: boolean }) | undefined;
+  const setCurrentlyPlaying = (value: (QueueItem & { jump: boolean }) | undefined) => {
+    currentlyPlaying = value;
+    emitter.emit("currentlyPlayingChange", value);
+  };
 
-          return song;
-        });
+  // REPEAT
+  let mode: QueueRepeat = "none";
+  const setRepeat = (value: QueueRepeat) => {
+    mode = value;
+    setRepeatStorage(value);
+    emitter.emit("repeatChange", value);
+  };
+  const [getRepeatStorage, setRepeatStorage] = getLocalStorage<QueueRepeat>("player-mode", "none");
+  getRepeatStorage().then(setRepeat);
 
-        if (doSet) {
-          setQueueState(queue);
-          current.current.queue = queue;
-        }
+  // STATE
+  let state: QueueState = "paused";
+  const setState = (value: QueueState) => {
+    state = value;
+    emitter.emit("stateChange", value);
+  };
 
-        if (songInfoRef.current && lookup[songInfoRef.current.song.id]) {
-          setSongInfo({ ...songInfoRef.current, song: lookup[songInfoRef.current.song.id] });
-        }
-      },
-      [setSongInfo, songInfoRef],
-    ),
-  );
+  // VOLUME
+  // The volume from 0 to 100
+  let volume = 100;
+  const setVolume = (value: number | ((value: number) => number)) => {
+    if (typeof value === "function") {
+      value = value(volume);
+    }
+    setVolumeStorage("" + value);
+    emitter.emit("volumeChange", value);
+    // HTML5 audio.volume is a value between 0 and 1
+    // See https://stackoverflow.com/questions/10075909/how-to-set-the-loudness-of-html5-audio
+    ref?.setVolume(value / 100);
+  };
+  const [getVolumeStorage, setVolumeStorage] = getLocalStorage<string>("player-volume", "100");
+  getVolumeStorage().then((value) => {
+    // Just do some checks on the value coming from storage
+    // You never know
+    const parsed = +value;
+    if (isNaN(parsed)) return;
+    volume = Math.min(Math.max(parsed, 0), 100);
+  });
 
-  // We do this internally since iOS (and maybe android) don't have time update events
-  // So, to resolve this, we use timers while playing and then fetch the time manually
-  // This seems like the easiest cross platform solution
-  useEffect(() => {
-    if (!playing) return;
+  const toggleState = () => {
+    if (index === undefined) return;
+    if (state === "playing") ref?.pause();
+    else ref?.play();
+    setState(state === "playing" ? "paused" : "playing");
+  };
 
-    const setTimer = () => {
-      return setTimeout(() => {
-        timer = setTimer();
-        ref.current?.getCurrentTime().then(setCurrentTime);
-      }, 1000);
+  const playIfNotPlaying = () => {
+    if (index === undefined) return;
+    if (state === "playing") return;
+    ref?.play();
+    setState("playing");
+  };
+
+  const pauseIfPlaying = () => {
+    if (index === undefined) return;
+    if (state === "paused") return;
+    ref?.pause();
+    setState("paused");
+  };
+
+  const stopPlaying = () => {
+    setState("paused");
+    setCurrentlyPlaying(undefined);
+    setCurrentTime(0);
+    ref?.setSrc(null);
+    index = undefined;
+    mapping = undefined;
+    queue = [];
+  };
+
+  const changeSongIndex = async (newIndex: number, jump = false) => {
+    index = newIndex;
+    const item: QueueItem | undefined = queue[index];
+
+    // This is just a sanity check as the logic here is probably flawed somehow
+    if (!item) {
+      console.info(
+        `Tried to play song at index ${index} which is > queue.length (${queue.length})`,
+      );
+      stopPlaying();
+      return;
+    }
+
+    const { song, source } = item;
+    const userData = getUserDataOrError();
+    console.info(`Changing song to index ${index} (title: ${song.title}, id: ${song.id})`);
+    const downloadUrl = await tryToGetSongDownloadUrlOrLog(userData.song(song.id), song);
+    if (!downloadUrl) return;
+
+    const update: Partial<Song> = {
+      updatedAt: serverTimestamp(),
+      lastPlayed: serverTimestamp(),
+      played: (firebase.firestore.FieldValue.increment(1) as unknown) as number,
     };
 
-    let timer = setTimer();
-    return () => clearTimeout(timer);
-  }, [playing]);
-
-  const toggleState = useCallback(() => {
-    if (current.current.index === undefined) return;
-    if (playingRef.current) ref.current?.pause();
-    else ref.current?.play();
-    setPlaying(!playingRef.current);
-  }, [playingRef, setPlaying]); // aka []
-
-  const playIfNotPlaying = useCallback(() => {
-    if (current.current.index === undefined) return;
-    if (playingRef.current) return;
-    ref.current?.play();
-    setPlaying(true);
-  }, [playingRef, setPlaying]);
-
-  const pauseIfPlaying = useCallback(() => {
-    if (current.current.index === undefined) return;
-    if (!playingRef.current) return;
-    ref.current?.pause();
-    setPlaying(false);
-  }, [playingRef, setPlaying]);
-
-  const stopPlaying = useCallback(() => {
-    setPlaying(false);
-    setSongInfo(undefined);
-    setCurrentTime(0);
-    ref.current?.setSrc(null);
-    current.current.index = undefined;
-    current.current.mappings = undefined;
-    current.current.queue = [];
-  }, [setPlaying, setSongInfo]); // aka []
-
-  const changeSongIndex = useCallback(
-    async (index: number, jump = false) => {
-      current.current.index = index;
-      const item: QueueItem | undefined = current.current.queue[index];
-
-      // This is just a sanity check as the logic here is probably flawed somehow
-      if (!item) {
-        console.info(
-          `Tried to play song at index ${index} which is > queue.length (${current.current.queue.length})`,
-        );
-        stopPlaying();
+    if (ref) {
+      try {
+        await ref.setSrc({ src: downloadUrl, song: song });
+      } catch (e) {
+        captureException(e);
+        console.error(e.toString());
         return;
       }
+    }
 
-      const { song, source } = item;
-      const userData = getUserDataOrError();
-      console.info(`Changing song to index ${index} (title: ${song.title}, id: ${song.id})`);
-      const downloadUrl = await tryToGetSongDownloadUrlOrLog(userData.song(song.id), song);
-      if (!downloadUrl) return;
+    firebase.analytics().logEvent("play_song", { song_id: song.id });
 
-      const update: Partial<Song> = {
-        updatedAt: serverTimestamp(),
-        lastPlayed: serverTimestamp(),
-        played: (firebase.firestore.FieldValue.increment(1) as unknown) as number,
-      };
-
-      if (ref.current) {
-        try {
-          await ref.current.setSrc({ src: downloadUrl, song: song });
-        } catch (e) {
-          captureException(e);
-          console.error(e.toString());
-          return;
-        }
-      }
-
-      firebase.analytics().logEvent("play_song", { song_id: song.id });
-
-      userData.song(song.id).update(update).catch(captureAndLogError);
-      setSongInfo({ song, id: item.id, source, index: item.index, jump });
-    },
-    [setSongInfo, stopPlaying], // aka []
-  );
+    userData.song(song.id).update(update).catch(captureAndLogError);
+    setCurrentlyPlaying({ song, id: item.id, source, index: item.index, jump });
+  };
 
   /**
    * Tries to go to the target index. Force means actually go to the index whereas non force means
    * repeat if the mode is set to "repeat-one".
    */
-  const tryToGoTo = useCallback(
-    (index: number, force: boolean, jump: boolean) => {
-      const changeSongIndexAndPlay = async (index: number) => {
-        await changeSongIndex(index, jump);
-        ref.current?.play();
-        setPlaying(true);
-      };
+  const tryToGoTo = (index: number, force: boolean, jump: boolean) => {
+    const changeSongIndexAndPlay = async (index: number) => {
+      await changeSongIndex(index, jump);
+      ref?.play();
+      setState("playing");
+    };
 
-      if (!force && modeRef.current === "repeat-one") {
-        // This condition shouldn't happen
-        if (current.current.index === undefined) return;
-        // If we are just repeating the current song
-        changeSongIndexAndPlay(current.current.index);
-      } else if (index >= current.current.queue.length) {
-        console.info(`The end of the queue has been reached in mode -> ${modeRef.current}`);
-        // If we are at the last song
-        if (modeRef.current === "none") stopPlaying();
-        else changeSongIndexAndPlay(0);
-      } else if (index < 0) {
-        if (modeRef.current === "none") stopPlaying();
-        else changeSongIndexAndPlay(current.current.queue.length - 1);
-      } else {
-        // Else we are somewheres in the middle
-        changeSongIndexAndPlay(index);
-      }
-    },
-    [modeRef, changeSongIndex, setPlaying, stopPlaying], // aka []
-  );
+    if (!force && mode === "repeat-one") {
+      // This condition shouldn't happen
+      if (index === undefined) return;
+      // If we are just repeating the current song
+      changeSongIndexAndPlay(index);
+    } else if (index >= queue.length) {
+      console.info(`The end of the queue has been reached in mode -> ${mode}`);
+      // If we are at the last song
+      if (mode === "none") stopPlaying();
+      else changeSongIndexAndPlay(0);
+    } else if (index < 0) {
+      if (mode === "none") stopPlaying();
+      else changeSongIndexAndPlay(queue.length - 1);
+    } else {
+      // Else we are somewheres in the middle
+      changeSongIndexAndPlay(index);
+    }
+  };
 
-  const enqueue = useCallback((song: Song) => {
+  const enqueue = (song: Song) => {
     const newQueue: QueueItem[] = [
-      ...current.current.queue,
-      { song, source: { type: "manuel" }, id: uuid.v4(), index: current.current.queue.length },
+      ...queue,
+      { song, source: { type: "manuel" }, id: uuid.v4(), index: queue.length },
     ];
 
-    if (current.current.mappings) {
-      current.current.mappings.mappingFrom[newQueue.length - 1] = newQueue.length - 1; // new song maps to itself
-      current.current.mappings.mappingTo[newQueue.length - 1] = newQueue.length - 1; // new song maps to itself
+    if (mapping) {
+      mapping.mappingFrom[newQueue.length - 1] = newQueue.length - 1; // new song maps to itself
+      mapping.mappingTo[newQueue.length - 1] = newQueue.length - 1; // new song maps to itself
     }
-    setQueueState(newQueue);
-    current.current.queue = newQueue;
-  }, []);
+    queue = newQueue;
+  };
 
-  const dequeue = useCallback(
-    (index: number) => {
-      if (current.current.mappings) {
-        const { shuffled, mappingFrom, mappingTo } = removeElementFromShuffled(index, {
-          ...current.current.mappings,
-          shuffled: current.current.queue,
-        });
+  const dequeue = (index: number) => {
+    if (mapping) {
+      const { shuffled, mappingFrom, mappingTo } = removeElementFromShuffled(index, {
+        ...mapping,
+        shuffled: queue,
+      });
 
-        if (current.current.index !== undefined && current.current.index > index) {
-          const newIndex = current.current.index - 1;
-          current.current.index = newIndex;
-        }
-
-        current.current.mappings = { mappingTo, mappingFrom };
-        current.current.queue = shuffled;
-        setQueueState(shuffled);
-      } else {
-        const queue = current.current.queue;
-        const newQueue = [...queue.slice(0, index), ...queue.slice(index + 1)];
-        current.current.queue = newQueue;
-        setQueueState(newQueue);
+      if (index !== undefined && index > index) {
+        const newIndex = index - 1;
+        index = newIndex;
       }
 
-      if (current.current.index === index) {
-        console.info(`The song being removed is the current song. Restarting index (${index})`);
-        tryToGoTo(index, true, true);
-      } else if (current.current.index !== undefined && current.current.index > index) {
-        const newIndex = current.current.index - 1;
-        current.current.index = newIndex;
-      }
-    },
-    [tryToGoTo],
-  );
+      mapping = { mappingTo, mappingFrom };
+      queue = shuffled;
+    } else {
+      queue = [...queue.slice(0, index), ...queue.slice(index + 1)];
+    }
 
-  const shuffleSongs = useCallback(() => {
+    if (index === index) {
+      console.info(`The song being removed is the current song. Restarting index (${index})`);
+      tryToGoTo(index, true, true);
+    } else if (index !== undefined && index > index) {
+      const newIndex = index - 1;
+      index = newIndex;
+    }
+  };
+
+  const shuffleSongs = () => {
     // By passing in the second value, the current index will also be mapped to position 0 in the
     // shuffled array :) This is more intuitive to users and provides a better experience.
-    const { shuffled, mappingTo, mappingFrom } = shuffleArray(
-      current.current.queue,
-      current.current.index,
-    );
-    const songIndex = current.current.index;
-    const index = songIndex === undefined ? undefined : mappingTo[songIndex];
-    current.current = { queue: shuffled, mappings: { mappingFrom, mappingTo }, index };
-    setQueueState(shuffled);
-  }, []);
+    const { shuffled, mappingTo, mappingFrom } = shuffleArray(queue, index);
+    const songIndex = index;
+    index = songIndex === undefined ? undefined : mappingTo[songIndex];
+    queue = shuffled;
+    mapping = { mappingFrom, mappingTo };
+  };
 
-  const setQueue = useCallback(
-    async ({ songs, source, index }: SetQueueOptions) => {
-      // Only set if the type isn't "queue"
-      // If it is "queue", just change the index
-      if (source.type !== "queue") {
-        const newQueue: QueueItem[] = songs.map((song, index) => ({
-          song,
-          source: source,
-          id: song.playlistId ?? song.id,
-          index,
-        }));
-        setQueueState(newQueue);
-        current.current = { queue: newQueue, index: undefined, mappings: undefined };
-      }
+  const setQueue = async ({ songs, source, index: newIndex }: SetQueueOptions) => {
+    // Only set if the type isn't "queue"
+    // If it is "queue", just change the index
+    if (source.type !== "queue") {
+      queue = songs.map((song, index) => ({
+        song,
+        source: source,
+        id: song.playlistId ?? song.id,
+        index,
+      }));
 
-      // It's important that we do this before shuffling
-      // TODO test jumping
-      await changeSongIndex(index ?? 0, true);
+      // TODO do we need to reset here?
+      index = undefined;
+      mapping = undefined;
+    }
 
-      if (source.type !== "queue" && shuffleRef.current === "true") {
-        shuffleSongs();
-      }
+    // It's important that we do this before shuffling
+    // TODO test jumping
+    await changeSongIndex(newIndex ?? 0, true);
 
-      ref.current?.play();
-      setPlaying(true);
-    },
-    [changeSongIndex, setPlaying, shuffleRef, shuffleSongs], // aka []
-  );
+    if (source.type !== "queue" && shuffle === "true") {
+      shuffleSongs();
+    }
 
-  const next = useCallback(
-    () => current.current.index !== undefined && tryToGoTo(current.current.index + 1, true, true),
-    [tryToGoTo], // aka []
-  );
-  const previous = useCallback(async () => {
-    if (!ref.current || current.current.index === undefined) return;
-    const currentTime = await ref.current.getCurrentTime();
+    ref?.play();
+    setState("playing");
+  };
+
+  const next = () => index !== undefined && tryToGoTo(index + 1, true, true);
+
+  const previous = async () => {
+    if (!ref || index === undefined) return;
+    const currentTime = await ref.getCurrentTime();
     if (currentTime <= 4) {
       // If less than 4 seconds, go to the previous song
-      tryToGoTo((current.current.index ?? 0) - 1, true, true);
+      tryToGoTo((index ?? 0) - 1, true, true);
     } else {
       // If not just restart the song
       setCurrentTime(0);
-      ref.current.setCurrentTime(0);
+      ref.setCurrentTime(0);
     }
-  }, [tryToGoTo]); // aka []
+  };
 
-  const _nextAutomatic = useCallback(
-    () => current.current.index !== undefined && tryToGoTo(current.current.index + 1, false, false),
-    [tryToGoTo], // aka []
-  );
+  const _nextAutomatic = () => index !== undefined && tryToGoTo(index + 1, false, false);
 
-  const seekTime = useCallback((seconds: number) => {
+  const seekTime = (seconds: number) => {
     setCurrentTime(seconds);
-    if (ref.current) ref.current.setCurrentTime(seconds);
-  }, []);
+    if (ref) ref.setCurrentTime(seconds);
+  };
 
-  const deltaCurrentTime = useCallback(
-    async (delta) => {
-      if (!ref.current) return;
-      const currentTime = await ref.current.getCurrentTime();
-      // Note that this ignores the duration
-      // If the user goes too far (ie. set current time), the time will be temporary too high
-      seekTime(Math.max(currentTime + delta, 0));
-    },
-    [seekTime], // aka []
-  );
+  const deltaCurrentTime = async (delta: number) => {
+    if (!ref) return;
+    const currentTime = await ref.getCurrentTime();
+    // Note that this ignores the duration
+    // If the user goes too far (ie. set current time), the time will be temporary too high
+    seekTime(Math.max(currentTime + delta, 0));
+  };
 
-  const _setRef = useCallback(
-    (el: AudioControls | null) => {
-      ref.current = el;
-      if (el) el.setVolume(volume / 100);
-    },
-    [volume],
-  );
+  const _setRef = (el: AudioControls | null) => {
+    ref = el ?? undefined;
+    el?.setVolume(volume / 100);
+  };
 
-  const clear = useCallback(() => {
-    setQueueState([]);
-    current.current = { queue: [], mappings: undefined, index: undefined };
+  const clear = () => {
+    queue = [];
+    mapping = undefined;
+    index = undefined;
     stopPlaying();
-  }, [stopPlaying]);
+  };
 
-  const toggleShuffle = useCallback(() => {
-    if (shuffleRef.current === "true") {
-      const { queue, mappings, index } = current.current;
-
+  const toggleShuffle = () => {
+    if (shuffle === "true") {
       // It's technically passible this is undefined
       // Although it should never happen
-      if (mappings) {
-        const { mappingTo, mappingFrom } = mappings;
+      if (mapping) {
+        const { mappingTo, mappingFrom } = mapping;
         // Map back to the original array order
-        const original = queue.map((_, i) => queue[mappingTo[i]]);
+        queue = queue.map((_, i) => queue[mappingTo[i]]);
         const originalIndex = index === undefined ? undefined : mappingFrom[index];
-        current.current = { queue: original, index: originalIndex, mappings: undefined };
-        setQueueState(original);
+        index = originalIndex;
+        mapping = undefined;
       }
 
-      setShuffle("false");
+      setShuffle(false);
     } else {
       shuffleSongs();
-      setShuffle("true");
+      setShuffle(true);
     }
-  }, [setShuffle, shuffleRef, shuffleSongs]); // aka []
+  };
 
-  const setShuffleBoolean = useCallback(
-    (value: boolean) => {
-      if (value && shuffleRef.current === "true") return;
-      else if (!value && shuffleRef.current === "false") return;
-      toggleShuffle();
-    },
-    [shuffleRef, toggleShuffle],
-  ); // aka []
+  const setShuffleBoolean = (value: boolean) => {
+    if (value && shuffle === "true") return;
+    else if (!value && shuffle === "false") return;
+    toggleShuffle();
+  };
 
-  const toggleMode = useCallback(() => {
-    setMode(
-      modeRef.current === "none" ? "repeat" : modeRef.current === "repeat" ? "repeat-one" : "none",
-    );
-  }, [modeRef, setMode]); // aka []
+  const toggleRepeat = () => {
+    setRepeat(mode === "none" ? "repeat" : mode === "repeat" ? "repeat-one" : "none");
+  };
 
-  return (
-    <QueueContext.Provider
-      value={{
-        enqueue,
-        setQueue,
-        queue,
-        songInfo,
-        mode,
-        toggleMode,
-        next,
-        previous,
-        seekTime,
-        playing,
-        toggleState,
-        volume,
-        setVolume,
-        _setRef,
-        _nextAutomatic,
-        clear,
-        deltaCurrentTime,
-        shuffle: shuffle === "true",
-        toggleShuffle,
-        dequeue,
-        stopPlaying,
-        playIfNotPlaying,
-        pauseIfPlaying,
-        setShuffle: setShuffleBoolean,
-      }}
-    >
-      {props.children}
-    </QueueContext.Provider>
+  return {
+    enqueue,
+    setQueue,
+    getQueueItems: () => queue,
+    onChangeQueueItems: (cb: (items: QueueItem[]) => void) => emitter.on("queueItemsChange", cb),
+    getCurrentlyPlaying: () => currentlyPlaying,
+    onChangeCurrentlyPlaying: (cb: (item: (QueueItem & { jump: boolean }) | undefined) => void) =>
+      emitter.on("currentlyPlayingChange", cb),
+    getRepeat: () => mode,
+    onChangeRepeat: (cb: (repeat: QueueRepeat) => void) => emitter.on("repeatChange", cb),
+    toggleRepeat,
+    next,
+    previous,
+    seekTime,
+    getState: (): QueueState => state,
+    toggleState,
+    onChangeState: (cb: (value: QueueState) => void) => emitter.on("stateChange", cb),
+    getVolume: () => volume,
+    setVolume,
+    onChangeVolume: (cb: (value: number) => void) => emitter.on("volumeChange", cb),
+    _setRef,
+    _nextAutomatic,
+    clear,
+    deltaCurrentTime,
+    getShuffle: () => shuffle === "true",
+    setShuffle: setShuffleBoolean,
+    toggleShuffle,
+    onChangeShuffle: (cb: (shuffle: boolean) => void) => emitter.on("shuffleChange", cb),
+    dequeue,
+    stopPlaying,
+    playIfNotPlaying,
+    pauseIfPlaying,
+    getCurrentTime: () => setCurrentTime,
+    fetchCurrentTime: () => ref?.getCurrentTime().then(setCurrentTime),
+    replaceQueueItems: setQueueItems,
+    replaceCurrentlyPlaying: setCurrentlyPlaying,
+  };
+};
+
+// TODO reset on new user
+export const Queue = queueLogic();
+
+/**
+ * Call this hook to initiate the fetching of the current time. This happens ~ once per second.
+ *
+ */
+export const useTimeUpdater = () => {
+  const state = useQueueState();
+
+  // TODO refactor. These changes could probably just happen locally?
+  // useChangedSongs(
+  //   useCallback((changed) => {
+  //     // There could be a more efficient way to do this
+  //     const lookup: Record<string, Song> = {};
+  //     changed.forEach((song) => {
+  //       lookup[song.id] = song;
+  //     });
+
+  //     let doSet = false;
+  //     const queue = Queue.getQueueItems().map((song) => {
+  //       if (lookup[song.song.id]) {
+  //         doSet = true;
+  //         return { ...song, song: lookup[song.song.id] };
+  //       }
+
+  //       return song;
+  //     });
+
+  //     if (doSet) {
+  //       Queue.replaceQueueItems(queue);
+  //     }
+
+  //     const currentlyPlaying = Queue.getCurrentlyPlaying();
+  //     if (currentlyPlaying && lookup[currentlyPlaying.song.id]) {
+  //       Queue.replaceCurrentlyPlaying({
+  //         ...currentlyPlaying,
+  //         song: lookup[currentlyPlaying.song.id],
+  //       });
+  //     }
+  //   }, []),
+  // );
+
+  // We do this internally since iOS (and maybe android) don't have time update events
+  // So, to resolve this, we use timers while playing and then fetch the time manually
+  // This seems like the easiest cross platform solution
+  useEffect(() => {
+    if (state === "paused") return;
+
+    const setTimer = () => {
+      return setTimeout(() => {
+        timer = setTimer();
+        Queue.fetchCurrentTime();
+      }, 1000);
+    };
+
+    let timer = setTimer();
+    return () => clearTimeout(timer);
+  }, [state]);
+};
+
+export const setCurrentTime = (currentTime: number) =>
+  emitter.emit("updateCurrentTime", currentTime);
+
+// TODO any weird conditions?
+let savedCurrentTime: number | undefined;
+emitter.on("updateCurrentTime", (value) => (savedCurrentTime = value));
+
+export const useCurrentTime = () => {
+  const [currentTime, setCurrentTime] = useState(savedCurrentTime ?? 0);
+
+  useEffect(() => {
+    return emitter.on("updateCurrentTime", setCurrentTime);
+  }, []);
+
+  return currentTime;
+};
+
+export const useCurrentlyPlaying = () => {
+  const [currentlyPlaying, setCurrentlyPlaying] = useState<
+    (QueueItem & { jump: boolean }) | undefined
+  >(Queue.getCurrentlyPlaying());
+
+  useEffect(() => Queue.onChangeCurrentlyPlaying(setCurrentlyPlaying), []);
+
+  return currentlyPlaying;
+};
+
+export const useQueueState = () => {
+  const [state, setState] = useState(Queue.getState());
+  useEffect(() => Queue.onChangeState(setState), []);
+  return state;
+};
+
+export const useQueueItems = () => {
+  const [items, setItems] = useState(Queue.getQueueItems());
+  useEffect(() => Queue.onChangeQueueItems(setItems), []);
+  return items;
+};
+
+const checkSongIsPlayingSong = ({
+  song,
+  source,
+  currentlyPlaying,
+  state,
+}: {
+  song: SongInfo;
+  source: SetQueueSource;
+  currentlyPlaying: QueueItem | undefined;
+  state: QueueState;
+}): "playing" | "paused" | "not-playing" => {
+  const id = song.playlistId ?? song.id;
+  if (!checkQueueItemsEqual({ song, id, source }, currentlyPlaying)) return "not-playing";
+  return state === "playing" ? "playing" : "paused";
+};
+
+// TODO rename
+export const useIsPlayingSong = ({ song, source }: { song: SongInfo; source: SetQueueSource }) => {
+  const [isPlayingSong, setIsPlayingSong, isPlayingSongRef] = useStateWithRef(
+    checkSongIsPlayingSong({
+      song,
+      source,
+      state: Queue.getState(),
+      currentlyPlaying: Queue.getCurrentlyPlaying(),
+    }),
   );
+
+  const check = useCallback(() => {
+    const isPlayingSong = checkSongIsPlayingSong({
+      song,
+      source,
+      state: Queue.getState(),
+      currentlyPlaying: Queue.getCurrentlyPlaying(),
+    });
+
+    if (isPlayingSong === isPlayingSongRef.current) return;
+    setIsPlayingSong(isPlayingSong);
+  }, [isPlayingSongRef, setIsPlayingSong, song, source]);
+
+  // Anytime the currently playing song or state changes, run the check
+  // If the value hasn't changed (this will be 95% of the cases)
+  // then no render occurs since we use the ref to check
+  // Also check whenever the "song" or "source" changes
+  useEffect(() => Queue.onChangeCurrentlyPlaying(check), [check]);
+  useEffect(() => Queue.onChangeState(check), [check]);
+  useEffect(check, [check]);
+
+  return isPlayingSong;
+};
+
+export const useIsPlayingSource = ({ source }: { source: SetQueueSource }) => {
+  const [isPlaying, setIsPlaying, isPlayingSongRef] = useStateWithRef(
+    checkSourcesEqual(source, Queue.getCurrentlyPlaying()?.source),
+  );
+
+  const check = useCallback(() => {
+    const isPlayingSong = checkSourcesEqual(source, Queue.getCurrentlyPlaying()?.source);
+
+    if (isPlayingSong === isPlayingSongRef.current) return;
+    setIsPlaying(isPlayingSong);
+  }, [isPlayingSongRef, setIsPlaying, source]);
+
+  // Similar to above, only run when the current song changes
+  // or when the source changes
+  // The update is very efficient since it doesn't re-render unless
+  // something changes
+  useEffect(() => Queue.onChangeCurrentlyPlaying(check), [check]);
+  useEffect(check, [check]);
+
+  return isPlaying;
 };
 
 export const QueueAudio = () => {
   const { Portal } = usePortal();
-  const {
-    _setRef,
-    _nextAutomatic,
-    playIfNotPlaying,
-    pauseIfPlaying,
-    next,
-    previous,
-    stopPlaying,
-  } = useQueue();
 
   useEffect(() => {
     const actionHandlers = [
-      ["play", playIfNotPlaying],
-      ["pause", pauseIfPlaying],
-      ["previoustrack", previous],
-      ["nexttrack", next],
-      ["stop", stopPlaying],
+      ["play", Queue.playIfNotPlaying],
+      ["pause", Queue.pauseIfPlaying],
+      ["previoustrack", Queue.previous],
+      ["nexttrack", Queue.next],
+      ["stop", Queue.stopPlaying],
     ] as const;
 
     const setHandler = (action: MediaSessionAction, handler?: () => void) => {
@@ -655,9 +703,9 @@ export const QueueAudio = () => {
         // crossOrigin="anonymous"
         // preload="metadata"
         ref={(el) => {
-          if (el === null) _setRef(null);
+          if (el === null) Queue._setRef(null);
           else
-            _setRef(
+            Queue._setRef(
               Object.assign(el, {
                 setSrc: async (opts: { src: string; song: Song } | null) => {
                   if (opts) {
@@ -670,6 +718,7 @@ export const QueueAudio = () => {
 
                     const sizes = ["128", "256"] as const;
                     const thumbnails = sizes.map((size) =>
+                      // TODO batch write
                       tryToGetDownloadUrlOrLog(getDefinedUser(), song, size),
                     );
 
@@ -703,20 +752,16 @@ export const QueueAudio = () => {
               }),
             );
         }}
-        onEnded={_nextAutomatic}
+        onEnded={Queue._nextAutomatic}
         // These are triggered if we call .pause() or if the system pauses the music
         // ie. a user clicks play/pause using their headphones
-        onPlay={playIfNotPlaying}
-        onPause={pauseIfPlaying}
+        onPlay={Queue.playIfNotPlaying}
+        onPause={Queue.pauseIfPlaying}
       >
         Your browser does not support HTML5 Audio...
       </audio>
     </Portal>
   );
-};
-
-export const useQueue = () => {
-  return useContext(QueueContext);
 };
 
 export const useHumanReadableName = (item: QueueItem | undefined) => {

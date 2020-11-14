@@ -5,7 +5,7 @@ import { getAlbumParams, getArtistRouteParams, NavigatorRoutes } from "../routes
 import { Thumbnail } from "../components/Thumbnail";
 import { Shortcut } from "../components/Shortcut";
 import { SearchResults } from "../search";
-import { useQueue } from "../queue";
+import { Queue } from "../queue";
 
 const ResultList = function <
   T extends { title: string; song: Song | undefined; subtitle: string | undefined }
@@ -108,8 +108,6 @@ export const SearchResultsDisplay = ({
   searchText: string;
   onGo?: () => void;
 }) => {
-  const { setQueue } = useQueue();
-
   return (
     <>
       <ResultList
@@ -119,7 +117,7 @@ export const SearchResultsDisplay = ({
         action="play"
         type="click"
         onClick={(_, index) => {
-          setQueue({
+          Queue.setQueue({
             source: { type: "manuel" },
             songs: results.songs,
             index,

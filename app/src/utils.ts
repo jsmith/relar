@@ -313,6 +313,23 @@ export const useGradient = (color: string, amount = 5) => {
 
 const debouncedStorageSet = debounce(500, Storage.set.bind(Storage));
 
+export function getLocalStorage<T extends string>(
+  key: string,
+  defaultValue: T,
+): [() => Promise<T>, (value: T) => Promise<void>];
+export function getLocalStorage<T extends string>(
+  key: string,
+): [() => Promise<T | undefined>, (value: T) => Promise<void>];
+export function getLocalStorage<T extends string>(
+  key: string,
+  defaultValue?: T,
+): [() => Promise<T | undefined>, (value: T) => Promise<void>] {
+  const getValue = async () =>
+    await Storage.get({ key }).then(({ value }) => (value ?? defaultValue) as T | undefined);
+  const setValue = (value: T) => Storage.set({ key, value });
+  return [getValue, setValue];
+}
+
 export function useLocalStorage<T extends string>(
   key: string,
   defaultValue: T,

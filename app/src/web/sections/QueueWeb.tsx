@@ -1,12 +1,11 @@
-import React, {
-  useMemo,
-  useRef,
-  useState,
-  CSSProperties,
-  forwardRef,
-  MutableRefObject,
-} from "react";
-import { generatedTypeToName, SongInfo, useHumanReadableName, useQueue } from "../../queue";
+import React, { useMemo, useRef, CSSProperties, forwardRef, MutableRefObject } from "react";
+import {
+  Queue,
+  SongInfo,
+  useCurrentlyPlaying,
+  useHumanReadableName,
+  useQueueItems,
+} from "../../queue";
 import { SongTable } from "./SongTable";
 import { MdQueueMusic, MdMoreVert } from "react-icons/md";
 import { useOnClickOutside, useCombinedRefs } from "../../utils";
@@ -20,12 +19,13 @@ export interface QueueProps {
   exclude?: MutableRefObject<Element | null>;
 }
 
-export const Queue = forwardRef<HTMLDivElement, QueueProps>(
+export const QueueWeb = forwardRef<HTMLDivElement, QueueProps>(
   ({ visible, close, exclude }, forwarded) => {
-    const { queue, songInfo, clear } = useQueue();
+    const queueItems = useQueueItems();
+    const currentlyPlaying = useCurrentlyPlaying();
     const songs = useMemo(
-      () => queue.map(({ song, id }): SongInfo => ({ ...song, playlistId: id })),
-      [queue],
+      () => queueItems.map(({ song, id }): SongInfo => ({ ...song, playlistId: id })),
+      [queueItems],
     );
     const ref = useRef<HTMLDivElement | null>(null);
     const combined = useCombinedRefs(ref, forwarded);
@@ -34,7 +34,7 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
 
     useHotkeys("escape", () => visible && close(), [visible]);
 
-    const humanReadableName = useHumanReadableName(songInfo);
+    const humanReadableName = useHumanReadableName(currentlyPlaying);
 
     const style: CSSProperties = visible
       ? {
@@ -68,7 +68,7 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
           ...style,
         }}
       >
-        {queue.length === 0 ? (
+        {queueItems.length === 0 ? (
           <div className="flex flex-col items-center text-gray-700 dark:text-gray-300 my-10 space-y-1">
             <MdQueueMusic className="w-10 h-10" />
             <div className="text-xl">Your queue is empty...</div>
@@ -89,7 +89,7 @@ export const Queue = forwardRef<HTMLDivElement, QueueProps>(
                 )}
               </div>
               <div className="flex-grow" />
-              <Button label="Clear" invert height="h-8" onClick={clear} />
+              <Button label="Clear" invert height="h-8" onClick={Queue.clear} />
             </div>
             <div
               style={{

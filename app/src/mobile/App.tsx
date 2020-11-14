@@ -8,11 +8,11 @@ import { Plugins, StatusBarStyle } from "@capacitor/core";
 // Import to register plugin
 import "@capacitor-community/native-audio";
 import { NativeAudioPlugin } from "@capacitor-community/native-audio";
-import { AudioControls, useQueue } from "../queue";
+import { AudioControls, Queue } from "../queue";
 import { BackButton } from "./components/BackButton";
 import { useStartupHooks } from "../startup";
 import classNames from "classnames";
-import { tryToGetDownloadUrlOrLog, useThumbnail } from "../queries/thumbnail";
+import { tryToGetDownloadUrlOrLog } from "../queries/thumbnail";
 import { Song } from "../shared/universal/types";
 import { useDefaultStatusBar, useTemporaryStatusBar } from "./status-bar";
 import { LogoNText } from "../components/LogoNText";
@@ -24,7 +24,7 @@ import {
   SmallPlayer,
   useShowSmallPlayerPlaceholder,
 } from "./sections/SmallPlayer";
-import { Queue } from "./sections/Queue";
+import { QueueMobile } from "./sections/QueueMobile";
 import { BigPlayer } from "./sections/BigPlayer";
 import { SlideUpScreen } from "./slide-up-screen";
 import { SMALL_PLAYER_HEIGHT, TABS_HEIGHT, TOP_BAR_HEIGHT } from "./constants";
@@ -114,24 +114,12 @@ export const App = () => {
   const { loading, user } = useUser();
   const [bigPlayerOpen, setBigPlayerOpen] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
-  const {
-    _setRef,
-    _nextAutomatic,
-    toggleState,
-    next,
-    previous,
-    stopPlaying,
-    songInfo,
-  } = useQueue();
   const showSmallPlayerPlaceholder = useShowSmallPlayerPlaceholder();
 
-  useEffect(() => {
-    // If songInfo === undefined, then remove the div immediately
-    if (!songInfo) {
-      setShowSmallPlayerPlaceholder(false);
-    }
-  }, [songInfo]);
-
+  // FIXME this kinda sucks and isn't make sense
+  useEffect(() =>
+    Queue.onChangeCurrentlyPlaying((item) => !item && setShowSmallPlayerPlaceholder(false)),
+  );
   useStartupHooks();
 
   const route = useMemo(() => {
@@ -150,22 +138,20 @@ export const App = () => {
   }, [loading, route?.protected, user]);
 
   useEffect(() => {
-    const { remove: dispose1 } = NativeAudio.addListener("complete", _nextAutomatic);
-    const { remove: dispose2 } = NativeAudio.addListener("play", toggleState);
-    const { remove: dispose3 } = NativeAudio.addListener("pause", toggleState);
-    const { remove: dispose4 } = NativeAudio.addListener("next", next);
-    const { remove: dispose5 } = NativeAudio.addListener("previous", previous);
-    const { remove: dispose6 } = NativeAudio.addListener("stop", stopPlaying);
-    _setRef(controls);
+    const disposers = [
+      NativeAudio.addListener("complete", Queue._nextAutomatic).remove,
+      NativeAudio.addListener("play", Queue.toggleState).remove,
+      NativeAudio.addListener("pause", Queue.toggleState).remove,
+      NativeAudio.addListener("next", Queue.next).remove,
+      NativeAudio.addListener("previous", Queue.previous).remove,
+      NativeAudio.addListener("stop", Queue.stopPlaying).remove,
+    ];
+
+    Queue._setRef(controls);
     return () => {
-      dispose1();
-      dispose2();
-      dispose3();
-      dispose4();
-      dispose5();
-      dispose6();
+      disposers.forEach((disposer) => disposer());
     };
-  }, [_nextAutomatic, _setRef, next, previous, stopPlaying, toggleState]);
+  }, []);
 
   if (
     loading ||
@@ -263,7 +249,9 @@ export const App = () => {
             <div className="fixed inset-x-0 bottom-0  flex flex-col justify-end pointer-events-none">
               <SmallPlayer
                 className="pointer-events-auto"
-                onTransitionEnd={() => songInfo && setShowSmallPlayerPlaceholder(true)}
+                onTransitionEnd={() =>
+                  Queue.getCurrentlyPlaying() && setShowSmallPlayerPlaceholder(true)
+                }
                 openBigPlayer={() => setBigPlayerOpen(true)}
                 style={{ height: SMALL_PLAYER_HEIGHT }}
                 thumbnailStyle={{ height: SMALL_PLAYER_HEIGHT, width: SMALL_PLAYER_HEIGHT }}
@@ -286,7 +274,7 @@ export const App = () => {
         show={bigPlayerOpen}
         hide={() => setBigPlayerOpen(false)}
       ></BigPlayer>
-      <Queue show={showQueue} hide={() => setShowQueue(false)} />
+      <QueueMobile show={showQueue} hide={() => setShowQueue(false)} />
       <ActionSheet />
       <SlideUpScreen />
     </>

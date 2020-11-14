@@ -3,13 +3,12 @@ import { LoadingSpinner } from "../../components/LoadingSpinner";
 import { EmptyState } from "../../components/EmptyState";
 import { RiAlbumLine } from "react-icons/ri";
 import { navigateTo } from "../../routes";
-import { useQueue } from "../../queue";
+import { Queue } from "../../queue";
 import { ThumbnailCardGrid } from "../../components/ThumbnailCardGrid";
 import { useGenres } from "../../queries/genres";
 
 export const Genres = () => {
   const genres = useGenres();
-  const { setQueue } = useQueue();
 
   if (!genres) {
     return <LoadingSpinner />;
@@ -22,7 +21,7 @@ export const Genres = () => {
       getSubtitle={() => ""}
       onClick={(genre) => navigateTo("genre", { genre: genre.genre })}
       play={(genre) =>
-        setQueue({
+        Queue.setQueue({
           songs: genre.songs,
           source: {
             type: "genre",

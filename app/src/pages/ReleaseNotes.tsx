@@ -171,6 +171,7 @@ const changelog = create([
     version: "0.15.1",
     date: "TODO and TODO version",
     fixes: ["Small bug fixes and improvements"],
+    features: ["Preparing for mobile beta"],
   },
 ]).reverse();
 

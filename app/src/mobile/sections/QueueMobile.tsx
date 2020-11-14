@@ -1,16 +1,17 @@
 import classNames from "classnames";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { HiX } from "react-icons/hi";
-import { useQueue } from "../../queue";
+import { Queue } from "../../queue";
 import { SongList } from "./SongList";
 
-export const Queue = ({ show, hide }: { show: boolean; hide: () => void }) => {
-  const { songInfo, queue } = useQueue();
-  const songs = useMemo(() => queue.map(({ song }) => song), [queue]);
+export const QueueMobile = ({ show, hide }: { show: boolean; hide: () => void }) => {
+  const [queueItems, setQueueItems] = useState(Queue.getQueueItems());
+  useEffect(() => Queue.onChangeQueueItems(setQueueItems), []);
+  const songs = useMemo(() => queueItems.map(({ song }) => song), [queueItems]);
   return (
     <div
       className={classNames(
-        "flex flex-col absolute inset-0 z-30 bg-gray-800 pt-3 text-gray-200 transition-opacity duration-300",
+        "flex flex-col absolute inset-x-0 top-0 z-30 bg-gray-800 pt-3 text-gray-200 transition-opacity duration-300",
         show ? "opacity-100" : "opacity-0 pointer-events-none",
       )}
     >

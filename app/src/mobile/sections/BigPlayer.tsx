@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { getAlbumRouteParams, getArtistRouteParams, NavigatorRoutes } from "../../routes";
-import { HiChevronDown, HiDotsHorizontal, HiHome, HiSearch, HiTrash, HiX } from "react-icons/hi";
+import React, { useEffect, useState } from "react";
+import { getAlbumRouteParams, getArtistRouteParams } from "../../routes";
+import { HiChevronDown, HiDotsHorizontal, HiTrash } from "react-icons/hi";
 import {
   MdPauseCircleFilled,
   MdPlayCircleFilled,
@@ -12,19 +12,14 @@ import { Thumbnail } from "../../components/Thumbnail";
 import { Repeat } from "../../components/Repeat";
 import { SongTimeSlider } from "../../sections/SongTimeSlider";
 import { LikedIcon } from "../../components/LikedIcon";
-import { useHumanReadableName, useQueue } from "../../queue";
+import { Queue, useCurrentlyPlaying, useHumanReadableName, useQueueState } from "../../queue";
 import { Shuffle } from "../../components/Shuffle";
-import { useWindowSize } from "../../utils";
 import { openActionSheet } from "../action-sheet";
 import { RiAlbumLine } from "react-icons/ri";
 import classNames from "classnames";
-import { useTemporaryStatusBar } from "../status-bar";
-import { StatusBarStyle } from "@capacitor/core";
-import { Transition } from "@headlessui/react";
-import { SongList } from "./SongList";
-import { useLikeSong } from "../../queries/songs";
 import { AiOutlineUser } from "react-icons/ai";
 import { TextRotation } from "../components/TextRotation";
+import { likeSong } from "../../queries/songs";
 
 export const BigPlayer = ({
   show,
@@ -36,21 +31,9 @@ export const BigPlayer = ({
   openQueue: () => void;
 }) => {
   const [showPlayer, setShowPlayer] = useState(false);
-  const {
-    mode,
-    toggleMode,
-    shuffle,
-    toggleShuffle,
-    toggleState,
-    clear,
-    playing,
-    songInfo,
-    previous,
-    next,
-    queue,
-  } = useQueue();
+  const state = useQueueState();
+  const songInfo = useCurrentlyPlaying();
   const humanReadableName = useHumanReadableName(songInfo);
-  const setLiked = useLikeSong(songInfo?.song);
 
   return (
     <div
@@ -103,7 +86,7 @@ export const BigPlayer = ({
                     params: getAlbumRouteParams(songInfo.song),
                     onGo: hide,
                   },
-                  { label: "Clear Queue", icon: HiTrash, onClick: clear, type: "click" },
+                  { label: "Clear Queue", icon: HiTrash, onClick: Queue.clear, type: "click" },
                 ]);
               }}
             >
@@ -126,27 +109,28 @@ export const BigPlayer = ({
             </div>
             <SongTimeSlider duration={songInfo?.song.duration} />
             <div className="flex justify-around items-center">
-              <Repeat mode={mode} toggleMode={toggleMode} iconClassName="w-8 h-8" />
-              <button onClick={previous} className="focus:outline-none">
+              <Repeat iconClassName="w-8 h-8" />
+              <button onClick={Queue.previous} className="focus:outline-none">
                 <MdSkipPrevious className="text-gray-200 w-12 h-12" />
               </button>
-              <button onClick={toggleState} className="focus:outline-none">
-                {playing ? (
+              <button onClick={Queue.toggleState} className="focus:outline-none">
+                {state === "playing" ? (
                   <MdPauseCircleFilled className="text-gray-200 w-20 h-20" />
                 ) : (
                   <MdPlayCircleFilled className="text-gray-200 w-20 h-20" />
                 )}
               </button>
 
-              <button onClick={next} className="focus:outline-none">
+              <button onClick={Queue.next} className="focus:outline-none">
                 <MdSkipNext className="text-gray-200 w-12 h-12" />
               </button>
-              <Shuffle iconClassName="w-8 h-8" shuffle={shuffle} toggleShuffle={toggleShuffle} />
+              <Shuffle iconClassName="w-8 h-8" />
             </div>
             <div className="flex justify-between">
               <LikedIcon
                 liked={songInfo?.song.liked}
-                setLiked={setLiked}
+                // TODO refactor
+                setLiked={(value) => songInfo && likeSong(songInfo.song, value)}
                 iconClassName="w-6 h-6"
                 className="focus:outline-none m-2"
               />

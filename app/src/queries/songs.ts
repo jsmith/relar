@@ -86,25 +86,20 @@ export const tryToGetSongDownloadUrlOrLog = async (
   );
 };
 
-export const useLikeSong = (song: Song | undefined) => {
-  return useCallback(
-    async (liked: boolean) => {
-      const user = getGlobalUser();
-      if (!user || !song) {
-        return;
-      }
+export const likeSong = async (song: Song | undefined, liked: boolean) => {
+  const user = getGlobalUser();
+  if (!user || !song) {
+    return;
+  }
 
-      const db = clientDb(user.uid);
-      const update: Partial<Song> = {
-        liked,
-        updatedAt: serverTimestamp(),
-        whenLiked: serverTimestamp(),
-      };
+  const db = clientDb(user.uid);
+  const update: Partial<Song> = {
+    liked,
+    updatedAt: serverTimestamp(),
+    whenLiked: serverTimestamp(),
+  };
 
-      await db.song(song.id).update(update).catch(captureAndLog);
-    },
-    [song],
-  );
+  await db.song(song.id).update(update).catch(captureAndLog);
 };
 
 export const useSongsDuration = (songs: Song[] | undefined) => {
