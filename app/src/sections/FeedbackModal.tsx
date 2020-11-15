@@ -156,7 +156,6 @@ export const FeedbackModal = ({ onExit }: FeedbackProps) => {
       style={{ width: "30rem" }}
       loading={loading}
     >
-      {/* TODO test on web */}
       <FeedbackSection setLoading={setLoading} />
     </Modal>
   );

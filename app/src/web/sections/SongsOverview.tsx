@@ -10,6 +10,7 @@ import { Collage } from "../../components/Collage";
 import { Queue, SetQueueSource, SongInfo } from "../../queue";
 import { useSongsDuration } from "../../queries/songs";
 import { ContextMenuItem, ContextMenu } from "../../components/ContextMenu";
+import { SourcePlayButton } from "../../sections/SourcePlayButton";
 
 export interface SongsOverviewProps<T extends SongInfo> {
   /**
@@ -121,7 +122,8 @@ export const SongsOverview = <T extends SongInfo>({
                 menuClassName="w-48"
               />
             )}
-            <button
+            <SourcePlayButton source={source} songs={songs ?? []} className="" />
+            {/* <button
               onClick={() =>
                 Queue.setQueue({
                   songs: songs ?? [],
@@ -131,7 +133,7 @@ export const SongsOverview = <T extends SongInfo>({
               className="ml-3"
             >
               <MdPlayCircleOutline className="w-10 h-10" />
-            </button>
+            </button> */}
           </div>
           {songs === undefined ? (
             <Skeleton className="opacity-25 w-full" />

@@ -1,9 +1,9 @@
 import React from "react";
-import { useNewSongs } from "../../db";
+import { useCoolSongs } from "../../db";
 import { SongList } from "../sections/SongList";
 
 export const Songs = () => {
-  const songs = useNewSongs();
+  const songs = useCoolSongs();
   return <SongList songs={songs} source={{ type: "library" }} />;
 };
 

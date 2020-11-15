@@ -10,10 +10,6 @@ import { closeMobileKeyboard, useStateWithRef } from "../../utils";
 export const Search = () => {
   // FIXME save when navigating backwards
   const [text, setText, textRef] = useStateWithRef("");
-  // Note that this only updates when there are new songs
-  // This *should* be OK since users won't spend too long on this page
-  // const songs = useNewSongs();
-  // JK I commented this out. We should check for performance when > 2000 songs.
   const songs = useCoolSongs();
   const [results, setResults] = useStateWithRef<SearchResults | undefined>(undefined);
   const ref = useRef<HTMLInputElement | null>(null);
@@ -49,7 +45,6 @@ export const Search = () => {
         </div>
       ) : (
         <div>
-          {/* TODO don't show keyboard shortcuts on mobile */}
           <SearchResultsDisplay searchText={text} results={results} />
         </div>
       )}

@@ -3,7 +3,6 @@ import { useCoolSongs } from "../db";
 import AriaModal from "react-aria-modal";
 import classNames from "classnames";
 import { HiOutlineSearch } from "react-icons/hi";
-import { motion } from "framer-motion";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { useStateWithRef } from "../utils";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -85,7 +84,6 @@ export const SearchModal = ({ onExit }: { onExit: () => void }) => {
     return () => clearTimeout(handle);
   }, [expanding]);
 
-  // TODO remove motion.div and use regular animation
   return (
     <AriaModal
       titleText="Search"
@@ -94,6 +92,12 @@ export const SearchModal = ({ onExit }: { onExit: () => void }) => {
       getApplicationNode={() => document.getElementById("root")!}
       dialogClass="rounded-lg bg-white dark:bg-gray-800 divide-y dark:divide-gray-700 border-gray-400 dark:border-gray-700 border"
       underlayClass="flex items-center justify-center"
+      // For some reason, the width would change after typing one letter, waiting and then typing
+      // again. I'm honestly not sure how the width was being determined (it changed from 682px
+      // to 697px) so I just fixed it to 700px
+      // max-width: 100% is also set byt the AriaModal component so the width will never be larger
+      // than the screen.
+      dialogStyle={{ width: "700px" }}
     >
       <div className="flex items-center space-x-3 px-4">
         <HiOutlineSearch className="w-8 h-8 text-gray-600" />
@@ -121,30 +125,32 @@ export const SearchModal = ({ onExit }: { onExit: () => void }) => {
           />
         </form>
       </div>
-      <motion.div
-        className={classNames("py-5 relative", searchText ? "overflow-y-auto" : "")}
-        animate={{ height: searchText ? "600px" : "min-content" }}
-        transition={{ type: "tween", duration: 0.4 }}
-        layout
+      <div
+        className={classNames(
+          "py-5 relative transition-height duration-300",
+          searchText ? "overflow-y-auto" : "",
+        )}
+        // 4.5 matches the height of the content
+        // I need to specify a height for the animation to work
+        style={{ height: searchText ? "600px" : "4.5rem" }}
       >
-        <motion.div
-          className="text-sm px-4 dark:text-gray-200"
-          variants={{ visible: { opacity: 1 }, hidden: { opacity: 0 } }}
-          initial={false}
-          animate={searchText ? "hidden" : "visible"}
-          transition={{ type: "tween", duration: 0.2 }}
+        <div
+          className={classNames(
+            "text-sm px-4 dark:text-gray-200",
+            "transition-opacity duration-200",
+            searchText ? "opacity-0" : "opacity-100",
+          )}
         >
           <Shortcut text="Tab" /> or <Shortcut text="↑" className="mr-1" />
           <Shortcut text="↓" /> to navigate results. <Shortcut text="Return" /> to select and{" "}
           <Shortcut text="Esc" /> to close.
-        </motion.div>
+        </div>
 
-        <motion.div
-          variants={{ visible: { opacity: 1 }, hidden: { opacity: 0 } }}
-          animate={searchText ? "visible" : "hidden"}
-          initial={false}
+        <div
           className={classNames(
             "absolute top-0 inset-x-0 flex flex-col items-center justify-center py-2 space-y-3 px-4",
+            "transition-opacity duration-200",
+            searchText ? "opacity-100" : "opacity-0",
             (!results || expanding) && "bottom-0",
           )}
         >
@@ -153,8 +159,8 @@ export const SearchModal = ({ onExit }: { onExit: () => void }) => {
           ) : (
             <LoadingSpinner />
           )}
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </AriaModal>
   );
 };

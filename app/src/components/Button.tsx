@@ -2,6 +2,7 @@ import * as React from "react";
 import classNames from "classnames";
 import { ThreeDots } from "@jsmith21/svg-loaders-react";
 import { useState } from "react";
+import { useIsMounted } from "../utils";
 
 export interface ButtonProps
   extends React.DetailedHTMLProps<
@@ -49,6 +50,7 @@ export const Button = ({
   ...props
 }: ButtonProps) => {
   const [loading, setLoading] = useState(false);
+  const isMounted = useIsMounted();
   const className = invert
     ? classNames("bg-transparent", classes[theme].invert)
     : classNames("focus:outline-none", classes[theme].default);
@@ -69,7 +71,7 @@ export const Button = ({
           setLoading(true);
           await onClick(e);
         } finally {
-          setLoading(false);
+          isMounted.current && setLoading(false);
         }
       }}
       disabled={theme === "disabled"}

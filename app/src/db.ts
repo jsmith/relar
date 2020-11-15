@@ -481,11 +481,6 @@ export const onDidUpdateSongs = (
     cb({ songs: songs as Song[] | null, changed: changed as Song[] | null }),
   );
 
-/**
- * Only updates when there are new songs.
- */
-export const useNewSongs = () => useCoolItems("songs", true);
-
 export const useCoolSongs = () =>
   useSort(useCoolItems("songs"), (a, b) => a.title.localeCompare(b.title));
 

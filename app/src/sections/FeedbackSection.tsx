@@ -269,7 +269,6 @@ export const FeedbackSection = ({
                     {isMobile() ? (
                       <div className="text-sm ">{uploadFileButton} to upload files!</div>
                     ) : (
-                      // TODO test web
                       <div className="text-sm ">Drag files or {uploadFileButton}!</div>
                     )}
                   </DragDiv>

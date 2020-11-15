@@ -13,6 +13,13 @@ module.exports = {
     display: ["responsive", "group-hover", "group-focus"],
     opacity: ["responsive", "hover", "focus", "group-hover", "group-focus"],
   },
+  theme: {
+    extend: {
+      transitionProperty: {
+        height: "height",
+      },
+    },
+  },
   plugins: [require("@tailwindcss/custom-forms")],
   purge: {
     // I have to do this since tailwind only purges in "production" by default

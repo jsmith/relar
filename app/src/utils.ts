@@ -767,3 +767,14 @@ export const closeMobileKeyboard = (element: HTMLInputElement) => {
     // element.removeAttr('disabled');
   }, 100);
 };
+
+export const useIsMounted = () => {
+  const isMounted = useRef(true);
+  useEffect(
+    () => () => {
+      isMounted.current = false;
+    },
+    [],
+  );
+  return isMounted;
+};

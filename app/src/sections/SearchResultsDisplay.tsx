@@ -6,6 +6,7 @@ import { Thumbnail } from "../components/Thumbnail";
 import { Shortcut } from "../components/Shortcut";
 import { SearchResults } from "../search";
 import { Queue } from "../queue";
+import { IS_WEB_VIEW } from "../utils";
 
 const ResultList = function <
   T extends { title: string; song: Song | undefined; subtitle: string | undefined }
@@ -44,12 +45,14 @@ const ResultList = function <
         </div>
       </div>
 
-      <div className="space-x-2 flex items-center opacity-0 group-hover:opacity-100 group-focus:opacity-100">
-        <div className="text-gray-600 dark:text-gray-300 border-b border-gray-600 dark:border-gray-500 border-dotted leading-tight capitalize">
-          {action}
+      {!IS_WEB_VIEW && (
+        <div className="space-x-2 flex items-center opacity-0 group-hover:opacity-100 group-focus:opacity-100">
+          <div className="text-gray-600 dark:text-gray-300 border-b border-gray-600 dark:border-gray-500 border-dotted leading-tight capitalize">
+            {action}
+          </div>
+          <Shortcut text="↵" className="text-xl" />
         </div>
-        <Shortcut text="↵" className="text-xl" />
-      </div>
+      )}
     </>
   );
 

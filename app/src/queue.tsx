@@ -364,7 +364,6 @@ export const queueLogic = () => {
     }
 
     // It's important that we do this before shuffling
-    // TODO test jumping on web
     await changeSongIndex(newIndex ?? 0, true);
 
     if (source.type !== "queue" && shuffle === "true") {
@@ -714,6 +713,8 @@ export const QueueAudio = () => {
                     const { song } = opts;
 
                     // Great docs about this here -> https://web.dev/media-session/
+                    // This is only implemented on Chrome so we need to check
+                    // if the media session is available
                     if (!window.navigator.mediaSession) return;
                     const mediaSession = window.navigator.mediaSession;
 
@@ -723,7 +724,7 @@ export const QueueAudio = () => {
                       tryToGetDownloadUrlOrLog(getDefinedUser(), song, size, batch),
                     );
 
-                    // TODO test on web
+                    // This batch can be empty and that's ok
                     batch.commit().catch(captureAndLog);
 
                     Promise.all(thumbnails)

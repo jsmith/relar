@@ -251,7 +251,6 @@ export const useNavigation = () => {
   const { goTo } = useRouter();
   useEffect(() => {
     return emitter.on("navigate", (route, params, queryParams) => {
-      console.log("GO TO", route.id);
       goTo(route, params, queryParams);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
