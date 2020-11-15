@@ -28,15 +28,6 @@ export const MusicListItem = ({
   state?: MusicListItemState;
   style?: CSSProperties;
 }) => {
-  const [render, setRender] = useState(false);
-
-  useEffect(() => {
-    const timeout = setTimeout(() => setRender(true), 500);
-    return () => clearTimeout(timeout);
-  }, []);
-
-  console.log("MusicListItem", title);
-
   return (
     <div
       className={classNames(
@@ -64,7 +55,7 @@ export const MusicListItem = ({
             disabled={state === "paused"}
           />
         ) : (
-          <Thumbnail song={render ? song : undefined} className="w-full h-full" size="64" />
+          <Thumbnail song={song} className="w-full h-full" size="64" />
         )}
       </div>
       <div className="flex flex-col min-w-0 flex-grow text-left justify-center">

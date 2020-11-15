@@ -3,10 +3,21 @@ import { Song } from "../shared/universal/types";
 import { getDownloadURL } from "../storage";
 import { captureAndLogError, captureAndLog, clientStorage, clientDb } from "../utils";
 import { serverTimestamp, useUserData } from "../firestore";
-import { useCallback, useMemo } from "react";
-import { useCoolSongs } from "../db";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { getSongs, onDidUpdateSongs, useCoolSongs } from "../db";
 import { GeneratedType } from "../queue";
 import { getDefinedUser, getGlobalUser } from "../auth";
+
+let oldSongs: Song[] | undefined;
+let lookup: Record<string, Song> = {};
+export const getSongsLookup = () => {
+  const songs = getSongs();
+  if (songs === oldSongs) return lookup;
+  oldSongs = songs;
+  lookup = {};
+  songs?.forEach((song) => (lookup[song.id] = song));
+  return lookup;
+};
 
 export const useRecentlyPlayedSongs = () => {
   const songs = useCoolSongs();
@@ -19,6 +30,28 @@ export const useRecentlyPlayedSongs = () => {
         .sort((a, b) => (b.lastPlayed?.seconds ?? 0) - (a.lastPlayed?.seconds ?? 0)),
     [songs],
   );
+};
+
+export const useSongsFromIds = (songIds: string[]) => {
+  const set = useMemo(() => new Set(songIds), [songIds]);
+
+  const getSongs = useCallback(() => {
+    const lookup = getSongsLookup();
+    return songIds.map((id) => lookup[id]);
+  }, [songIds]);
+
+  const [songs, setSongs] = useState(getSongs());
+
+  useEffect(
+    () =>
+      onDidUpdateSongs(({ changed }) => {
+        if (changed && changed.every((song) => set.has(song.id))) return;
+        setSongs(getSongs());
+      }),
+    [getSongs, set],
+  );
+
+  return songs;
 };
 
 export const useRecentlyAddedSongs = () => {

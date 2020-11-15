@@ -1,7 +1,54 @@
-import { useCoolSongs } from "../db";
-import { useMemo } from "react";
+import { getSongs, onDidUpdateSongs } from "../db";
+import { useEffect, useMemo } from "react";
 import { Song } from "../shared/universal/types";
-import { betaBackend } from "../backend";
+import { useStateWithRef } from "../utils";
+
+const getAlbumAttributes = (song: Song) => {
+  const artist = getAlbumArtistFromSong(song);
+  const album = song.albumName ?? "";
+  const id = `${artist}${ALBUM_ID_DIVIDER}${album}`;
+  return { artist, album, id };
+};
+
+const calculateAlbums = (songs: Song[]) => {
+  const lookup: Record<string, Record<string, Album>> = {};
+
+  // Initial calculation with no sorting
+  songs.forEach((song) => {
+    const { artist, album, id } = getAlbumAttributes(song);
+    if (!lookup[artist]) lookup[artist] = {};
+
+    if (!lookup[artist][album])
+      lookup[artist][album] = {
+        id,
+        album,
+        artist,
+        songs: [],
+        songIds: new Set(),
+      };
+
+    lookup[artist][album].songs.push(song.id);
+    lookup[artist][album].songIds.add(song.id);
+  });
+
+  // TODO sort albums
+  // Sort using track number
+  // Default to using title
+  // Object.values(lookup).forEach((subLookup) =>
+  //   Object.values(subLookup).forEach((album) => {
+  //     album.songs = album.songs.sort((a, b) => {
+  //       const noA = a.track?.no ?? null;
+  //       const noB = b.track?.no ?? null;
+  //       if (noA === null && noB === null) return a.title.localeCompare(b.title);
+  //       else if (noA !== null && noB !== null) return noA - noB;
+  //       else if (noA !== null) return -1;
+  //       else return 1;
+  //     });
+  //   }),
+  // );
+
+  return lookup;
+};
 
 /** This is just used to create an ID for album */
 export const ALBUM_ID_DIVIDER = "<<<<<<<";
@@ -13,51 +60,39 @@ export interface Album {
    * This could be the album artist OR the regular artist (album artist takes precedence when both are defined in a song).
    */
   artist: string;
-  songs: Song[];
+  songs: string[];
+  songIds: Set<string>;
 }
 
 export const getAlbumArtistFromSong = (song: Song) => (song.albumArtist || song.artist) ?? "";
 
 export const useAlbumLookup = () => {
-  const songs = useCoolSongs();
+  const [albums, setAlbums, albumsRef] = useStateWithRef(calculateAlbums(getSongs() ?? []));
 
-  return useMemo(() => {
-    const lookup: Record<string, Record<string, Album>> = {};
+  useEffect(
+    () =>
+      onDidUpdateSongs(({ songs, changed }) => {
+        if (
+          // If every single song is already there and there are no new albums
+          // Then don't perform an update
+          changed.every((song) => {
+            const { artist, album } = getAlbumAttributes(song);
+            return (
+              artist in albumsRef.current &&
+              album in albumsRef.current[artist] &&
+              albumsRef.current[artist][album].songIds.has(song.id)
+            );
+          })
+        ) {
+          return;
+        }
 
-    // Initial calculation with no sorting
-    songs?.forEach((song) => {
-      const artist = getAlbumArtistFromSong(song);
-      const album = song.albumName ?? "";
-      if (!lookup[artist]) lookup[artist] = {};
-
-      if (!lookup[artist][album])
-        lookup[artist][album] = {
-          id: `${artist}${ALBUM_ID_DIVIDER}${album}`,
-          album,
-          artist,
-          songs: [],
-        };
-
-      lookup[artist][album].songs.push(song);
-    });
-
-    // Sort using track number
-    // Default to using title
-    Object.values(lookup).forEach((subLookup) =>
-      Object.values(subLookup).forEach((album) => {
-        album.songs = album.songs.sort((a, b) => {
-          const noA = a.track?.no ?? null;
-          const noB = b.track?.no ?? null;
-          if (noA === null && noB === null) return a.title.localeCompare(b.title);
-          else if (noA !== null && noB !== null) return noA - noB;
-          else if (noA !== null) return -1;
-          else return 1;
-        });
+        setAlbums(calculateAlbums(songs));
       }),
-    );
+    [albumsRef, setAlbums],
+  );
 
-    return lookup;
-  }, [songs]);
+  return albums;
 };
 
 export const useAlbums = () => {

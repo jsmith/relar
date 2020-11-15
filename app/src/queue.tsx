@@ -1,17 +1,13 @@
-import React, { useContext, useState, useCallback, useRef, useEffect, useMemo } from "react";
-import { createContext } from "react";
-import type { Song } from "./shared/universal/types";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
+import { Song } from "./shared/universal/types";
 import { tryToGetSongDownloadUrlOrLog } from "./queries/songs";
 import usePortal from "react-useportal";
 import {
-  useLocalStorage,
   captureAndLogError,
   shuffleArray,
   removeElementFromShuffled,
-  useIsMobile,
   useStateWithRef,
   getLocalStorage,
-  isMobile,
 } from "./utils";
 import firebase from "firebase/app";
 import { createEmitter } from "./events";
@@ -21,7 +17,6 @@ import { getUserDataOrError, serverTimestamp } from "./firestore";
 import { tryToGetDownloadUrlOrLog } from "./queries/thumbnail";
 import { getDefinedUser } from "./auth";
 import { isDefined } from "./shared/universal/utils";
-import { useChangedSongs } from "./db";
 
 export type GeneratedType = "recently-added" | "recently-played" | "liked";
 
@@ -498,8 +493,6 @@ export const Queue = queueLogic();
  *
  */
 export const useTimeUpdater = () => {
-  const state = useQueueState();
-
   // TODO refactor. These changes could probably just happen locally?
   // useChangedSongs(
   //   useCallback((changed) => {
@@ -536,19 +529,23 @@ export const useTimeUpdater = () => {
   // We do this internally since iOS (and maybe android) don't have time update events
   // So, to resolve this, we use timers while playing and then fetch the time manually
   // This seems like the easiest cross platform solution
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (state === "paused") return;
+    let timer: NodeJS.Timeout | undefined;
+    Queue.onChangeState((state) => {
+      if (timer) clearTimeout(timer);
+      if (state === "paused") return;
 
-    const setTimer = () => {
-      return setTimeout(() => {
-        timer = setTimer();
-        Queue.fetchCurrentTime();
-      }, 1000);
-    };
+      const setTimer = () => {
+        return setTimeout(() => {
+          timer = setTimer();
+          Queue.fetchCurrentTime();
+        }, 1000);
+      };
 
-    let timer = setTimer();
-    return () => clearTimeout(timer);
-  }, [state]);
+      timer = setTimer();
+    });
+  }, []);
 };
 
 export const setCurrentTime = (currentTime: number) =>

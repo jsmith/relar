@@ -28,6 +28,7 @@ import { QueueMobile } from "./sections/QueueMobile";
 import { BigPlayer } from "./sections/BigPlayer";
 import { SlideUpScreen } from "./slide-up-screen";
 import { SMALL_PLAYER_HEIGHT, TABS_HEIGHT, TOP_BAR_HEIGHT } from "./constants";
+import { createEmitter } from "../events";
 
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 
@@ -109,25 +110,57 @@ export const Tab = ({
   />
 );
 
-export const App = () => {
-  const { routeId } = useNavigator("home"); // "home" is just because the argument is required
-  const { loading, user } = useUser();
+export const SmallPlayerPlaceholder = () => {
+  const showSmallPlayerPlaceholder = useShowSmallPlayerPlaceholder();
+
+  // Localize the state update to a small component to avoid an entire app re-render
+  return (
+    <div
+      className="flex-shrink-0"
+      style={{ height: showSmallPlayerPlaceholder ? SMALL_PLAYER_HEIGHT : 0 }}
+    />
+  );
+};
+
+const emitter = createEmitter<{ openBigPlayer: [] }>();
+
+// Localize the big player and queue to a component to avoid re-rendering the entire app
+// This is good for low end devices
+const AppPerformanceHelper = () => {
   const [bigPlayerOpen, setBigPlayerOpen] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
-  const showSmallPlayerPlaceholder = useShowSmallPlayerPlaceholder();
+
+  useEffect(() => emitter.on("openBigPlayer", () => setBigPlayerOpen(true)));
 
   // FIXME this kinda sucks and isn't make sense
   useEffect(() =>
     Queue.onChangeCurrentlyPlaying((item) => !item && setShowSmallPlayerPlaceholder(false)),
   );
-  useStartupHooks();
+
+  useTemporaryStatusBar({ style: StatusBarStyle.Dark, use: bigPlayerOpen });
+
+  return (
+    <>
+      <BigPlayer
+        openQueue={() => setShowQueue(true)}
+        show={bigPlayerOpen}
+        hide={() => setBigPlayerOpen(false)}
+      ></BigPlayer>
+      <QueueMobile show={showQueue} hide={() => setShowQueue(false)} />
+    </>
+  );
+};
+
+export const App = () => {
+  const { routeId } = useNavigator("home"); // "home" is just because the argument is required
+  const { loading, user } = useUser();
 
   const route = useMemo(() => {
     return Object.values(routes).find((route) => route.id === routeId);
   }, [routeId]);
 
   useDefaultStatusBar(route?.dark ? StatusBarStyle.Dark : StatusBarStyle.Light);
-  useTemporaryStatusBar({ style: StatusBarStyle.Dark, use: bigPlayerOpen });
+  useStartupHooks();
 
   useEffect(() => {
     if (!loading && user && route?.protected === false) {
@@ -235,10 +268,7 @@ export const App = () => {
         {/* height is immediately set while translating so you get this big white space for 300 ms */}
         {/* Instead, the transition happens *then* this div's height is set. When transitioning */}
         {/* down this div is immediately removed to avoid the white space */}
-        <div
-          className="flex-shrink-0"
-          style={{ height: showSmallPlayerPlaceholder ? SMALL_PLAYER_HEIGHT : 0 }}
-        />
+        <SmallPlayerPlaceholder />
 
         {route.showTabs && (
           <>
@@ -252,7 +282,7 @@ export const App = () => {
                 onTransitionEnd={() =>
                   Queue.getCurrentlyPlaying() && setShowSmallPlayerPlaceholder(true)
                 }
-                openBigPlayer={() => setBigPlayerOpen(true)}
+                openBigPlayer={() => emitter.emit("openBigPlayer")}
                 style={{ height: SMALL_PLAYER_HEIGHT }}
                 thumbnailStyle={{ height: SMALL_PLAYER_HEIGHT, width: SMALL_PLAYER_HEIGHT }}
               />
@@ -269,12 +299,7 @@ export const App = () => {
           </>
         )}
       </div>
-      <BigPlayer
-        openQueue={() => setShowQueue(true)}
-        show={bigPlayerOpen}
-        hide={() => setBigPlayerOpen(false)}
-      ></BigPlayer>
-      <QueueMobile show={showQueue} hide={() => setShowQueue(false)} />
+      <AppPerformanceHelper />
       <ActionSheet />
       <SlideUpScreen />
     </>

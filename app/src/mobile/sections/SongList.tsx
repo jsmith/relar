@@ -88,7 +88,6 @@ const SongListRow = ({
     },
   );
 
-  console.log("SongListRow", song.title);
   const state = useIsPlayingSong({ song, source });
 
   return (

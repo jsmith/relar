@@ -1,17 +1,22 @@
-import React from "react";
+import React, { useRef } from "react";
 import { HiOutlineSearch } from "react-icons/hi";
 import { Input } from "../../components/Input";
 import { useCoolSongs } from "../../db";
 import { MusicalNote } from "../../illustrations/MusicalNote";
 import { useSearch, SearchResults } from "../../search";
 import { SearchResultsDisplay } from "../../sections/SearchResultsDisplay";
-import { useStateWithRef } from "../../utils";
+import { closeMobileKeyboard, useStateWithRef } from "../../utils";
 
 export const Search = () => {
   // FIXME save when navigating backwards
   const [text, setText, textRef] = useStateWithRef("");
+  // Note that this only updates when there are new songs
+  // This *should* be OK since users won't spend too long on this page
+  // const songs = useNewSongs();
+  // JK I commented this out. We should check for performance when > 2000 songs.
   const songs = useCoolSongs();
-  const [results, setResults, resultsRef] = useStateWithRef<SearchResults | undefined>(undefined);
+  const [results, setResults] = useStateWithRef<SearchResults | undefined>(undefined);
+  const ref = useRef<HTMLInputElement | null>(null);
   const search = useSearch({
     text: textRef,
     songs,
@@ -21,6 +26,7 @@ export const Search = () => {
   return (
     <div className="p-3 flex-grow flex flex-col space-y-1">
       <Input
+        inputRef={ref}
         inputClassName=""
         placeholder="Search..."
         value={text}
@@ -28,7 +34,10 @@ export const Search = () => {
         autoFocus
         iconRight={HiOutlineSearch}
         iconClassName="text-gray-500"
-        onEnter={search}
+        onEnter={() => {
+          search();
+          closeMobileKeyboard(ref.current!);
+        }}
       />
       {!results ? (
         <div className="flex-grow flex flex-col items-center justify-center space-y-2">
@@ -40,6 +49,7 @@ export const Search = () => {
         </div>
       ) : (
         <div>
+          {/* TODO don't show keyboard shortcuts on mobile */}
           <SearchResultsDisplay searchText={text} results={results} />
         </div>
       )}
