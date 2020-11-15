@@ -11,7 +11,7 @@ const mql = window.matchMedia(`(min-width: 1024px)`);
 const GUTTER_SIZE = 8;
 const PADDING_LEFT = 10;
 
-export interface ThumbnailCardGridProps<T extends { songs: string[] | undefined }> {
+export interface ThumbnailCardGridProps<T extends { songs: SongInfo[] | undefined }> {
   items: T[];
   getTitle: (item: T, index: number) => string;
   getSubtitle: (item: T, index: number) => string;
@@ -21,7 +21,7 @@ export interface ThumbnailCardGridProps<T extends { songs: string[] | undefined 
   padding?: number;
 }
 
-export const ThumbnailCardGrid = function <T extends { songs: string[] | undefined }>({
+export const ThumbnailCardGrid = function <T extends { songs: SongInfo[] | undefined }>({
   items,
   getTitle,
   getSubtitle,
@@ -76,7 +76,7 @@ export const ThumbnailCardGrid = function <T extends { songs: string[] | undefin
       if (!item) return null;
       return (
         <ThumbnailCard
-          songs={[]} // TODO item.songs
+          songs={item.songs}
           title={getTitle(item, index)}
           subtitle={getSubtitle(item, index)}
           style={{

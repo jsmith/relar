@@ -83,7 +83,7 @@ export const Settings = () => {
         className="w-full px-3 py-2 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"
         onClick={() => firebase.auth().signOut()}
       >
-        Logout{" "}
+        Logout
       </button>
       <p className="text-center text-xs">
         Use our web app @{" "}

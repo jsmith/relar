@@ -22,7 +22,13 @@ import { getAlbumRouteParams, getArtistRouteParams } from "../../routes";
 import { link } from "../../classes";
 import { showPlaylistAddModal } from "./AddToPlaylistModal";
 import Skeleton from "react-loading-skeleton";
-import { SetQueueSource, SongInfo, checkSourcesEqual, Queue, useIsPlayingSong } from "../../queue";
+import {
+  SetQueueSource,
+  SongInfo,
+  checkSourcesEqual,
+  Queue,
+  useIsThePlayingSong,
+} from "../../queue";
 import { Audio } from "@jsmith21/svg-loaders-react";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -125,7 +131,7 @@ export const SongTableRow = <T extends SongInfo>({
 }: SongTableRowProps<T>) => {
   const [focusedPlay, setFocusedPlay] = useState(false);
   const { confirmAction } = useConfirmAction();
-  const isPlaying = useIsPlayingSong({ song, source });
+  const isPlaying = useIsThePlayingSong({ song, source });
   const deleteSong = useDeleteSong();
 
   const contextMenuItems = useMemo(() => {

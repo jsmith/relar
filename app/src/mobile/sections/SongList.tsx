@@ -7,7 +7,7 @@ import {
   Queue,
   SetQueueSource,
   SongInfo,
-  useIsPlayingSong,
+  useIsThePlayingSong,
 } from "../../queue";
 import {
   ListContainer,
@@ -88,7 +88,7 @@ const SongListRow = ({
     },
   );
 
-  const state = useIsPlayingSong({ song, source });
+  const state = useIsThePlayingSong({ song, source });
 
   return (
     <MusicListItem

@@ -8,6 +8,7 @@ import {
   removeElementFromShuffled,
   useStateWithRef,
   getLocalStorage,
+  captureAndLog,
 } from "./utils";
 import firebase from "firebase/app";
 import { createEmitter } from "./events";
@@ -17,6 +18,7 @@ import { getUserDataOrError, serverTimestamp } from "./firestore";
 import { tryToGetDownloadUrlOrLog } from "./queries/thumbnail";
 import { getDefinedUser } from "./auth";
 import { isDefined } from "./shared/universal/utils";
+import { useChangedSongs } from "./db";
 
 export type GeneratedType = "recently-added" | "recently-played" | "liked";
 
@@ -357,13 +359,12 @@ export const queueLogic = () => {
         index,
       }));
 
-      // TODO do we need to reset here?
       index = undefined;
       mapping = undefined;
     }
 
     // It's important that we do this before shuffling
-    // TODO test jumping
+    // TODO test jumping on web
     await changeSongIndex(newIndex ?? 0, true);
 
     if (source.type !== "queue" && shuffle === "true") {
@@ -485,46 +486,45 @@ export const queueLogic = () => {
   };
 };
 
-// TODO reset on new user
 export const Queue = queueLogic();
 
 /**
  * Call this hook to initiate the fetching of the current time. This happens ~ once per second.
+ * Also, start the "useChangedSongs" hook
  *
  */
 export const useTimeUpdater = () => {
-  // TODO refactor. These changes could probably just happen locally?
-  // useChangedSongs(
-  //   useCallback((changed) => {
-  //     // There could be a more efficient way to do this
-  //     const lookup: Record<string, Song> = {};
-  //     changed.forEach((song) => {
-  //       lookup[song.id] = song;
-  //     });
+  useChangedSongs(
+    useCallback((changed) => {
+      // There could be a more efficient way to do this
+      const lookup: Record<string, Song> = {};
+      changed.forEach((song) => {
+        lookup[song.id] = song;
+      });
 
-  //     let doSet = false;
-  //     const queue = Queue.getQueueItems().map((song) => {
-  //       if (lookup[song.song.id]) {
-  //         doSet = true;
-  //         return { ...song, song: lookup[song.song.id] };
-  //       }
+      let doSet = false;
+      const queue = Queue.getQueueItems().map((song) => {
+        if (lookup[song.song.id]) {
+          doSet = true;
+          return { ...song, song: lookup[song.song.id] };
+        }
 
-  //       return song;
-  //     });
+        return song;
+      });
 
-  //     if (doSet) {
-  //       Queue.replaceQueueItems(queue);
-  //     }
+      if (doSet) {
+        Queue.replaceQueueItems(queue);
+      }
 
-  //     const currentlyPlaying = Queue.getCurrentlyPlaying();
-  //     if (currentlyPlaying && lookup[currentlyPlaying.song.id]) {
-  //       Queue.replaceCurrentlyPlaying({
-  //         ...currentlyPlaying,
-  //         song: lookup[currentlyPlaying.song.id],
-  //       });
-  //     }
-  //   }, []),
-  // );
+      const currentlyPlaying = Queue.getCurrentlyPlaying();
+      if (currentlyPlaying && lookup[currentlyPlaying.song.id]) {
+        Queue.replaceCurrentlyPlaying({
+          ...currentlyPlaying,
+          song: lookup[currentlyPlaying.song.id],
+        });
+      }
+    }, []),
+  );
 
   // We do this internally since iOS (and maybe android) don't have time update events
   // So, to resolve this, we use timers while playing and then fetch the time manually
@@ -551,7 +551,6 @@ export const useTimeUpdater = () => {
 export const setCurrentTime = (currentTime: number) =>
   emitter.emit("updateCurrentTime", currentTime);
 
-// TODO any weird conditions?
 let savedCurrentTime: number | undefined;
 emitter.on("updateCurrentTime", (value) => (savedCurrentTime = value));
 
@@ -603,8 +602,13 @@ const checkSongIsPlayingSong = ({
   return state === "playing" ? "playing" : "paused";
 };
 
-// TODO rename
-export const useIsPlayingSong = ({ song, source }: { song: SongInfo; source: SetQueueSource }) => {
+export const useIsThePlayingSong = ({
+  song,
+  source,
+}: {
+  song: SongInfo;
+  source: SetQueueSource;
+}) => {
   const [isPlayingSong, setIsPlayingSong, isPlayingSongRef] = useStateWithRef(
     checkSongIsPlayingSong({
       song,
@@ -714,10 +718,13 @@ export const QueueAudio = () => {
                     const mediaSession = window.navigator.mediaSession;
 
                     const sizes = ["128", "256"] as const;
+                    const batch = firebase.firestore().batch();
                     const thumbnails = sizes.map((size) =>
-                      // TODO batch write
-                      tryToGetDownloadUrlOrLog(getDefinedUser(), song, size),
+                      tryToGetDownloadUrlOrLog(getDefinedUser(), song, size, batch),
                     );
+
+                    // TODO test on web
+                    batch.commit().catch(captureAndLog);
 
                     Promise.all(thumbnails)
                       .then((thumbnails) =>

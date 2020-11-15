@@ -194,7 +194,7 @@ export const useShortcuts = ({
   useHotkeys("b", () => navigateIfLessThanTimeout(whenG, "albums"));
   useHotkeys("h", () => navigateIfLessThanTimeout(whenG, "home"));
 
-  // TODO confirm works
+  // TODO confirm works on web
   useHotkeys("p", (e) =>
     navigateIfLessThanTimeout(whenG, "playlists", () => {
       const songInfo = Queue.getCurrentlyPlaying();

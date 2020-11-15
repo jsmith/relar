@@ -129,7 +129,6 @@ export const BigPlayer = ({
             <div className="flex justify-between">
               <LikedIcon
                 liked={songInfo?.song.liked}
-                // TODO refactor
                 setLiked={(value) => songInfo && likeSong(songInfo.song, value)}
                 iconClassName="w-6 h-6"
                 className="focus:outline-none m-2"

@@ -248,7 +248,7 @@ export const useCoolDB = () => {
 
         // Emit and cache right away so users get the items
         cache[model] = items;
-        watchers.emit(model, items, null, null);
+        watchers.emit(model, items, [], []);
 
         const updateItems = async (
           newItems: Item[],
@@ -332,7 +332,6 @@ export const useCoolDB = () => {
             const data = change.doc.data();
 
             // When any mutation comes that set "delete" to true remove our local copy
-            // TODO handle deletions
             if (data.deleted) {
               console.info(
                 `[${model}] Deleting document "${change.doc.id}" in the ${model} collection (index ${index})`,
@@ -433,9 +432,6 @@ export const useCoolDB = () => {
   }, [user]);
 };
 
-// TODO test albums
-// TODO implement for artists
-// TODO add hook to get most recent data with precise updates
 const useCoolItems = function <T extends IndexDBModels>(model: T, onlyNew?: boolean) {
   const [items, setItems, itemsRef] = useStateWithRef<IndexDBTypeMap[T][] | undefined>(
     cache[model] as IndexDBTypeMap[T][],
@@ -468,14 +464,13 @@ const useSort = <T>(items: T[] | undefined, sort: (a: T, b: T) => number) => {
   return useMemo(() => items?.sort(sort), [items]);
 };
 
-// TODO
-// export const useChangedSongs = (cb: (songs: Song[]) => void) => {
-//   useEffect(() => {
-//     return watchers.on("songs", (_, changedDocuments) => {
-//       cb(changedDocuments as Song[]);
-//     });
-//   }, [cb]);
-// };
+export const useChangedSongs = (cb: (songs: Song[]) => void) => {
+  useEffect(() => {
+    return watchers.on("songs", (_, changedDocuments) => {
+      cb(changedDocuments as Song[]);
+    });
+  }, [cb]);
+};
 
 export const getSongs = () => cache["songs"] as Song[] | undefined;
 
