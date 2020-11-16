@@ -13,6 +13,7 @@ export interface SelectProps<T extends string> {
   selected: T | undefined;
   onSelect: (value: T) => void;
   label?: string;
+  selectRef?: React.Ref<HTMLSelectElement>;
 }
 
 export const Select = function <T extends string>({
@@ -21,11 +22,13 @@ export const Select = function <T extends string>({
   selected,
   onSelect,
   label,
+  selectRef,
 }: SelectProps<T>) {
   return (
     <label className={classNames("block")}>
       {label && <span className={classNames("mb-1")}>{label}</span>}
       <select
+        ref={selectRef}
         value={selected}
         onChange={(v) => {
           onSelect(v.target.value as T);

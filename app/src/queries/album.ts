@@ -1,7 +1,52 @@
 import { useCoolSongs } from "../db";
 import { useMemo } from "react";
 import { Song } from "../shared/universal/types";
-import { betaBackend } from "../backend";
+
+// const getAlbumAttributes = (song: Song) => {
+//   const artist = getAlbumArtistFromSong(song);
+//   const album = song.albumName ?? "";
+//   const id = `${artist}${ALBUM_ID_DIVIDER}${album}`;
+//   return { artist, album, id };
+// };
+
+// const calculateAlbums = (songs: Song[]) => {
+//   const lookup: Record<string, Record<string, Album>> = {};
+
+//   // Initial calculation with no sorting
+//   songs.forEach((song) => {
+//     const { artist, album, id } = getAlbumAttributes(song);
+//     if (!lookup[artist]) lookup[artist] = {};
+
+//     if (!lookup[artist][album])
+//       lookup[artist][album] = {
+//         id,
+//         album,
+//         artist,
+//         songs: [],
+//         songIds: new Set(),
+//       };
+
+//     lookup[artist][album].songs.push(song);
+//     lookup[artist][album].songIds.add(song.id);
+//   });
+
+//   // Sort using track number
+//   // Default to using title
+//   // Object.values(lookup).forEach((subLookup) =>
+//   //   Object.values(subLookup).forEach((album) => {
+//   //     album.songs = album.songs.sort((a, b) => {
+//   //       const noA = a.track?.no ?? null;
+//   //       const noB = b.track?.no ?? null;
+//   //       if (noA === null && noB === null) return a.title.localeCompare(b.title);
+//   //       else if (noA !== null && noB !== null) return noA - noB;
+//   //       else if (noA !== null) return -1;
+//   //       else return 1;
+//   //     });
+//   //   }),
+//   // );
+
+//   return lookup;
+// };
 
 /** This is just used to create an ID for album */
 export const ALBUM_ID_DIVIDER = "<<<<<<<";
@@ -14,9 +59,42 @@ export interface Album {
    */
   artist: string;
   songs: Song[];
+  // songIds: Set<string>;
 }
 
 export const getAlbumArtistFromSong = (song: Song) => (song.albumArtist || song.artist) ?? "";
+
+// Leaving this in the code since it's actually good readable code that might be useful in the future
+// It should be done in it's own PR
+// export const useAlbumLookup = () => {
+//   const [albums, setAlbums, albumsRef] = useStateWithRef(calculateAlbums(getSongs() ?? []));
+
+//   useEffect(
+//     () =>
+//       onDidUpdateSongs(({ songs, changed }) => {
+//         if (
+//           // If every single song is already there and there are no new albums
+//           // Then don't perform an update
+//           changed &&
+//           changed.every((song) => {
+//             const { artist, album } = getAlbumAttributes(song);
+//             return (
+//               artist in albumsRef.current &&
+//               album in albumsRef.current[artist] &&
+//               albumsRef.current[artist][album].songIds.has(song.id)
+//             );
+//           })
+//         ) {
+//           return;
+//         }
+
+//         setAlbums(calculateAlbums(songs ?? []));
+//       }),
+//     [albumsRef, setAlbums],
+//   );
+
+//   return albums;
+// };
 
 export const useAlbumLookup = () => {
   const songs = useCoolSongs();

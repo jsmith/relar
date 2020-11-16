@@ -144,7 +144,7 @@ test.before.each(async () => {
   try {
     await deleteAllUserData("testUser");
   } catch (e) {
-    console.log(e);
+    console.warn(e);
   }
 });
 

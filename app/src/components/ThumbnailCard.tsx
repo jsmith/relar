@@ -41,7 +41,7 @@ export const ThumbnailCard = ({
         height: style?.height ? style.height : undefined,
       }}
     >
-      <Collage style={{ height: style?.width }} songs={songs} size="128" />
+      <Collage style={{ height: style?.width }} songs={songs} size="128" className="lg:shadow-xl" />
       <div
         className="truncate mt-1 lg:mt-2 text-gray-900 dark:text-gray-100 font-bold"
         tabIndex={0}

@@ -1,118 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Fuse from "fuse.js";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useCoolSongs } from "../db";
 import AriaModal from "react-aria-modal";
 import classNames from "classnames";
 import { HiOutlineSearch } from "react-icons/hi";
-import { motion } from "framer-motion";
 import { LoadingSpinner } from "../components/LoadingSpinner";
-import { throttle } from "throttle-debounce";
 import { useStateWithRef } from "../utils";
-import { Song } from "../shared/universal/types";
-import { getAlbumArtistFromSong } from "../queries/album";
-import { Link } from "../components/Link";
-import { IconType } from "react-icons/lib";
-import { AiOutlineUser } from "react-icons/ai";
-import { RiAlbumLine, RiMusicLine } from "react-icons/ri";
 import { useHotkeys } from "react-hotkeys-hook";
-import { getAlbumParams, getArtistRouteParams, NavigatorRoutes } from "../routes";
-import { useQueue } from "../queue";
-import { Thumbnail } from "../components/Thumbnail";
 import { SearchResults, useSearch } from "../search";
 import { Shortcut } from "../components/Shortcut";
-import { useDarkMode } from "../dark";
-
-const ResultList = function <
-  T extends { title: string; song: Song | undefined; subtitle: string | undefined }
->(
-  props: {
-    title: string;
-    items: Array<T>;
-    action: "open" | "play";
-    /** If you want to show the "See All ->" link, give this term */
-    seeAllSearchTerm?: string;
-    onExit: () => void;
-  } & (
-    | {
-        type: "link";
-        route: keyof NavigatorRoutes;
-        params: (item: T) => Record<string, string>;
-      }
-    | {
-        type: "click";
-        onClick: (item: T, index: number) => void;
-      }
-  ),
-) {
-  const { title, items, action, seeAllSearchTerm, onExit } = props;
-
-  const content = (item: T) => (
-    <>
-      <div className="flex items-center space-x-2 min-w-0">
-        {/* <Icon className="w-8 h-8 text-gray-600 flex-shrink-0" /> */}
-        <Thumbnail song={item.song} size="64" className="w-10 h-10 flex-shrink-0" />
-        <div className="text-gray-700 dark:text-gray-100 leading-none space-y-2 text-left min-w-0">
-          <div className="font-bold truncate" title={item.title}>
-            {item.title}
-          </div>
-          {item.subtitle && <div>{item.subtitle}</div>}
-        </div>
-      </div>
-
-      <div className="space-x-2 flex items-center opacity-0 group-hover:opacity-100 group-focus:opacity-100">
-        <div className="text-gray-600 dark:text-gray-300 border-b border-gray-600 dark:border-gray-500 border-dotted leading-tight capitalize">
-          {action}
-        </div>
-        <Shortcut text="↵" className="text-xl" />
-      </div>
-    </>
-  );
-
-  const className =
-    "flex items-center justify-between group hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg py-3 pl-2 pr-4 focus:bg-gray-200 dark:focus:bg-gray-700 focus:outline-none search-result w-full space-x-2";
-
-  return (
-    <div className="w-full">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-bold dark:text-gray-200">{title}</h2>
-        {seeAllSearchTerm && (
-          <Link
-            route="search"
-            queryParams={{ query: seeAllSearchTerm }}
-            label="See All →"
-            className="hover:underline focus:outline-none focus:underline search-result dark:text-gray-300"
-            onGo={onExit}
-          />
-        )}
-      </div>
-      <div>
-        {items.map((item, index) =>
-          props.type === "link" ? (
-            <Link
-              route={props.route}
-              params={props.params(item)}
-              key={index}
-              className={className}
-              label={content(item)}
-              onGo={onExit}
-            />
-          ) : (
-            <button
-              key={index}
-              className={className}
-              onClick={() => {
-                props.onClick(item, index);
-                onExit();
-              }}
-            >
-              {content(item)}
-            </button>
-          ),
-        )}
-      </div>
-    </div>
-  );
-};
+import { SearchResultsDisplay } from "./SearchResultsDisplay";
 
 export const SearchModal = ({ onExit }: { onExit: () => void }) => {
   const ref = useRef<null | HTMLInputElement>(null);
@@ -120,14 +16,13 @@ export const SearchModal = ({ onExit }: { onExit: () => void }) => {
   const [searchText, setSearchText, searchTextRef] = useStateWithRef("");
   const [results, setResults, resultsRef] = useStateWithRef<SearchResults | undefined>(undefined);
   const [expanding, setExpanding] = useState(false);
-  const { setQueue } = useQueue();
 
   const search = useSearch({
     text: searchTextRef,
     songs,
     setResults,
     onSearch: useCallback(() => {
-      // This is so, when they search for the first time,
+      // This is so, when they search for the first time, it expands
       if (!resultsRef.current) {
         setExpanding(true);
       }
@@ -189,8 +84,6 @@ export const SearchModal = ({ onExit }: { onExit: () => void }) => {
     return () => clearTimeout(handle);
   }, [expanding]);
 
-  // FIXME search analytics event
-  // See https://support.google.com/firebase/answer/6317498?hl=en&ref_topic=6317484
   return (
     <AriaModal
       titleText="Search"
@@ -199,6 +92,12 @@ export const SearchModal = ({ onExit }: { onExit: () => void }) => {
       getApplicationNode={() => document.getElementById("root")!}
       dialogClass="rounded-lg bg-white dark:bg-gray-800 divide-y dark:divide-gray-700 border-gray-400 dark:border-gray-700 border"
       underlayClass="flex items-center justify-center"
+      // For some reason, the width would change after typing one letter, waiting and then typing
+      // again. I'm honestly not sure how the width was being determined (it changed from 682px
+      // to 697px) so I just fixed it to 700px
+      // max-width: 100% is also set byt the AriaModal component so the width will never be larger
+      // than the screen.
+      dialogStyle={{ width: "700px" }}
     >
       <div className="flex items-center space-x-3 px-4">
         <HiOutlineSearch className="w-8 h-8 text-gray-600" />
@@ -226,74 +125,42 @@ export const SearchModal = ({ onExit }: { onExit: () => void }) => {
           />
         </form>
       </div>
-      <motion.div
-        className={classNames("py-5 relative", searchText ? "overflow-y-auto" : "")}
-        animate={{ height: searchText ? "600px" : "min-content" }}
-        transition={{ type: "tween", duration: 0.4 }}
-        layout
+      <div
+        className={classNames(
+          "py-5 relative transition-height duration-300",
+          searchText ? "overflow-y-auto" : "",
+        )}
+        // 4.5 matches the height of the content
+        // I need to specify a height for the animation to work
+        style={{ height: searchText ? "600px" : "4.5rem" }}
       >
-        <motion.div
-          className="text-sm px-4 dark:text-gray-200"
-          variants={{ visible: { opacity: 1 }, hidden: { opacity: 0 } }}
-          initial={false}
-          animate={searchText ? "hidden" : "visible"}
-          transition={{ type: "tween", duration: 0.2 }}
+        <div
+          className={classNames(
+            "text-sm px-4 dark:text-gray-200",
+            "transition-opacity duration-200",
+            searchText ? "opacity-0" : "opacity-100",
+          )}
         >
           <Shortcut text="Tab" /> or <Shortcut text="↑" className="mr-1" />
           <Shortcut text="↓" /> to navigate results. <Shortcut text="Return" /> to select and{" "}
           <Shortcut text="Esc" /> to close.
-        </motion.div>
+        </div>
 
-        <motion.div
-          variants={{ visible: { opacity: 1 }, hidden: { opacity: 0 } }}
-          animate={searchText ? "visible" : "hidden"}
-          initial={false}
+        <div
           className={classNames(
             "absolute top-0 inset-x-0 flex flex-col items-center justify-center py-2 space-y-3 px-4",
+            "transition-opacity duration-200",
+            searchText ? "opacity-100" : "opacity-0",
             (!results || expanding) && "bottom-0",
           )}
         >
           {results && !expanding ? (
-            <>
-              <ResultList
-                items={results.songs}
-                seeAllSearchTerm={searchText}
-                title="Songs"
-                action="play"
-                type="click"
-                onClick={(item, index) => {
-                  setQueue({
-                    source: { type: "manuel" },
-                    songs: results.songs,
-                    index,
-                  });
-                }}
-                onExit={onExit}
-              />
-              <ResultList
-                items={results.artists}
-                title="Artists"
-                action="open"
-                type="link"
-                route="artist"
-                params={(item) => getArtistRouteParams(item.artist)}
-                onExit={onExit}
-              />
-              <ResultList
-                items={results.albums}
-                title="Albums"
-                action="open"
-                type="link"
-                route="album"
-                params={(item) => getAlbumParams(item)}
-                onExit={onExit}
-              />
-            </>
+            <SearchResultsDisplay searchText={searchText} onGo={onExit} results={results} />
           ) : (
             <LoadingSpinner />
           )}
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </AriaModal>
   );
 };

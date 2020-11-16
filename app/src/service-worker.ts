@@ -150,7 +150,7 @@ export const registerWorker = () => {
               emitter.emit("setServiceWorker", registration);
             } else {
               // otherwise it's the first install, nothing to do
-              console.log("Service Worker initialized for the first time");
+              console.info("Service Worker initialized for the first time 🙌");
             }
           }
         });

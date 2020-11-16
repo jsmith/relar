@@ -3,13 +3,12 @@ import { LoadingSpinner } from "../../components/LoadingSpinner";
 import { AiOutlineUser } from "react-icons/ai";
 import { EmptyState } from "../../components/EmptyState";
 import { navigateTo } from "../../routes";
-import { useQueue } from "../../queue";
+import { Queue } from "../../queue";
 import { ThumbnailCardGrid } from "../../components/ThumbnailCardGrid";
 import { useArtists } from "../../queries/artist";
 
 export const Artists = () => {
   const artists = useArtists();
-  const { setQueue } = useQueue();
 
   if (!artists) {
     return <LoadingSpinner />;
@@ -23,7 +22,7 @@ export const Artists = () => {
           getTitle={(artist) => artist.name}
           getSubtitle={() => ""}
           play={(artist) => {
-            setQueue({
+            Queue.setQueue({
               songs: artist.songs,
               source: { type: "artist", id: artist.name, sourceHumanName: artist.name },
             });

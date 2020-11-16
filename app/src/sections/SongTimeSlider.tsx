@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import { fmtMSS, useIsMobile } from "../utils";
-import { useQueue, useCurrentTime } from "../queue";
+import { Queue, useCurrentTime } from "../queue";
 import { Slider } from "../components/Slider";
 
 export interface SongTimeSliderProps {
@@ -15,7 +15,6 @@ export const SongTimeSlider = ({ disabled, duration: durationMs }: SongTimeSlide
   // ?? 1 is important to avoid division by 0 errors
   const duration = useMemo(() => (durationMs ?? 1) / 1000, [durationMs]);
   const endTimeText = useMemo(() => fmtMSS(duration), [duration]);
-  const { seekTime } = useQueue();
   const isMobile = useIsMobile();
 
   const currentTimeNode = (
@@ -29,7 +28,7 @@ export const SongTimeSlider = ({ disabled, duration: durationMs }: SongTimeSlide
         className="flex-grow"
         value={currentTime}
         maxValue={duration}
-        onChange={seekTime}
+        onChange={Queue.seekTime}
         disabled={disabled}
         disableHide
       />
@@ -45,7 +44,7 @@ export const SongTimeSlider = ({ disabled, duration: durationMs }: SongTimeSlide
         className="flex-grow"
         value={currentTime}
         maxValue={duration}
-        onChange={seekTime}
+        onChange={Queue.seekTime}
         disabled={disabled}
       />
       {!disabled && endTimeNode}

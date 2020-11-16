@@ -1,6 +1,5 @@
 import * as admin from "firebase-admin";
 import * as path from "path";
-import { createPath } from "../universal/utils";
 import {
   UserData,
   Song,
@@ -47,24 +46,23 @@ export const deleteAllUserData = async (userId: string) => {
 };
 
 export const adminStorage = (userId: string) => {
-  const p = createPath().append(userId);
   const bucket = admin.storage().bucket();
 
   return {
     artworks: (hash: string, type: "jpg" | "png") => {
-      const artworksPath = p.append("song_artwork").append(hash);
-      const files = bucket.getFiles({ prefix: artworksPath.build() + "/" });
+      const prefix = `${userId}/song_artwork/${hash}/`;
+      const files = bucket.getFiles({ prefix });
       return {
         all: () => files,
-        original: () => bucket.file(artworksPath.append(`artwork.${type}`).build()),
-        "32": () => bucket.file(artworksPath.append(`thumb@32_artwork.${type}`).build()),
+        original: () => bucket.file(`${prefix}artwork.${type}`),
+        "32": () => bucket.file(`${prefix}thumb@32_artwork.${type}`),
       };
     },
     song: (songId: string, fileName: string) =>
-      bucket.file(p.append("songs").append(songId).append(fileName).build()),
+      bucket.file(`${userId}/songs/${songId}/${fileName}`),
     uploadSong: (songId: string, filePath: string) =>
       bucket.upload(filePath, {
-        destination: p.append("songs").append(songId).append(path.basename(filePath)).build(),
+        destination: `${userId}/songs/${songId}/${path.basename(filePath)}`,
       }),
     downloadSong: ({
       songId,
@@ -83,18 +81,17 @@ type DocumentReference<T> = FirebaseFirestore.DocumentReference<T>;
 
 export const adminDb = (userId: string) => {
   const db = admin.firestore();
-  const path = createPath().append("user_data").append(userId);
 
   return {
     userId,
-    songs: () => db.collection(path.append("songs").build()) as CollectionReference<Song>,
+    songs: () => db.collection(`user_data/${userId}/songs`) as CollectionReference<Song>,
     song: (songId: string) =>
-      db.doc(path.append("songs").append(songId).build()) as DocumentReference<Song>,
+      db.doc(`user_data/${userId}/songs/${songId}`) as DocumentReference<Song>,
     action: (actionId: string) =>
       db.doc(`user_data/${userId}/actions/${actionId}`) as DocumentReference<UploadAction>,
     actions: () =>
       db.collection(`user_data/${userId}/actions`) as CollectionReference<UploadAction>,
-    doc: () => db.doc(path.build()) as DocumentReference<UserData>,
+    doc: () => db.doc(`user_data/${userId}`) as DocumentReference<UserData>,
     playlists: () =>
       db.collection(`user_data/${userId}/playlists`) as CollectionReference<Playlist>,
     playlist: (id: string) =>

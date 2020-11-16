@@ -6,12 +6,18 @@ import { HiPencil, HiTrash } from "react-icons/hi";
 import { SongList } from "../sections/SongList";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { ActionSheetItem, openActionSheet } from "../action-sheet";
-import { Collage, CollageProps } from "../../components/Collage";
-import { SetQueueSource, SongInfo, useQueue, checkSourcesEqual } from "../../queue";
+import { Collage } from "../../components/Collage";
+import {
+  SetQueueSource,
+  SongInfo,
+  checkSourcesEqual,
+  useIsPlayingSource,
+  Queue,
+} from "../../queue";
 import { Modals } from "@capacitor/core";
 import { Audio } from "@jsmith21/svg-loaders-react";
 import Skeleton from "react-loading-skeleton";
-import { Song } from "../../shared/universal/types";
+import { SourcePlayButton } from "../../sections/SourcePlayButton";
 
 export interface SongsOverviewProps {
   title: string | undefined;
@@ -32,41 +38,16 @@ export const SongsOverview = ({
   onRename,
   onDelete,
 }: SongsOverviewProps) => {
-  const ref = useRef<HTMLDivElement | null>(null);
   const { width } = useWindowSize();
-  const { setQueue, songInfo, playing, toggleState } = useQueue();
   const songDuration = useSongsDuration(songs);
   const scrollY = useMotionValue(0);
   const outerRef = useRef<HTMLDivElement | null>(null);
-  const topImage = useTransform(scrollY, (value) => Math.round(value * 0.2));
-  // const opacity = useTransform(scrollY, (value) => clamp((width - value) / 50, 0, 1));
-  // const display = useTransform(scrollY, (value) => (width - value <= 0 ? "none" : "block"));
-  const sourcesEqual = useMemo(() => checkSourcesEqual(songInfo?.source, source), [
-    songInfo?.source,
-    source,
-  ]);
+  const topImage = useTransform(scrollY, (value) => Math.round(value * 0.3));
 
   useEffect(() => {
-    if (!ref.current) return;
-    const local = ref.current;
-    const onScroll = () => {
-      // For debugging only
-      // console.debug(
-      //   local.scrollTop,
-      //   local.scrollHeight,
-      //   local.offsetHeight,
-      //   local.scrollHeight - local.scrollTop,
-      // );
-
-      if (outerRef.current) {
-        outerRef.current.style.overflow =
-          local.scrollHeight - local.scrollTop <= local.offsetHeight ? "auto" : "hidden";
-      }
-
-      scrollY.set(local.scrollTop);
-    };
-    local.addEventListener("scroll", onScroll);
-    return () => local.removeEventListener("scroll", onScroll);
+    const onScroll = () => scrollY.set(window.scrollY);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
   }, [scrollY]);
 
   const infoPointsString = useMemo(
@@ -106,51 +87,26 @@ export const SongsOverview = ({
     return actionItems;
   }, [onDelete, onRename]);
 
-  useEffect(() => {
-    if (!outerRef.current) return;
-    outerRef.current.style.overflow = "hidden";
-  });
-
   return (
-    <motion.div className="w-full overflow-y-scroll" ref={ref}>
-      {/* <motion.div style={{ opacity, display }} className="z-10 fixed">
-        <BackButton className="absolute top-0 text-gray-600 m-3" />
-      </motion.div> */}
-
+    <>
       <div style={{ width, height: width }} className="relative overflow-hidden">
-        <motion.div className="absolute" style={{ width, height: width, top: topImage }}>
-          <Collage songs={songs} size="256" className="h-full" />
+        <motion.div style={{ top: topImage }} className="absolute">
+          <Collage songs={songs} size="256" style={{ width, height: width }} />
         </motion.div>
       </div>
 
       <div className="relative">
-        <button
-          className="absolute top-0 right-0 mr-6 transform -translate-y-1/2 rounded-full bg-purple-500 w-12 h-12 flex items-center justify-center"
-          onClick={() => {
-            if (!songs) return;
-
-            if (sourcesEqual) {
-              toggleState();
-            } else {
-              setQueue({
-                songs,
-                source,
-              });
-            }
-          }}
-        >
-          {sourcesEqual ? (
-            <Audio className="w-6 h-4 text-white" fill="currentColor" disabled={!playing} />
-          ) : (
-            <MdPlayArrow className="text-white w-8 h-8 relative" />
-          )}
-        </button>
+        <SourcePlayButton
+          className="absolute top-0 right-0 mr-6 transform -translate-y-1/2"
+          songs={songs}
+          source={source}
+        />
       </div>
       <div className="font-bold text-lg mx-3 mt-2">{title || <Skeleton width={80} />}</div>
       <div className="mx-3 mt-1 flex items-center">
         <div>
           <div className="text-xs">{subTitle}</div>
-          <div className="text-xs text-gray-700">{infoPointsString}</div>
+          <div className="text-xs">{infoPointsString}</div>
         </div>
 
         <div className="flex-grow" />
@@ -161,21 +117,22 @@ export const SongsOverview = ({
         {/* <HiCheck className="w-5 h-5" style={{ padding: "0.15rem" }} /> */}
         {/* </button> */}
 
-        <button
-          className="p-1"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (!actionItems) return;
-            openActionSheet(actionItems);
-          }}
-        >
-          <MdMoreVert className="h-5 w-5" />
-        </button>
+        {actionItems.length > 0 && (
+          <button
+            className="p-1"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!actionItems) return;
+              openActionSheet(actionItems);
+            }}
+          >
+            <MdMoreVert className="h-5 w-5" />
+          </button>
+        )}
       </div>
 
-      <div className="border-t m-3" />
-
-      <SongList songs={songs} source={source} outerRef={outerRef} />
-    </motion.div>
+      <div className="border-t dark:border-gray-700 m-3" />
+      <SongList songs={songs} source={source} outerRef={outerRef} disableNavigator />
+    </>
   );
 };

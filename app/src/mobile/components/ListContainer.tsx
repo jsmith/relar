@@ -1,8 +1,10 @@
-import React, { CSSProperties, Ref, useCallback, useEffect, useRef } from "react";
+import React, { CSSProperties, MutableRefObject, useCallback, useEffect, useRef } from "react";
 import classNames from "classnames";
-import { motion, useMotionValue, useTransform } from "framer-motion";
 import { FixedSizeList as List } from "react-window";
-import AutoSizer from "react-virtualized-auto-sizer";
+import { ContainerScroller, ContainerScrollerChildrenOptions } from "../ContainerScroller";
+import { useStateWithRef } from "../../utils";
+import { SMALL_PLAYER_HEIGHT, TABS_HEIGHT, TOP_BAR_HEIGHT } from "../constants";
+import { useShowSmallPlayerPlaceholder } from "../sections/SmallPlayer";
 
 export type ListContainerMode = "regular" | "condensed";
 
@@ -35,6 +37,138 @@ const letters = [
   "z",
 ];
 
+/**
+ * Putting this in it's own component for performance reasons.
+ */
+const NavigationLetters = function <T, K extends keyof T>({
+  disable,
+  scrollToPosition,
+  items,
+  sortKey,
+  rowHeight,
+}: {
+  disable?: boolean;
+  scrollToPosition?: (value: number) => void;
+  items: T[] | undefined;
+  sortKey: K;
+  rowHeight: number;
+}) {
+  const timer = useRef<NodeJS.Timeout>();
+  const firstScroll = useRef(true);
+  const [renderLetters, setRenderLetters, renderLettersRef] = useStateWithRef(false);
+  const showSmallPlayerPlaceholder = useShowSmallPlayerPlaceholder();
+
+  const clearTimer = useCallback(() => {
+    if (timer.current === undefined) return;
+    clearTimeout(timer.current);
+  }, []);
+
+  useEffect(() => {
+    return clearTimer;
+  }, [clearTimer]);
+
+  const resetTimer = useCallback(() => {
+    if (disable) return;
+
+    // Ok so "onScroll" triggers right away
+    // This sets opacity to 1 which is great but for some reason
+    // The opacity stays 0 in the DOM
+    // Sooooo, since "onScroll" *always* seems to trigger I disable the first event
+    // This seems to fix all of the issues
+    if (firstScroll.current) {
+      firstScroll.current = false;
+      return;
+    }
+
+    if (renderLettersRef.current === false) {
+      setRenderLetters(true);
+    }
+
+    // Always clear. You never know 💁
+    clearTimer();
+
+    timer.current = setTimeout(() => {
+      setRenderLetters(false);
+    }, 1500);
+  }, [clearTimer, disable, renderLettersRef, setRenderLetters]);
+
+  // This works as long we use window scrolling
+  useEffect(() => {
+    const cb = () => resetTimer();
+    window.addEventListener("scroll", cb);
+    return () => window.removeEventListener("scroll", cb);
+  }, [resetTimer]);
+
+  const scrollTo = useCallback(
+    (letter: string) => {
+      if (!items) return;
+      if (!scrollToPosition) return;
+      // if (firstScroll.current) return;
+      letter = letter.toLowerCase();
+      let index = items.length - 1;
+      for (const [i, item] of items.entries()) {
+        const value = item[sortKey];
+        if (typeof value === "string" && value[0].toLowerCase() >= letter[0]) {
+          index = i;
+          break;
+        }
+      }
+
+      resetTimer();
+
+      console.info(`Scrolling to ${index * rowHeight} (${index} * ${rowHeight})`);
+      scrollToPosition(index * rowHeight);
+    },
+    [items, resetTimer, rowHeight, scrollToPosition, sortKey],
+  );
+
+  return (
+    <div
+      className={classNames(
+        // Safe top is also super important
+        "fixed top-0 right-0 pr-1 safe-top",
+        !renderLetters && "pointer-events-none",
+      )}
+      // This is kinda hacky but it works
+      // Once we improve scrolling to now use window scrolling, this should work
+      // I think it'll only take a bit of modifications to the ContainerScroller
+      style={{
+        height: `calc(100% - ${TOP_BAR_HEIGHT} - ${TABS_HEIGHT} - ${
+          showSmallPlayerPlaceholder ? SMALL_PLAYER_HEIGHT : "0px"
+        })`,
+        marginTop: TOP_BAR_HEIGHT,
+      }}
+    >
+      <div
+        className={classNames(
+          "sticky h-full rounded-lg bg-gray-800 text-gray-200 py-1 bg-opacity-75",
+          "flex flex-col text-2xs justify-between duration-500 transition-opacity",
+          renderLetters ? "opacity-100" : "opacity-0",
+        )}
+      >
+        {letters.map((letter) => (
+          <button
+            key={letter}
+            className="uppercase select-none focus:outline-none text-lg leading-none px-1"
+            onTouchStart={() => scrollTo(letter)}
+            onMouseDown={() => scrollTo(letter)}
+            onTouchMove={(e) => {
+              const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+              const letter = el?.getAttribute("letter");
+              if (letter) scrollTo(letter);
+            }}
+            onDragStart={(e) => e.preventDefault()}
+            // @ts-ignore
+            letter={letter}
+          >
+            {letter}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export interface ListContainerRowProps<T> {
   style: CSSProperties;
   item: T;
@@ -47,13 +181,14 @@ export interface ListContainerProps<T, K extends keyof T, E> {
   height: number;
   items: Array<T> | undefined;
   sortKey: K;
-  row: (props: ListContainerRowProps<T> & E) => JSX.Element;
+  row: React.ComponentType<ListContainerRowProps<T> & E>;
+  // row: (props: ListContainerRowProps<T> & E) => JSX.Element;
   mode?: ListContainerMode;
   className?: string;
   disableNavigator?: boolean;
   extra: E;
   // This is the react-window outerRef
-  outerRef?: Ref<HTMLDivElement>;
+  outerRef?: MutableRefObject<HTMLDivElement | null>;
 }
 
 export const ListContainer = function <T, K extends keyof T, E>({
@@ -67,62 +202,7 @@ export const ListContainer = function <T, K extends keyof T, E>({
   extra,
   outerRef,
 }: ListContainerProps<T, K, E>) {
-  const container = useRef<HTMLDivElement | null>(null);
-  const timer = useRef<NodeJS.Timeout>();
-  const opacity = useMotionValue(0);
-  const pointerEvents = useTransform(opacity, (value) => (value === 0 ? "none" : ""));
-
-  const clearTimer = useCallback(() => {
-    if (timer.current === undefined) return;
-    clearTimeout(timer.current);
-  }, []);
-
-  const resetTimer = useCallback(() => {
-    if (opacity.get() === 0) {
-      opacity.set(1);
-    }
-
-    // Always clear. You never know 💁
-    clearTimer();
-
-    timer.current = setTimeout(() => {
-      opacity.set(0);
-    }, 1000);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const scrollTo = useCallback(
-    (letter: string) => {
-      if (!items) return;
-      if (!container.current) return;
-      letter = letter.toLowerCase();
-      let index = items.length - 1;
-      for (const [i, item] of items.entries()) {
-        const value = item[sortKey];
-        if (typeof value === "string" && value[0].toLowerCase() >= letter[0]) {
-          index = i;
-          break;
-        }
-      }
-
-      resetTimer();
-
-      console.log(`Scrolling to ${rowHeight * index} (${rowHeight} * ${index})`);
-      container.current.scrollTop = rowHeight * index;
-    },
-    [rowHeight, items, resetTimer, sortKey],
-  );
-
-  useEffect(() => {
-    if (!container.current || disableNavigator) return;
-    const local = container.current;
-
-    local.addEventListener("scroll", resetTimer);
-    return () => {
-      local.removeEventListener("scroll", resetTimer);
-      clearTimer();
-    };
-  }, [clearTimer, disableNavigator, resetTimer]);
+  const listRef = useRef<List | null>(null);
 
   const RowWrapper = useCallback(
     ({ index, style }: { index: number; style: CSSProperties }) => (
@@ -140,56 +220,44 @@ export const ListContainer = function <T, K extends keyof T, E>({
     [Row, extra, items, mode],
   );
 
-  return (
-    <AutoSizer>
-      {({ height, width }) => (
-        <div className={className} ref={container}>
-          <List
-            itemCount={items?.length ?? 0}
-            itemSize={rowHeight}
-            height={height}
-            width={width}
-            outerRef={outerRef}
-          >
-            {RowWrapper}
-          </List>
-          {!disableNavigator && (
-            <motion.div
-              className={classNames("absolute h-full top-0 right-0 py-1 pr-1")}
-              style={{ pointerEvents }}
-            >
-              <motion.div
-                className={classNames(
-                  "sticky h-full rounded-lg bg-gray-800 text-gray-200 p-1 bg-opacity-75  flex flex-col text-2xs justify-between ease-in-out duration-500 transform transition-opacity",
-                )}
-                style={{ opacity }}
-              >
-                {letters.map((letter) => (
-                  <button
-                    key={letter}
-                    className="uppercase select-none focus:outline-none text-lg"
-                    onTouchStart={() => scrollTo(letter)}
-                    onMouseDown={() => scrollTo(letter)}
-                    onTouchMove={(e) => {
-                      const el = document.elementFromPoint(
-                        e.touches[0].clientX,
-                        e.touches[0].clientY,
-                      );
-                      const letter = el?.getAttribute("letter");
-                      if (letter) scrollTo(letter);
-                    }}
-                    onDragStart={(e) => e.preventDefault()}
-                    // @ts-ignore
-                    letter={letter}
-                  >
-                    {letter}
-                  </button>
-                ))}
-              </motion.div>
-            </motion.div>
-          )}
-        </div>
+  const render = ({
+    ref,
+    outerRef: outerRefRef,
+    style,
+    onScroll,
+  }: Partial<ContainerScrollerChildrenOptions>) => (
+    <div className={className}>
+      <List
+        ref={(value) => {
+          if (ref) ref.current = value;
+          listRef.current = value;
+        }}
+        itemCount={items?.length ?? 0}
+        itemSize={rowHeight}
+        height={window.innerHeight}
+        width={window.innerWidth}
+        outerRef={(value) => {
+          if (outerRefRef) outerRefRef.current = value;
+          if (outerRef) outerRef.current = value;
+        }}
+        onScroll={(e) => {
+          onScroll && onScroll(e);
+        }}
+        style={style}
+      >
+        {RowWrapper}
+      </List>
+      {!disableNavigator && (
+        <NavigationLetters
+          disable={disableNavigator}
+          sortKey={sortKey}
+          items={items}
+          scrollToPosition={(value) => listRef.current?.scrollTo(value)}
+          rowHeight={rowHeight}
+        />
       )}
-    </AutoSizer>
+    </div>
   );
+
+  return <ContainerScroller>{render}</ContainerScroller>;
 };

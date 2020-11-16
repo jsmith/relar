@@ -1,5 +1,4 @@
-import React, { useMemo, MutableRefObject } from "react";
-import { FaVolumeMute, FaVolumeDown, FaVolumeUp } from "react-icons/fa";
+import React, { MutableRefObject } from "react";
 import {
   MdQueueMusic,
   MdSkipPrevious,
@@ -7,15 +6,15 @@ import {
   MdSkipNext,
   MdPauseCircleOutline,
 } from "react-icons/md";
-import { Slider } from "../../components/Slider";
 import { Repeat } from "../../components/Repeat";
 import { Shuffle } from "../../components/Shuffle";
 import { Thumbnail } from "../../components/Thumbnail";
 import { LikedIcon } from "../../components/LikedIcon";
-import { useLikeSong } from "../../queries/songs";
 import { SongTimeSlider } from "../../sections/SongTimeSlider";
-import { useQueue } from "../../queue";
+import { Queue, useCurrentlyPlaying, useQueueState } from "../../queue";
 import { Link } from "../../components/Link";
+import { likeSong } from "../../queries/songs";
+import { VolumeSlider } from "./VolumeSlider";
 
 export interface PlayerProps {
   toggleQueue: () => void;
@@ -24,20 +23,8 @@ export interface PlayerProps {
 }
 
 export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
-  const {
-    songInfo,
-    toggleState,
-    playing,
-    volume,
-    setVolume,
-    next,
-    previous,
-    mode,
-    toggleMode,
-    shuffle,
-    toggleShuffle,
-  } = useQueue();
-  const setLiked = useLikeSong(songInfo?.song);
+  const songInfo = useCurrentlyPlaying();
+  const state = useQueueState();
 
   return (
     <div className="h-20 bg-gray-800 dark:bg-gray-950 flex items-center px-4 z-10" ref={refFunc}>
@@ -61,17 +48,22 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
             )}
           </div>
         )}
-        {songInfo?.song && <LikedIcon liked={songInfo?.song.liked} setLiked={setLiked} />}
+        {songInfo?.song && (
+          <LikedIcon
+            liked={songInfo?.song.liked}
+            setLiked={(value) => likeSong(songInfo.song, value)}
+          />
+        )}
       </div>
       <div className="w-2/5 flex flex-col items-center">
         <div className="space-x-2 flex items-center">
-          <Repeat mode={mode} toggleMode={toggleMode} iconClassName="w-6 h-6" />
+          <Repeat iconClassName="w-6 h-6" />
           <button
             title="Previous Song"
             className={
               !songInfo ? "cursor-not-allowed text-gray-500" : "text-gray-300 hover:text-gray-100"
             }
-            onClick={previous}
+            onClick={Queue.previous}
             disabled={!songInfo}
           >
             <MdSkipPrevious className="w-6 h-6" />
@@ -81,10 +73,10 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
             className={
               !songInfo ? "cursor-not-allowed text-gray-500" : "text-gray-300 hover:text-gray-100"
             }
-            onClick={toggleState}
+            onClick={Queue.toggleState}
             disabled={!songInfo}
           >
-            {playing ? (
+            {state === "playing" ? (
               <MdPauseCircleOutline className="w-8 h-8" />
             ) : (
               <MdPlayCircleOutline className="w-8 h-8" />
@@ -96,25 +88,16 @@ export const Player = ({ toggleQueue, refFunc }: PlayerProps) => {
               !songInfo ? "cursor-not-allowed text-gray-500" : "text-gray-300 hover:text-gray-100"
             }
             disabled={!songInfo}
-            onClick={next}
+            onClick={Queue.next}
           >
             <MdSkipNext className="w-6 h-6" />
           </button>
-          <Shuffle shuffle={shuffle} toggleShuffle={toggleShuffle} iconClassName="w-6 h-6" />
+          <Shuffle iconClassName="w-6 h-6" />
         </div>
         <SongTimeSlider disabled={!songInfo} duration={songInfo?.song?.duration} />
       </div>
       <div className="flex justify-end" style={{ width: "30%" }}>
-        <div className="text-gray-300 hover:text-gray-100 ml-3">
-          {volume === 0 ? <FaVolumeMute /> : volume < 50 ? <FaVolumeDown /> : <FaVolumeUp />}
-        </div>
-        <Slider
-          value={volume}
-          maxValue={100}
-          onChange={setVolume}
-          className="w-32 ml-3"
-          title="Volume"
-        />
+        <VolumeSlider />
 
         <button
           className="text-gray-300 hover:text-gray-100 ml-3"

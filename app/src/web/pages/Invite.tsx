@@ -13,19 +13,15 @@ export const Invite = () => {
   const { params } = useNavigator("invite");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const createAccount = async () => {
-    setLoading(true);
     const response = await getOrUnknownError(() =>
       betaBackend.post("/create-account", {
         token: params.invite,
         password: password,
       }),
     );
-
-    setLoading(false);
 
     const data = response.data;
     if (data.type === "success") {
@@ -85,7 +81,7 @@ export const Invite = () => {
             onEnter={createAccount}
           />
           {error && <BlockAlert type="error">{error}</BlockAlert>}
-          <Button label="Sign Up" className="w-full" loading={loading} onClick={createAccount} />
+          <Button label="Sign Up" className="w-full" onClick={createAccount} />
         </>
       )}
     </CardPage>

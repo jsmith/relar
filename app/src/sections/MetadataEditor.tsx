@@ -26,7 +26,6 @@ export const PositionInformation = ({
     <fieldset className="min-w-0 dark:text-gray-200">
       <legend>{label}</legend>
       <div className="flex items-center space-x-1">
-        {/* TODO refactor to input with just input and no label or something */}
         <input
           value={no ?? ""}
           type="number"

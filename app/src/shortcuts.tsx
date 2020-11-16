@@ -9,10 +9,10 @@ import { link } from "./classes";
 import { Shortcut } from "./components/Shortcut";
 import { useDarkMode } from "./dark";
 import { createEmitter } from "./events";
-import { useLikeSong } from "./queries/songs";
-import { useQueue } from "./queue";
+import { likeSong } from "./queries/songs";
+import { Queue } from "./queue";
 import { navigateTo, NavigatorRoutes } from "./routes";
-import { Feedback } from "./sections/Feedback";
+import { FeedbackModal } from "./sections/FeedbackModal";
 import { showSongEditor } from "./sections/MetadataEditor";
 import { showPlaylistAddModal } from "./web/sections/AddToPlaylistModal";
 
@@ -115,21 +115,10 @@ export const useShortcuts = ({
   toggleQueue: () => void;
   openUpload: () => void;
 }) => {
-  const {
-    setVolume,
-    toggleState,
-    previous,
-    next,
-    toggleShuffle,
-    toggleMode,
-    songInfo,
-    deltaCurrentTime,
-  } = useQueue();
-  const setLiked = useLikeSong(songInfo?.song);
   const whenG = useRef<number>();
   const [_, setDarkMode, darkModeRef] = useDarkMode();
 
-  const [feedbackShow, feedbackHide] = useModal(() => <Feedback onExit={feedbackHide} />);
+  const [feedbackShow, feedbackHide] = useModal(() => <FeedbackModal onExit={feedbackHide} />);
   const [show, hide] = useModal(() => (
     <AriaModal
       titleText="Search"
@@ -165,21 +154,24 @@ export const useShortcuts = ({
     </AriaModal>
   ));
 
-  useHotkeys("right", next);
-  useHotkeys("left", previous);
-  useHotkeys("shift+right", () => deltaCurrentTime(10));
-  useHotkeys("shift+left", () => deltaCurrentTime(-10));
+  useHotkeys("right", Queue.next);
+  useHotkeys("left", () => {
+    Queue.previous();
+  });
 
-  useHotkeys(
-    "space",
-    (e) => {
-      // This preventDefault is super important as we are taking
-      // over space to start/stop music
-      e.preventDefault();
-      toggleState();
-    },
-    [toggleState],
-  );
+  useHotkeys("shift+right", () => {
+    Queue.deltaCurrentTime(10);
+  });
+  useHotkeys("shift+left", () => {
+    Queue.deltaCurrentTime(-10);
+  });
+
+  useHotkeys("space", (e) => {
+    // This preventDefault is super important as we are taking
+    // over space to start/stop music
+    e.preventDefault();
+    Queue.toggleState();
+  });
   useHotkeys("/", openSearch);
   useHotkeys("shift+q", toggleQueue);
   useHotkeys("shift+d", () => setDarkMode(!darkModeRef.current));
@@ -191,41 +183,38 @@ export const useShortcuts = ({
 
   useHotkeys("g", () => {
     const now = Date.now();
-    navigateIfLessThanTimeout(whenG, "genres", () => {
-      console.log("CURRENT");
-      whenG.current = now;
-    });
+    navigateIfLessThanTimeout(whenG, "genres", () => (whenG.current = now));
   });
 
-  useHotkeys("-", () => setVolume((volume) => volume - 2));
-  useHotkeys("=", () => setVolume((volume) => volume + 2));
+  useHotkeys("-", () => Queue.setVolume((volume) => volume - 2));
+  useHotkeys("=", () => Queue.setVolume((volume) => volume + 2));
 
   useHotkeys("s", () => navigateIfLessThanTimeout(whenG, "songs"));
   useHotkeys("a", () => navigateIfLessThanTimeout(whenG, "artists"));
   useHotkeys("b", () => navigateIfLessThanTimeout(whenG, "albums"));
   useHotkeys("h", () => navigateIfLessThanTimeout(whenG, "home"));
-  useHotkeys("p", () => navigateIfLessThanTimeout(whenG, "playlists"));
-  useHotkeys("shift+/", show); // aka "?"
-  useHotkeys("r", toggleMode);
-  useHotkeys("s", toggleShuffle);
-  useHotkeys(
-    "l",
-    () => {
-      if (!songInfo?.song) return;
-      setLiked(!songInfo.song.liked);
-    },
-    [songInfo],
-  );
-  useHotkeys("e", () => songInfo?.song && showSongEditor(songInfo.song), [songInfo?.song]);
-  useHotkeys(
-    "p",
-    (e) => {
-      if (!songInfo?.song) return;
+
+  useHotkeys("p", (e) =>
+    navigateIfLessThanTimeout(whenG, "playlists", () => {
+      const songInfo = Queue.getCurrentlyPlaying();
+      if (!songInfo) return;
       e.stopImmediatePropagation();
       showPlaylistAddModal(songInfo.song);
-    },
-    [songInfo?.song],
+    }),
   );
+  useHotkeys("shift+/", show); // aka "?"
+  useHotkeys("r", Queue.toggleRepeat);
+  useHotkeys("s", Queue.toggleShuffle);
+  useHotkeys("l", () => {
+    const songInfo = Queue.getCurrentlyPlaying();
+    if (!songInfo) return;
+    likeSong(songInfo.song, !songInfo.song.liked);
+  });
+  useHotkeys("e", () => {
+    const songInfo = Queue.getCurrentlyPlaying();
+    if (!songInfo) return;
+    showSongEditor(songInfo.song);
+  });
 
   useEffect(() => {
     return emitter.on("open", show);
