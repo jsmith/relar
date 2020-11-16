@@ -472,14 +472,16 @@ export const useChangedSongs = (cb: (songs: Song[]) => void) => {
   }, [cb]);
 };
 
-export const getSongs = () => cache["songs"] as Song[] | undefined;
+// The following two functions are used but I'm leaving them in since
+// we might want to use them soon
+// export const getSongs= () => cache["songs"] as Song[] | undefined;
 
-export const onDidUpdateSongs = (
-  cb: (items: { songs: Song[] | null; changed: Song[] | null }) => void,
-) =>
-  watchers.on("songs", (songs, changed) =>
-    cb({ songs: songs as Song[] | null, changed: changed as Song[] | null }),
-  );
+// export const onDidUpdateSongs = (
+//   cb: (items: { songs: Song[] | null; changed: Song[] | null }) => void,
+// ) =>
+//   watchers.on("songs", (songs, changed) =>
+//     cb({ songs: songs as Song[] | null, changed: changed as Song[] | null }),
+//   );
 
 export const useCoolSongs = () =>
   useSort(useCoolItems("songs"), (a, b) => a.title.localeCompare(b.title));

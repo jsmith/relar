@@ -122,18 +122,7 @@ export const SongsOverview = <T extends SongInfo>({
                 menuClassName="w-48"
               />
             )}
-            <SourcePlayButton source={source} songs={songs ?? []} className="" />
-            {/* <button
-              onClick={() =>
-                Queue.setQueue({
-                  songs: songs ?? [],
-                  source,
-                })
-              }
-              className="ml-3"
-            >
-              <MdPlayCircleOutline className="w-10 h-10" />
-            </button> */}
+            <SourcePlayButton source={source} songs={songs ?? []} />
           </div>
           {songs === undefined ? (
             <Skeleton className="opacity-25 w-full" />
