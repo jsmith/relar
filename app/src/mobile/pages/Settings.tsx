@@ -1,37 +1,65 @@
 import React from "react";
 import firebase from "firebase/app";
 import { useDefinedUser } from "../../auth";
-import { deleteDB } from "idb";
-
-import { Plugins } from "@capacitor/core";
-import { NativeAudioPlugin } from "@capacitor-community/native-audio";
-import { captureException } from "@sentry/browser";
 import { link } from "../../classes";
 import { LOCAL_CACHE_TEXT } from "../../text";
 import { resetDB } from "../../db";
-
-const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
+import { Switch } from "../../components/Switch";
+import { useDarkMode } from "../../dark";
+import { HiOutlineInformationCircle } from "react-icons/hi";
+import ReactTooltip from "react-tooltip";
+import { navigateTo } from "../../routes";
 
 export const Settings = () => {
   const user = useDefinedUser();
+  const [darkMode, setDarkMode] = useDarkMode();
 
   return (
-    <div className="mx-5 w-full pt-5 flex flex-col space-y-3 items-baseline">
+    <div className="mx-5 flex-grow py-5 flex flex-col space-y-3">
       <div className="text-sm">
         {`Signed in as `} <span className="font-bold">{user.email}</span>
       </div>
 
-      <div className="space-y-1">
+      <div className="flex items-center space-x-2">
+        <span className="text-sm">Local Cache</span>
+        <a
+          data-tip={LOCAL_CACHE_TEXT}
+          data-event="click focus"
+          data-multiline={true}
+          data-place="bottom"
+        >
+          <HiOutlineInformationCircle className="w-5 h-5" />
+        </a>
+        <ReactTooltip globalEventOff="click" />
+
+        <div className="flex-grow" />
         <button
-          className="px-3 py-2 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"
+          className="px-3 py-1 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"
           onClick={() => resetDB(user.uid)}
         >
-          Clear Local Cache
+          Clear
         </button>
-        <p className="text-xs text-gray-700">{LOCAL_CACHE_TEXT}</p>
       </div>
 
-      {import.meta.env?.MODE !== "production" && (
+      <Switch.Group as="div" className="flex items-center space-x-4 justify-between w-full">
+        <Switch.Label className="text-sm flex items-center space-x-2">
+          <span>Dark Mode</span>
+        </Switch.Label>
+        <Switch checked={darkMode} onChange={setDarkMode} size="big" />
+      </Switch.Group>
+
+      <div className="flex items-center space-x-2">
+        <span className="text-sm">Have any feedback?</span>
+        <div className="flex-grow" />
+        <button
+          className="px-3 py-1 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"
+          onClick={() => navigateTo("feedback")}
+        >
+          Feedback Form
+        </button>
+      </div>
+
+      {/* {import.meta.env?.MODE !== "production" && (
         <button
           className="px-3 py-2 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"
           onClick={() => NativeAudio.clearCache().catch(captureException)}
@@ -39,7 +67,7 @@ export const Settings = () => {
           {" "}
           Clear File System Cache{" "}
         </button>
-      )}
+      )} */}
 
       {import.meta.env?.MODE !== "production" && (
         <button
@@ -55,7 +83,7 @@ export const Settings = () => {
         className="w-full px-3 py-2 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"
         onClick={() => firebase.auth().signOut()}
       >
-        Logout{" "}
+        Logout
       </button>
       <p className="text-center text-xs">
         Use our web app @{" "}

@@ -6,12 +6,11 @@ import { MdMoreVert } from "react-icons/md";
 import { ThumbnailCardGrid } from "../../components/ThumbnailCardGrid";
 import { songsCount } from "../../utils";
 import { navigateTo } from "../../routes";
-import { useQueue } from "../../queue";
+import { Queue } from "../../queue";
 import { usePlaylists } from "../../queries/playlists";
 
 export const Playlists = () => {
   const playlists = usePlaylists();
-  const { setQueue } = useQueue();
 
   if (!playlists) {
     return <LoadingSpinner />;
@@ -26,7 +25,7 @@ export const Playlists = () => {
           getSubtitle={(playlist) => songsCount(playlist.songs?.length)}
           onClick={(playlist) => navigateTo("playlist", { playlistId: playlist.id })}
           play={(playlist) =>
-            setQueue({
+            Queue.setQueue({
               songs: playlist.songs ?? [],
               source: {
                 type: "playlist",

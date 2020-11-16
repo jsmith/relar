@@ -15,7 +15,7 @@ import "@reach/skip-nav/styles.css";
 import { UploadModal } from "../sections/UploadModal";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { QueueAudio } from "../queue";
-import { Queue } from "./sections/Queue";
+import { QueueWeb } from "./sections/QueueWeb";
 import FocusTrap from "focus-trap-react";
 import { useStartupHooks } from "../startup";
 import { LogoNText } from "../components/LogoNText";
@@ -180,7 +180,7 @@ export const App = () => {
 
             <FocusTrap active={queueDisplay} focusTrapOptions={{ clickOutsideDeactivates: true }}>
               {/* By passing in the the player to the exclude prop, clicking on the Player doesn't close the queue. Yay!! */}
-              <Queue visible={queueDisplay} close={closeQueue} exclude={playerRef} />
+              <QueueWeb visible={queueDisplay} close={closeQueue} exclude={playerRef} />
             </FocusTrap>
           </Sidebar>
         </div>

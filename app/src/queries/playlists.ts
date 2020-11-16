@@ -137,11 +137,11 @@ export const usePlaylistRemoveSong = (playlistId: string | undefined) => {
         const data = playlist.data();
         if (!data || !data.songs) return;
 
-        console.log(`Deleting song "${targetId}" from playlist "${playlistId}"`);
+        console.info(`Deleting song "${targetId}" from playlist "${playlistId}"`);
         const indexToDelete = data.songs.findIndex(({ id }) => targetId === id);
         if (indexToDelete === -1) return;
 
-        console.log(`Found song at index ${indexToDelete}`);
+        console.info(`Found song at index ${indexToDelete}`);
         // This is in place
         data.songs.splice(indexToDelete, 1);
         const update: Partial<Playlist> = {

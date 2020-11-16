@@ -29,10 +29,15 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://0.0.0.0:3000",
+      "http://192.168.2.16:3000",
       "https://toga-4e3f5.web.app",
       "https://relar-production.web.app",
       "https://relar.app",
       "https://staging.relar.app",
+      // iOS webview
+      "capacitor://localhost",
+      // Android webview
+      "http://localhost",
     ],
   }),
 );

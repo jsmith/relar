@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { navigateTo } from "../routes";
-import { GeneratedType, useQueue } from "../queue";
+import { GeneratedType, Queue } from "../queue";
 import { useIsMobile } from "../utils";
 import { useGeneratedTypeSongs } from "../queries/songs";
 import { ThumbnailCardGrid } from "../components/ThumbnailCardGrid";
@@ -12,12 +12,11 @@ export const SongRow = ({
   generatedType: GeneratedType;
   padding?: number;
 }) => {
-  const { setQueue } = useQueue();
   const isMobile = useIsMobile();
   const songs = useGeneratedTypeSongs(generatedType);
 
   const playSong = (index: number) => {
-    setQueue({
+    Queue.setQueue({
       songs: songs ?? [],
       source: { type: "generated", id: generatedType },
       index,

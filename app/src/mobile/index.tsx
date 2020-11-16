@@ -18,28 +18,25 @@ import { App } from "./App";
 import { Router } from "@graywolfai/react-tiniest-router";
 import { routes } from "../routes";
 import { UserProvider } from "../auth";
-import { QueueProvider } from "../queue";
 import "../tailwind.css";
 import "../common.css";
-import { SlideUpScreenContainer } from "./slide-up-screen";
 import { StatusBarProvider } from "./status-bar";
 import SnackbarProvider from "react-simple-snackbar";
+import { DarkModeProvider } from "../dark";
 
 ReactDOM.render(
   <React.StrictMode>
-    <Router routes={routes}>
-      <UserProvider>
-        <QueueProvider>
-          <SlideUpScreenContainer>
-            <SnackbarProvider>
-              <StatusBarProvider>
-                <App />
-              </StatusBarProvider>
-            </SnackbarProvider>
-          </SlideUpScreenContainer>
-        </QueueProvider>
-      </UserProvider>
-    </Router>
+    <DarkModeProvider>
+      <Router routes={routes}>
+        <UserProvider>
+          <SnackbarProvider>
+            <StatusBarProvider>
+              <App />
+            </StatusBarProvider>
+          </SnackbarProvider>
+        </UserProvider>
+      </Router>
+    </DarkModeProvider>
   </React.StrictMode>,
   document.getElementById("root"),
 );

@@ -31,13 +31,6 @@ export const isPasswordValid = (password: string) => {
   return /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/.test(password);
 };
 
-export const createPath = (parts: string[] = []) => {
-  return {
-    append: (part: string) => createPath([...parts, part]),
-    build: () => parts.join("/"),
-  };
-};
-
 export const isDefined = <T>(value: T | undefined | null): value is T =>
   value !== null && value !== undefined;
 

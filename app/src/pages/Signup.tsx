@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Button } from "../components/Button";
 import { CardPage } from "../components/CardPage";
 import { Input } from "../components/Input";
@@ -10,6 +10,7 @@ import { Select } from "../components/Select";
 import { BetaDevice } from "../shared/universal/types";
 import { textGray600 } from "../classes";
 import classNames from "classnames";
+import { isMobile } from "../utils";
 
 const BETA_TEXT =
   "Want to be apart of the beta? Sign up now and we'll add you to our testers list.";
@@ -19,17 +20,16 @@ export const Signup = () => {
   const [firstName, setFirstName] = useState("");
   const [device, setDevice] = useState<BetaDevice>("none");
   const [error, setError] = useState<string>();
-  const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const emailRef = useRef<HTMLInputElement | null>(null);
+  const selectRef = useRef<HTMLSelectElement | null>(null);
 
   const signup = async () => {
-    setLoading(true);
     setError("");
     const result = await getOrUnknownError(() =>
       betaBackend.post("/beta-signup", { email, firstName, device }),
     );
 
-    setLoading(false);
     if (result.data.type === "success") {
       firebase.analytics().logEvent("beta_sign_up", { method: "email" });
       setSuccess(true);
@@ -76,19 +76,21 @@ export const Signup = () => {
             value={firstName}
             onChange={setFirstName}
             label="First Name*"
-            onEnter={signup}
+            onEnter={() => (isMobile() ? emailRef.current?.focus() : signup())}
             required
           />
           <Input
+            inputRef={emailRef}
             value={email}
             onChange={setEmail}
             label="Email*"
             type="email"
             placeholder="john@example.com"
-            onEnter={signup}
+            onEnter={() => (isMobile() ? selectRef.current?.focus() : signup())}
             required
           />
           <Select
+            selectRef={selectRef}
             label="Device"
             selected={device}
             onSelect={setDevice}
@@ -102,9 +104,7 @@ export const Signup = () => {
           <Button
             label="Sign Up"
             className="w-full"
-            loading={loading}
             onClick={(e) => {
-              console.log("CLICK");
               e.preventDefault();
               signup();
             }}

@@ -27,8 +27,12 @@ const withPerformanceAndAnalytics = async <T>(
   return result;
 };
 
+export type DBChange<T> = { type: "mutate" | "add" | "delete"; item: T };
+
 let cache: { [path: string]: unknown[] | undefined } = {};
-const watchers = createEmitter<Record<string, [unknown, unknown]>>();
+const watchers = createEmitter<
+  Record<string, [unknown[], unknown[] | null, DBChange<unknown>[] | null]>
+>();
 
 export type IndexDBModels = "songs" | "playlists";
 
@@ -119,14 +123,12 @@ export class IndexedDb {
     return result;
   }
 
-  // TODO batch these inserts to avoid exeptions
   public async putBulkValue(tableName: IndexDBTypes, values: object[]) {
     const tx = this.getOrError().transaction(tableName, "readwrite");
     const store = tx.objectStore(tableName);
     for (const value of values) {
-      const result = await store.put(value);
+      await store.put(value);
     }
-    return this.getAllValue(tableName);
   }
 
   public async deleteValue(tableName: string, id: string) {
@@ -181,7 +183,7 @@ export const useCoolDB = () => {
       if (!user) return;
       cache = {};
       // Use the name of the user so that the data from one user doesn't mess with the data from another user
-      // TODO is this secure?
+      // FIXME is this secure?
       const db = new IndexedDb(user.uid);
       await db.createObjectStore([]);
       const songs = clientDb(user.uid).songs();
@@ -200,7 +202,7 @@ export const useCoolDB = () => {
 
         let items: Item[];
         if (lastUpdated === undefined) {
-          console.log(
+          console.info(
             `[${model}] The last updated time was undefined. Fetching entire collection...`,
           );
 
@@ -215,9 +217,9 @@ export const useCoolDB = () => {
             model,
           );
 
-          console.log(`[${model}] Success! Got ${items.length} items from collection.`);
+          console.info(`[${model}] Success! Got ${items.length} items from collection.`);
           await db.putBulkValue(model, items);
-          console.log(`[${model}] Success! Wrote ${items.length} items to IndexedDB`);
+          console.info(`[${model}] Success! Wrote ${items.length} items to IndexedDB`);
 
           const maxUpdatedAt = getMaxUpdatedAt(items);
           lastUpdated = { name: model, value: maxUpdatedAt };
@@ -241,17 +243,21 @@ export const useCoolDB = () => {
             })),
           );
 
-          console.log(`[${model}] Loaded ${items.length} ${model} from IndexedDB`);
+          console.info(`[${model}] Loaded ${items.length} ${model} from IndexedDB`);
         }
 
         // Emit and cache right away so users get the items
         cache[model] = items;
-        watchers.emit(model, items, []);
+        watchers.emit(model, items, [], []);
 
-        const updateItems = async (newItems: Item[], changedItems: Item[]) => {
+        const updateItems = async (
+          newItems: Item[],
+          changedItems: Item[],
+          changes: DBChange<IndexDBTypeMap[M]>[],
+        ) => {
           cache[model] = newItems;
           items = newItems;
-          watchers.emit(model, newItems, changedItems);
+          watchers.emit(model, newItems, changedItems, changes);
           await db.putBulkValue(model, newItems);
         };
 
@@ -270,8 +276,13 @@ export const useCoolDB = () => {
           })})`,
         );
 
+        // Process the changes from the changes array
+        // If there are no changes, terminate the processor
+        // I wrote this so that changes are always processed in order
         // This "running" variable acts as a lock so that the following code
         // is only running once at a time
+        // If there is an exception... that would break things
+        // I've never seem an exception in this code though
         let running = false;
         const changes: Array<firebase.firestore.DocumentChange<IndexDBTypeMap[M]>> = [];
         const startProcessor = async () => {
@@ -294,6 +305,7 @@ export const useCoolDB = () => {
           );
           const copy = [...items];
 
+          const dbChanges: DBChange<IndexDBTypeMap[M]>[] = [];
           const add = (change: firebase.firestore.DocumentChange<IndexDBTypeMap[M]>) => {
             const data = change.doc.data();
             // I see no scenarios where this happens but like.. just to be safe
@@ -309,6 +321,7 @@ export const useCoolDB = () => {
               `[${model}] Adding document "${change.doc.id}" to the ${model} collection`,
             );
 
+            dbChanges.push({ type: "add", item: data });
             copy.push(data);
           };
 
@@ -324,6 +337,7 @@ export const useCoolDB = () => {
                 `[${model}] Deleting document "${change.doc.id}" in the ${model} collection (index ${index})`,
               );
 
+              dbChanges.push({ type: "delete", item: copy[index] });
               copy.splice(index, 1);
               return;
             }
@@ -339,6 +353,7 @@ export const useCoolDB = () => {
               return;
             }
 
+            dbChanges.push({ type: "mutate", item: data });
             copy[index] = data;
           };
 
@@ -360,7 +375,7 @@ export const useCoolDB = () => {
           });
 
           const maxUpdatedAt = getMaxUpdatedAt(changedItems);
-          await updateItems(copy, changedItems);
+          await updateItems(copy, changedItems, dbChanges);
 
           if (maxUpdatedAt < latestLastUpdated) {
             const warning = `The snapshot (${maxUpdatedAt}) was received out-of-order. The previous snapshot time was ${latestLastUpdated}.`;
@@ -417,22 +432,29 @@ export const useCoolDB = () => {
   }, [user]);
 };
 
-const useCoolItems = function <T extends IndexDBModels>(model: T) {
+const useCoolItems = function <T extends IndexDBModels>(model: T, onlyNew?: boolean) {
   const [items, setItems, itemsRef] = useStateWithRef<IndexDBTypeMap[T][] | undefined>(
     cache[model] as IndexDBTypeMap[T][],
   );
 
   useEffect(() => {
     if (cache[model] && !itemsRef.current) {
-      console.debug(`Initializing ${model} to cache`, cache[model]);
+      console.info(`Initializing ${model} to cache`, cache[model]);
       setItems(cache[model] as IndexDBTypeMap[T][]);
     }
 
-    return watchers.on(model, (items) => {
-      console.debug(`Updating ${model}`);
+    return watchers.on(model, (items, _, changes) => {
+      if (onlyNew && changes && changes.every((change) => change.type === "mutate")) {
+        console.info(
+          `[${model}] Skipped updating, no added documents in ${changes.length} changes.`,
+        );
+        return;
+      }
+
+      console.info(`[${model}] Updating due to ${changes?.length ?? "null"} changes.`);
       setItems(items as IndexDBTypeMap[T][]);
     });
-  }, [model, setItems, itemsRef]);
+  }, [model, setItems, itemsRef, onlyNew]);
 
   return items;
 };
@@ -444,11 +466,22 @@ const useSort = <T>(items: T[] | undefined, sort: (a: T, b: T) => number) => {
 
 export const useChangedSongs = (cb: (songs: Song[]) => void) => {
   useEffect(() => {
-    return watchers.on("songs", (_, changed) => {
-      cb(changed as Song[]);
+    return watchers.on("songs", (_, changedDocuments) => {
+      cb(changedDocuments as Song[]);
     });
   }, [cb]);
 };
+
+// The following two functions are used but I'm leaving them in since
+// we might want to use them soon
+// export const getSongs= () => cache["songs"] as Song[] | undefined;
+
+// export const onDidUpdateSongs = (
+//   cb: (items: { songs: Song[] | null; changed: Song[] | null }) => void,
+// ) =>
+//   watchers.on("songs", (songs, changed) =>
+//     cb({ songs: songs as Song[] | null, changed: changed as Song[] | null }),
+//   );
 
 export const useCoolSongs = () =>
   useSort(useCoolItems("songs"), (a, b) => a.title.localeCompare(b.title));

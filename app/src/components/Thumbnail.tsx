@@ -18,38 +18,36 @@ export interface ThumbnailProps {
 
 export const Thumbnail = ({ song, className, style, setAverageColor, size }: ThumbnailProps) => {
   const thumbnail = useThumbnail(song, size);
-  return (
-    <div
-      className={classNames("bg-gray-400 lg:shadow-xl flex items-center justify-center", className)}
-      style={style}
+  return thumbnail ? (
+    <img
       key={thumbnail}
+      style={style}
+      // onLoad={onLoad}
+      onLoad={async (e) => {
+        if (!setAverageColor) return;
+        const img = e.target as HTMLImageElement;
+        const color = await fac.getColorAsync(img);
+        setAverageColor(color.hex);
+      }}
+      // Anonymous because https://stackoverflow.com/questions/19869150/getimagedata-cross-origin-error
+      crossOrigin="anonymous"
+      src={thumbnail}
+      className={className}
+      onError={(e) => {
+        Sentry.captureMessage(`Error loading image from "${thumbnail}"`, {
+          level: Sentry.Severity.Error,
+          extra: {
+            artwork: song?.artwork,
+          },
+        });
+      }}
+    ></img>
+  ) : (
+    <div
+      className={classNames("bg-gray-400 flex items-center justify-center", className)}
+      style={style}
     >
-      {thumbnail ? (
-        <img
-          key={thumbnail}
-          // onLoad={onLoad}
-          onLoad={async (e) => {
-            if (!setAverageColor) return;
-            const img = e.target as HTMLImageElement;
-            const color = await fac.getColorAsync(img);
-            setAverageColor(color.hex);
-          }}
-          // Anonymous because https://stackoverflow.com/questions/19869150/getimagedata-cross-origin-error
-          crossOrigin="anonymous"
-          src={thumbnail}
-          className="w-full h-full"
-          onError={(e) => {
-            Sentry.captureMessage(`Error loading image from "${thumbnail}"`, {
-              level: Sentry.Severity.Error,
-              extra: {
-                artwork: song?.artwork,
-              },
-            });
-          }}
-        ></img>
-      ) : (
-        <FiDisc className="text-gray-600 w-2/5 h-auto" />
-      )}
+      <FiDisc className="text-gray-600 w-2/5 h-auto" />
     </div>
   );
 };

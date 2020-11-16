@@ -1,9 +1,8 @@
 import classNames from "classnames";
 import React from "react";
 import { MdShuffle } from "react-icons/md";
-import { bgApp } from "../../classes";
 import { useCoolSongs } from "../../db";
-import { useQueue } from "../../queue";
+import { Queue } from "../../queue";
 import { navigateTo, useNavigator } from "../../routes";
 
 const libraryLinks = [
@@ -32,7 +31,6 @@ const libraryLinks = [
 export const LibraryHeader = () => {
   const { routeId } = useNavigator("home"); // "home" is because the arg is required
   const songs = useCoolSongs();
-  const { setQueue, setShuffle } = useQueue();
 
   return (
     <div className="flex items-center justify-between px-5">
@@ -58,15 +56,15 @@ export const LibraryHeader = () => {
         onClick={() => {
           if (!songs) return;
 
-          setShuffle(true);
-          setQueue({
+          Queue.setShuffle(true);
+          Queue.setQueue({
             songs,
             source: { type: "library" },
             index: Math.floor(songs.length * Math.random()),
           });
         }}
       >
-        <span>Shuffle </span>
+        <span>Shuffle</span>
         <MdShuffle className="w-5 h-5" />
       </button>
     </div>

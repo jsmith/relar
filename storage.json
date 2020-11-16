@@ -6,7 +6,8 @@
       "https://staging.relar.app",
       "http://0.0.0.0:3000",
       "http://192.168.2.16:3000",
-      "capacitor://localhost"
+      "capacitor://localhost",
+      "http://localhost"
     ],
     "method": ["GET"],
     "maxAgeSeconds": 3600
