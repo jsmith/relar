@@ -1,8 +1,14 @@
-import React, { Ref, useMemo } from "react";
+import React, { memo, MutableRefObject, Ref, useMemo } from "react";
 import { MdAddToQueue, MdPlaylistAdd } from "react-icons/md";
 import { useDeleteSong } from "../../queries/songs";
 import { fmtMSS, onConditions, useMySnackbar } from "../../utils";
-import { checkQueueItemsEqual, SetQueueSource, SongInfo, useQueue } from "../../queue";
+import {
+  checkQueueItemsEqual,
+  Queue,
+  SetQueueSource,
+  SongInfo,
+  useIsThePlayingSong,
+} from "../../queue";
 import {
   ListContainer,
   ListContainerMode,
@@ -19,6 +25,7 @@ import { usePlaylistCreate, usePlaylistRemoveSong } from "../../queries/playlist
 import { AddToPlaylistList } from "../../sections/AddToPlaylistList";
 import { MusicListItem, MusicListItemState } from "./MusicListItem";
 import { captureException } from "@sentry/browser";
+import { areEqual } from "react-window";
 
 export interface SongListProps {
   songs: SongInfo[] | undefined;
@@ -26,7 +33,7 @@ export interface SongListProps {
   className?: string;
   disableNavigator?: boolean;
   source: SetQueueSource;
-  outerRef?: Ref<HTMLDivElement>;
+  outerRef?: MutableRefObject<HTMLDivElement | null>;
 }
 
 const AddToPlaylistMenu = ({ song, hide }: { song: Song; hide: () => void }) => {
@@ -53,7 +60,6 @@ const SongListRow = ({
   source: SetQueueSource;
 }) => {
   const deleteSong = useDeleteSong();
-  const { setQueue, enqueue, songInfo, playing } = useQueue();
   const createPlaylist = usePlaylistCreate();
   const removeSong = usePlaylistRemoveSong(source.type === "playlist" ? source.id : undefined);
   const open = useMySnackbar();
@@ -82,11 +88,7 @@ const SongListRow = ({
     },
   );
 
-  const state = useMemo((): MusicListItemState => {
-    const id = songs[index].playlistId ?? songs[index].id;
-    if (!checkQueueItemsEqual({ song, id, source }, songInfo)) return "not-playing";
-    return playing ? "playing" : "paused";
-  }, [index, playing, song, songInfo, songs, source]);
+  const state = useIsThePlayingSong({ song, source });
 
   return (
     <MusicListItem
@@ -96,7 +98,7 @@ const SongListRow = ({
           type: "click",
           icon: MdAddToQueue,
           label: "Add To Queue",
-          onClick: () => enqueue(song),
+          onClick: () => Queue.enqueue(song),
         },
         {
           label: "Add To Playlist",
@@ -146,7 +148,7 @@ const SongListRow = ({
         },
       ]}
       onClick={() =>
-        setQueue({
+        Queue.setQueue({
           source,
           songs: songs!,
           index: index,
@@ -160,6 +162,8 @@ const SongListRow = ({
     />
   );
 };
+
+const SongListRowMemo = memo(SongListRow, areEqual);
 
 export const SongList = ({
   songs,
@@ -175,7 +179,7 @@ export const SongList = ({
       height={73}
       items={songs}
       sortKey="title"
-      row={SongListRow}
+      row={SongListRowMemo}
       mode={mode}
       className={className}
       disableNavigator={disableNavigator}

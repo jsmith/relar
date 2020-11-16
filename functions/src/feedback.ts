@@ -29,10 +29,11 @@ export const onFeedbackGiven = functions.firestore
         return;
       }
 
+      const bucket = admin.storage().bucket();
+      const [files] = await bucket.getFiles({ prefix: `${userId}/feedback/${id}/` });
+
       let htmlLinks: string[] | undefined;
       try {
-        const bucket = admin.storage().bucket();
-        const [files] = await bucket.getFiles({ prefix: `${userId}/feedback/${id}/` });
         const responses = await Promise.all(
           files.map((file) =>
             file.getSignedUrl({
@@ -53,6 +54,10 @@ export const onFeedbackGiven = functions.firestore
             )
           : undefined;
       } catch (e) {
+        // If there was an error creating the URLs, just send the paths
+        // This way I'll know there was an error but can look up the files easily
+        htmlLinks = files.map((file) => file.name);
+
         // We can probably remove this try/catch eventually
         // But I really want to make sure I get the email if it comes in
         // So if uploading fails then I'll eventually see the Sentry issue

@@ -7,9 +7,10 @@ import { HiDotsHorizontal, HiPencil, HiTrash } from "react-icons/hi";
 import { ContentEditable } from "../../components/ContentEditable";
 import Skeleton from "react-loading-skeleton";
 import { Collage } from "../../components/Collage";
-import { useQueue, SetQueueSource, SongInfo } from "../../queue";
+import { Queue, SetQueueSource, SongInfo } from "../../queue";
 import { useSongsDuration } from "../../queries/songs";
 import { ContextMenuItem, ContextMenu } from "../../components/ContextMenu";
+import { SourcePlayButton } from "../../sections/SourcePlayButton";
 
 export interface SongsOverviewProps<T extends SongInfo> {
   /**
@@ -39,7 +40,6 @@ export const SongsOverview = <T extends SongInfo>({
   includeDateAdded,
   includeAlbumNumber,
 }: SongsOverviewProps<T>) => {
-  const { setQueue } = useQueue();
   const [averageColor, setAverageColor] = useState("#cbd5e0");
   const { from, to, isLight } = useGradient(averageColor);
   const [editingName, setEditingName] = useState(false);
@@ -122,17 +122,7 @@ export const SongsOverview = <T extends SongInfo>({
                 menuClassName="w-48"
               />
             )}
-            <button
-              onClick={() =>
-                setQueue({
-                  songs: songs ?? [],
-                  source,
-                })
-              }
-              className="ml-3"
-            >
-              <MdPlayCircleOutline className="w-10 h-10" />
-            </button>
+            <SourcePlayButton source={source} songs={songs ?? []} />
           </div>
           {songs === undefined ? (
             <Skeleton className="opacity-25 w-full" />

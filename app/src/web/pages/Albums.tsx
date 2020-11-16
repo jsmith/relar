@@ -3,13 +3,12 @@ import { LoadingSpinner } from "../../components/LoadingSpinner";
 import { EmptyState } from "../../components/EmptyState";
 import { RiAlbumLine } from "react-icons/ri";
 import { navigateTo } from "../../routes";
-import { useQueue } from "../../queue";
 import { useAlbums } from "../../queries/album";
 import { ThumbnailCardGrid } from "../../components/ThumbnailCardGrid";
+import { Queue } from "../../queue";
 
 export const Albums = () => {
   const albums = useAlbums();
-  const { setQueue } = useQueue();
 
   if (!albums) {
     return <LoadingSpinner />;
@@ -24,7 +23,7 @@ export const Albums = () => {
           getSubtitle={(album) => album.artist || "Unknown Artist"}
           onClick={(album) => navigateTo("album", album)}
           play={(album) =>
-            setQueue({
+            Queue.setQueue({
               songs: album.songs,
               source: {
                 type: "album",

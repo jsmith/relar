@@ -1,9 +1,9 @@
-import React, { CSSProperties } from "react";
+import React, { CSSProperties, useEffect, useState } from "react";
 import { MdMoreVert } from "react-icons/md";
 import { ActionSheetItem, openActionSheet } from "../action-sheet";
 import { Thumbnail } from "../../components/Thumbnail";
 import classNames from "classnames";
-import type { ListContainerMode } from "../components/ListContainer";
+import { ListContainerMode } from "../components/ListContainer";
 import { Audio } from "@jsmith21/svg-loaders-react";
 import { Song } from "../../shared/universal/types";
 
@@ -32,7 +32,7 @@ export const MusicListItem = ({
     <div
       className={classNames(
         "flex items-center space-x-2 w-full focus:outline-none",
-        mode === "regular" ? "p-1 border-b" : "py-1",
+        mode === "regular" ? "p-1 border-b dark:border-gray-700" : "py-1 px-2",
       )}
       tabIndex={0}
       onClick={onClick}
@@ -65,6 +65,7 @@ export const MusicListItem = ({
       <button
         className="p-1"
         onClick={(e) => {
+          console.log(e);
           e.stopPropagation();
           if (!actionItems) return;
           openActionSheet(actionItems);

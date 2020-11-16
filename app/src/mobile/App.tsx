@@ -1,25 +1,34 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { getDefinedUser, useUser } from "../auth";
-import { navigateTo, routes, useNavigator } from "../routes";
+import { navigateTo, NavigatorRoutes, routes, useNavigator } from "../routes";
 import { LoadingSpinner } from "../components/LoadingSpinner";
-import { HiOutlineCog } from "react-icons/hi";
-import { ButtonTabs } from "./sections/BottomTabs";
+import { HiHome, HiOutlineCog, HiSearch } from "react-icons/hi";
 import { ActionSheet } from "./action-sheet";
 import { Plugins, StatusBarStyle } from "@capacitor/core";
 // Import to register plugin
 import "@capacitor-community/native-audio";
 import { NativeAudioPlugin } from "@capacitor-community/native-audio";
-import { AudioControls, useQueue } from "../queue";
+import { AudioControls, Queue } from "../queue";
 import { BackButton } from "./components/BackButton";
 import { useStartupHooks } from "../startup";
 import classNames from "classnames";
-import { tryToGetDownloadUrlOrLog, useThumbnail } from "../queries/thumbnail";
+import { tryToGetDownloadUrlOrLog } from "../queries/thumbnail";
 import { Song } from "../shared/universal/types";
-import { useDefaultStatusBar } from "./status-bar";
-import { Thumbnail } from "../components/Thumbnail";
-import { LogoIcon } from "../components/LogoIcon";
+import { useDefaultStatusBar, useTemporaryStatusBar } from "./status-bar";
 import { LogoNText } from "../components/LogoNText";
 import { Link } from "../components/Link";
+import { IconType } from "react-icons/lib";
+import { MdLibraryMusic } from "react-icons/md";
+import {
+  setShowSmallPlayerPlaceholder,
+  SmallPlayer,
+  useShowSmallPlayerPlaceholder,
+} from "./sections/SmallPlayer";
+import { QueueMobile } from "./sections/QueueMobile";
+import { BigPlayer } from "./sections/BigPlayer";
+import { SlideUpScreen } from "./slide-up-screen";
+import { SMALL_PLAYER_HEIGHT, TABS_HEIGHT, TOP_BAR_HEIGHT } from "./constants";
+import { createEmitter } from "../events";
 
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 
@@ -47,7 +56,6 @@ class Controls implements AudioControls {
 
   async setSrc(opts: { src: string; song: Song } | null) {
     if (!opts) {
-      console.log("STOPPING");
       NativeAudio.stop();
       return;
     }
@@ -81,18 +89,78 @@ class Controls implements AudioControls {
 
 const controls = new Controls();
 
+export const Tab = ({
+  label,
+  icon: Icon,
+  route,
+}: {
+  label: string;
+  icon: IconType;
+  route: keyof NavigatorRoutes;
+}) => (
+  <Link
+    route={route}
+    className="flex-shrink-0 w-1/3 h-full"
+    label={
+      <div className="flex flex-col items-center justify-center text-sm h-full">
+        <Icon className="w-6 h-6" />
+        <div>{label}</div>
+      </div>
+    }
+  />
+);
+
+export const SmallPlayerPlaceholder = () => {
+  const showSmallPlayerPlaceholder = useShowSmallPlayerPlaceholder();
+
+  // Localize the state update to a small component to avoid an entire app re-render
+  return (
+    <div
+      className="flex-shrink-0"
+      style={{ height: showSmallPlayerPlaceholder ? SMALL_PLAYER_HEIGHT : 0 }}
+    />
+  );
+};
+
+const emitter = createEmitter<{ openBigPlayer: [] }>();
+
+// Localize the big player and queue to a component to avoid re-rendering the entire app
+// This is good for low end devices
+const AppPerformanceHelper = () => {
+  const [bigPlayerOpen, setBigPlayerOpen] = useState(false);
+  const [showQueue, setShowQueue] = useState(false);
+
+  useEffect(() => emitter.on("openBigPlayer", () => setBigPlayerOpen(true)));
+
+  // FIXME this kinda sucks and isn't make sense
+  useEffect(() =>
+    Queue.onChangeCurrentlyPlaying((item) => !item && setShowSmallPlayerPlaceholder(false)),
+  );
+
+  useTemporaryStatusBar({ style: StatusBarStyle.Dark, use: bigPlayerOpen });
+
+  return (
+    <>
+      <BigPlayer
+        openQueue={() => setShowQueue(true)}
+        show={bigPlayerOpen}
+        hide={() => setBigPlayerOpen(false)}
+      ></BigPlayer>
+      <QueueMobile show={showQueue} hide={() => setShowQueue(false)} />
+    </>
+  );
+};
+
 export const App = () => {
   const { routeId } = useNavigator("home"); // "home" is just because the argument is required
   const { loading, user } = useUser();
-  const { _setRef, _nextAutomatic, toggleState, next, previous, stopPlaying } = useQueue();
-
-  useStartupHooks();
 
   const route = useMemo(() => {
     return Object.values(routes).find((route) => route.id === routeId);
   }, [routeId]);
 
   useDefaultStatusBar(route?.dark ? StatusBarStyle.Dark : StatusBarStyle.Light);
+  useStartupHooks();
 
   useEffect(() => {
     if (!loading && user && route?.protected === false) {
@@ -103,22 +171,20 @@ export const App = () => {
   }, [loading, route?.protected, user]);
 
   useEffect(() => {
-    const { remove: dispose1 } = NativeAudio.addListener("complete", _nextAutomatic);
-    const { remove: dispose2 } = NativeAudio.addListener("play", toggleState);
-    const { remove: dispose3 } = NativeAudio.addListener("pause", toggleState);
-    const { remove: dispose4 } = NativeAudio.addListener("next", next);
-    const { remove: dispose5 } = NativeAudio.addListener("previous", previous);
-    const { remove: dispose6 } = NativeAudio.addListener("stop", stopPlaying);
-    _setRef(controls);
+    const disposers = [
+      NativeAudio.addListener("complete", Queue._nextAutomatic).remove,
+      NativeAudio.addListener("play", Queue.toggleState).remove,
+      NativeAudio.addListener("pause", Queue.toggleState).remove,
+      NativeAudio.addListener("next", Queue.next).remove,
+      NativeAudio.addListener("previous", Queue.previous).remove,
+      NativeAudio.addListener("stop", Queue.stopPlaying).remove,
+    ];
+
+    Queue._setRef(controls);
     return () => {
-      dispose1();
-      dispose2();
-      dispose3();
-      dispose4();
-      dispose5();
-      dispose6();
+      disposers.forEach((disposer) => disposer());
     };
-  }, [_nextAutomatic, _setRef, next, previous, stopPlaying, toggleState]);
+  }, []);
 
   if (
     loading ||
@@ -143,42 +209,99 @@ export const App = () => {
     <>
       <div
         className={classNames(
-          // safe-top takes priority is safe-top is invalid
-          "flex flex-col h-screen overflow-hidden text-gray-700 safe-top",
+          "text-gray-700 dark:text-gray-300 flex flex-col min-h-screen",
+          "bg-white dark:bg-gray-800",
           route.mobileClassName,
-          !route.showTabs && "safe-bottom",
         )}
       >
         {route.title && (
-          // h-10 makes it so the hight stays constant depending on whether we are showing the back button
-          <div className="text-2xl flex justify-between items-center px-3 mt-0 pb-1 relative border-b h-10 flex-shrink-0">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div>{route.title}</div>
+          <>
+            <div
+              className={classNames(
+                "text-2xl flex justify-between items-center px-3 border-b",
+                "fixed top-0 w-full z-10 safe-top dark:border-gray-700 bg-white dark:bg-gray-800",
+              )}
+              style={{ height: TOP_BAR_HEIGHT }}
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div>{route.title}</div>
+              </div>
+
+              {route.showBack ? (
+                <BackButton className="z-10 p-1" />
+              ) : (
+                <LogoNText
+                  className="space-x-2"
+                  textClassName="font-bold"
+                  logoClassName="w-6 h-6 text-purple-500"
+                  textStyle={{ marginBottom: "-3px" }} // Sorry just really want this to line up
+                />
+              )}
+
+              {route.id !== "settings" && (
+                <button className="z-10 p-1" onClick={() => navigateTo("settings")}>
+                  <HiOutlineCog className="w-6 h-6" />
+                </button>
+              )}
             </div>
 
-            {route.showBack ? (
-              <BackButton className="z-10 p-1" />
-            ) : (
-              <LogoNText className="space-x-1" textClassName="font-bold" logoClassName="" />
-            )}
-
-            {route.id !== "settings" && (
-              <button className="z-10 p-1" onClick={() => navigateTo("settings")}>
-                <HiOutlineCog className="w-6 h-6" />
-              </button>
-            )}
-          </div>
+            {/* Placeholder */}
+            <div
+              id="top-bar-placeholder"
+              className="w-full flex-shrink-0 safe-top"
+              style={{ height: TOP_BAR_HEIGHT }}
+            />
+          </>
         )}
+
         {/* Why do I have flex here? It's because of how Safari handles % in flex situations (I'd typically using h-full) */}
         {/* See https://stackoverflow.com/questions/33636796/chrome-safari-not-filling-100-height-of-flex-parent */}
-        <div className="flex-grow min-h-0 relative flex">
-          <React.Suspense fallback={<LoadingSpinner />}>
-            <route.component />
-          </React.Suspense>
-        </div>
-        {route.showTabs && <ButtonTabs />}
+        {/* <div className=""> */}
+        <React.Suspense fallback={<LoadingSpinner className="flex-grow" />}>
+          <route.component />
+        </React.Suspense>
+        {/* </div> */}
+
+        {/* This div is force things to go upwards when the minified player is created */}
+        {/* You might also be asking yourself, why make the minified player absolutely positioned */}
+        {/* while also having this div to fill the same space. This is because the minified player's */}
+        {/* height is immediately set while translating so you get this big white space for 300 ms */}
+        {/* Instead, the transition happens *then* this div's height is set. When transitioning */}
+        {/* down this div is immediately removed to avoid the white space */}
+        <SmallPlayerPlaceholder />
+
+        {route.showTabs && (
+          <>
+            <div className="flex-shrink-0" style={{ height: TABS_HEIGHT }} />
+
+            {/* pointer-events-none since the container always takes up the full height of both elements */}
+            {/* Even if one element is fully downwards */}
+            <div className="fixed inset-x-0 bottom-0  flex flex-col justify-end pointer-events-none">
+              <SmallPlayer
+                className="pointer-events-auto"
+                onTransitionEnd={() =>
+                  Queue.getCurrentlyPlaying() && setShowSmallPlayerPlaceholder(true)
+                }
+                openBigPlayer={() => emitter.emit("openBigPlayer")}
+                style={{ height: SMALL_PLAYER_HEIGHT }}
+                thumbnailStyle={{ height: SMALL_PLAYER_HEIGHT, width: SMALL_PLAYER_HEIGHT }}
+              />
+
+              <div
+                className="bg-gray-900 flex text-white relative z-10 flex-shrink-0 pointer-events-auto"
+                style={{ height: TABS_HEIGHT }}
+              >
+                <Tab label="Home" route="home" icon={HiHome} />
+                <Tab label="Search" route="searchMobile" icon={HiSearch} />
+                <Tab label="Library" route="library" icon={MdLibraryMusic} />
+              </div>
+            </div>
+          </>
+        )}
       </div>
+      <AppPerformanceHelper />
       <ActionSheet />
+      <SlideUpScreen />
     </>
   );
 };

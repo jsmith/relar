@@ -4,14 +4,14 @@ import AutoSizer from "react-virtualized-auto-sizer";
 import { ThumbnailCard } from "./ThumbnailCard";
 import { SongInfo } from "../queue";
 import { Song } from "../shared/universal/types";
-import { isMobile } from "../utils";
+import { isMobile, IS_WEB_VIEW } from "../utils";
 
 const mql = window.matchMedia(`(min-width: 1024px)`);
 
 const GUTTER_SIZE = 8;
 const PADDING_LEFT = 10;
 
-export interface ThumbnailCardGridProps<T extends { songs: Song[] | undefined }> {
+export interface ThumbnailCardGridProps<T extends { songs: SongInfo[] | undefined }> {
   items: T[];
   getTitle: (item: T, index: number) => string;
   getSubtitle: (item: T, index: number) => string;
@@ -21,7 +21,7 @@ export interface ThumbnailCardGridProps<T extends { songs: Song[] | undefined }>
   padding?: number;
 }
 
-export const ThumbnailCardGrid = function <T extends { songs: Song[] | undefined }>({
+export const ThumbnailCardGrid = function <T extends { songs: SongInfo[] | undefined }>({
   items,
   getTitle,
   getSubtitle,
@@ -106,7 +106,7 @@ export const ThumbnailCardGrid = function <T extends { songs: Song[] | undefined
             height={sizes.row}
             // When on mobile, I want to show all of the items
             // But on desktop I don't want the super ugly scroll bar
-            itemCount={isMobile() ? nItems : columnCount.current}
+            itemCount={IS_WEB_VIEW ? nItems : columnCount.current}
             itemSize={sizes.col}
             layout="horizontal"
             width={width}

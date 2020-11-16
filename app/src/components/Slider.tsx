@@ -68,7 +68,10 @@ export const Slider = ({
   return (
     <div ref={ref} className={classNames("flex items-center justify-center group", className)}>
       <div className="py-1 relative min-w-full">
-        <div className="h-1 bg-gray-500 rounded-full" onClick={(e) => move(e.clientX)}>
+        <div
+          className="h-1 bg-gray-500 rounded-full cursor-pointer"
+          onClick={(e) => move(e.clientX)}
+        >
           {/* This wrapper element and the relative className are important for overflow-hidden to actually work */}
           <div className="w-full h-full rounded-full relative overflow-hidden">
             <div

@@ -18,14 +18,23 @@
 /* This needs to be CSS sadly */
 /* See https://blog.phonegap.com/displaying-a-phonegap-app-correctly-on-the-iphone-x-c4a85664c493 */
 /* And https://developer.mozilla.org/en-US/docs/Web/CSS/env */
+/* I'm currently not using "safe-bottom" since it's really not that useful */
+/* Only the top of phones have a notch */
+/* But some iOS phones will have bottom padding which doesn't make much sense  */
 .safe-bottom {
-  padding-bottom: calc(constant(safe-area-inset-bottom) + 1rem); /* iOS 11.0 */
-  padding-bottom: calc(env(safe-area-inset-bottom) + 1rem); /* iOS 11.2 */
+  padding-bottom: constant(safe-area-inset-bottom); /* iOS 11.0 */
+  padding-bottom: env(safe-area-inset-bottom); /* iOS 11.2 */
 }
 
 .safe-top {
-  padding-top: calc(constant(safe-area-inset-top) + 1rem); /* iOS 11.0 */
-  padding-top: calc(env(safe-area-inset-top) + 1rem); /* iOS 11.2 */
+  padding-top: constant(safe-area-inset-top); /* iOS 11.0 */
+  padding-top: env(safe-area-inset-top); /* iOS 11.2 */
+}
+
+html {
+  /* Got this from http://hollyschinsky.github.io/spotify-browser/module6.html */
+  /* Not sure that this does or if it's used but it doesn't seem to hurt */
+  -webkit-overflow-scrolling: touch;
 }
 
 @font-face {
@@ -155,4 +164,9 @@ body {
   62% {
     transform: translate(-22px, 5px) skew(21deg);
   }
+}
+
+.tester-temp {
+  /* transform: translateZ(0);
+  backface-visibility: hidden; */
 }

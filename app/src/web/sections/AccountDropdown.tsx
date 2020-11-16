@@ -1,11 +1,11 @@
 import React from "react";
-import { Menu, Transition, Switch } from "@headlessui/react";
+import { Menu, Transition } from "@headlessui/react";
 import { AiOutlineUser } from "react-icons/ai";
 import classNames from "classnames";
 import { FaCaretDown } from "react-icons/fa";
 import { useDefinedUser } from "../../auth";
 import { useModal } from "react-modal-hook";
-import { Feedback } from "../../sections/Feedback";
+import { FeedbackModal } from "../../sections/FeedbackModal";
 import firebase from "firebase/app";
 import { Link } from "../../components/Link";
 import { New } from "../../components/New";
@@ -14,6 +14,7 @@ import { useDarkMode } from "../../dark";
 import { useUpdatableServiceWorker } from "../../service-worker";
 import { env } from "../../env";
 import { Badge } from "../../components/Badge";
+import { Switch } from "../../components/Switch";
 
 export const classes = (active: boolean, additional?: string | false, disabled?: boolean) =>
   classNames(
@@ -25,7 +26,7 @@ export const classes = (active: boolean, additional?: string | false, disabled?:
 
 export const AccountDropdown = () => {
   const user = useDefinedUser();
-  const [show, close] = useModal(() => <Feedback onExit={close} />);
+  const [show, close] = useModal(() => <FeedbackModal onExit={close} />);
   const [darkMode, setDarkMode] = useDarkMode();
   const update = useUpdatableServiceWorker();
 
@@ -97,28 +98,13 @@ export const AccountDropdown = () => {
                 </div>
 
                 <div className="px-4 py-2">
-                  {/* TODO not accessible */}
+                  {/* FIXME not accessible */}
                   <Switch.Group as="div" className="flex items-center space-x-4 justify-between">
                     <Switch.Label className="text-sm flex items-center space-x-2">
                       <span>Dark Mode</span>
                       <New />
                     </Switch.Label>
-                    <Switch
-                      as="button"
-                      checked={darkMode}
-                      onChange={setDarkMode}
-                      className={`${
-                        darkMode ? "bg-purple-600" : "bg-gray-300"
-                      } relative inline-flex h-6 transition-colors duration-200 ease-in-out border-2 border-transparent rounded-full cursor-pointer w-10 focus:outline-none focus:shadow-outline`}
-                    >
-                      {({ checked }) => (
-                        <span
-                          className={`${
-                            checked ? "translate-x-4" : "translate-x-0"
-                          } inline-block w-5 h-5 transition duration-200 ease-in-out transform bg-white rounded-full`}
-                        />
-                      )}
-                    </Switch>
+                    <Switch checked={darkMode} onChange={setDarkMode} />
                   </Switch.Group>
                 </div>
 

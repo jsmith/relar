@@ -49,6 +49,7 @@ export const tryToGetDownloadUrlOrLog = async (
   user: firebase.User,
   data: Song,
   size: ThumbnailSize,
+  batch?: firebase.firestore.WriteBatch,
 ): Promise<string | undefined> => {
   if (!data || !data.artwork) {
     return;
@@ -79,7 +80,8 @@ export const tryToGetDownloadUrlOrLog = async (
   if (result.isOk()) {
     artwork[key] = result.value;
     // we are explicitly not awaiting this since we don't care when it finishes
-    ref.update(update).catch(captureAndLog);
+    if (batch) batch.update(ref, update);
+    else ref.update(update).catch(captureAndLog);
     return result.value;
   }
 

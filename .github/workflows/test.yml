@@ -26,10 +26,10 @@ jobs:
           GOOGLE_KEY_GPG_PASS: ${{ secrets.GOOGLE_KEY_GPG_PASS }}
 
       - run: make install-ci
-      - run: npm install -g firebase-tools
+      - run: npm install --no-save firebase-tools
       - run: npm run build
         working-directory: native-audio
       - run: npx patch-package
       - run: npx patch-package
         working-directory: app
-      - run: make checks
+      - run: npm run checks

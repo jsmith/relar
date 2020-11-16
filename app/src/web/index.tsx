@@ -30,7 +30,6 @@ import * as ReactDOM from "react-dom";
 import { Router } from "@graywolfai/react-tiniest-router";
 import { routes } from "../routes";
 import { UserProvider } from "../auth";
-import { QueueProvider } from "../queue";
 import { ConfirmActionProvider } from "../confirm-actions";
 import { ConfirmPasswordProvider } from "../confirm-password";
 import { ModalProvider } from "react-modal-hook";
@@ -63,21 +62,19 @@ ReactDOM.render(
   <React.StrictMode>
     <DarkModeProvider>
       <UserProvider>
-        <QueueProvider>
-          <ModalProvider>
-            <Router routes={routes}>
-              <ConfirmActionProvider>
-                <ConfirmPasswordProvider>
-                  <SnackbarProvider>
-                    <SkeletonProvider>
-                      <App />
-                    </SkeletonProvider>
-                  </SnackbarProvider>
-                </ConfirmPasswordProvider>
-              </ConfirmActionProvider>
-            </Router>
-          </ModalProvider>
-        </QueueProvider>
+        <ModalProvider>
+          <Router routes={routes}>
+            <ConfirmActionProvider>
+              <ConfirmPasswordProvider>
+                <SnackbarProvider>
+                  <SkeletonProvider>
+                    <App />
+                  </SkeletonProvider>
+                </SnackbarProvider>
+              </ConfirmPasswordProvider>
+            </ConfirmActionProvider>
+          </Router>
+        </ModalProvider>
       </UserProvider>
     </DarkModeProvider>
   </React.StrictMode>,
