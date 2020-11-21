@@ -139,15 +139,11 @@ export const FeedbackSection = ({
       setLoading && setLoading(false);
     }
 
-    setSuccess(true);
-  };
-
-  const reset = () => {
-    setError("");
     setFiles([]);
-    setSuccess(false);
     setFeedback("");
     setType(undefined);
+    setError("");
+    setSuccess(true);
   };
 
   const uploadFileButton = (
@@ -188,7 +184,7 @@ export const FeedbackSection = ({
           </BlockAlert>
           <p className="text-center">
             Want to{" "}
-            <button className={link()} onClick={reset}>
+            <button className={link()} onClick={() => setSuccess(false)}>
               submit again?
             </button>
           </p>
