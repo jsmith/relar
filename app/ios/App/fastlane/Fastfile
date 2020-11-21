@@ -31,8 +31,8 @@ platform :ios do
     build_app
 
     firebase_app_distribution(
-      app: "1:39664165734:ios:80a2cde5bea5b0bbef9ea7",
-      groups: "ios-beta-testers"
+      app: "1:891497953282:ios:ef4d96cd5d4680e4338f1b",
+      groups: "ios-testers"
     )
   end
 end

@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "39664165734",
-    "firebase_url": "https://toga-4e3f5.firebaseio.com",
-    "project_id": "toga-4e3f5",
-    "storage_bucket": "toga-4e3f5.appspot.com"
+    "project_number": "891497953282",
+    "firebase_url": "https://relar-production.firebaseio.com",
+    "project_id": "relar-production",
+    "storage_bucket": "relar-production.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:39664165734:android:45419d678f4cf781ef9ea7",
+        "mobilesdk_app_id": "1:891497953282:android:10babcaaea2bb40a338f1b",
         "android_client_info": {
           "package_name": "app.relar.mobile"
         }
       },
       "oauth_client": [
         {
-          "client_id": "39664165734-3cvtsgdllakd2p8bcjcqna8c80a4prof.apps.googleusercontent.com",
+          "client_id": "891497953282-273um0us423tpd0dps4rpak0pe3mifqh.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "app.relar.mobile",
@@ -23,24 +23,24 @@
           }
         },
         {
-          "client_id": "39664165734-299noguu9k86bhdpjlsq3mhi5bqngjle.apps.googleusercontent.com",
+          "client_id": "891497953282-ekou4p5n66ehro818its8cno5a80soqp.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBWlF3Chio-KJMHNUMX-8pOGIJpTwTSoAI"
+          "current_key": "AIzaSyCMFLF37eQtSSaQ1UazL3lDx9AwElfKefE"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "39664165734-299noguu9k86bhdpjlsq3mhi5bqngjle.apps.googleusercontent.com",
+              "client_id": "891497953282-ekou4p5n66ehro818its8cno5a80soqp.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "39664165734-tumu0u9jta3506cp3gdb3ujirn8ouug7.apps.googleusercontent.com",
+              "client_id": "891497953282-ahe0ca5ntm1c5u0p3e7aoaacvod72e4a.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
                 "bundle_id": "app.relar.mobile",
