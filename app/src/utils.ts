@@ -732,7 +732,8 @@ export const clientStorage = (storage: firebase.storage.Storage, userId: string)
   };
 };
 
-export const toFileArray = (fileList: FileList) => {
+export const toFileArray = (fileList: FileList | null) => {
+  if (!fileList) return [];
   const files: File[] = [];
   for (let i = 0; i < fileList.length; i++) files.push(fileList[i]);
   return files;
@@ -778,3 +779,5 @@ export const useIsMounted = () => {
   );
   return isMounted;
 };
+
+export const itemsToFiles = () => {};

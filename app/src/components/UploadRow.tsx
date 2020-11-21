@@ -5,6 +5,7 @@ import { AiOutlineStop } from "react-icons/ai";
 import { Bars } from "@jsmith21/svg-loaders-react";
 import { ProgressBar } from "./ProgressBar";
 import { UploadAction } from "../shared/universal/types";
+import ReactTooltip from "react-tooltip";
 
 export interface StorageLocation {
   path: string;
@@ -28,6 +29,8 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
       task?.cancel();
       return;
     }
+
+    console.log(snapshot);
 
     const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
     setProgress(progress);
@@ -77,6 +80,7 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
   return (
     <div className="py-2 space-x-2 flex items-center group">
       {cancelled ? (
+        // TODO better tooltip
         <AiOutlineStop title={error} className="flex-shrink-0" />
       ) : error ? (
         <MdErrorOutline title={error} className="text-red-600 flex-shrink-0" />

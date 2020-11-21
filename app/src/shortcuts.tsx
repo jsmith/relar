@@ -23,12 +23,14 @@ const navigateIfLessThanTimeout = (
   route: keyof NavigatorRoutes,
   ifNot?: () => void,
 ) => {
+  console.log("HELLO");
   if (whenGPressed.current === undefined) {
     ifNot && ifNot();
     return;
   }
 
   const duration = Date.now() - whenGPressed.current;
+  console.log(whenGPressed.current, Date.now(), duration);
   if (duration > NAVIGATION_TIMEOUT) {
     ifNot && ifNot();
     return;

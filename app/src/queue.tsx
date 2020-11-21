@@ -224,7 +224,7 @@ export const queueLogic = () => {
     ref?.setSrc(null);
     index = undefined;
     mapping = undefined;
-    queue = [];
+    setQueueItems([]);
   };
 
   const changeSongIndex = async (newIndex: number, jump = false) => {
@@ -272,7 +272,7 @@ export const queueLogic = () => {
    * Tries to go to the target index. Force means actually go to the index whereas non force means
    * repeat if the mode is set to "repeat-one".
    */
-  const tryToGoTo = (index: number, force: boolean, jump: boolean) => {
+  const tryToGoTo = (newIndex: number, force: boolean, jump: boolean) => {
     const changeSongIndexAndPlay = async (index: number) => {
       await changeSongIndex(index, jump);
       ref?.play();
@@ -284,17 +284,17 @@ export const queueLogic = () => {
       if (index === undefined) return;
       // If we are just repeating the current song
       changeSongIndexAndPlay(index);
-    } else if (index >= queue.length) {
+    } else if (newIndex >= queue.length) {
       console.info(`The end of the queue has been reached in mode -> ${mode}`);
       // If we are at the last song
       if (mode === "none") stopPlaying();
       else changeSongIndexAndPlay(0);
-    } else if (index < 0) {
+    } else if (newIndex < 0) {
       if (mode === "none") stopPlaying();
       else changeSongIndexAndPlay(queue.length - 1);
     } else {
       // Else we are somewheres in the middle
-      changeSongIndexAndPlay(index);
+      changeSongIndexAndPlay(newIndex);
     }
   };
 
@@ -308,7 +308,8 @@ export const queueLogic = () => {
       mapping.mappingFrom[newQueue.length - 1] = newQueue.length - 1; // new song maps to itself
       mapping.mappingTo[newQueue.length - 1] = newQueue.length - 1; // new song maps to itself
     }
-    queue = newQueue;
+
+    setQueueItems(newQueue);
   };
 
   const dequeue = (index: number) => {
@@ -324,9 +325,9 @@ export const queueLogic = () => {
       }
 
       mapping = { mappingTo, mappingFrom };
-      queue = shuffled;
+      setQueueItems(shuffled);
     } else {
-      queue = [...queue.slice(0, index), ...queue.slice(index + 1)];
+      setQueueItems([...queue.slice(0, index), ...queue.slice(index + 1)]);
     }
 
     if (index === index) {
@@ -344,7 +345,7 @@ export const queueLogic = () => {
     const { shuffled, mappingTo, mappingFrom } = shuffleArray(queue, index);
     const songIndex = index;
     index = songIndex === undefined ? undefined : mappingTo[songIndex];
-    queue = shuffled;
+    setQueueItems(shuffled);
     mapping = { mappingFrom, mappingTo };
   };
 
@@ -352,12 +353,14 @@ export const queueLogic = () => {
     // Only set if the type isn't "queue"
     // If it is "queue", just change the index
     if (source.type !== "queue") {
-      queue = songs.map((song, index) => ({
-        song,
-        source: source,
-        id: song.playlistId ?? song.id,
-        index,
-      }));
+      setQueueItems(
+        songs.map((song, index) => ({
+          song,
+          source: source,
+          id: song.playlistId ?? song.id,
+          index,
+        })),
+      );
 
       index = undefined;
       mapping = undefined;
@@ -410,7 +413,7 @@ export const queueLogic = () => {
   };
 
   const clear = () => {
-    queue = [];
+    setQueueItems([]);
     mapping = undefined;
     index = undefined;
     stopPlaying();
@@ -423,7 +426,7 @@ export const queueLogic = () => {
       if (mapping) {
         const { mappingTo, mappingFrom } = mapping;
         // Map back to the original array order
-        queue = queue.map((_, i) => queue[mappingTo[i]]);
+        setQueueItems(queue.map((_, i) => queue[mappingTo[i]]));
         const originalIndex = index === undefined ? undefined : mappingFrom[index];
         index = originalIndex;
         mapping = undefined;
@@ -502,7 +505,7 @@ export const useTimeUpdater = () => {
       });
 
       let doSet = false;
-      const queue = Queue.getQueueItems().map((song) => {
+      const newQueueItems = Queue.getQueueItems().map((song) => {
         if (lookup[song.song.id]) {
           doSet = true;
           return { ...song, song: lookup[song.song.id] };
@@ -512,7 +515,7 @@ export const useTimeUpdater = () => {
       });
 
       if (doSet) {
-        Queue.replaceQueueItems(queue);
+        Queue.replaceQueueItems(newQueueItems);
       }
 
       const currentlyPlaying = Queue.getCurrentlyPlaying();
@@ -724,20 +727,21 @@ export const QueueAudio = () => {
                       tryToGetDownloadUrlOrLog(getDefinedUser(), song, size, batch),
                     );
 
-                    // This batch can be empty and that's ok
-                    batch.commit().catch(captureAndLog);
-
                     Promise.all(thumbnails)
-                      .then((thumbnails) =>
-                        thumbnails.filter(isDefined).map((src, i) => ({
+                      .then((thumbnails) => {
+                        // This batch can be empty and that's ok
+                        // It's important that commit is called here after all of the promises have been resolved
+                        batch.commit().catch(captureAndLog);
+
+                        return thumbnails.filter(isDefined).map((src, i) => ({
                           src,
                           sizes: `${sizes[i]}x${sizes[i]}`,
                           // We know it's defined at this point since we are working with the artwork
                           // We need the conditional since type is "png" | "jpg" and "image/jpg" is
                           // not valid
                           type: `image/${song.artwork!.type === "png" ? "png" : "jpeg"}`,
-                        })),
-                      )
+                        }));
+                      })
                       .then((artwork) => {
                         mediaSession.metadata = new MediaMetadata({
                           title: song.title,
