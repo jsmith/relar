@@ -5,7 +5,6 @@ import { AiOutlineStop } from "react-icons/ai";
 import { Bars } from "@jsmith21/svg-loaders-react";
 import { ProgressBar } from "./ProgressBar";
 import { UploadAction } from "../shared/universal/types";
-import ReactTooltip from "react-tooltip";
 
 export interface StorageLocation {
   path: string;
