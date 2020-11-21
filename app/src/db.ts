@@ -54,12 +54,12 @@ export const resetDB = (db: string) => {
   setTimeout(() => {
     deleteDB(db, {
       blocked: () => {
-        console.log("BLOCKED");
+        console.warn("Deleting the database was blocked. You may have to restart your browser.");
       },
     }).then(() => {
       window.location.reload();
     });
-  }, 3000);
+  }, 4000);
 };
 
 export class IndexedDb {
@@ -70,7 +70,7 @@ export class IndexedDb {
   constructor(database: string) {
     this.database = database;
     this.dispose = emitter.on("close", () => {
-      console.log("CLOSING DB");
+      console.info("Closing the database");
       this.db && this.db.close();
     });
   }
@@ -91,13 +91,13 @@ export class IndexedDb {
         }
       },
       blocked() {
-        console.log("BLOCKED");
+        console.info("The database is BLOCKED");
       },
       blocking() {
-        console.log("BLOCKING");
+        console.info("The database is BLOCKING");
       },
       terminated() {
-        console.log("TERMINATED");
+        console.info("The database has been TERMINATED");
       },
     });
   }
@@ -136,11 +136,11 @@ export class IndexedDb {
     const store = tx.objectStore(tableName);
     const result = await store.get(id);
     if (!result) {
-      console.log("Id not found", id);
+      console.warn("Id not found", id);
       return result;
     }
+
     await store.delete(id);
-    console.log("Deleted Data", id);
     return id;
   }
 

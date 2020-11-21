@@ -30,8 +30,6 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
       return;
     }
 
-    console.log(snapshot);
-
     const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
     setProgress(progress);
     // switch (snapshot.state) {

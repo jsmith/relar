@@ -89,8 +89,6 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
       value: newFiles.length,
     });
 
-    console.log(newFiles);
-
     setFiles([...files, ...newFiles]);
 
     if (fileUpload.current) {
