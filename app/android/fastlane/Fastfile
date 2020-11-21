@@ -23,14 +23,22 @@ platform :android do
 
   desc "Push a new beta build to Firebase App Distribution"
   lane :beta do
-    gradle(task: "clean assembleRelease")
+    gradle(
+      task: "clean assembleRelease",
+      properties: {
+        "android.injected.signing.store.file" => "keystore.jks",
+        "android.injected.signing.store.password" => "store_password",
+        "android.injected.signing.key.alias" => "key_alias",
+        "android.injected.signing.key.password" => "key_password", 
+      }
+    )
 
     # FIXME do I want crashlytics??
     # crashlytics
 
     firebase_app_distribution(
-      app: "1:39664165734:android:45419d678f4cf781ef9ea7",
-      groups: "android-beta-testers"
+      app: "1:891497953282:android:10babcaaea2bb40a338f1b",
+      groups: "android-testers"
     )
   end
 

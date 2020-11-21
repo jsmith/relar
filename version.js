@@ -9,13 +9,20 @@ const { execSync } = require("child_process");
 
 const command = argv[2];
 const version = argv[3];
+const build = argv[4];
 if (
   version === undefined ||
   command === undefined ||
   !version.match(/[0-9]+\.[0-9]+\.[0-9]/) ||
-  (command !== "versions" && command !== "versions-n-build")
+  (build !== undefined && !build.match(/[0-9]+/)) ||
+  (command !== "versions" && command !== "versions-n-build") ||
+  (command === "versions-n-build" && build === undefined)
 ) {
-  console.log("Usage: node version.js [versions|versions-n-build] VERSION");
+  console.log(
+    "Usage\n" +
+      "node version.js versions VERSION\n" +
+      "node version.js versions-n-build VERSION BUILD"
+  );
   process.exit(1);
 }
 
@@ -95,15 +102,16 @@ const [appEnvVersion, appEnvVersionReplace] = regexMatchAndReplace(
 );
 const appVersion = appEnvVersion[1];
 
-const newBuildNumber =
-  Math.max(bundleVersion, versionCode) + (command === "versions" ? 0 : 1);
+const newBuildNumber = +build;
 
 console.log(
   `iOS CFBundleShortVersionString ${shortVersionString} -> ${version}`
 );
-console.log(`iOS CFBundleVersion ${bundleVersion} -> ${newBuildNumber}`);
+if (build !== undefined)
+  console.log(`iOS CFBundleVersion ${bundleVersion} -> ${newBuildNumber}`);
 console.log(`Android versionName ${versionName} -> ${version}`);
-console.log(`Android versionCode ${versionCode} -> ${newBuildNumber}`);
+if (build !== undefined)
+  console.log(`Android versionCode ${versionCode} -> ${newBuildNumber}`);
 console.log(`SNOWPACK_PUBLIC_VERSION ${appVersion} -> ${version}`);
 console.log(`environment.version ${version}`);
 
@@ -111,9 +119,11 @@ execSync(
   `firebase --project production functions:config:set environment.version=${version}`
 );
 
-androidContents = androidVersionCodeReplace(`$1${newBuildNumber}`);
+if (build !== undefined)
+  androidContents = androidVersionCodeReplace(`$1${newBuildNumber}`);
 androidContents = androidVersionNameReplace(`$1"${version}"`, androidContents);
-iosContents = iosVersionReplace(`$1${newBuildNumber}$3`);
+if (build !== undefined)
+  iosContents = iosVersionReplace(`$1${newBuildNumber}$3`);
 iosContents = iosShortReplace(`$1${version}$3`, iosContents);
 appEnvContents = appEnvVersionReplace(`SNOWPACK_PUBLIC_VERSION=${version}`);
 
