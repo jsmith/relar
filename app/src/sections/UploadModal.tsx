@@ -11,6 +11,8 @@ import { UploadAction } from "../shared/universal/types";
 import { toFileArray, useStateWithRef } from "../utils";
 import { MdErrorOutline } from "react-icons/md";
 import { DragDiv } from "../components/DragDiv";
+import ReactTooltip from "react-tooltip";
+import { useDarkMode } from "../dark";
 
 export interface UploadModalProps {
   children?: React.ReactNode;
@@ -32,6 +34,7 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
   const storage = useUserStorage();
   const createdSnapshot = useRef<(() => void) | null>(null);
   const userData = useUserData();
+  const [dark] = useDarkMode();
 
   useEffect(() => {
     if (files.length > 0 && !createdSnapshot.current) {
@@ -55,12 +58,12 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
     }
   }, [files, filesRef, setFiles, userData]);
 
-  const addFiles = (fileList: FileList | null) => {
+  const addFiles = (fileList: File[]) => {
     if (!fileList) {
       return;
     }
 
-    const newFiles = toFileArray(fileList).map((file) => {
+    const newFiles = fileList.map((file) => {
       if (file.name.endsWith(".mp3")) {
         // This assumes that uuid.v4() will always return a unique ID
         // Users also only have the ability to create but not overwrite files
@@ -110,7 +113,7 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
             multiple
             className="hidden"
             ref={fileUpload}
-            onChange={(e) => addFiles(e.target.files)}
+            onChange={(e) => addFiles(toFileArray(e.target.files))}
           />
           {/* https://tailwindcomponents.com/component/file-upload-with-drop-on-and-preview */}
           {/* https://tailwindui.com/components/application-ui/overlays/modals */}

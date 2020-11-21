@@ -1,5 +1,53 @@
+import { rejects } from "assert";
 import classNames from "classnames";
 import React, { useRef, useState } from "react";
+
+type DirectoryEntry = {
+  name: string;
+  fullPath: string;
+  isFile: false;
+  isDirectory: true;
+  createReader: () => {
+    readEntries: (cb: (entries: Entry[]) => void) => void;
+  };
+};
+
+type FileEntry = {
+  name: string;
+  fullPath: string;
+  isFile: true;
+  idDirectory: false;
+  file: (onSuccess: (file: File) => void, onError?: (error: Error) => void) => File;
+};
+
+type Entry = DirectoryEntry | FileEntry;
+
+const readFile = (file: FileEntry): Promise<File> => {
+  return new Promise<File>((resolve, reject) =>
+    file.file(
+      (file) => resolve(file),
+      (error) => reject(error),
+    ),
+  );
+};
+
+const readItems = (directory: DirectoryEntry): Promise<Entry[]> => {
+  return new Promise<Entry[]>((resolve) =>
+    directory.createReader().readEntries((entries) => resolve(entries)),
+  );
+};
+
+export const readAllFilesFromEntry = async (entry: Entry): Promise<File[]> => {
+  if (entry.isFile) return [await readFile(entry)];
+  const files: File[] = [];
+  const items = await readItems(entry);
+  for (const item of items) {
+    if (item.isFile) files.push(await readFile(item));
+    else files.push(...(await readAllFilesFromEntry(item)));
+  }
+
+  return files;
+};
 
 // I honestly don't know if I'm doing this right but it works
 export const DragDiv = ({
@@ -11,7 +59,7 @@ export const DragDiv = ({
 }: {
   className?: string;
   children: React.ReactNode;
-  addFiles: (files: FileList) => void;
+  addFiles: (files: File[]) => void;
   onDragEnter?: () => void;
   dragOverClassName?: string;
 }) => {
@@ -31,9 +79,20 @@ export const DragDiv = ({
       onDragOver={(e) => {
         e.preventDefault();
       }}
-      onDrop={(e) => {
+      onDrop={async (e) => {
         e.preventDefault();
-        addFiles(e.dataTransfer.files);
+
+        const files: File[] = [];
+        for (const item of e.dataTransfer.items) {
+          const file = item.getAsFile();
+          if (item.webkitGetAsEntry && item.webkitGetAsEntry()) {
+            files.push(...(await readAllFilesFromEntry(item.webkitGetAsEntry())));
+          } else if (file) {
+            files.push(file);
+          }
+        }
+
+        addFiles(files);
         changeAndCheck(-1);
       }}
       onDragEnter={(e) => {

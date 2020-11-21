@@ -1,4 +1,12 @@
-import React, { useMemo, useRef, CSSProperties, forwardRef, MutableRefObject } from "react";
+import React, {
+  useMemo,
+  useRef,
+  CSSProperties,
+  forwardRef,
+  MutableRefObject,
+  useState,
+  useEffect,
+} from "react";
 import {
   Queue,
   SongInfo,
@@ -29,12 +37,20 @@ export const QueueWeb = forwardRef<HTMLDivElement, QueueProps>(
     );
     const ref = useRef<HTMLDivElement | null>(null);
     const combined = useCombinedRefs(ref, forwarded);
+    const [makeHidden, setMakeHidden] = useState(true);
 
     useOnClickOutside(ref, close, exclude);
 
     useHotkeys("escape", () => visible && close(), [visible]);
 
     const humanReadableName = useHumanReadableName(currentlyPlaying);
+
+    // This makes it so we get a nice animation before we hide the element from tab navigation and
+    // from clicks
+    useEffect(() => {
+      if (visible) setMakeHidden(false);
+      else setTimeout(() => setMakeHidden(true), 350);
+    }, [visible]);
 
     const style: CSSProperties = visible
       ? {
@@ -47,12 +63,10 @@ export const QueueWeb = forwardRef<HTMLDivElement, QueueProps>(
       : {
           // Super important for disabling tab navigation
           // See https://stackoverflow.com/questions/57513046/how-to-skip-focus-on-hidden-group-of-elements
-          visibility: "hidden",
-          transitionDuration: "0.2s",
+          transitionDuration: "0.35s",
           transitionTimingFunction: "cubic-bezier(.66,-.41,1,1)",
           transform: "translateY(100px)",
           opacity: 0,
-          zIndex: -1,
         };
 
     return (
@@ -66,6 +80,7 @@ export const QueueWeb = forwardRef<HTMLDivElement, QueueProps>(
           bottom: "24px",
           transitionProperty: "transform, opacity",
           ...style,
+          ...(makeHidden && !visible ? { zIndex: -1, visibility: "hidden" } : {}),
         }}
       >
         {queueItems.length === 0 ? (

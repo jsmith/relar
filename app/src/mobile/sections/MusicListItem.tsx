@@ -65,7 +65,6 @@ export const MusicListItem = ({
       <button
         className="p-1"
         onClick={(e) => {
-          console.log(e);
           e.stopPropagation();
           if (!actionItems) return;
           openActionSheet(actionItems);
