@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { MutableRefObject, useEffect, useRef, useState } from "react";
 import { Modal } from "../components/Modal";
 import { link, textGray600 } from "../classes";
 import { IssueOutlineOffset } from "../illustrations/IssueOutlineOffset";
@@ -67,9 +67,13 @@ const twentyMb = 1024 * 1024 * 20;
 export const FeedbackSection = ({
   setLoading,
   className,
+  feedbackRef,
+  filesRef,
 }: {
   setLoading?: (value: boolean) => void;
   className?: string;
+  filesRef?: MutableRefObject<Array<{ file: File; url: string }>>;
+  feedbackRef?: MutableRefObject<string>;
 }) => {
   const [success, setSuccess] = useState(false);
   const [type, setType] = useState<"idea" | "issue" | "other">();
@@ -80,14 +84,18 @@ export const FeedbackSection = ({
   const fileUpload = useRef<HTMLInputElement | null>(null);
   const [files, setFiles] = useState<Array<{ file: File; url: string }>>([]);
 
-  const addFiles = (fileList: FileList | null) => {
-    if (!fileList) {
-      return;
-    }
+  useEffect(() => {
+    if (filesRef) filesRef.current = files;
+  }, [files, filesRef]);
 
+  useEffect(() => {
+    if (feedbackRef) feedbackRef.current = feedback;
+  }, [feedback, feedbackRef]);
+
+  const addFiles = (fileList: File[]) => {
     setFiles((current) => [
       ...current,
-      ...toFileArray(fileList).map((file) => ({ file, url: URL.createObjectURL(file) })),
+      ...fileList.map((file) => ({ file, url: URL.createObjectURL(file) })),
     ]);
   };
 
@@ -130,15 +138,11 @@ export const FeedbackSection = ({
       setLoading && setLoading(false);
     }
 
-    setSuccess(true);
-  };
-
-  const reset = () => {
-    setError("");
     setFiles([]);
-    setSuccess(false);
     setFeedback("");
     setType(undefined);
+    setError("");
+    setSuccess(true);
   };
 
   const uploadFileButton = (
@@ -179,7 +183,7 @@ export const FeedbackSection = ({
           </BlockAlert>
           <p className="text-center">
             Want to{" "}
-            <button className={link()} onClick={reset}>
+            <button className={link()} onClick={() => setSuccess(false)}>
               submit again?
             </button>
           </p>
@@ -253,7 +257,7 @@ export const FeedbackSection = ({
                   multiple
                   className="hidden"
                   ref={fileUpload}
-                  onChange={(e) => addFiles(e.target.files)}
+                  onChange={(e) => addFiles(toFileArray(e.target.files))}
                 />
                 <label className="text-gray-700 dark:text-gray-300">
                   <span className="text-sm font-bold leading-none">Attach File(s)</span>
