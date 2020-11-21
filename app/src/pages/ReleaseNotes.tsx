@@ -169,9 +169,9 @@ const changelog = create([
   },
   {
     version: "0.15.1",
-    date: "TODO and TODO version",
-    fixes: ["Small bug fixes and improvements"],
-    features: ["Preparing for mobile beta"],
+    date: "November 21 2020",
+    fixes: ["Small bug fixes and improvements", "Improved queue animation"],
+    features: ["Preparing for mobile beta", "Added the ability to drag folders for upload"],
   },
 ]).reverse();
 

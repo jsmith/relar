@@ -165,8 +165,3 @@ body {
     transform: translate(-22px, 5px) skew(21deg);
   }
 }
-
-.tester-temp {
-  /* transform: translateZ(0);
-  backface-visibility: hidden; */
-}

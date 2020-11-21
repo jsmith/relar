@@ -260,7 +260,10 @@ export const createSong = f.storage.object().onFinalize(
     };
 
     const filePath = await ok<ObjectMetadata, ProcessingError>(object)
-      .andThen(matchContentType({ contentType: object.contentType, pattern: "audio/mpeg" }))
+      // So apparently this value is set my browsers and is extremely unreliable
+      // https://stackoverflow.com/questions/2426773/when-do-browsers-send-application-octet-stream-as-content-type
+      // Because of this, I just have to try to process the file and see what happens
+      // .andThen(matchContentType({ contentType: object.contentType, pattern: "audio/mpeg" }))
       .asyncAndThen(downloadObject(tmpDir, object.bucket, object.name));
 
     if (filePath.isErr()) return processError(filePath.error);

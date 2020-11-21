@@ -22,6 +22,9 @@ export const Thumbnail = ({ song, className, style, setAverageColor, size }: Thu
     <img
       key={thumbnail}
       style={style}
+      // Browser level lazy loading
+      // See https://web.dev/browser-level-image-lazy-loading/
+      loading="lazy"
       // onLoad={onLoad}
       onLoad={async (e) => {
         if (!setAverageColor) return;

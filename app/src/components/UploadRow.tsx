@@ -77,6 +77,7 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
   return (
     <div className="py-2 space-x-2 flex items-center group">
       {cancelled ? (
+        // TODO better tooltip
         <AiOutlineStop title={error} className="flex-shrink-0" />
       ) : error ? (
         <MdErrorOutline title={error} className="text-red-600 flex-shrink-0" />
