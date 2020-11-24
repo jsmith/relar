@@ -29,6 +29,7 @@ import { BigPlayer } from "./sections/BigPlayer";
 import { SlideUpScreen } from "./slide-up-screen";
 import { SMALL_PLAYER_HEIGHT, TABS_HEIGHT, TOP_BAR_HEIGHT } from "./constants";
 import { createEmitter } from "../events";
+import { useDarkMode } from "../dark";
 
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 
@@ -63,6 +64,7 @@ class Controls implements AudioControls {
     const { src, song } = opts;
     const cover = await tryToGetDownloadUrlOrLog(getDefinedUser(), song, "256");
 
+    console.log("PRELOAD");
     await NativeAudio.preload({
       path: src,
       volume: this._volume ?? 1.0,
@@ -154,12 +156,16 @@ const AppPerformanceHelper = () => {
 export const App = () => {
   const { routeId } = useNavigator("home"); // "home" is just because the argument is required
   const { loading, user } = useUser();
+  const [dark] = useDarkMode();
 
   const route = useMemo(() => {
     return Object.values(routes).find((route) => route.id === routeId);
   }, [routeId]);
 
-  useDefaultStatusBar(route?.dark ? StatusBarStyle.Dark : StatusBarStyle.Light);
+  // Some screens are dark in light mode but all screens are dark in dark mode
+  // Therefore, if dark mode is set, always set the status bar style to dark
+  // However, if we are in light mode, default to the defined route value
+  useDefaultStatusBar(dark || route?.dark ? StatusBarStyle.Dark : StatusBarStyle.Light);
   useStartupHooks();
 
   useEffect(() => {
@@ -216,39 +222,40 @@ export const App = () => {
       >
         {route.title && (
           <>
-            <div
-              className={classNames(
-                "text-2xl flex justify-between items-center px-3 border-b",
-                "fixed top-0 w-full z-10 safe-top dark:border-gray-700 bg-white dark:bg-gray-800",
-              )}
-              style={{ height: TOP_BAR_HEIGHT }}
-            >
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div>{route.title}</div>
+            {/* I need this outer div since I can't set the height *and* add padding on the same element */}
+            {/* I need padding and a fixed height :( */}
+            <div className="p-safe-top fixed top-0 w-full z-10 dark:border-gray-700 bg-white dark:bg-gray-800 border-b">
+              <div
+                className="text-2xl flex justify-between items-center px-3 relative"
+                style={{ height: TOP_BAR_HEIGHT }}
+              >
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div>{route.title}</div>
+                </div>
+
+                {route.showBack ? (
+                  <BackButton className="z-10 p-1" />
+                ) : (
+                  <LogoNText
+                    className="space-x-2"
+                    textClassName="font-bold"
+                    logoClassName="w-6 h-6 text-purple-500"
+                    textStyle={{ marginBottom: "-3px" }} // Sorry just really want this to line up
+                  />
+                )}
+
+                {route.id !== "settings" && user && (
+                  <button className="z-10 p-1" onClick={() => navigateTo("settings")}>
+                    <HiOutlineCog className="w-6 h-6" />
+                  </button>
+                )}
               </div>
-
-              {route.showBack ? (
-                <BackButton className="z-10 p-1" />
-              ) : (
-                <LogoNText
-                  className="space-x-2"
-                  textClassName="font-bold"
-                  logoClassName="w-6 h-6 text-purple-500"
-                  textStyle={{ marginBottom: "-3px" }} // Sorry just really want this to line up
-                />
-              )}
-
-              {route.id !== "settings" && (
-                <button className="z-10 p-1" onClick={() => navigateTo("settings")}>
-                  <HiOutlineCog className="w-6 h-6" />
-                </button>
-              )}
             </div>
 
             {/* Placeholder */}
             <div
               id="top-bar-placeholder"
-              className="w-full flex-shrink-0 safe-top"
+              className="w-full flex-shrink-0 m-safe-top"
               style={{ height: TOP_BAR_HEIGHT }}
             />
           </>
@@ -272,7 +279,7 @@ export const App = () => {
 
         {route.showTabs && (
           <>
-            <div className="flex-shrink-0" style={{ height: TABS_HEIGHT }} />
+            <div className="flex-shrink-0 m-safe-bottom" style={{ height: TABS_HEIGHT }} />
 
             {/* pointer-events-none since the container always takes up the full height of both elements */}
             {/* Even if one element is fully downwards */}
@@ -287,13 +294,14 @@ export const App = () => {
                 thumbnailStyle={{ height: SMALL_PLAYER_HEIGHT, width: SMALL_PLAYER_HEIGHT }}
               />
 
-              <div
-                className="bg-gray-900 flex text-white relative z-10 flex-shrink-0 pointer-events-auto"
-                style={{ height: TABS_HEIGHT }}
-              >
-                <Tab label="Home" route="home" icon={HiHome} />
-                <Tab label="Search" route="searchMobile" icon={HiSearch} />
-                <Tab label="Library" route="library" icon={MdLibraryMusic} />
+              {/* Similar to above, I need this wrapper since the outside has padding and the */}
+              {/* inside has a fixed height. These can't be combined! */}
+              <div className="z-10 p-safe-bottom bg-gray-900 flex-shrink-0 pointer-events-auto">
+                <div className="flex text-white relative" style={{ height: TABS_HEIGHT }}>
+                  <Tab label="Home" route="home" icon={HiHome} />
+                  <Tab label="Search" route="searchMobile" icon={HiSearch} />
+                  <Tab label="Library" route="library" icon={MdLibraryMusic} />
+                </div>
               </div>
             </div>
           </>

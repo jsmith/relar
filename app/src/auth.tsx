@@ -68,7 +68,7 @@ export const useDefinedUser = () => {
   return user;
 };
 
-export type PasswordResetErrorCode = "auth/invalid-email";
+export type PasswordResetErrorCode = "auth/invalid-email" | "auth/user-not-found";
 
 /**
  * Wraps sendPasswordResetEmail but returns typed codes as error. If an unexpected error occurs,
@@ -81,13 +81,16 @@ export const sendPasswordResetEmail = async (
     await firebase.auth().sendPasswordResetEmail(email);
     return ok({});
   } catch (e) {
-    const code: "auth/invalid-email" = e.code;
+    const code: PasswordResetErrorCode = e.code;
     switch (code) {
       case "auth/invalid-email":
         return err({
           code,
           message: "I don't know how to tell you this but your email is invalid.",
         });
+      case "auth/user-not-found":
+        // Hides the fact that the user might not have an account
+        return ok({});
       default:
         captureAndLog(e);
         return err({

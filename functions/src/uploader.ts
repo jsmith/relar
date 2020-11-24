@@ -159,7 +159,7 @@ export const generateThumbs = f.storage.object().onFinalize(
         Promise.all(uploadPromises),
         (e): ProcessingError => ({
           type: "error",
-          message: `Unknown error resizing "${filePath}": ` + e,
+          message: `Unknown error resizing "${object.name}": ` + e,
         }),
       ),
     );

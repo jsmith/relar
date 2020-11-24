@@ -45,9 +45,11 @@ export const SongsOverview = ({
   const topImage = useTransform(scrollY, (value) => Math.round(value * 0.3));
 
   useEffect(() => {
-    const onScroll = () => scrollY.set(window.scrollY);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const element = document.getElementById("root");
+    if (!element) return;
+    const onScroll = () => scrollY.set(element.scrollTop);
+    element.addEventListener("scroll", onScroll);
+    return () => element.removeEventListener("scroll", onScroll);
   }, [scrollY]);
 
   const infoPointsString = useMemo(

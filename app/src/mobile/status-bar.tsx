@@ -52,6 +52,7 @@ export const useDefaultStatusBar = (style: StatusBarStyle) => {
   const { setDefault } = useStatusBarProvider();
 
   useEffect(() => {
+    console.log("DEFAULT STYLE", style);
     setDefault(style);
   }, [setDefault, style]);
 };

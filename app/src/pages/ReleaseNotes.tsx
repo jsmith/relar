@@ -173,6 +173,14 @@ const changelog = create([
     fixes: ["Small bug fixes and improvements", "Improved queue animation"],
     features: ["Preparing for mobile beta", "Added the ability to drag folders for upload"],
   },
+  {
+    version: "0.15.2",
+    date: "November 24 2020",
+    fixes: [
+      "Improved loading indicators when logging in",
+      "Deleted songs now won't mysteriously continue to appear once deleted",
+    ],
+  },
 ]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (

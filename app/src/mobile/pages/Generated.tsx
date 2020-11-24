@@ -3,6 +3,7 @@ import { SongsOverview } from "../sections/SongsOverview";
 import { useGeneratedTypeSongs } from "../../queries/songs";
 import { generatedTypeToName } from "../../queue";
 import { useNavigator } from "../../routes";
+import { useCoolSongs } from "../../db";
 
 export const Generated = () => {
   const { params } = useNavigator("generated");

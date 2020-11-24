@@ -13,6 +13,7 @@ export interface ButtonProps
   theme?: "purple" | "red" | "none" | "disabled";
   invert?: boolean;
   height?: string;
+  buttonRef?: React.Ref<HTMLButtonElement>;
 }
 
 const classes = {
@@ -47,6 +48,7 @@ export const Button = ({
   theme = "purple",
   height = "h-10",
   onClick,
+  buttonRef,
   ...props
 }: ButtonProps) => {
   const [loading, setLoading] = useState(false);
@@ -58,6 +60,7 @@ export const Button = ({
   return (
     <button
       {...props}
+      ref={buttonRef}
       className={classNames(
         "flex justify-center items-center px-4 border uppercase font-medium rounded-md focus:outline-none",
         className,
