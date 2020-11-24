@@ -35,7 +35,8 @@ export const Thumbnail = ({ song, className, style, setAverageColor, size }: Thu
       // Anonymous because https://stackoverflow.com/questions/19869150/getimagedata-cross-origin-error
       crossOrigin="anonymous"
       src={thumbnail}
-      className={className}
+      // These background colors show while images are loading
+      className={classNames(className, "bg-gray-200 dark:bg-gray-800")}
       onError={(e) => {
         Sentry.captureMessage(`Error loading image from "${thumbnail}"`, {
           level: Sentry.Severity.Error,

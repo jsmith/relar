@@ -136,12 +136,26 @@ export class IndexedDb {
     const store = tx.objectStore(tableName);
     const result = await store.get(id);
     if (!result) {
-      console.warn("Id not found", id);
+      console.warn(`[${tableName}] Object not found during deletion (${id})`);
       return result;
     }
 
     await store.delete(id);
     return id;
+  }
+
+  public async deleteBulkValue(tableName: IndexDBTypes, ids: string[]) {
+    const tx = this.getOrError().transaction(tableName, "readwrite");
+    const store = tx.objectStore(tableName);
+    for (const id of ids) {
+      const result = await store.get(id);
+      if (!result) {
+        console.warn(`[${tableName}] Object not found during deletion (${id})`);
+        continue;
+      }
+
+      await store.delete(id);
+    }
   }
 
   private getOrError() {
@@ -259,6 +273,10 @@ export const useCoolDB = () => {
           items = newItems;
           watchers.emit(model, newItems, changedItems, changes);
           await db.putBulkValue(model, newItems);
+          await db.deleteBulkValue(
+            model,
+            changes.filter((change) => change.type === "delete").map((change) => change.item.id),
+          );
         };
 
         const lastUpdatedDate = new Date(lastUpdated?.value ?? 0);
@@ -360,11 +378,13 @@ export const useCoolDB = () => {
           const changedItems: Item[] = [];
           changesToProcess.forEach((change) => {
             changedItems.push(change.doc.data());
+
             if (change.type === "removed") {
               // SKIP (see comments above)
               return;
             }
-            // At this point, it's an "added" or "removed" event
+
+            // At this point, it's an "added" or "mutated" event
             // We can't trust this event to give us songs that we don't have for numerous reasons
             // First being the reason I described above and secondly because we just can't be sure
             // about the state of our local data

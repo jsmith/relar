@@ -9,15 +9,19 @@ export class NativeAudioWeb extends WebPlugin implements NativeAudioPlugin {
       name: "NativeAudio",
       platforms: ["web"],
     });
-  }
 
-  load() {
-    super.load();
     document.body.appendChild(this.audioElement);
 
     this.audioElement.onended = () => {
+      console.log("ON ENDED");
       this.notifyListeners("complete", {});
     };
+  }
+
+  load() {
+    // I used to have logic here but... "load" is never actually called wtf
+    // Anyway I'm leaving this here since... it should be called... right?
+    super.load();
   }
 
   async clearCache() {

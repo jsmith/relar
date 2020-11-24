@@ -31,6 +31,8 @@ jobs:
       # Building
       - run: npm run build
         working-directory: functions
+      - run: npm run build
+        working-directory: native-audio
       - run: npm run build:web-production
         working-directory: app
 
@@ -96,4 +98,8 @@ jobs:
   #     - if: steps.changes.outputs.any_changed == 'true'
   #       run: fastlane beta
   #       working-directory: app/android
-  #       env: { FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}" }
+  #       env:
+  #         FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+  #         TODO add these
+  #         STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+  #         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}

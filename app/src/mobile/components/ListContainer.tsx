@@ -125,8 +125,8 @@ const NavigationLetters = function <T, K extends keyof T>({
   return (
     <div
       className={classNames(
-        // Safe top is also super important
-        "fixed top-0 right-0 pr-1 safe-top",
+        // Safe top & bottom are also super important
+        "fixed top-0 right-0 pr-1 p-safe-top p-safe-bottom",
         !renderLetters && "pointer-events-none",
       )}
       // This is kinda hacky but it works
