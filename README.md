@@ -54,7 +54,7 @@ npm run version
 
 1. Make sure you've added release notes
 1. Run `node version.js versions|versions-n-build VERSION`
-1. Run the build commands
+1. Run the build commands (`npm run build` in `functions` and `npm run build:web-production` in `app`)
 1. Run `firebase deploy --project production`
 1. Commit and tag and push
 
