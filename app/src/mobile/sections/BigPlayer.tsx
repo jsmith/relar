@@ -39,7 +39,7 @@ export const BigPlayer = ({
     <div
       className={classNames(
         "bg-gray-800 fixed inset-0 transition-transform transform duration-500 z-20 flex flex-col",
-        "pb-4 safe-top",
+        "p-safe-top p-safe-bottom",
         show ? "translate-y-0" : "translate-y-full",
       )}
       onTransitionEnd={() => setShowPlayer(show)}
@@ -94,11 +94,10 @@ export const BigPlayer = ({
             </button>
           </div>
           <div className="flex w-full px-8 items-center justify-center flex-grow">
-            <Thumbnail song={songInfo?.song} size="256" className="w-48 h-48" />
+            <Thumbnail song={songInfo?.song} size="256" className="w-56 h-56" />
           </div>
 
-          {/* The mb-2 is there since the padding just wasn't cutting it on android mobile */}
-          <div className="w-full px-8 space-y-5 flex-shrink-0">
+          <div className="w-full px-8 space-y-5 flex-shrink-0 pb-4">
             <div className="overflow-hidden">
               <TextRotation
                 text={songInfo?.song.title ?? ""}
@@ -108,6 +107,7 @@ export const BigPlayer = ({
               <div className="text-gray-300 text-opacity-75">{songInfo?.song.artist}</div>
             </div>
             <SongTimeSlider duration={songInfo?.song.duration} />
+
             <div className="flex justify-around items-center">
               <Repeat iconClassName="w-8 h-8" />
               <button onClick={Queue.previous} className="focus:outline-none">
@@ -126,6 +126,7 @@ export const BigPlayer = ({
               </button>
               <Shuffle iconClassName="w-8 h-8" />
             </div>
+
             <div className="flex justify-between">
               <LikedIcon
                 liked={songInfo?.song.liked}

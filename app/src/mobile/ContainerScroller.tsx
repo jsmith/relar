@@ -2,21 +2,12 @@ import { useRef, useEffect, useCallback, CSSProperties } from "react";
 import { FixedSizeList, ListOnScrollProps } from "react-window";
 import { throttle } from "throttle-debounce";
 
-const windowScrollPositionKey = {
-  y: "pageYOffset",
-  x: "pageXOffset",
-} as const;
-
-const documentScrollPositionKey = {
-  y: "scrollTop",
-  x: "scrollLeft",
-} as const;
-
-const getScrollPosition = (axis: "x" | "y"): number =>
-  window[windowScrollPositionKey[axis]] ||
-  document.documentElement[documentScrollPositionKey[axis]] ||
-  document.body[documentScrollPositionKey[axis]] ||
-  0;
+let container: HTMLDivElement | undefined;
+const getContainer = (): HTMLDivElement => {
+  // TODO document
+  if (!container) container = document.getElementById("root") as HTMLDivElement;
+  return container;
+};
 
 export interface ContainerScrollerChildrenOptions {
   ref: React.MutableRefObject<FixedSizeList | null>;
@@ -38,23 +29,23 @@ export const ContainerScroller = ({
   useEffect(() => {
     const handleWindowScroll = throttle(throttleTime, () => {
       const { offsetTop = 0 } = outerRef.current ?? {};
-      const scrollTop = getScrollPosition("y") - offsetTop;
+      const scrollTop = getContainer().scrollTop - offsetTop;
       ref.current && ref.current.scrollTo(scrollTop);
     });
 
-    window.addEventListener("scroll", handleWindowScroll);
+    getContainer().addEventListener("scroll", handleWindowScroll);
     return () => {
       handleWindowScroll.cancel();
-      window.removeEventListener("scroll", handleWindowScroll);
+      getContainer().removeEventListener("scroll", handleWindowScroll);
     };
   }, [throttleTime]);
 
   const onScroll = useCallback(({ scrollOffset, scrollUpdateWasRequested }: any) => {
     if (!scrollUpdateWasRequested) return;
-    const top = getScrollPosition("y");
+    const top = getContainer().scrollTop;
     const { offsetTop = 0 } = outerRef.current ?? {};
     scrollOffset += Math.min(top, offsetTop);
-    window.scrollTo(0, scrollOffset);
+    getContainer().scrollTo(0, scrollOffset);
   }, []);
 
   return children({

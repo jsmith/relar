@@ -15,7 +15,7 @@ export const Home = () => {
     likedSongs === undefined ||
     recentlyPlayed === undefined
   ) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner className="flex-grow" />;
   }
 
   // Show a nice welcome page when the user opens the app :)
@@ -32,7 +32,7 @@ export const Home = () => {
   }
 
   return (
-    <div className="space-y-4 px-3 lg:px-5 py-1 overflow-y-scroll w-full">
+    <div className="space-y-4 px-3 lg:px-5 py-2 overflow-y-scroll w-full">
       <HomeTopic
         title="Recently Played"
         subTitle=""

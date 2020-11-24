@@ -10,7 +10,9 @@ export interface CardPageProps {
 
 export const CardPage = ({ children, footer, cardClassName }: CardPageProps) => {
   return (
-    <div className="flex flex-col items-center justify-center text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 md:bg-transparent w-full flex-grow overflow-y-scroll">
+    // It's important that we only justify things to the center of the screen vertically so that
+    // on mobile, when the keyboard comes up, it doesn't block the input
+    <div className="flex flex-col items-center sm:justify-center text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 md:bg-transparent w-full flex-grow overflow-y-scroll">
       {/* CARD */}
       <div
         className={classNames(

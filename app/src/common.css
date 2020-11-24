@@ -21,20 +21,30 @@
 /* I'm currently not using "safe-bottom" since it's really not that useful */
 /* Only the top of phones have a notch */
 /* But some iOS phones will have bottom padding which doesn't make much sense  */
-.safe-bottom {
+.p-safe-bottom {
   padding-bottom: constant(safe-area-inset-bottom); /* iOS 11.0 */
   padding-bottom: env(safe-area-inset-bottom); /* iOS 11.2 */
 }
 
-.safe-top {
+.p-safe-top {
   padding-top: constant(safe-area-inset-top); /* iOS 11.0 */
   padding-top: env(safe-area-inset-top); /* iOS 11.2 */
+}
+
+.m-safe-bottom {
+  margin-bottom: constant(safe-area-inset-bottom); /* iOS 11.0 */
+  margin-bottom: env(safe-area-inset-bottom); /* iOS 11.2 */
+}
+
+.m-safe-top {
+  margin-top: constant(safe-area-inset-top); /* iOS 11.0 */
+  margin-top: env(safe-area-inset-top); /* iOS 11.2 */
 }
 
 html {
   /* Got this from http://hollyschinsky.github.io/spotify-browser/module6.html */
   /* Not sure that this does or if it's used but it doesn't seem to hurt */
-  -webkit-overflow-scrolling: touch;
+  /* -webkit-overflow-scrolling: touch; */
 }
 
 @font-face {

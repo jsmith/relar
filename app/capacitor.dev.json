@@ -7,13 +7,13 @@
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 0
+    },
+    "Keyboard": {
+      "resize": "none"
     }
   },
   "cordova": {},
   "server": {
     "url": "http://192.168.2.16:3000"
-  },
-  "ios": {
-    "hideLogs": true
   }
 }
