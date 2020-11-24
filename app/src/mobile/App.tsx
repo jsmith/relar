@@ -64,7 +64,6 @@ class Controls implements AudioControls {
     const { src, song } = opts;
     const cover = await tryToGetDownloadUrlOrLog(getDefinedUser(), song, "256");
 
-    console.log("PRELOAD");
     await NativeAudio.preload({
       path: src,
       volume: this._volume ?? 1.0,

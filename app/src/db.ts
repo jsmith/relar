@@ -136,7 +136,7 @@ export class IndexedDb {
     const store = tx.objectStore(tableName);
     const result = await store.get(id);
     if (!result) {
-      console.warn("Id not found", id);
+      console.warn(`[${tableName}] Object not found during deletion (${id})`);
       return result;
     }
 
@@ -148,6 +148,12 @@ export class IndexedDb {
     const tx = this.getOrError().transaction(tableName, "readwrite");
     const store = tx.objectStore(tableName);
     for (const id of ids) {
+      const result = await store.get(id);
+      if (!result) {
+        console.warn(`[${tableName}] Object not found during deletion (${id})`);
+        continue;
+      }
+
       await store.delete(id);
     }
   }
