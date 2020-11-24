@@ -9,4 +9,4 @@ gpg --quiet --batch --yes --decrypt --passphrase="$GPG_PASSWORD" -o $ROOT/app/an
 # For some reason Android looks for the release.keystore file in BOTH of these locations
 # I can't find any references to this issue so uh let's just copy the file
 # It works so I'm not going to question it
-cp $ROOT/app/android/relar-key.jks $ROOT/app/android/app/relar-key.jks
+cp $ROOT/app/android/app/relar-key.jks $ROOT/app/android/relar-key.jks
