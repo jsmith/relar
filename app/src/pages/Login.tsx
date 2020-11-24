@@ -16,6 +16,7 @@ export const Login = () => {
   const [error, setError] = useState<string>();
   const { user } = useUser();
   const passwordRef = useRef<HTMLInputElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -66,14 +67,19 @@ export const Login = () => {
           type="password"
           onEnter={() => {
             closeMobileKeyboard(passwordRef.current!);
-            login();
+            buttonRef.current?.click();
           }}
         />
         {error && <BlockAlert type="error">{error}</BlockAlert>}
         <div>
           <Link route="forgotPassword" label="Forgot your password?" />
         </div>
-        <Button label="Login" className="w-full" onClick={preventAndCall(login)} />
+        <Button
+          label="Login"
+          className="w-full"
+          onClick={preventAndCall(login)}
+          buttonRef={buttonRef}
+        />
       </div>
     </CardPage>
   );

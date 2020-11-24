@@ -20,7 +20,7 @@ export const Search = () => {
   });
 
   return (
-    <div className="p-3 flex-grow flex flex-col space-y-1">
+    <div className="p-3 flex-grow flex flex-col space-y-1 p-safe-top">
       <Input
         inputRef={ref}
         inputClassName=""

@@ -101,7 +101,10 @@ type Route<ID extends string> = {
   sidebar: boolean;
   title: string | false;
   showBack: boolean;
-  /** What screen color the background is (mobile only). */
+  /**
+   * What screen color the background is (mobile only) in *light mode*. All screens are assumed to
+   * be dark in dark mode
+   */
   dark?: boolean;
 };
 
