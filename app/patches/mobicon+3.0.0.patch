@@ -1,34 +1,133 @@
 diff --git a/node_modules/mobicon/index.js b/node_modules/mobicon/index.js
-index 214f0ef..10650df 100644
+index 214f0ef..351ffef 100644
 --- a/node_modules/mobicon/index.js
 +++ b/node_modules/mobicon/index.js
-@@ -80,12 +80,15 @@ module.exports = (file, opts) => {
+@@ -26,28 +26,8 @@ const platformRadius = new Map([
+ 	['pwa', 0.0909]
+ ]);
  
- 			return Promise.all(icons.map(icon => {
- 				const dest = path.join(opts.dest, icon.file);
+-const calculateDimension = (imgSize, iconSize, opts, resizeFn) => {
+-	let width;
+-	let height;
+-
+-	if (imgSize.width > imgSize.height) {
+-		width = iconSize * opts.contentRatio;
+-		height = imgSize.height / imgSize.width * width;
+-	} else {
+-		height = iconSize * opts.contentRatio;
+-		width = imgSize.width / imgSize.height * height;
+-	}
+-
+-	if (resizeFn === 'density') {
+-		// Calculate the dpi (= 72 * targetSize / srcSize)
+-		width = 72 * width / imgSize.width;
+-		height = 72 * height / imgSize.height;
+-	}
+ 
+-	return {width, height};
+-};
+-
+-module.exports = (file, opts) => {
++module.exports = async (file, opts) => {
+ 	if (typeof file !== 'string' || !pathExists.sync(file)) {
+ 		return Promise.reject(new TypeError('Expected a file.'));
+ 	}
+@@ -58,7 +38,8 @@ module.exports = (file, opts) => {
+ 		background: 'white',
+ 		roundedCorners: platformRadius.has(opts.platform),
+ 		borderRadius: platformRadius.get(opts.platform),
+-		contentRatio: 1
++		contentRatio: 1,
++		resizeBeforeBackground: false,
+ 	}, opts);
+ 
+ 	if (opts.platform === '') {
+@@ -70,34 +51,58 @@ module.exports = (file, opts) => {
+ 	}
+ 
+ 	const icons = platformIcons[opts.platform.toLowerCase()];
+-	const resizeFn = path.extname(file) === '.svg' ? 'density' : 'resize';
+-
+-	const img = gm(file);
+-
+-	return pify(img.identify.bind(img))()
+-		.then(identity => {
+-			const {size} = identity;
+-
+-			return Promise.all(icons.map(icon => {
+-				const dest = path.join(opts.dest, icon.file);
 -				const dimension = calculateDimension(size, icon.dimension, opts, resizeFn);
-+				const dimension = calculateDimension(size, icon.dimension, { ...opts, contentRatio: 1 }, resizeFn);
-+				const dimension2 = calculateDimension(size, icon.dimension, opts, resizeFn);
- 
+-
 -				const image = gm(file)[resizeFn](dimension.width, dimension.height)
-+				const image = gm(file)
- 					.gravity('Center')
- 					.background(opts.background)
+-					.gravity('Center')
+-					.background(opts.background)
 -					.extent(icon.dimension, icon.dimension);
-+					[resizeFn](dimension.width, dimension.height)
-+					.extent(icon.dimension, icon.dimension)
-+					
- 
- 				return mkdirp(path.dirname(dest))
- 					.then(() => pify(image.write.bind(image))(dest))
-@@ -97,7 +100,9 @@ module.exports = (file, opts) => {
- 									return execa('gm', ['composite', '-compose', 'in', dest, maskLocation, dest]);
- 								});
- 						}
+-
+-				return mkdirp(path.dirname(dest))
+-					.then(() => pify(image.write.bind(image))(dest))
+-					.then(() => {
+-						if (opts.roundedCorners) {
+-							return mask(icon.dimension, opts.borderRadius)
+-								.then(maskLocation => {
+-									// Apply the mask and overwrite the original image
+-									return execa('gm', ['composite', '-compose', 'in', dest, maskLocation, dest]);
+-								});
+-						}
 -					});
-+					})
-+					.then(() => gm(dest)[resizeFn](dimension2.width, dimension2.height).gravity('Center').background("transparent").extent(icon.dimension, icon.dimension))
-+					.then((image) => pify(image.write.bind(image))(dest));
- 			}));
- 		});
+-			}));
+-		});
++
++	const promises = icons.map(async (icon) => {
++		const dest = path.join(opts.dest, icon.file);
++		await mkdirp(opts.dest);
++		const write = (image) => pify(image.write.bind(image))(dest);
++		const identify = (image) => pify(image.identify.bind(image))();
++
++		const applyBackground = async (img) =>  {
++			const { size } = await identify(img)
++			await write(img
++				.gravity('Center')
++				.background(opts.background)
++				.extent(size.width, size.height)	
++			)
++		}
++
++		const applyBorderRadius = async () => {
++			if (!opts.roundedCorners) return; 
++			const maskLocation = await mask(icon.dimension, opts.borderRadius);
++			return await execa('gm', ['composite', '-compose', 'in', dest, maskLocation, dest]);
++		}
++
++		const applyResize = async (img) => {
++			const iconSize = icon.dimension * opts.contentRatio;
++			await write(img
++				.resize(iconSize, iconSize)
++				.gravity('Center')
++				.background("transparent")
++				.extent(icon.dimension, icon.dimension)
++			)
++		}
++		
++
++		// 1. Apply background
++		// 2. Apply border radius
++		// 3. Resize original image within new image
++
++		// OR
++		// 1. Resize original image within new image
++		// 2. Apply border radius
++		// 3. Apply background
++
++		if (opts.resizeBeforeBackground) {
++			await applyResize(gm(file));
++			await applyBorderRadius();
++			await applyBackground(gm(dest));
++		} else {
++			await applyBackground(gm(file));
++			await applyBorderRadius();
++			await applyResize(gm(dest));
++		}
++	});
++
++	await Promise.all(promises);
  };
