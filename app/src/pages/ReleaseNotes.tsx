@@ -181,6 +181,11 @@ const changelog = create([
       "Deleted songs now won't mysteriously continue to appear once deleted",
     ],
   },
+  {
+    version: "0.15.3",
+    date: "November 26 2020",
+    fixes: ["Updated colors and other styles"],
+  },
 ]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (

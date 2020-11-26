@@ -19,7 +19,7 @@ const SwitchComponent = ({ checked, onChange, size = "small" }: SwitchProps) => 
       className={classNames(
         checked ? "bg-purple-500" : "bg-gray-300",
         size === "big" ? "h-8" : "h-6",
-        "relative inline-flex transition-colors duration-200 ease-in-out border-2 border-transparent rounded-full cursor-pointer focus:outline-none focus:shadow-outline",
+        "relative inline-flex transition-colors duration-200 ease-in-out border-2 border-transparent rounded-full cursor-pointer focus:outline-none focus:ring",
       )}
     >
       {({ checked }) => (

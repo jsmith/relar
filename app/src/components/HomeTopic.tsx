@@ -32,7 +32,7 @@ export const HomeTopic = function <K extends keyof NavigatorRoutes>({
           <div className="text-gray-800 dark:text-gray-200 text-xl md:text-2xl leading-tight">
             {title}
           </div>
-          <div className="text-gray-600 dark:text-gray-400 text-xs">{subTitle}</div>
+          <div className="text-gray-500 dark:text-gray-400 text-xs">{subTitle}</div>
         </div>
         <Link
           label="See All →"

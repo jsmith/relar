@@ -6,7 +6,7 @@ import { LogoNText } from "../../components/LogoNText";
 
 export const Hero = () => {
   return (
-    <div className="flex flex-col items-center text-gray-200 w-full py-3 flex-grow p-safe-bottom">
+    <div className="flex flex-col items-center text-gray-200 w-full py-6 flex-grow m-safe-bottom">
       <div className="flex-grow flex items-center">
         <LogoNText
           className="space-x-4 mt-6"

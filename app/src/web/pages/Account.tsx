@@ -209,7 +209,7 @@ export const Account = () => {
         <TabPanel className="text-gray-800 dark:text-gray-200" selectedClassName="flex-grow">
           <h1 className="text-2xl">Invoices</h1>
           <h3 className="text-gray-700 dark:text-gray-400 font-bold">No Invoices Found</h3>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-500">
             If you subscribe to the premium features, your invoices will appear here.
           </p>
         </TabPanel>

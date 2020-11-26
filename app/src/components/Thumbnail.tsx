@@ -51,7 +51,7 @@ export const Thumbnail = ({ song, className, style, setAverageColor, size }: Thu
       className={classNames("bg-gray-400 flex items-center justify-center", className)}
       style={style}
     >
-      <FiDisc className="text-gray-600 w-2/5 h-auto" />
+      <FiDisc className="text-gray-500 w-2/5 h-auto" />
     </div>
   );
 };

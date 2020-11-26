@@ -15,6 +15,7 @@ export const Settings = () => {
   const [darkMode, setDarkMode] = useDarkMode();
 
   return (
+    // TODO increase padding also safe-bottom
     <div className="mx-5 flex-grow py-5 flex flex-col space-y-3">
       <div className="text-sm">
         {`Signed in as `} <span className="font-bold">{user.email}</span>

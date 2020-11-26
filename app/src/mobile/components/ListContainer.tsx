@@ -189,6 +189,7 @@ export interface ListContainerProps<T, K extends keyof T, E> {
   extra: E;
   // This is the react-window outerRef
   outerRef?: MutableRefObject<HTMLDivElement | null>;
+  listRef?: MutableRefObject<List | null>;
 }
 
 export const ListContainer = function <T, K extends keyof T, E>({
@@ -201,6 +202,7 @@ export const ListContainer = function <T, K extends keyof T, E>({
   disableNavigator,
   extra,
   outerRef,
+  listRef: listRefProp,
 }: ListContainerProps<T, K, E>) {
   const listRef = useRef<List | null>(null);
 
@@ -231,6 +233,7 @@ export const ListContainer = function <T, K extends keyof T, E>({
         ref={(value) => {
           if (ref) ref.current = value;
           listRef.current = value;
+          if (listRefProp) listRefProp.current = value;
         }}
         itemCount={items?.length ?? 0}
         itemSize={rowHeight}

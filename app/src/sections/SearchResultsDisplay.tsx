@@ -35,7 +35,7 @@ const ResultList = function <
   const content = (item: T) => (
     <>
       <div className="flex items-center space-x-2 min-w-0">
-        {/* <Icon className="w-8 h-8 text-gray-600 flex-shrink-0" /> */}
+        {/* <Icon className="w-8 h-8 text-gray-500 flex-shrink-0" /> */}
         <Thumbnail song={item.song} size="64" className="w-10 h-10 flex-shrink-0" />
         <div className="text-gray-700 dark:text-gray-100 leading-none space-y-2 text-left min-w-0">
           <div className="font-bold truncate" title={item.title}>
@@ -47,7 +47,7 @@ const ResultList = function <
 
       {!IS_WEB_VIEW && (
         <div className="space-x-2 flex items-center opacity-0 group-hover:opacity-100 group-focus:opacity-100">
-          <div className="text-gray-600 dark:text-gray-300 border-b border-gray-600 dark:border-gray-500 border-dotted leading-tight capitalize">
+          <div className="text-gray-500 dark:text-gray-300 border-b border-gray-600 dark:border-gray-500 border-dotted leading-tight capitalize">
             {action}
           </div>
           <Shortcut text="↵" className="text-xl" />

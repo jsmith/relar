@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { getDefinedUser, useUser } from "../auth";
-import { navigateTo, NavigatorRoutes, routes, useNavigator } from "../routes";
+import { navigateTo, NavigatorRoutes, routes, useNavigator, Route } from "../routes";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { HiHome, HiOutlineCog, HiSearch } from "react-icons/hi";
 import { ActionSheet } from "./action-sheet";
@@ -268,16 +268,16 @@ export const App = () => {
         </React.Suspense>
         {/* </div> */}
 
-        {/* This div is force things to go upwards when the minified player is created */}
-        {/* You might also be asking yourself, why make the minified player absolutely positioned */}
-        {/* while also having this div to fill the same space. This is because the minified player's */}
-        {/* height is immediately set while translating so you get this big white space for 300 ms */}
-        {/* Instead, the transition happens *then* this div's height is set. When transitioning */}
-        {/* down this div is immediately removed to avoid the white space */}
-        <SmallPlayerPlaceholder />
-
         {route.showTabs && (
           <>
+            {/* This div is force things to go upwards when the minified player is created */}
+            {/* You might also be asking yourself, why make the minified player absolutely positioned */}
+            {/* while also having this div to fill the same space. This is because the minified player's */}
+            {/* height is immediately set while translating so you get this big white space for 300 ms */}
+            {/* Instead, the transition happens *then* this div's height is set. When transitioning */}
+            {/* down this div is immediately removed to avoid the white space */}
+
+            <SmallPlayerPlaceholder />
             <div className="flex-shrink-0 m-safe-bottom" style={{ height: TABS_HEIGHT }} />
 
             {/* pointer-events-none since the container always takes up the full height of both elements */}

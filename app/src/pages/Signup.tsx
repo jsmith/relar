@@ -67,7 +67,7 @@ export const Signup = () => {
       }
     >
       <h3>Beta Sign Up</h3>
-      <p className={classNames("text-gray-600", textGray600)}>{BETA_TEXT}</p>
+      <p className={classNames("text-gray-500", textGray600)}>{BETA_TEXT}</p>
       {success ? (
         <BlockAlert type="success">Success!! Thank you so much for signing up :)</BlockAlert>
       ) : (
@@ -104,9 +104,9 @@ export const Signup = () => {
           <Button
             label="Sign Up"
             className="w-full"
-            onClick={(e) => {
+            onClick={async (e) => {
               e.preventDefault();
-              signup();
+              await signup();
             }}
           />
         </div>

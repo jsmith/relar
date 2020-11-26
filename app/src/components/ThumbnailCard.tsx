@@ -53,7 +53,7 @@ export const ThumbnailCard = ({
         {title}
       </div>
       {/* FIXME do we want this to truncate? */}
-      <div className="truncate lg:mt-1 text-gray-600 dark:text-gray-400" title={subtitle}>
+      <div className="truncate lg:mt-1 text-gray-500 dark:text-gray-400" title={subtitle}>
         {subtitle}
       </div>
       {!isMobile && (

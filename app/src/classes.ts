@@ -39,9 +39,9 @@ export const link = ({ color = "text-blue-500 dark:text-blue-400" } = {}) => {
 };
 
 export const field = () => {
-  return "dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200";
+  return "dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 px-3 py-2 rounded border border-gray-200 focus:ring-2 focus:outline-none";
 };
 
 // This may or may not be useful
 // It's basically a way to support dark + light mode
-export const textGray600 = "text-gray-600 dark:text-gray-400";
+export const textGray600 = "text-gray-500 dark:text-gray-400";
