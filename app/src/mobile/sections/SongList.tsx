@@ -34,6 +34,7 @@ export interface SongListProps {
   disableNavigator?: boolean;
   source: SetQueueSource;
   outerRef?: MutableRefObject<HTMLDivElement | null>;
+  containerId?: string;
 }
 
 const AddToPlaylistMenu = ({ song, hide }: { song: Song; hide: () => void }) => {
@@ -172,6 +173,7 @@ export const SongList = ({
   disableNavigator,
   source,
   outerRef,
+  containerId,
 }: SongListProps) => {
   const firstRender = useRef(true);
   const list = useRef<FixedSizeList | null>(null);
@@ -204,6 +206,7 @@ export const SongList = ({
       extra={{ source }}
       outerRef={outerRef}
       listRef={list}
+      containerId={containerId}
     />
   );
 };

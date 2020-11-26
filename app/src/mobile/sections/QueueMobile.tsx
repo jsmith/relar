@@ -23,18 +23,18 @@ export const QueueMobile = ({ show, hide }: { show: boolean; hide: () => void })
 
   return (
     <div
+      id="queue-scroll-container"
       className={classNames(
-        "flex flex-col absolute inset-x-0 top-0 z-30 bg-gray-800 pt-3 text-gray-200 transition-opacity duration-300",
-        "p-safe-bottom",
+        "flex flex-col fixed inset-0 z-30 bg-gray-800 text-gray-200 transition-opacity",
+        "p-safe-bottom duration-300 overflow-y-scroll",
         show ? "opacity-100" : "opacity-0 pointer-events-none",
       )}
     >
       {show && (
         <>
-          {/* The "Queue" is centered horizontally and vertically (with respect to the height of */}
+          {/* The "Queue" text is centered horizontally and vertically (with respect to the height of */}
           {/* the close button) */}
           {/* px-2 matches the SongList x padding */}
-          {/* TODO fixed to the top */}
           <div
             className="sticky p-safe-top bg-gray-800 z-40"
             ref={ref}
@@ -54,7 +54,13 @@ export const QueueMobile = ({ show, hide }: { show: boolean; hide: () => void })
           </div>
 
           <div className="text-gray-200 flex-grow">
-            <SongList songs={songs} mode="condensed" disableNavigator source={{ type: "queue" }} />
+            <SongList
+              songs={songs}
+              mode="condensed"
+              disableNavigator
+              source={{ type: "queue" }}
+              containerId="queue-scroll-container"
+            />
           </div>
         </>
       )}

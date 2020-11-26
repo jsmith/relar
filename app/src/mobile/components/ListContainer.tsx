@@ -190,6 +190,7 @@ export interface ListContainerProps<T, K extends keyof T, E> {
   // This is the react-window outerRef
   outerRef?: MutableRefObject<HTMLDivElement | null>;
   listRef?: MutableRefObject<List | null>;
+  containerId?: string;
 }
 
 export const ListContainer = function <T, K extends keyof T, E>({
@@ -203,6 +204,7 @@ export const ListContainer = function <T, K extends keyof T, E>({
   extra,
   outerRef,
   listRef: listRefProp,
+  containerId,
 }: ListContainerProps<T, K, E>) {
   const listRef = useRef<List | null>(null);
 
@@ -262,5 +264,5 @@ export const ListContainer = function <T, K extends keyof T, E>({
     </div>
   );
 
-  return <ContainerScroller>{render}</ContainerScroller>;
+  return <ContainerScroller containerId={containerId}>{render}</ContainerScroller>;
 };
