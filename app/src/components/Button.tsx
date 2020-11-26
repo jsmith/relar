@@ -77,7 +77,7 @@ export const Button = ({
           isMounted.current && setLoading(false);
         }
       }}
-      disabled={theme === "disabled"}
+      disabled={theme === "disabled" || loading}
     >
       {loading ? <ThreeDots fill="currentColor" className="w-16 h-4" /> : props.label}
     </button>

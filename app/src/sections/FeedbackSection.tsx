@@ -248,7 +248,7 @@ export const FeedbackSection = ({
                     )}
                     value={feedback}
                     onChange={(e) => setFeedback(e.target.value)}
-                    rows={3}
+                    rows={4}
                     required
                   />
                 </label>

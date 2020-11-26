@@ -71,64 +71,79 @@ const mask = async (dimension, borderRadius) => {
 
 const IOS_ICONS = [
   {
-    file: "icon-20.png",
+    file: "icon-20@1x.png",
     dimension: 20,
+    idioms: ["ipad"],
   },
   {
-    file: "icon-40.png",
+    file: "icon-20@2x.png",
     dimension: 40,
+    idioms: ["iphone", "ipad"],
+  },
+  {
+    file: "icon-20@3x.png",
+    dimension: 60,
+    idioms: ["iphone"],
+  },
+  {
+    file: "icon-29@1x.png",
+    dimension: 29,
+    idioms: ["iphone", "ipad"],
+  },
+  {
+    file: "icon-29@2x.png",
+    dimension: 58,
+    idioms: ["iphone", "ipad"],
+  },
+  {
+    file: "icon-29@3x.png",
+    dimension: 87,
+    idioms: ["iphone"],
+  },
+  {
+    file: "icon-40@1x.png",
+    dimension: 40,
+    idioms: ["ipad"],
   },
   {
     file: "icon-40@2x.png",
     dimension: 80,
+    idioms: ["iphone", "ipad"],
   },
   {
     file: "icon-40@3x.png",
     dimension: 120,
-  },
-  {
-    file: "icon-50.png",
-    dimension: 50,
-  },
-  {
-    file: "icon-50@2x.png",
-    dimension: 100,
-  },
-  {
-    file: "icon-60.png",
-    dimension: 60,
+    idioms: ["iphone"],
   },
   {
     file: "icon-60@2x.png",
     dimension: 120,
+    idioms: ["iphone"],
   },
   {
     file: "icon-60@3x.png",
     dimension: 180,
+    idioms: ["iphone"],
   },
   {
-    file: "icon-72.png",
-    dimension: 72,
-  },
-  {
-    file: "icon-72@2x.png",
-    dimension: 144,
-  },
-  {
-    file: "icon-76.png",
+    file: "icon-76@1x.png",
     dimension: 76,
+    idioms: ["ipad"],
   },
   {
     file: "icon-76@2x.png",
     dimension: 152,
+    idioms: ["ipad"],
   },
   {
     file: "icon-83.5@2x.png",
     dimension: 167,
+    idioms: ["ipad"],
   },
   {
-    file: "icon-1024.png",
+    file: "icon-1024@1x.png",
     dimension: 1024,
+    idioms: ["ios-marketing"],
   },
 ];
 
@@ -337,38 +352,34 @@ Promise.all(
     // iPad, iPad mini	152px × 152px (76pt × 76pt @2x)
     // App Store	1024px × 1024px (1024pt × 1024pt @1x)
     const images = [];
-    IOS_ICONS.forEach(({ file: filename, dimension }) => {
-      const match = filename.match(/@([0-9])x/);
-      let x;
-      if (match) {
-        x = match[1];
-      } else {
-        x = "1";
-      }
+    IOS_ICONS.forEach(({ file: filename, idioms }) => {
+      const match = filename.match(/icon-([0-9.]+)@([0-9])x/);
+      const [dimension, x] = [match[1], match[2]];
 
-      images.push({
-        size: `${dimension}x${dimension}`,
-        idiom: "iphone",
-        filename,
-        scale: `${x}x`,
-      });
-
-      images.push({
-        size: `${dimension}x${dimension}`,
-        idiom: "ipad",
-        filename,
-        scale: `${x}x`,
-      });
+      idioms.forEach((idiom) =>
+        images.push({
+          size: `${dimension}x${dimension}`,
+          idiom,
+          filename,
+          scale: `${x}x`,
+        }),
+      );
     });
 
-    images.push({
-      size: "icon-1024",
-      idiom: "ios-marketing",
-      filename: "icon-1024.png",
-      scale: "1x",
-    });
-
-    // TODO write
+    fs.writeFileSync(
+      path.join(iosIconDest, "Contents.json"),
+      JSON.stringify(
+        {
+          images,
+          info: {
+            author: "xcode",
+            version: 1,
+          },
+        },
+        null,
+        2,
+      ),
+    );
   })
   .then(() => console.info(`✔ success`))
   .catch((error) => console.error(`✖ ${error.message}`));

@@ -179,17 +179,13 @@ export const SongList = ({
   const list = useRef<FixedSizeList | null>(null);
 
   useEffect(() => {
-    // TODO
-    console.log(firstRender.current, source.type, list.current);
     if (!firstRender.current || source.type !== "queue" || !list.current) return;
     firstRender.current = false;
     const index = songs?.findIndex(
       (song) => (song.playlistId ?? song.id) === Queue.getCurrentlyPlaying()?.id,
     );
 
-    console.log(index, "WOW");
     if (index === -1 || index === undefined) return;
-    console.log(`Scrolling to ${index} (${index * 73})`);
     list.current.scrollTo(index * 73);
   }, [songs, source]);
 
