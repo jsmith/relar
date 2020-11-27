@@ -62,7 +62,7 @@ export const Hero = () => {
               Streamed everywhere.
             </span>
             <div className="w-24 h-1 bg-purple-600" />
-            <div className="text-gray-600 dark:text-gray-200 text-sm">
+            <div className="text-gray-500 dark:text-gray-200 text-sm">
               Bummed out that Google Play Music is gone? Looking to host your mp3 collection online?
               Relar allows you to upload your curated audio file collection and stream to all of
               your devices.
@@ -112,7 +112,7 @@ export const Hero = () => {
               {faq.map(([question, answer]) => (
                 <div key={question} className="">
                   <div className="font-bold">{question}</div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300">{answer}</div>
+                  <div className="text-sm text-gray-500 dark:text-gray-300">{answer}</div>
                 </div>
               ))}
             </div>

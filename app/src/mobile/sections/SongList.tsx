@@ -1,4 +1,4 @@
-import React, { memo, MutableRefObject, Ref, useMemo } from "react";
+import React, { memo, MutableRefObject, Ref, useEffect, useMemo, useRef } from "react";
 import { MdAddToQueue, MdPlaylistAdd } from "react-icons/md";
 import { useDeleteSong } from "../../queries/songs";
 import { fmtMSS, onConditions, useMySnackbar } from "../../utils";
@@ -25,7 +25,7 @@ import { usePlaylistCreate, usePlaylistRemoveSong } from "../../queries/playlist
 import { AddToPlaylistList } from "../../sections/AddToPlaylistList";
 import { MusicListItem, MusicListItemState } from "./MusicListItem";
 import { captureException } from "@sentry/browser";
-import { areEqual } from "react-window";
+import { areEqual, FixedSizeList } from "react-window";
 
 export interface SongListProps {
   songs: SongInfo[] | undefined;
@@ -34,6 +34,7 @@ export interface SongListProps {
   disableNavigator?: boolean;
   source: SetQueueSource;
   outerRef?: MutableRefObject<HTMLDivElement | null>;
+  containerId?: string;
 }
 
 const AddToPlaylistMenu = ({ song, hide }: { song: Song; hide: () => void }) => {
@@ -172,7 +173,22 @@ export const SongList = ({
   disableNavigator,
   source,
   outerRef,
+  containerId,
 }: SongListProps) => {
+  const firstRender = useRef(true);
+  const list = useRef<FixedSizeList | null>(null);
+
+  useEffect(() => {
+    if (!firstRender.current || source.type !== "queue" || !list.current) return;
+    firstRender.current = false;
+    const index = songs?.findIndex(
+      (song) => (song.playlistId ?? song.id) === Queue.getCurrentlyPlaying()?.id,
+    );
+
+    if (index === -1 || index === undefined) return;
+    list.current.scrollTo(index * 73);
+  }, [songs, source]);
+
   return (
     <ListContainer
       // FIXME this might not work in non condensed mode
@@ -185,6 +201,8 @@ export const SongList = ({
       disableNavigator={disableNavigator}
       extra={{ source }}
       outerRef={outerRef}
+      listRef={list}
+      containerId={containerId}
     />
   );
 };

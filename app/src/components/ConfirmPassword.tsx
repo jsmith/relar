@@ -49,7 +49,7 @@ export const ConfirmPassword = ({ onCancel, onConfirm }: ConfirmPasswordProps) =
     >
       <div>
         <h1 className="font-bold">Confirm Your Password</h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Why are we asking you about your password? We sometimes need to confirm your identity when
           you are performing sensitive operations :)
         </p>

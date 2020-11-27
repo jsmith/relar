@@ -28,7 +28,7 @@ export const Home = () => {
       <div className="flex flex-col justify-center items-center h-full space-y-3 w-full">
         <MusicalNote />
         <h1 className="text-3xl text-gray-700">Welcome to Relar</h1>
-        <p className="text-gray-600">
+        <p className="text-gray-500">
           Click the {`"`}
           <MdAddCircle className="w-5 h-5 inline -mt-1" /> Upload Music{`"`} button over to your
           left to get started!

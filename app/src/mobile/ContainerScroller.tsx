@@ -1,13 +1,6 @@
-import { useRef, useEffect, useCallback, CSSProperties } from "react";
+import { useRef, useEffect, useCallback, CSSProperties, useMemo } from "react";
 import { FixedSizeList, ListOnScrollProps } from "react-window";
 import { throttle } from "throttle-debounce";
-
-let container: HTMLDivElement | undefined;
-const getContainer = (): HTMLDivElement => {
-  // TODO document
-  if (!container) container = document.getElementById("root") as HTMLDivElement;
-  return container;
-};
 
 export interface ContainerScrollerChildrenOptions {
   ref: React.MutableRefObject<FixedSizeList | null>;
@@ -19,34 +12,47 @@ export interface ContainerScrollerChildrenOptions {
 export const ContainerScroller = ({
   children,
   throttleTime = 10,
+  containerId = "root",
 }: {
   children: (opts: ContainerScrollerChildrenOptions) => JSX.Element;
   throttleTime?: number;
+  containerId?: string;
 }) => {
   const ref = useRef<FixedSizeList | null>(null);
   const outerRef = useRef<HTMLDivElement | null>(null);
 
+  const container = useMemo(() => document.getElementById(containerId)!, [containerId]);
+
   useEffect(() => {
-    const handleWindowScroll = throttle(throttleTime, () => {
+    const onScroll = throttle(throttleTime, () => {
       const { offsetTop = 0 } = outerRef.current ?? {};
-      const scrollTop = getContainer().scrollTop - offsetTop;
+      const scrollTop = container.scrollTop - offsetTop;
+      // console.log("EVENT", {
+      //   scrollTop,
+      //   offsetTop,
+      //   containerScrollTop: container.scrollTop,
+      // });
       ref.current && ref.current.scrollTo(scrollTop);
     });
 
-    getContainer().addEventListener("scroll", handleWindowScroll);
+    container.addEventListener("scroll", onScroll);
     return () => {
-      handleWindowScroll.cancel();
-      getContainer().removeEventListener("scroll", handleWindowScroll);
+      onScroll.cancel();
+      container.removeEventListener("scroll", onScroll);
     };
-  }, [throttleTime]);
+  }, [container, throttleTime]);
 
-  const onScroll = useCallback(({ scrollOffset, scrollUpdateWasRequested }: any) => {
-    if (!scrollUpdateWasRequested) return;
-    const top = getContainer().scrollTop;
-    const { offsetTop = 0 } = outerRef.current ?? {};
-    scrollOffset += Math.min(top, offsetTop);
-    getContainer().scrollTo(0, scrollOffset);
-  }, []);
+  const onScroll = useCallback(
+    ({ scrollOffset, scrollUpdateWasRequested }: any) => {
+      if (!scrollUpdateWasRequested) return;
+      const top = container.scrollTop;
+      const { offsetTop = 0 } = outerRef.current ?? {};
+      scrollOffset += Math.min(top, offsetTop);
+      // console.log("MANUAL", { top, offsetTop, scrollOffset });
+      container.scrollTo(0, scrollOffset);
+    },
+    [container],
+  );
 
   return children({
     ref,

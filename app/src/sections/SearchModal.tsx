@@ -100,7 +100,7 @@ export const SearchModal = ({ onExit }: { onExit: () => void }) => {
       dialogStyle={{ width: "700px" }}
     >
       <div className="flex items-center space-x-3 px-4">
-        <HiOutlineSearch className="w-8 h-8 text-gray-600" />
+        <HiOutlineSearch className="w-8 h-8 text-gray-500" />
         {/* Users definitely don't want autocomplete here */}
         <form
           autoComplete="off"

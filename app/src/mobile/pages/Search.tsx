@@ -20,7 +20,7 @@ export const Search = () => {
   });
 
   return (
-    <div className="p-3 flex-grow flex flex-col space-y-1 p-safe-top">
+    <div className="p-3 flex-grow flex flex-col space-y-1 m-safe-top">
       <Input
         inputRef={ref}
         inputClassName=""
@@ -39,7 +39,7 @@ export const Search = () => {
         <div className="flex-grow flex flex-col items-center justify-center space-y-2">
           <MusicalNote />
           <div className="text-lg">What do you want to listen to?</div>
-          <div className="text-gray-600 dark:text-gray-400 text-sm">
+          <div className="text-gray-500 dark:text-gray-400 text-sm">
             Search for songs, artists and albums.
           </div>
         </div>

@@ -90,7 +90,7 @@ const Invite = React.lazy(() => import("./web/pages/Invite"));
 const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
 const TermsAndConditions = React.lazy(() => import("./pages/TermsAndConditions"));
 
-type Route<ID extends string> = {
+export type Route<ID extends string> = {
   id: ID;
   path: string;
   component: React.LazyExoticComponent<() => JSX.Element>;

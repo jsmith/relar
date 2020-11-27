@@ -8,6 +8,8 @@ import { Thumbnail } from "../components/Thumbnail";
 import { captureAndLog, parseIntOr } from "../utils";
 import { useModal } from "react-modal-hook";
 import { createEmitter } from "../events";
+import classNames from "classnames";
+import { field } from "../classes";
 
 export const PositionInformation = ({
   label,
@@ -31,7 +33,7 @@ export const PositionInformation = ({
           type="number"
           onChange={(e) => setNo(e.target.value ? +e.target.value : null)}
           aria-label="Number"
-          className="min-w-0 form-input dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
+          className={classNames("min-w-0", field())}
         />
         <span>of</span>
         <input
@@ -39,7 +41,7 @@ export const PositionInformation = ({
           type="number"
           onChange={(e) => setOf(e.target.value ? +e.target.value : null)}
           aria-label="Total"
-          className="min-w-0 form-input dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
+          className={classNames("min-w-0", field())}
         />
       </div>
     </fieldset>
