@@ -32,7 +32,11 @@ export const UserDataType = Record({
   /** What device the user choose */
   device: BetaDeviceType,
   songCount: Number.Or(Undefined),
-});
+}).And(
+  Partial({
+    sentMobileBeta: Boolean,
+  }),
+);
 
 export type UserData = Static<typeof UserDataType>;
 

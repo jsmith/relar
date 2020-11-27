@@ -95,7 +95,8 @@ export const sendPasswordResetEmail = async (
         captureAndLog(e);
         return err({
           code: "unknown",
-          message: "Houston, we have a problem. If this persists, please contact support.",
+          message:
+            "There was an issue resetting your password. If this persists, please contact support.",
         });
     }
   }
@@ -213,10 +214,10 @@ export const signInWithEmailAndPassword = async (
       case "auth/network-request-failed":
         return err({
           code: "auth/network-request-failed",
-          message: "Network error.",
+          message: "Network error. Please try again.",
         });
       default:
-        captureAndLog(e);
+        captureAndLog(e, { code });
         return err({
           code: "unknown",
           message: "Something went wrong. Please try again!",

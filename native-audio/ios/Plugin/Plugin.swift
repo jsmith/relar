@@ -161,7 +161,7 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate, AVAssetResourceLoade
     @objc func play(_ call: CAPPluginCall) {
         print("PLAY")
        self.getQueue().async {
-            self.aVAudioPlayer!.play()
+            self.aVAudioPlayer?.play()
             call.success()
        }
     }
@@ -192,11 +192,11 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate, AVAssetResourceLoade
     }
     
     @objc func pause(_ call: CAPPluginCall) {
-        self.aVAudioPlayer!.pause()
+        self.aVAudioPlayer?.pause()
     }
 
     @objc func stop(_ call: CAPPluginCall) {
-        self.aVAudioPlayer!.pause()
+        self.aVAudioPlayer?.pause()
         
         // TODO ensure controls are disabled too
         let nowPlayingInfo = [String : Any]()

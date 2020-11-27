@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import { MdErrorOutline, MdCheck } from "react-icons/md";
 import { captureAndLog, captureAndLogError } from "../utils";
 import { AiOutlineStop } from "react-icons/ai";
-import { Bars } from "@jsmith21/svg-loaders-react";
+import { Audio } from "@jsmith21/svg-loaders-react";
 import { ProgressBar } from "./ProgressBar";
 import { UploadAction } from "../shared/universal/types";
+import firebase from "firebase/app";
 
 export interface StorageLocation {
   path: string;
@@ -21,6 +22,7 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
   const [error, setError] = useState("");
   const [cancelled, setCancelled] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [running, setRunning] = useState(true);
 
   const handleSnapshot = (snapshot: firebase.storage.UploadTaskSnapshot) => {
     if (snapshot.totalBytes > 20 * 1024 * 1024) {
@@ -31,6 +33,7 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
 
     const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
     setProgress(progress);
+    setRunning(snapshot.state === firebase.storage.TaskState.RUNNING);
     // switch (snapshot.state) {
     //   case firebase.storage.TaskState.PAUSED:
     //     break;
@@ -53,10 +56,13 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
         "state_changed",
         handleSnapshot,
         (e) => {
-          const code: "storage/canceled" = (e as any).code;
+          const code: "storage/canceled" | "storage/retry-limit-exceeded" = (e as any).code;
           switch (code) {
             case "storage/canceled":
               setCancelled(true);
+              break;
+            case "storage/retry-limit-exceeded":
+              setError("The maximum time limit has been exceeded. Try uploading again.");
               break;
             default:
               setError("Something went wrong during the upload.");
@@ -65,7 +71,9 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
               });
           }
         },
-        () => console.debug("COMPLETE"),
+        () => {
+          // This is called on completion
+        },
       ) as undefined | (() => void);
     } else {
       // This assumes that tasks are undefined *only* when the file format is not mp3
@@ -91,10 +99,12 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
           className="text-purple-700 dark:text-purple-400 w-5 h-5 flex-shrink-0"
         />
       ) : (
-        <div title={progress < 100 ? "Uploading" : "Processing"}>
-          <Bars
+        // If not running then waiting to be uploaded
+        <div title={!running ? "Waiting" : progress < 100 ? "Uploading" : "Processing"}>
+          <Audio
             fill="currentColor"
             className="text-purple-700 dark:text-purple-400 w-6 h-4 flex-shrink-0"
+            disabled={!running}
           />
         </div>
       )}

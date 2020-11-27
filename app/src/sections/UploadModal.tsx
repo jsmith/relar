@@ -11,8 +11,7 @@ import { UploadAction } from "../shared/universal/types";
 import { toFileArray, useStateWithRef } from "../utils";
 import { MdErrorOutline } from "react-icons/md";
 import { DragDiv } from "../components/DragDiv";
-import ReactTooltip from "react-tooltip";
-import { useDarkMode } from "../dark";
+import { snapshot } from "uvu/assert";
 
 export interface UploadModalProps {
   children?: React.ReactNode;
@@ -20,6 +19,59 @@ export interface UploadModalProps {
   display: boolean;
   setDisplay: (display: boolean) => void;
 }
+
+const MAX_UPLOADING = 5;
+
+// I've seen issues where users hit a max upload time
+// I expect this happens if they try to upload a whole bunch of files at once
+// To try to stop these errors, I am currently limiting the # of songs being
+// uploaded at a single time using this queue logic
+const createUploadQueue = () => {
+  const waiting: Array<firebase.storage.UploadTask> = [];
+  const running: Array<firebase.storage.UploadTask> = [];
+
+  const addRunning = (task: firebase.storage.UploadTask) => {
+    console.info(`[${task.snapshot.ref.name}] Adding new task to running queue...`);
+    running.push(task);
+
+    const handleSnapshot = (snap: firebase.storage.UploadTaskSnapshot) => {
+      // If it's still running, do nothing!
+      if (snap.bytesTransferred < snap.totalBytes) return;
+      console.info(`[${snap.ref.name}] Task finished!`);
+      dispose();
+      const index = running.indexOf(task);
+      if (index === -1) return; // this should probably not happen
+      running.splice(index, 1);
+      if (waiting.length === 0) return;
+      const [newTask] = waiting.splice(0, 1);
+      newTask.resume();
+      addRunning(newTask);
+    };
+
+    // It's very important that this event is added *before* a task finishes
+    // If task that is already finished, then this event handler would probably never be called
+    // which would *not* be good
+    const dispose = task.on("state_changed", handleSnapshot);
+
+    // Just to be sure that this handler is called at least once
+    handleSnapshot(task.snapshot);
+  };
+
+  const addWaiting = (task: firebase.storage.UploadTask) => {
+    task.pause();
+    waiting.push(task);
+  };
+
+  return {
+    push: (task: firebase.storage.UploadTask) => {
+      if (running.length >= MAX_UPLOADING) {
+        addWaiting(task);
+      } else {
+        addRunning(task);
+      }
+    },
+  };
+};
 
 export const UploadModal = ({ children, className, display, setDisplay }: UploadModalProps) => {
   const [files, setFiles, filesRef] = useStateWithRef<
@@ -34,7 +86,7 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
   const storage = useUserStorage();
   const createdSnapshot = useRef<(() => void) | null>(null);
   const userData = useUserData();
-  const [dark] = useDarkMode();
+  const uploadQueue = useRef(createUploadQueue());
 
   useEffect(() => {
     if (files.length > 0 && !createdSnapshot.current) {
@@ -63,15 +115,19 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
       return;
     }
 
+    console.log(fileList);
     const newFiles = fileList.map((file) => {
       if (file.name.endsWith(".mp3")) {
         // This assumes that uuid.v4() will always return a unique ID
         // Users also only have the ability to create but not overwrite files
         const id = uuid.v4();
         const ref = storage.song(id, file.name);
+        const task = ref.put(file);
+        uploadQueue.current.push(task);
+
         return {
           songId: id,
-          task: ref.put(file),
+          task,
           action: undefined,
           file,
         };
