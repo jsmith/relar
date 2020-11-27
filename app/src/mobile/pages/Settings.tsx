@@ -15,7 +15,7 @@ export const Settings = () => {
   const [darkMode, setDarkMode] = useDarkMode();
 
   return (
-    <div className="mx-5 flex-grow py-5 flex flex-col space-y-3">
+    <div className="mx-5 flex-grow my-5 p-safe-bottom flex flex-col space-y-3">
       <div className="text-sm">
         {`Signed in as `} <span className="font-bold">{user.email}</span>
       </div>

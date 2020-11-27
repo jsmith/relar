@@ -37,12 +37,8 @@ export class NativeAudioWeb extends WebPlugin implements NativeAudioPlugin {
     this.setVolume({ volume: options.volume ?? 1.0 });
   }
 
-  async setAlbumArt() {
-    // Nothing to do
-  }
-
   async stop() {
-    // Nothing to do
+    this.audioElement.pause();
   }
 
   play(): Promise<void> {

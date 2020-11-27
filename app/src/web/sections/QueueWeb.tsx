@@ -87,7 +87,7 @@ export const QueueWeb = forwardRef<HTMLDivElement, QueueProps>(
           <div className="flex flex-col items-center text-gray-700 dark:text-gray-300 my-10 space-y-1">
             <MdQueueMusic className="w-10 h-10" />
             <div className="text-xl">Your queue is empty...</div>
-            <div className="text-sm text-gray-600 mx-20 text-center">
+            <div className="text-sm text-gray-500 mx-20 text-center">
               Play a song or use the{" "}
               <MdMoreVert className="h-5 inline-block" title="More Options" /> icon in a song table
               to add a song manually.

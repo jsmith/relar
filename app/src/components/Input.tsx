@@ -32,7 +32,7 @@ export type InputProps = {
 
 export const Input = (props: InputProps) => {
   return (
-    <label className={classNames("block relative", props.labelClassName)}>
+    <label className={classNames("block relative space-y-1", props.labelClassName)}>
       {props.label && (
         <span className={classNames(props.spanClassName, "mb-1 dark:text-gray-200")}>
           {props.label}
@@ -44,12 +44,7 @@ export const Input = (props: InputProps) => {
         value={props.value ?? ""}
         type={props.type}
         id={props.inputId}
-        className={classNames(
-          "form-input w-full",
-          field(),
-          props.inputClassName,
-          props.iconRight && "pr-10",
-        )}
+        className={classNames("w-full", field(), props.inputClassName, props.iconRight && "pr-10")}
         placeholder={props.placeholder}
         onChange={(e) =>
           props.type === "number"

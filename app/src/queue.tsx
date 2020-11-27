@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { Song } from "./shared/universal/types";
 import { tryToGetSongDownloadUrlOrLog } from "./queries/songs";
 import usePortal from "react-useportal";
@@ -114,7 +114,6 @@ export interface AudioControls {
   pause: () => void;
   play: () => void;
   setSrc: (opts: { src: string; song: Song } | null) => Promise<void>;
-  paused: boolean;
   getCurrentTime(): Promise<number>;
   setCurrentTime(currentTime: number): void;
   setVolume(volume: number): void;
@@ -667,6 +666,64 @@ export const useIsPlayingSource = ({ source }: { source: SetQueueSource }) => {
 
 export const QueueAudio = () => {
   const { Portal } = usePortal();
+  const ref = useRef<HTMLAudioElement | null>(null);
+
+  const controls = useRef<AudioControls>({
+    setSrc: async (opts: { src: string; song: Song } | null) => {
+      if (opts) {
+        if (ref.current) ref.current.src = opts.src;
+        const { song } = opts;
+
+        // Great docs about this here -> https://web.dev/media-session/
+        // This is only implemented on Chrome so we need to check
+        // if the media session is available
+        if (!window.navigator.mediaSession) return;
+        const mediaSession = window.navigator.mediaSession;
+
+        const sizes = ["128", "256"] as const;
+        const batch = firebase.firestore().batch();
+        const thumbnails = sizes.map((size) =>
+          tryToGetDownloadUrlOrLog(getDefinedUser(), song, size, batch),
+        );
+
+        Promise.all(thumbnails)
+          .then((thumbnails) => {
+            // This batch can be empty and that's ok
+            // It's important that commit is called here after all of the promises have been resolved
+            batch.commit().catch(captureAndLog);
+
+            return thumbnails.filter(isDefined).map((src, i) => ({
+              src,
+              sizes: `${sizes[i]}x${sizes[i]}`,
+              // We know it's defined at this point since we are working with the artwork
+              // We need the conditional since type is "png" | "jpg" and "image/jpg" is
+              // not valid
+              type: `image/${song.artwork!.type === "png" ? "png" : "jpeg"}`,
+            }));
+          })
+          .then((artwork) => {
+            mediaSession.metadata = new MediaMetadata({
+              title: song.title,
+              artist: song.artist || "Unknown Artist",
+              album: song.albumName || "Unknown Album",
+              artwork,
+            });
+          });
+      } else {
+        // This is important since if the player is currently playing we need to make sure it stops
+        ref.current?.pause();
+      }
+    },
+    getCurrentTime: async () => ref.current?.currentTime ?? 0,
+    setVolume: (volume: number) => {
+      if (ref.current) ref.current.volume = volume;
+    },
+    setCurrentTime: (currentTime: number) => {
+      if (ref.current) ref.current.currentTime = currentTime;
+    },
+    pause: () => ref.current?.pause(),
+    play: () => ref.current?.play(),
+  });
 
   useEffect(() => {
     const actionHandlers = [
@@ -679,6 +736,7 @@ export const QueueAudio = () => {
 
     const setHandler = (action: MediaSessionAction, handler?: () => void) => {
       try {
+        // Un-setting a media session action handler is as easy as setting it to null.
         window.navigator.mediaSession?.setActionHandler(action, handler ?? null);
       } catch (error) {
         console.info(`The media session action "${action}" is not supported yet.`);
@@ -688,7 +746,6 @@ export const QueueAudio = () => {
     for (const [action, handler] of actionHandlers) {
       setHandler(action, handler);
     }
-    // Unsetting a media session action handler is as easy as setting it to null.
 
     return () => {
       for (const [action] of actionHandlers) {
@@ -700,66 +757,17 @@ export const QueueAudio = () => {
   return (
     <Portal>
       <audio
+        // FIXME Fix https://sentry.io/organizations/relar/issues/1976465264/?project=5258806&query=is%3Aunresolved
+        // Look at https://stackoverflow.com/questions/36803176/how-to-prevent-the-play-request-was-interrupted-by-a-call-to-pause-error
         // This is super important
         // Opt-in to CORS
         // See https://developers.google.com/web/tools/workbox/guides/advanced-recipes#cached-av
         // crossOrigin="anonymous"
         // preload="metadata"
         ref={(el) => {
+          ref.current = el;
           if (el === null) Queue._setRef(null);
-          else
-            Queue._setRef(
-              Object.assign(el, {
-                setSrc: async (opts: { src: string; song: Song } | null) => {
-                  if (opts) {
-                    el.src = opts.src;
-                    const { song } = opts;
-
-                    // Great docs about this here -> https://web.dev/media-session/
-                    // This is only implemented on Chrome so we need to check
-                    // if the media session is available
-                    if (!window.navigator.mediaSession) return;
-                    const mediaSession = window.navigator.mediaSession;
-
-                    const sizes = ["128", "256"] as const;
-                    const batch = firebase.firestore().batch();
-                    const thumbnails = sizes.map((size) =>
-                      tryToGetDownloadUrlOrLog(getDefinedUser(), song, size, batch),
-                    );
-
-                    Promise.all(thumbnails)
-                      .then((thumbnails) => {
-                        // This batch can be empty and that's ok
-                        // It's important that commit is called here after all of the promises have been resolved
-                        batch.commit().catch(captureAndLog);
-
-                        return thumbnails.filter(isDefined).map((src, i) => ({
-                          src,
-                          sizes: `${sizes[i]}x${sizes[i]}`,
-                          // We know it's defined at this point since we are working with the artwork
-                          // We need the conditional since type is "png" | "jpg" and "image/jpg" is
-                          // not valid
-                          type: `image/${song.artwork!.type === "png" ? "png" : "jpeg"}`,
-                        }));
-                      })
-                      .then((artwork) => {
-                        mediaSession.metadata = new MediaMetadata({
-                          title: song.title,
-                          artist: song.artist || "Unknown Artist",
-                          album: song.albumName || "Unknown Album",
-                          artwork,
-                        });
-                      });
-                  } else {
-                    // This is important since if the player is currently playing we need to make sure it stops
-                    el.pause();
-                  }
-                },
-                getCurrentTime: async () => el.currentTime,
-                setVolume: (volume: number) => (el.volume = volume),
-                setCurrentTime: (currentTime: number) => (el.currentTime = currentTime),
-              }),
-            );
+          else Queue._setRef(controls.current);
         }}
         onEnded={Queue._nextAutomatic}
         // These are triggered if we call .pause() or if the system pauses the music

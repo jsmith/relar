@@ -26,6 +26,7 @@ export const Login = () => {
   }, []);
 
   const login = useCallback(async () => {
+    setError("");
     const result = await signInWithEmailAndPassword(email, password);
     if (result.isOk()) {
       firebase.analytics().logEvent("login", {

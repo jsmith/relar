@@ -10,7 +10,7 @@
     "check:types": "../node_modules/.bin/tsc --noEmit"
   },
   "engines": {
-    "node": "10"
+    "node": "12"
   },
   "main": "lib/index.js",
   "dependencies": {

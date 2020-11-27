@@ -134,6 +134,13 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate, AVAssetResourceLoade
             
             self.aVAudioPlayer?.addObserver(self, forKeyPath: "timeControlStatus", options: [.old, .new], context: nil)
             self.aVAudioPlayer?.volume = volume
+
+            if let string = call.getString("cover") {
+                // Instructions below
+                // https://cdn.arstechnica.net/wp-content/uploads/2018/06/macOS-Mojave-Dynamic-Wallpaper-transition.jpg
+                let coverUrl = URL(string: string)!
+                self.downloadImage(from: coverUrl)
+            }
             
             print("Preload completed successfully")
             call.success()
@@ -154,7 +161,7 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate, AVAssetResourceLoade
     @objc func play(_ call: CAPPluginCall) {
         print("PLAY")
        self.getQueue().async {
-            self.aVAudioPlayer!.play()
+            self.aVAudioPlayer?.play()
             call.success()
        }
     }
@@ -185,11 +192,11 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate, AVAssetResourceLoade
     }
     
     @objc func pause(_ call: CAPPluginCall) {
-        self.aVAudioPlayer!.pause()
+        self.aVAudioPlayer?.pause()
     }
 
     @objc func stop(_ call: CAPPluginCall) {
-        self.aVAudioPlayer!.pause()
+        self.aVAudioPlayer?.pause()
         
         // TODO ensure controls are disabled too
         let nowPlayingInfo = [String : Any]()
@@ -203,17 +210,6 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate, AVAssetResourceLoade
         call.success()
     }
 
-    @objc func setAlbumArt(_ call: CAPPluginCall) {
-        guard let string = call.getString("url") else {
-            call.error("url property is missing")
-            return
-        }
-
-        // Instructions here -> "https://cdn.arstechnica.net/wp-content/uploads/2018/06/macOS-Mojave-Dynamic-Wallpaper-transition.jpg"
-        let url = URL(string: string)! 
-        downloadImage(from: url)
-    }
-    
     func getQueue() -> DispatchQueue {
         return DispatchQueue(label: "com.getcapacitor.community.audio.complex.queue", qos: .userInitiated)
     }

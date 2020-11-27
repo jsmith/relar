@@ -304,12 +304,6 @@ public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChan
   }
 
   @PluginMethod
-  public void setAlbumArt(PluginCall call) {
-    // Nothing to do yet
-    call.success();
-  }
-
-  @PluginMethod
   public void setCurrentTime(PluginCall call) {
     final double currentTime = call.getDouble("currentTime", 0.0);
     // seconds -> milliseconds

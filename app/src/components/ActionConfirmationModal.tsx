@@ -52,7 +52,7 @@ export const ActionConfirmationModal = ({
       <div className="flex flex-col space-y-2">
         <div>
           <h1 className="font-bold">{title}</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{subtitle}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
         </div>
         {confirmEmail && (
           <Input

@@ -84,11 +84,14 @@ export const DragDiv = ({
 
         const files: File[] = [];
         for (const item of e.dataTransfer.items) {
-          const file = item.getAsFile();
-          if (item.webkitGetAsEntry && item.webkitGetAsEntry()) {
-            files.push(...(await readAllFilesFromEntry(item.webkitGetAsEntry())));
-          } else if (file) {
+          // We unfortunately can't distinguish between a file and folder but we kinda can using
+          // the "type" property which appears to be empty for folders
+          if (item.type !== "") {
+            const file = item.getAsFile();
+            if (!file) continue;
             files.push(file);
+          } else if (item.webkitGetAsEntry && item.webkitGetAsEntry()) {
+            files.push(...(await readAllFilesFromEntry(item.webkitGetAsEntry())));
           }
         }
 
