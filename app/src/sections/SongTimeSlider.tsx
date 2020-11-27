@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo } from "react";
-import { fmtMSS, useIsMobile } from "../utils";
+import React, { useMemo } from "react";
+import { fmtMSS, IS_WEB_VIEW } from "../utils";
 import { Queue, useCurrentTime } from "../queue";
 import { Slider } from "../components/Slider";
 
@@ -15,14 +15,13 @@ export const SongTimeSlider = ({ disabled, duration: durationMs }: SongTimeSlide
   // ?? 1 is important to avoid division by 0 errors
   const duration = useMemo(() => (durationMs ?? 1) / 1000, [durationMs]);
   const endTimeText = useMemo(() => fmtMSS(duration), [duration]);
-  const isMobile = useIsMobile();
 
   const currentTimeNode = (
     <span className="text-xs text-gray-200 select-none">{currentTimeText}</span>
   );
   const endTimeNode = <span className="text-xs text-gray-200 select-none">{endTimeText}</span>;
 
-  return isMobile ? (
+  return IS_WEB_VIEW ? (
     <div>
       <Slider
         className="flex-grow"

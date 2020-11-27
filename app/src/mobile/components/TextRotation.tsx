@@ -61,7 +61,7 @@ export const TextRotation = ({ text, className, speed = 60, on = false }: TextRo
 
   return (
     <div
-      className={classNames("flex overflow-hidden whitespace-no-wrap", className)}
+      className={classNames("flex overflow-hidden whitespace-nowrap", className)}
       ref={container}
     >
       <span

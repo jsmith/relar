@@ -82,7 +82,7 @@ export const Cell = ({
 }) => {
   return (
     <div
-      className={classNames("whitespace-no-wrap cursor-pointer min-w-0", className)}
+      className={classNames("whitespace-nowrap cursor-pointer min-w-0", className)}
       style={style}
     >
       {children}
@@ -261,7 +261,7 @@ export const SongTableRow = <T extends SongInfo>({
             {song.title}
           </div>
           {mode === "condensed" && (
-            <div className="flex space-x-2 text-gray-600">
+            <div className="flex space-x-2 text-gray-500">
               {artist}
               {artist && album && <div className="text-2xs">-</div>}
               {album}

@@ -37,69 +37,61 @@ jobs:
         working-directory: app
 
       # Deployment
-      # FIREBASE_TOKEN generated using "firebase login:ci"
+      # PRODUCTION_FIREBASE_TOKEN generated using "firebase login:ci"
+      # PRODUCTION_FIREBASE_TOKEN is for Gray Wolf
       - run: npx firebase deploy --project production
-        env: { FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}" }
+        env: { FIREBASE_TOKEN: "${{ secrets.PRODUCTION_FIREBASE_TOKEN }}" }
 
-  # deploy_mobile:
-  #   # Make this separate since it has to use macOS which costs 10x as much as ubuntu
-  #   runs-on: macOS-latest
-  #   timeout-minutes: 10
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions/setup-node@v1
-  #     - uses: c-hive/gha-npm-cache@v1
-  #     - run: npm install --no-package-lock
-  #     # We *need* to hoist our dependencies due to symlinks
-  #     - run: npm run bootstrap
-  #     - run: npx patch-package
+  deploy_mobile:
+    # Make this separate since it has to use macOS which costs 10x as much as ubuntu
+    runs-on: macOS-latest
+    timeout-minutes: 10
+    steps:
+      # Checkout and prep
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+      - uses: actions/setup-ruby@v1
+      - working-directory: app
+        # Install the same version of bundler that I used
+        # or else bundle install fails...
+        run: |
+          gem install bundler:1.17.2
+          bundle install
 
-  # - run: npm run build
-  #       working-directory: native-audio
+      # Install
+      - uses: bahmutov/npm-install@v1
+        with: { working-directory: "app" }
+      - uses: bahmutov/npm-install@v1
+        with: { working-directory: "functions" }
+      - uses: bahmutov/npm-install@v1
+        with: { working-directory: "native-audio" }
+      - uses: bahmutov/npm-install@v1
 
-  #     - id: changes
-  #       uses: jsmith/changes-since-last-tag@v0.3.2
-  #       env: { GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}" }
-  #       with: { glob: "mobile/**,shared/**" }
+      # Patching
+      - run: npx patch-package
+      - run: npx patch-package
+        working-directory: app
 
-  #     # We *need* to hoist our dependencies due to symlinks
-  #     - if: steps.changes.outputs.any_changed == 'true'
-  #       run: npm run bootstrap
-  #     - if: steps.changes.outputs.any_changed == 'true'
-  #       run: npx patch-package
+      # Building
+      - run: npm run build
+        working-directory: native-audio
+      - run: npm run build:mobile-production
+        working-directory: app
+      - run: npx cap sync
+        working-directory: app
 
-  #     - if: steps.changes.outputs.any_changed == 'true'
-  #       uses: actions/setup-ruby@v1
+      - run: fastlane beta
+        working-directory: app/ios/App
+        env:
+          {
+            GITHUB_TOKEN: "${{ secrets.PERSONAL_GIT_ACCESS_TOKEN }}",
+            GITHUB_USERNAME: jsmith,
+            FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}",
+          }
 
-  #     - if: steps.changes.outputs.any_changed == 'true'
-  #       working-directory: app
-  #       # Install the same version of bundler that I used
-  #       # or else bundle install fails...
-  #       run: |
-  #         gem install bundler:1.17.2
-  #         bundle install
-
-  #     - if: steps.changes.outputs.any_changed == 'true'
-  #       working-directory: app
-  #       run: |
-  #         npm run build:mobile-production
-  #         npx cap sync
-
-  #     - if: steps.changes.outputs.any_changed == 'true'
-  #       run: fastlane beta
-  #       working-directory: app/ios/App
-  #       env:
-  #         {
-  #           GITHUB_TOKEN: "${{ secrets.PERSONAL_GIT_ACCESS_TOKEN }}",
-  #           GITHUB_USERNAME: jsmith,
-  #           FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}",
-  #         }
-
-  #     - if: steps.changes.outputs.any_changed == 'true'
-  #       run: fastlane beta
-  #       working-directory: app/android
-  #       env:
-  #         FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-  #         TODO add these
-  #         STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
-  #         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      - run: fastlane beta
+        working-directory: app/android
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}

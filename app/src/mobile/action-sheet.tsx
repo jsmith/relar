@@ -54,9 +54,9 @@ export const ActionSheet = () => {
       />
       <div
         className={classNames(
-          "fixed bg-gray-100 dark:bg-gray-900 shadow bottom-0 left-0 right-0 z-30 divide-y",
+          "fixed bg-gray-100 dark:bg-gray-900 shadow bottom-0 inset-x-0 z-30 divide-y",
           "transition-transform transform duration-300 rounded-t-lg text-gray-800",
-          "dark:text-gray-200 divide-gray-300 dark:divide-gray-700",
+          "dark:text-gray-200 divide-gray-300 dark:divide-gray-700 p-safe-bottom",
           display ? "translate-y-0" : "translate-y-full",
         )}
         onTransitionEnd={() => !display && setItems(undefined)}

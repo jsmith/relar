@@ -27,7 +27,7 @@ export const AddToPlaylistList = ({
   ) : playlists.length === 0 ? (
     <div className="flex flex-col items-center space-y-2">
       <SearchMagnifyingGlass className="h-24" />
-      <div className="text-gray-600">No playlists found...</div>
+      <div className="text-gray-500">No playlists found...</div>
     </div>
   ) : (
     <div className="rounded overflow-hidden">
@@ -56,14 +56,14 @@ export const AddToPlaylistList = ({
           >
             <div>
               <div className="text-purple-700 dark:text-purple-300">{playlist.name}</div>
-              <div className="text-gray-600 dark:text-gray-400 text-2xs md:text-base">
+              <div className="text-gray-500 dark:text-gray-400 text-2xs md:text-base">
                 {`${playlist.songs?.length ?? 0} ${pluralSongs(
                   playlist.songs?.length,
                 )} • Created on ${fmtToDate(playlist.createdAt)}`}
               </div>
             </div>
 
-            <HiChevronRight className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <HiChevronRight className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
         );
       })}

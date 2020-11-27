@@ -181,6 +181,16 @@ const changelog = create([
       "Deleted songs now won't mysteriously continue to appear once deleted",
     ],
   },
+  {
+    version: "0.15.3",
+    date: "November 26 2020",
+    fixes: [
+      "Updated colors and other styles",
+      "Better error message when an upload fails because it took too long",
+      "Limiting the number of parallel uploads to 5 songs to reduce bandwidth issues",
+      "Song uploading issue where only a single dragged file was being uploading",
+    ],
+  },
 ]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (

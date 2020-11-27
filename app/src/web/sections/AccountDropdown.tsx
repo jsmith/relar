@@ -109,7 +109,7 @@ export const AccountDropdown = () => {
                 </div>
 
                 <div className="py-1">
-                  <div className="px-4 py-1 text-sm dark:text-gray-400 text-gray-600">{`Version ${env.version}`}</div>
+                  <div className="px-4 py-1 text-sm dark:text-gray-400 text-gray-500">{`Version ${env.version}`}</div>
                   <Menu.Item>
                     {({ active }) => (
                       <Link

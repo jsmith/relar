@@ -1,12 +1,5 @@
 module.exports = {
-  dark: "class",
-  experimental: {
-    darkModeVariant: true,
-  },
-  future: {
-    removeDeprecatedGapUtilities: true,
-    purgeLayersByDefault: true,
-  },
+  darkMode: "class",
   variants: {
     height: ["responsive", "hover", "focus"],
     width: ["responsive", "hover", "focus", "group-hover"],
@@ -20,7 +13,6 @@ module.exports = {
       },
     },
   },
-  plugins: [require("@tailwindcss/custom-forms")],
   purge: {
     // I have to do this since tailwind only purges in "production" by default
     enabled: process.env.NODE_ENV === "production" || process.env.NODE_ENV === "staging",
