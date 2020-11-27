@@ -12,6 +12,7 @@ jobs:
       # Checkout and prep
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
+        with: { node-version: "12" }
       - run: ./.github/scripts/decrypt.sh
         env: { GPG_PASSWORD: "${{ secrets.GPG_PASSWORD }}" }
 

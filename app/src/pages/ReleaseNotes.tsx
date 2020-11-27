@@ -183,7 +183,7 @@ const changelog = create([
   },
   {
     version: "0.15.3",
-    date: "November 26 2020",
+    date: "November 27 2020",
     fixes: [
       "Updated colors and other styles",
       "Better error message when an upload fails because it took too long",

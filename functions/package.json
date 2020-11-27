@@ -1,6 +1,6 @@
 {
   "name": "functions",
-  "version": "0.15.2",
+  "version": "0.15.3",
   "scripts": {
     "build": "rm -rf lib && ../node_modules/.bin/tsc",
     "test": "./test.sh",
