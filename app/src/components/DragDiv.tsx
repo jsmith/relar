@@ -83,7 +83,6 @@ export const DragDiv = ({
         e.preventDefault();
 
         const files: File[] = [];
-        console.log(e.dataTransfer.items.length, e.dataTransfer.files.length);
         for (const item of e.dataTransfer.items) {
           // We unfortunately can't distinguish between a file and folder but we kinda can using
           // the "type" property which appears to be empty for folders

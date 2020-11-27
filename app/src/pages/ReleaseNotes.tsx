@@ -188,6 +188,7 @@ const changelog = create([
       "Updated colors and other styles",
       "Better error message when an upload fails because it took too long",
       "Limiting the number of parallel uploads to 5 songs to reduce bandwidth issues",
+      "Song uploading issue where only a single dragged file was being uploading",
     ],
   },
 ]).reverse();

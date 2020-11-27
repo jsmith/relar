@@ -22,16 +22,19 @@ const main = async () => {
   const data = doc.data() as UserData | undefined;
   if (!data) {
     console.log(`"${email}" does not exist`);
+    await auth.app.delete();
     return;
   }
 
   if (data.sentMobileBeta) {
-    console.log(`You've already sent an email to ${email}`);
+    console.log(`You've already sent an email to ${email} dummy`);
+    await auth.app.delete();
     return;
   }
 
   if (data.device === "none") {
     console.log(`This person didn't select a device option`);
+    await auth.app.delete();
     return;
   }
 
@@ -55,7 +58,6 @@ If you want to be removed from this list, just let me know by responding to this
 `.trim(),
   });
 
-  // const result = await auth.getUserByEmail("jsmith@hey.com");
   await auth.app.delete();
 };
 
