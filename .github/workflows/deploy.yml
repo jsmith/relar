@@ -13,6 +13,7 @@ jobs:
       # Checkout and prep
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
+        with: { node-version: "12" }
 
       # Install
       - uses: bahmutov/npm-install@v1
@@ -50,6 +51,7 @@ jobs:
       # Checkout and prep
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
+        with: { node-version: "12" }
       - uses: actions/setup-ruby@v1
       - working-directory: app
         # Install the same version of bundler that I used
