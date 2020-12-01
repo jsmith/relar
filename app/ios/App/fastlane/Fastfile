@@ -23,6 +23,7 @@ platform :ios do
       type: "adhoc",
       # GITHUB_TOKEN is a PAT that has access to the match repository 
       # GITHUB_USERNAME is the username of the user who generated the above access token
+      # MATCH_PASSWORD is the password used to decrypt the files
       git_basic_authorization: Base64.strict_encode64("#{'GITHUB_USERNAME'}:#{ENV['GITHUB_TOKEN']}"),
       # This makes it so it cannot create credentials if they are not there
       readonly: true,

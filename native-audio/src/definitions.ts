@@ -20,25 +20,8 @@ export interface NativeAudioPlugin {
    */
   pause(): Promise<void>;
   /**
-   * Set the volume of the currently loaded song.
-   */
-  setVolume(options: { volume: number }): Promise<void>;
-  /**
-   * Get the time of the currently loaded song.
-   */
-  getCurrentTime(): Promise<{ currentTime: number }>;
-  /**
-   * Set the time of the currently loaded song.
-   */
-  setCurrentTime(opts: { currentTime: number }): Promise<void>;
-  /**
-   * Get the duration of the currently loaded song.
-   */
-  getDuration(): Promise<{ duration: number }>;
-  /**
    * Pause the music and remove all data from the info center.
    */
-  clearCache(): Promise<void>;
   stop(): Promise<void>;
 
   /**
@@ -52,7 +35,7 @@ export interface NativeAudioPlugin {
    * stop -> the song should stop playing and all state should be reset
    */
   addListener(
-    eventName: "complete" | "play" | "pause" | "next" | "previous" | "stop",
+    eventName: "play" | "pause" | "next" | "previous" | "stop",
     listenerFunc: () => void
   ): PluginListenerHandle;
 
@@ -67,14 +50,11 @@ export interface NativeAudioPlugin {
 }
 
 export interface PreloadOptions {
-  path: string;
   title: string;
   artist: string;
   album: string;
-  // TODO add support to iOS
   /**
    * An https URL to your cover photo.
    */
   cover?: string;
-  volume?: number;
 }

@@ -288,9 +288,9 @@ const androidDest = "android/app/src/main/res";
 const iosIconDest = "ios/App/App/Assets.xcassets/AppIcon.appiconset";
 const iosSplashDest = "ios/App/App/Assets.xcassets/Splash.imageset";
 const platforms = [
-  ["pwa", pwaDest, 1, "#111827"],
-  ["android", androidDest, 0.8, "transparent"],
-  ["ios", iosIconDest, 0.8, "#111827"],
+  ["pwa", pwaDest, 1, 0.5],
+  ["android", androidDest, 0.7, 1],
+  ["ios", iosIconDest, 0.8, 0.5],
 ];
 
 // How to use
@@ -299,14 +299,14 @@ const platforms = [
 // FIXME remove mobicon and write the code yourself (copy + simplify)
 
 Promise.all(
-  platforms.map(([platform, dest, contentRatio, background]) => {
+  platforms.map(([platform, dest, contentRatio, borderRadius]) => {
     return mobicon("logo.png", {
       platform,
       dest,
-      background,
+      background: "#111827",
       contentRatio,
-      borderRadius: 0.5,
-      resizeBeforeBackground: platform === "ios",
+      borderRadius,
+      resizeBeforeBackground: platform === "ios" || platform === "android",
     });
   }),
 )

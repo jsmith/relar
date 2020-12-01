@@ -11,6 +11,7 @@ import { useConfirmAction } from "../../confirm-actions";
 import { resetPassword, changeEmail, deleteAccount } from "../../auth";
 import { LOCAL_CACHE_TEXT } from "../../text";
 import { resetDB } from "../../db";
+import { Input } from "../../components/Input";
 
 export const OverviewSection = ({
   title,
@@ -114,7 +115,8 @@ export const Account = () => {
           </p>
           <OverviewSection
             title="Local Cache"
-            subtitle={LOCAL_CACHE_TEXT}
+            // TODO test
+            subtitle={LOCAL_CACHE_TEXT.replace(/<br>/g, "")}
             actionText="Clear Local Cache"
             action={async () => {
               resetDB(user.uid);
@@ -128,11 +130,8 @@ export const Account = () => {
             action={() => changeEmail(user, email, confirmPassword)}
           >
             <div className="flex items-baseline mt-3 flex-col space-y-1">
-              <input
-                className="rounded py-1 px-2 border w-full dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              {/* TODO test */}
+              <Input value={email} onChange={setEmail} />
             </div>
           </OverviewSection>
           <OverviewSection

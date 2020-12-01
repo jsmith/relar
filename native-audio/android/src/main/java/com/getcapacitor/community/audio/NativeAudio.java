@@ -12,7 +12,6 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import android.os.Build;
@@ -28,7 +27,6 @@ import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -56,7 +54,6 @@ import java.net.URL;
 public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChangeListener {
   private String TAG = "native-audio";
   private MediaSession mediaSession;
-  private MediaPlayer player = new MediaPlayer();
   private static String CHANNEL_ID = "capacitor-community-native-audio-channel-id";
   private Info info = null;
   private NotificationManager notificationManager;
@@ -74,12 +71,11 @@ public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChan
           int state = intent.getIntExtra("state", -1);
           switch (state) {
             case 0:
+              // Unplug
               notifyListeners("pause", new JSObject());
               break;
             case 1:
-              // FIXME what should we do on plug in?
-              break;
-            default:
+              // Plugin do nothing
               break;
           }
           break;
@@ -103,6 +99,8 @@ public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChan
     }
   };
 
+  // This is used to handle hardware buttons or bluetooth devices
+  // e.g. If I press pause using my airpods the "onMediaButtonEvent" event is triggered
   MediaSession.Callback callback = new
     MediaSession.Callback() {
       @Override
@@ -135,7 +133,6 @@ public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChan
 
   @Override
   public void load() {
-    Log.i(TAG, "LOAD");
     super.load();
 
     getContext().registerReceiver(this.receiver, new IntentFilter("previous"));
@@ -168,20 +165,6 @@ public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChan
 
     this.mediaSession.setActive(true);
     this.mediaSession.setCallback(this.callback);
-
-    this.player.setLooping(false);
-    this.player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-
-    // This must be registered *after* .start()
-    // See https://stackoverflow.com/questions/9998677/cannot-get-android-mediaplayer-oncompletion-to-fire
-    // Ok so the above comments seem to not be true anymore... since it works here
-    this.player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-      @Override
-      public void onCompletion(MediaPlayer mp) {
-        Log.i(TAG, "HELLO COMPLETE");
-        notifyListeners("complete", new JSObject());
-      }
-    });
 
     AudioManager audioManager = (AudioManager)
       getContext()
@@ -219,27 +202,6 @@ public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChan
     final String cover = call.getString("cover");
     final float volume = call.getFloat("volume", 1.0f);
     this.info = new Info(title, artist, cover, album);
-
-    new Thread(
-      new Runnable() {
-        @Override
-        public void run() {
-          player.setVolume(volume, volume);
-
-          try {
-            player.reset();
-            Log.i(TAG, "PREPARE!!!");
-            player.setDataSource(url);
-            player.prepare();
-          } catch (IOException e) {
-            e.printStackTrace();
-            call.error(e.getMessage());
-            return;
-          }
-          call.success();
-        }
-      }
-    ).start();
   }
 
   /**
@@ -261,56 +223,12 @@ public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChan
   }
 
   /**
-   * This method will return the current time of the audio file
-   */
-  @PluginMethod
-  public void getCurrentTime(final PluginCall call) {
-    final double position = this.player.getCurrentPosition();
-    call.success(new JSObject().put("currentTime", position / 1000));
-  }
-
-  /**
-   * This method will return the duration of the audio file
-   */
-  @PluginMethod
-  public void getDuration(final PluginCall call) {
-    final double duration = this.player.getDuration();
-    call.success(new JSObject().put("duration", duration / 1000));
-  }
-
-  /**
    * This method will stop the audio file during playback.
    */
   @PluginMethod
   public void stop(PluginCall call) {
-    this.player.stop();
     call.success();
   }
-
-  /**
-   * This method will adjust volume to specified value
-   */
-  @PluginMethod
-  public void setVolume(PluginCall call) {
-    final float value = call.getFloat("volume", 1.0f);
-    this.player.setVolume(value, value);
-    call.success();
-  }
-
-  @PluginMethod
-  public void clearCache(PluginCall call) {
-    // Nothing to do yet
-    call.success();
-  }
-
-  @PluginMethod
-  public void setCurrentTime(PluginCall call) {
-    final double currentTime = call.getDouble("currentTime", 0.0);
-    // seconds -> milliseconds
-    this.player.seekTo((int) currentTime * 1000);
-    call.success();
-  }
-
 
   @Override
   public void onAudioFocusChange(int focusChange) {
@@ -446,45 +364,44 @@ public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChan
       return false;
     }
 
-    if (event.getAction() == KeyEvent.ACTION_DOWN) {
-      final int keyCode = event.getKeyCode();
-      switch (keyCode) {
-        case KeyEvent.KEYCODE_MEDIA_PAUSE:
-          notifyListeners("pause", new JSObject());
-          break;
-        case KeyEvent.KEYCODE_MEDIA_PLAY:
-          notifyListeners("play", new JSObject());
-          break;
-        case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-          this.previousLogic();
-          break;
-        case KeyEvent.KEYCODE_MEDIA_NEXT:
-          this.nextLogic();
-          break;
-        case KeyEvent.KEYCODE_HEADSETHOOK:
-        case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-          // FIXME what causes this??
-          notifyListeners("play-pause", new JSObject());
-          break;
-        default:
-          // FIXME what causes this?
-          notifyListeners("unknown", new JSObject());
-          return false;
-      }
+    if (event.getAction() != KeyEvent.ACTION_DOWN) {
+      return false;
+    }
+
+    final int keyCode = event.getKeyCode();
+    switch (keyCode) {
+      case KeyEvent.KEYCODE_MEDIA_PAUSE:
+        notifyListeners("pause", new JSObject());
+        break;
+      case KeyEvent.KEYCODE_MEDIA_PLAY:
+        notifyListeners("play", new JSObject());
+        break;
+      case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+        this.previousLogic();
+        break;
+      case KeyEvent.KEYCODE_MEDIA_NEXT:
+        this.nextLogic();
+        break;
+      case KeyEvent.KEYCODE_HEADSETHOOK:
+      case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+        // FIXME what causes this??
+        notifyListeners("play-pause", new JSObject());
+        break;
+      default:
+        // FIXME what causes this?
+        notifyListeners("unknown", new JSObject());
+        return false;
     }
 
     return true;
   }
 
   private void pauseLogic() {
-    this.player.pause();
     this.setMediaPlaybackState(PlaybackState.STATE_PAUSED);
     this.setNotification(PlaybackState.STATE_PAUSED);
   }
 
   private void playLogic() {
-    this.player.start();
-    Log.i(TAG, "PLAY LOGIC");
     this.setMediaPlaybackState(PlaybackState.STATE_PLAYING);
     this.setNotification(PlaybackState.STATE_PLAYING);
   }

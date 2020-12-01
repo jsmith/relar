@@ -40,7 +40,8 @@ export const ActionConfirmationModal = ({
       okText={confirmText}
       onOk={checkEmail}
       titleText={title}
-      okTheme="red"
+      // TODO test
+      okTheme={!confirmEmail || email === user?.email ? "red" : "disabled"}
       wrapperClassName="flex dark:text-gray-200"
     >
       <div className="px-3">
