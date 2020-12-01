@@ -8,7 +8,7 @@ import { Plugins, StatusBarStyle } from "@capacitor/core";
 // Import to register plugin
 import "@capacitor-community/native-audio";
 import { NativeAudioPlugin } from "@capacitor-community/native-audio";
-import { AudioControls, Queue, QueueAudio } from "../queue";
+import { AudioControls, Queue } from "../queue";
 import { BackButton } from "./components/BackButton";
 import { useStartupHooks } from "../startup";
 import classNames from "classnames";
@@ -187,25 +187,9 @@ export const App = () => {
         emitter.emit("setOpenBigPlayer", false);
         Queue.stopPlaying();
       }).remove,
-      Queue.onChangeCurrentlyPlaying(async (item) => {
-        if (!item) {
-          NativeAudio.stop();
-          return;
-        }
-        const cover = await tryToGetDownloadUrlOrLog(getDefinedUser(), item.song, "256");
-
-        NativeAudio.preload({
-          path: "", // TODO remove
-          volume: 0, // TODO remove
-          title: item.song.title,
-          artist: item.song.artist ?? "Unknown Artist",
-          album: item.song.albumName ?? "Unknown Album",
-          cover,
-        });
-      }),
     ];
 
-    // Queue._setRef(controls);
+    Queue._setRef(controls);
     return () => {
       disposers.forEach((disposer) => disposer());
     };
@@ -329,7 +313,6 @@ export const App = () => {
       <AppPerformanceHelper />
       <ActionSheet />
       <SlideUpScreen />
-      {user && <QueueAudio />}
     </>
   );
 };

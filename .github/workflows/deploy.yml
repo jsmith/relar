@@ -87,10 +87,10 @@ jobs:
       - run: fastlane beta
         working-directory: app/ios/App
         env:
-          GITHUB_TOKEN: "${{ secrets.PERSONAL_GIT_ACCESS_TOKEN }}",
-          GITHUB_USERNAME: jsmith,
-          FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}",
-          MATCH_PASSWORD: "${{ secrets.MATCH_PASSWORD }}",
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_GIT_ACCESS_TOKEN }}
+          GITHUB_USERNAME: jsmith
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
 
       - run: fastlane beta
         working-directory: app/android
