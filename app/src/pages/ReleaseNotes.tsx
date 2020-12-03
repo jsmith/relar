@@ -193,7 +193,7 @@ const changelog = create([
   },
   {
     version: "0.16.0",
-    date: "December 1 2020",
+    date: "December 3 2020",
     fixes: ["Improved android icon", "Other small bugs and improvements"],
     features: ["Genres page on mobile"],
   },
