@@ -48,15 +48,17 @@ const main = async () => {
     text: `
 Hey ${data.firstName},
 
-I really hope you've been enjoying Relar so far! I'm starting to roll out the mobile app and have added you to the beta testers list. Whenever a new version of the app is released, you'll receive an email from "firebase-noreply@google.com" with installation instructions.
+I hope you've been enjoying Relar so far! I'm starting to roll out the mobile app and have added you to the beta testers list. Whenever a new version of the app is released, you'll receive an email from "firebase-noreply@google.com" with installation instructions. Just so that you're aware, you will need to sign into a Google account before you can start testing.
 
 Since this is the first time anyone has used the app, expect to encounter bugs and missing features. Using your feedback, I'll be working hard to address these issues!
 
 - Jacob
 
-If you want to be removed from this list, just let me know by responding to this email! 
+If you have any issues with the installation process, let me know ASAP by replying to this email.
 `.trim(),
   });
+
+  console.info(`Successfully sent an email to ${email}. This users preference was ${data.device}.`);
 
   await auth.app.delete();
 };

@@ -13,5 +13,5 @@ export const env = {
   messagingSenderId: get("SNOWPACK_PUBLIC_MESSAGING_SENDER_ID"),
   appId: get("SNOWPACK_PUBLIC_APP_ID"),
   measurementId: get("SNOWPACK_PUBLIC_MEASUREMENT_ID"),
-  version: get("SNOWPACK_PUBLIC_VERSION"),
+  version: get("SNOWPACK_PUBLIC_PACKAGE_VERSION"),
 };

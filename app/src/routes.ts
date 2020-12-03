@@ -6,8 +6,6 @@ import { GeneratedType } from "./queue";
 import { Song } from "./shared/universal/types";
 import { getAlbumArtistFromSong } from "./queries/album";
 const Feedback = React.lazy(() => import("./pages/Feedback"));
-const Genres = React.lazy(() => import("./web/pages/Genres"));
-const GenreOverview = React.lazy(() => import("./web/pages/GenreOverview"));
 const ReleaseNotes = React.lazy(() => import("./pages/ReleaseNotes"));
 const BetaGuide = React.lazy(() => import("./pages/BetaGuide"));
 const Login = React.lazy(() => import("./pages/Login"));
@@ -51,6 +49,20 @@ const Playlists = React.lazy(() =>
     : isMobile()
     ? import("./pages/UseDesktop")
     : import("./web/pages/Playlists"),
+);
+const Genres = React.lazy(() =>
+  IS_WEB_VIEW
+    ? import("./mobile/pages/Genres")
+    : isMobile()
+    ? import("./pages/UseDesktop")
+    : import("./web/pages/Genres"),
+);
+const GenreOverview = React.lazy(() =>
+  IS_WEB_VIEW
+    ? import("./mobile/pages/GenreOverview")
+    : isMobile()
+    ? import("./pages/UseDesktop")
+    : import("./web/pages/GenreOverview"),
 );
 const AlbumOverview = React.lazy(() =>
   IS_WEB_VIEW

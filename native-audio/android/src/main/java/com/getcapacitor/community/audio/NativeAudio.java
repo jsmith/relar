@@ -74,12 +74,11 @@ public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChan
           int state = intent.getIntExtra("state", -1);
           switch (state) {
             case 0:
+              // Unplug headphones
               notifyListeners("pause", new JSObject());
               break;
             case 1:
-              // FIXME what should we do on plug in?
-              break;
-            default:
+              // Plug in headphones
               break;
           }
           break;
@@ -103,6 +102,8 @@ public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChan
     }
   };
 
+  // This is used to handle hardware buttons or bluetooth devices
+  // e.g. If I press pause using my airpods the "onMediaButtonEvent" event is triggered
   MediaSession.Callback callback = new
     MediaSession.Callback() {
       @Override
@@ -446,31 +447,32 @@ public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChan
       return false;
     }
 
-    if (event.getAction() == KeyEvent.ACTION_DOWN) {
-      final int keyCode = event.getKeyCode();
-      switch (keyCode) {
-        case KeyEvent.KEYCODE_MEDIA_PAUSE:
-          notifyListeners("pause", new JSObject());
-          break;
-        case KeyEvent.KEYCODE_MEDIA_PLAY:
-          notifyListeners("play", new JSObject());
-          break;
-        case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-          this.previousLogic();
-          break;
-        case KeyEvent.KEYCODE_MEDIA_NEXT:
-          this.nextLogic();
-          break;
-        case KeyEvent.KEYCODE_HEADSETHOOK:
-        case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-          // FIXME what causes this??
-          notifyListeners("play-pause", new JSObject());
-          break;
-        default:
-          // FIXME what causes this?
-          notifyListeners("unknown", new JSObject());
-          return false;
-      }
+    if (event.getAction() != KeyEvent.ACTION_DOWN) {
+      return false;
+    }
+
+    final int keyCode = event.getKeyCode();
+    switch (keyCode) {
+      case KeyEvent.KEYCODE_MEDIA_PAUSE:
+        notifyListeners("pause", new JSObject());
+        break;
+      case KeyEvent.KEYCODE_MEDIA_PLAY:
+        notifyListeners("play", new JSObject());
+        break;
+      case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+        this.previousLogic();
+        break;
+      case KeyEvent.KEYCODE_MEDIA_NEXT:
+        this.nextLogic();
+        break;
+      case KeyEvent.KEYCODE_HEADSETHOOK:
+      case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+        // FIXME what causes this??
+        // TODO handle
+        notifyListeners("toggle", new JSObject());
+        break;
+      default:
+        return false;
     }
 
     return true;

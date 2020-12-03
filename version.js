@@ -4,7 +4,6 @@ const { argv } = require("process");
 const root = __dirname;
 const ios = path.join(root, "app", "ios", "App", "App", "Info.plist");
 const android = path.join(root, "app", "android", "app", "build.gradle");
-const env = path.join(root, "app", ".env");
 const { execSync } = require("child_process");
 
 const command = argv[2];
@@ -56,8 +55,6 @@ let androidContents = fs.readFileSync(android).toString();
 // <string>1</string>
 let iosContents = fs.readFileSync(ios).toString();
 
-let appEnvContents = fs.readFileSync(env).toString();
-
 /**
  *
  * @param {RegExp} reg
@@ -96,12 +93,6 @@ const [iosVersion, iosVersionReplace] = regexMatchAndReplace(
 );
 const bundleVersion = +iosVersion[2];
 
-const [appEnvVersion, appEnvVersionReplace] = regexMatchAndReplace(
-  /^SNOWPACK_PUBLIC_VERSION=([0-9.]+)$/m,
-  appEnvContents
-);
-const appVersion = appEnvVersion[1];
-
 const newBuildNumber = +build;
 
 console.log(
@@ -112,7 +103,6 @@ if (build !== undefined)
 console.log(`Android versionName ${versionName} -> ${version}`);
 if (build !== undefined)
   console.log(`Android versionCode ${versionCode} -> ${newBuildNumber}`);
-console.log(`SNOWPACK_PUBLIC_VERSION ${appVersion} -> ${version}`);
 console.log(`environment.version ${version}`);
 
 execSync(
@@ -125,8 +115,6 @@ androidContents = androidVersionNameReplace(`$1"${version}"`, androidContents);
 if (build !== undefined)
   iosContents = iosVersionReplace(`$1${newBuildNumber}$3`);
 iosContents = iosShortReplace(`$1${version}$3`, iosContents);
-appEnvContents = appEnvVersionReplace(`SNOWPACK_PUBLIC_VERSION=${version}`);
 
 fs.writeFileSync(android, androidContents);
 fs.writeFileSync(ios, iosContents);
-fs.writeFileSync(env, appEnvContents);
