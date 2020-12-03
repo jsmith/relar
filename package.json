@@ -1,6 +1,6 @@
 {
   "name": "relar",
-  "version": "0.15.3",
+  "version": "0.16.0",
   "scripts": {
     "checks:app": "cd app && npm run check:formatting && npm run check:lint && npm run check:types && npm run test",
     "checks:functions": "cd functions && npm run check:formatting && npm run check:lint && npm run check:types && firebase emulators:exec --only firestore \"npm run test\"",
