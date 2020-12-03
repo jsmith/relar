@@ -92,6 +92,10 @@ body {
   background-color: #131821;
 }
 
+.bg-gray-950 {
+  background-color: #131821;
+}
+
 @import url("https://fonts.googleapis.com/css?family=Fira+Mono:400");
 
 .glitch {

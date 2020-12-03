@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { useDefinedUser } from "../../auth";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { ProgressBar } from "../../components/ProgressBar";
@@ -11,6 +11,7 @@ import { useConfirmAction } from "../../confirm-actions";
 import { resetPassword, changeEmail, deleteAccount } from "../../auth";
 import { LOCAL_CACHE_TEXT } from "../../text";
 import { resetDB } from "../../db";
+import { Input } from "../../components/Input";
 
 export const OverviewSection = ({
   title,
@@ -81,7 +82,7 @@ export const Account = () => {
   // };
 
   return (
-    <div className="mx-6">
+    <div className="px-6 min-h-0 overflow-y-scroll">
       <Tabs className="max-w-2xl m-auto my-5 sm:my-10 p-4 rounded bg-white dark:bg-gray-900 shadow-lg flex">
         <TabList className="divide-y dark:divide-gray-800 flex-shrink-0">
           <Tab
@@ -114,7 +115,7 @@ export const Account = () => {
           </p>
           <OverviewSection
             title="Local Cache"
-            subtitle={LOCAL_CACHE_TEXT}
+            subtitle={LOCAL_CACHE_TEXT.replace(/<br>/g, "")}
             actionText="Clear Local Cache"
             action={async () => {
               resetDB(user.uid);
@@ -128,11 +129,8 @@ export const Account = () => {
             action={() => changeEmail(user, email, confirmPassword)}
           >
             <div className="flex items-baseline mt-3 flex-col space-y-1">
-              <input
-                className="rounded py-1 px-2 border w-full dark:bg-gray-900 dark:border-gray-700 dark:text-gray-200"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              {/* TODO test */}
+              <Input value={email} onChange={setEmail} labelClassName="w-full" />
             </div>
           </OverviewSection>
           <OverviewSection

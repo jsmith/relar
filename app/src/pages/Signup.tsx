@@ -61,8 +61,8 @@ export const Signup = () => {
     <CardPage
       footer={
         <div className="space-x-2 flex justify-center items-center h-full">
-          <span>{"Already have an account?"}</span>
-          <Link route="signup" label="Login" />
+          <span>Already have an account?</span>
+          <Link route="login" label="Login" />
         </div>
       }
     >

@@ -36,6 +36,7 @@ jobs:
         working-directory: native-audio
       - run: npm run build:web-production
         working-directory: app
+        env: { SENTRY_AUTH_TOKEN: "${{ secrets.SENTRY_AUTH_TOKEN }}" }
 
       # Deployment
       # PRODUCTION_FIREBASE_TOKEN generated using "firebase login:ci"
@@ -78,6 +79,7 @@ jobs:
       - run: npm run build
         working-directory: native-audio
       - run: npm run build:mobile-production
+        env: { SENTRY_AUTH_TOKEN: "${{ secrets.SENTRY_AUTH_TOKEN }}" }
         working-directory: app
       - run: npx cap sync
         working-directory: app
@@ -85,11 +87,10 @@ jobs:
       - run: fastlane beta
         working-directory: app/ios/App
         env:
-          {
-            GITHUB_TOKEN: "${{ secrets.PERSONAL_GIT_ACCESS_TOKEN }}",
-            GITHUB_USERNAME: jsmith,
-            FIREBASE_TOKEN: "${{ secrets.FIREBASE_TOKEN }}",
-          }
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_GIT_ACCESS_TOKEN }}
+          GITHUB_USERNAME: jsmith
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
 
       - run: fastlane beta
         working-directory: app/android

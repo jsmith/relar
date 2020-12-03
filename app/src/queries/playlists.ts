@@ -1,5 +1,5 @@
 import type { Playlist, Song } from "../shared/universal/types";
-import { serverTimestamp, useUserData } from "../firestore";
+import { getUserDataOrError, serverTimestamp, useUserData } from "../firestore";
 import * as uuid from "uuid";
 import { useCallback, useMemo } from "react";
 import { useSongLookup } from "./songs";
@@ -51,28 +51,22 @@ export const usePlaylists = () => {
   );
 };
 
-export const usePlaylistCreate = () => {
-  const userData = useUserData();
+export const createPlaylist = async (name: string) => {
+  if (name === "") {
+    return;
+  }
 
-  return useCallback(
-    async (name: string) => {
-      if (name === "") {
-        return;
-      }
+  const userData = getUserDataOrError();
+  const playlist = userData.playlist(uuid.v4());
 
-      const playlist = userData.playlist(uuid.v4());
-
-      await playlist.set({
-        id: playlist.id,
-        name,
-        songs: [],
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        deleted: false,
-      });
-    },
-    [userData],
-  );
+  await playlist.set({
+    id: playlist.id,
+    name,
+    songs: [],
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    deleted: false,
+  });
 };
 
 export const usePlaylistAdd = () => {

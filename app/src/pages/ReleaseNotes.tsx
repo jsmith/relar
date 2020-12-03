@@ -186,10 +186,16 @@ const changelog = create([
     date: "November 27 2020",
     fixes: [
       "Updated colors and other styles",
-      "Better error message when an upload fails because it took too long",
+      "Better error message when an upload failed because it took too long",
       "Limiting the number of parallel uploads to 5 songs to reduce bandwidth issues",
-      "Song uploading issue where only a single dragged file was being uploading",
+      "Song uploading issue where only a single dragged file was being uploaded",
     ],
+  },
+  {
+    version: "0.16.0",
+    date: "December 1 2020",
+    fixes: ["Improved android icon", "Other small bugs and improvements"],
+    features: ["Genres page on mobile"],
   },
 ]).reverse();
 
