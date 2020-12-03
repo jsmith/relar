@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { Song } from "../../shared/universal/types";
 import { Input } from "../../components/Input";
-import { usePlaylistCreate } from "../../queries/playlists";
+import { createPlaylist } from "../../queries/playlists";
 import { Modal } from "../../components/Modal";
 import { BlockAlert } from "../../components/BlockAlert";
 import { AddToPlaylistList } from "../../sections/AddToPlaylistList";
@@ -19,7 +19,6 @@ export const AddToPlaylistEditor = ({ song, setDisplay }: MetadataEditorProps) =
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const playlists = useCoolPlaylists();
   const [loading, setLoading] = useState(false);
-  const createPlaylist = usePlaylistCreate();
   const [error, setError] = useState("");
   const [playlistAddError, setPlaylistAddError] = useState("");
 

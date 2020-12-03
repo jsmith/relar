@@ -71,7 +71,6 @@ export interface PreloadOptions {
   title: string;
   artist: string;
   album: string;
-  // TODO add support to iOS
   /**
    * An https URL to your cover photo.
    */

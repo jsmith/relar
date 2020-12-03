@@ -117,7 +117,7 @@ export const resetPassword = async (user: firebase.User): Promise<Result<string,
     return err(result.error.message);
   }
 
-  return ok("Liftoff! Expect a confirmation email in your inbox soon =)");
+  return ok("Liftoff! We've sent you an email with more instructions.");
 };
 
 export const deleteAccount = async (
@@ -157,7 +157,7 @@ export const changeEmail = async (
   }
 
   if (user.email === newEmail) {
-    return ok("We're happy to inform you that that is already your current email.");
+    return ok("We're happy to inform you that that is already your email.");
   }
 
   try {

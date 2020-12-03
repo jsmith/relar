@@ -82,7 +82,7 @@ export const Shortcuts = ({
     <div className={classNames(className, "flex space-x-2")}>
       <div className="space-y-1">
         {shortcuts.map(([shortcut, label]) => (
-          <div key={label} className="flex justify-end space-x-1">
+          <div key={label} className="flex justify-end space-x-1 h-6">
             {(typeof shortcut === "string" ? [shortcut] : shortcut).map((key) => (
               <Shortcut key={key} text={key} />
             ))}
@@ -91,9 +91,9 @@ export const Shortcuts = ({
       </div>
 
       {/* This custom padding ensures that the shortcuts and text are lined up */}
-      <div className="space-y-2" style={{ paddingTop: "0.2rem" }}>
+      <div className="space-y-1">
         {shortcuts.map(([_, label]) => (
-          <div key={label} className="">
+          <div key={label} className="h-6 leading-5">
             {label}
           </div>
         ))}

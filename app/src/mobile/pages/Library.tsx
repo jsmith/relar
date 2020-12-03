@@ -4,7 +4,7 @@ import { NavigatorRoutes } from "../../routes";
 import { Link } from "../../components/Link";
 import { HiChevronRight } from "react-icons/hi";
 import { AiOutlineUser } from "react-icons/ai";
-import { RiAlbumLine, RiPlayList2Fill, RiMusicLine } from "react-icons/ri";
+import { RiAlbumLine, RiPlayList2Fill, RiMusicLine, RiRhythmLine } from "react-icons/ri";
 
 export interface LibraryLink {
   icon: IconType;
@@ -33,6 +33,11 @@ export const Library = () => {
       icon: RiPlayList2Fill,
       label: "Playlists",
       route: "playlists",
+    },
+    {
+      icon: RiRhythmLine,
+      label: "Genres",
+      route: "genres",
     },
   ];
 

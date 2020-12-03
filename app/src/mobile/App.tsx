@@ -123,7 +123,7 @@ export const SmallPlayerPlaceholder = () => {
   );
 };
 
-const emitter = createEmitter<{ openBigPlayer: [] }>();
+const emitter = createEmitter<{ setOpenBigPlayer: [boolean] }>();
 
 // Localize the big player and queue to a component to avoid re-rendering the entire app
 // This is good for low end devices
@@ -131,7 +131,7 @@ const AppPerformanceHelper = () => {
   const [bigPlayerOpen, setBigPlayerOpen] = useState(false);
   const [showQueue, setShowQueue] = useState(false);
 
-  useEffect(() => emitter.on("openBigPlayer", () => setBigPlayerOpen(true)));
+  useEffect(() => emitter.on("setOpenBigPlayer", (value) => setBigPlayerOpen(value)));
 
   // FIXME this kinda sucks and isn't make sense
   useEffect(() =>
@@ -182,7 +182,11 @@ export const App = () => {
       NativeAudio.addListener("pause", Queue.toggleState).remove,
       NativeAudio.addListener("next", Queue.next).remove,
       NativeAudio.addListener("previous", Queue.previous).remove,
-      NativeAudio.addListener("stop", Queue.stopPlaying).remove,
+      NativeAudio.addListener("stop", () => {
+        // If the user stops the music and the big player is currently open, we should close it
+        emitter.emit("setOpenBigPlayer", false);
+        Queue.stopPlaying();
+      }).remove,
     ];
 
     Queue._setRef(controls);
@@ -288,7 +292,7 @@ export const App = () => {
                 onTransitionEnd={() =>
                   Queue.getCurrentlyPlaying() && setShowSmallPlayerPlaceholder(true)
                 }
-                openBigPlayer={() => emitter.emit("openBigPlayer")}
+                openBigPlayer={() => emitter.emit("setOpenBigPlayer", true)}
                 style={{ height: SMALL_PLAYER_HEIGHT }}
                 thumbnailStyle={{ height: SMALL_PLAYER_HEIGHT, width: SMALL_PLAYER_HEIGHT }}
               />

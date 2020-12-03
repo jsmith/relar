@@ -129,6 +129,7 @@ export const registerWorker = () => {
       console.info("Service worker initialized successfully ✨");
     } catch (e) {
       console.error("Service worker failed to initialize ⚠");
+      console.error(e);
       Sentry.captureException(e);
       return;
     }

@@ -14,7 +14,7 @@ export const AddToPlaylistList = ({
   setError,
   close,
 }: {
-  song: Song;
+  song: Song | undefined;
   setLoading: (value: boolean) => void;
   setError: (value: string) => void;
   close: () => void;
@@ -43,11 +43,14 @@ export const AddToPlaylistList = ({
               setError("");
               setLoading(true);
               onConditions(
-                () =>
-                  addToPlaylist({
-                    playlistId: playlist.id,
-                    songId: song.id,
-                  }),
+                async () => {
+                  if (song) {
+                    await addToPlaylist({
+                      playlistId: playlist.id,
+                      songId: song.id,
+                    });
+                  }
+                },
                 close,
                 () => setError("We couldn't add the song to the playlist... we're working on it!"),
                 () => setLoading(false),

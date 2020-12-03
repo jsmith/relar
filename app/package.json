@@ -66,6 +66,7 @@
     "@capacitor/cli": "^2.4.2",
     "@capacitor/core": "^2.4.2",
     "@capacitor/ios": "^2.4.2",
+    "@sentry/webpack-plugin": "^1.14.0",
     "@snowpack/app-scripts-react": "^1.11.0",
     "@snowpack/plugin-webpack": "^2.0.16",
     "@testing-library/react-hooks": "^3.4.2",
