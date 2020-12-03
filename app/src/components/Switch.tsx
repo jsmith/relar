@@ -10,12 +10,13 @@ export interface SwitchProps {
 }
 
 const SwitchComponent = ({ checked, onChange, size = "small" }: SwitchProps) => {
+  // TODO fix big
   return (
     <HeadlessSwitch
       as="button"
       checked={checked}
       onChange={onChange}
-      style={size === "big" ? { width: "3.5rem" } : { width: "3rem" }}
+      style={size === "big" ? { width: "3.5rem" } : { width: "2.75rem" }}
       className={classNames(
         checked ? "bg-purple-500" : "bg-gray-300",
         size === "big" ? "h-8" : "h-6",
@@ -25,14 +26,13 @@ const SwitchComponent = ({ checked, onChange, size = "small" }: SwitchProps) => 
       {({ checked }) => (
         <span
           className={classNames(
-            checked ? (size === "big" ? "translate-x-6" : "translate-x-4") : "translate-x-0",
-            size === "big" ? "w-6 h-6" : "w-5 h-5",
+            checked ? (size === "big" ? "translate-x-6" : "translate-x-5") : "translate-x-0",
             "inline-block transition duration-200 ease-in-out transform bg-white rounded-full",
           )}
           style={
             size === "big"
               ? { width: "1.75rem", height: "1.75rem" }
-              : { width: "1.50rem", height: "1.50rem" }
+              : { width: "1.25rem", height: "1.25rem" }
           }
         />
       )}

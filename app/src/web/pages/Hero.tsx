@@ -8,6 +8,8 @@ import { HiOutlineCloudDownload } from "react-icons/hi";
 import { HeartBeat } from "../../illustrations/HeartBeat";
 import { CgUndo } from "react-icons/cg";
 import { LogoNText } from "../../components/LogoNText";
+import { IoLogoAndroid, IoLogoApple } from "react-icons/io";
+import { HiCode } from "react-icons/hi";
 
 const faq = [
   [
@@ -16,15 +18,19 @@ const faq = [
   ],
   [
     "Are there any limits to the amount of uploaded songs?",
-    "To limit initial costs, each account can only upload 500 songs. The system has been designed to eventually support 20,000 songs per user.",
+    "To limit initial costs, each account can only upload 500 songs. Additionally, each file is limited to 20 MB. These limits will be removed or raised before the official release",
   ],
+  // [
+  //   "Are there any limits to the size of each file?",
+  //   "Each song is currently limited to 20 MB. Larger files will be supported before the official release.",
+  // ],
   [
-    "Are there any limits to the size of each file?",
-    "Each song is currently limited to 20 MB. Larger files will be supported before the official release.",
+    "Will Relar eventually cost money?",
+    "Yes, in order to ensure longevity, Relar will eventually offer premium plans. A free plan will also be available for those who want to test the service.",
   ],
   [
     "Do you actually have iOS and Android apps?",
-    "Yes! These apps are still in very early stage development though and lack basic features like offline support.",
+    "Yes! These apps are still in development and are not yet available on app stores.",
   ],
   // [
   //   "Is Relar comparable to Google Play Music (GPM)?",
@@ -67,12 +73,43 @@ export const Hero = () => {
               Relar allows you to upload your curated audio file collection and stream to all of
               your devices.
             </div>
+            <div className="flex items-center space-x-4 text-gray-700 dark:text-gray-200 ">
+              <IoLogoApple
+                title="iOS App Store"
+                className="w-12 h-12 rounded-full p-3 border border-gray-700 dark:border-gray-200"
+              />
+              <IoLogoAndroid
+                title="Android App Store"
+                className="w-12 h-12 rounded-full p-3 border border-gray-700 dark:border-gray-200"
+              />
+              <HiCode
+                title="Web Application"
+                className="w-12 h-12 rounded-full p-3 border border-gray-700 dark:border-gray-200"
+              />
+            </div>
+            <div
+              className="text-xs text-gray-500 dark:text-gray-400"
+              style={{ marginTop: "0.6rem" }}
+            >
+              *Relar is not yet available on app stores
+            </div>
           </div>
           <div className="flex-grow" />
           {/* This div wrapper is important for formatting the svg */}
           <div>
             <PersonMusic className="h-48 md:h-56" />
           </div>
+        </div>
+
+        <div className="shadow-xl dark:bg-gray-700 bg-gray-400 rounded-xl hidden md:block">
+          <img
+            // Lazy so that we don't load it when it's hidden!
+            // Important on mobile since it adds an extra quarter of a MB
+            loading="lazy"
+            src="/screenshot.png"
+            className="shadow rounded-xl overflow-hidden transform translate-x-1 -translate-y-2"
+            style={{ bottom: "" }}
+          />
         </div>
 
         <div className="mx-auto">
@@ -83,13 +120,13 @@ export const Hero = () => {
           />
           <Feature
             reverse
-            title="Stream Anywheres"
+            title="Stream Anywhere"
             text="Use the web and mobile apps to stream music to all of your devices."
             icon={HiOutlineCloudDownload}
           />
           <Feature
             title="Automatic Backups"
-            text="Keep your music safe with our automatic backup system."
+            text="Keep your music safe with our automatic backup system (Coming Soon)."
             last
             icon={CgUndo}
           />
@@ -101,7 +138,7 @@ export const Hero = () => {
             // justify="start"
             glitch
           />
-          <div className="flex justify-center mt-3">
+          <div className="flex justify-center mt-8">
             <Link label="Beta Sign Up →" className={button({ color: "purple" })} route="signup" />
           </div>
           <div className="h-16" />
