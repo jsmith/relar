@@ -7,7 +7,6 @@ if (!process.env.SENTRY_AUTH_TOKEN && process.env.NODE_ENV !== "development") {
   exit(1);
 }
 
-// TODO test
 process.env.SNOWPACK_PUBLIC_PACKAGE_VERSION = pkg.version;
 
 module.exports = {

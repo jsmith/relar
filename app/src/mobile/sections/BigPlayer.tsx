@@ -4,6 +4,7 @@ import { HiChevronDown, HiDotsHorizontal, HiTrash } from "react-icons/hi";
 import {
   MdPauseCircleFilled,
   MdPlayCircleFilled,
+  MdPlaylistAdd,
   MdQueueMusic,
   MdSkipNext,
   MdSkipPrevious,
@@ -20,6 +21,7 @@ import classNames from "classnames";
 import { AiOutlineUser } from "react-icons/ai";
 import { TextRotation } from "../components/TextRotation";
 import { likeSong } from "../../queries/songs";
+import { useAddToPlaylist } from "../add-to-playlist";
 
 export const BigPlayer = ({
   show,
@@ -34,6 +36,7 @@ export const BigPlayer = ({
   const state = useQueueState();
   const songInfo = useCurrentlyPlaying();
   const humanReadableName = useHumanReadableName(songInfo);
+  const showAddPlaylist = useAddToPlaylist(songInfo?.song);
 
   return (
     <div
@@ -85,6 +88,13 @@ export const BigPlayer = ({
                     type: "link",
                     params: getAlbumRouteParams(songInfo.song),
                     onGo: hide,
+                  },
+                  {
+                    // TODO test
+                    label: "Add To Playlist",
+                    icon: MdPlaylistAdd,
+                    type: "click",
+                    onClick: showAddPlaylist,
                   },
                   { label: "Clear Queue", icon: HiTrash, onClick: Queue.clear, type: "click" },
                 ]);

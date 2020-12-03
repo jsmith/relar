@@ -157,7 +157,7 @@ export const changeEmail = async (
   }
 
   if (user.email === newEmail) {
-    return ok("We're happy to inform you that that is already your current email.");
+    return ok("We're happy to inform you that that is already your email.");
   }
 
   try {

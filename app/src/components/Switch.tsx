@@ -10,7 +10,6 @@ export interface SwitchProps {
 }
 
 const SwitchComponent = ({ checked, onChange, size = "small" }: SwitchProps) => {
-  // TODO fix big
   return (
     <HeadlessSwitch
       as="button"

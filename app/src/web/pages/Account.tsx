@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
 import { useDefinedUser } from "../../auth";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import { ProgressBar } from "../../components/ProgressBar";
@@ -82,7 +82,7 @@ export const Account = () => {
   // };
 
   return (
-    <div className="mx-6">
+    <div className="px-6 min-h-0 overflow-y-scroll">
       <Tabs className="max-w-2xl m-auto my-5 sm:my-10 p-4 rounded bg-white dark:bg-gray-900 shadow-lg flex">
         <TabList className="divide-y dark:divide-gray-800 flex-shrink-0">
           <Tab
@@ -115,7 +115,6 @@ export const Account = () => {
           </p>
           <OverviewSection
             title="Local Cache"
-            // TODO test
             subtitle={LOCAL_CACHE_TEXT.replace(/<br>/g, "")}
             actionText="Clear Local Cache"
             action={async () => {
@@ -131,7 +130,7 @@ export const Account = () => {
           >
             <div className="flex items-baseline mt-3 flex-col space-y-1">
               {/* TODO test */}
-              <Input value={email} onChange={setEmail} />
+              <Input value={email} onChange={setEmail} labelClassName="w-full" />
             </div>
           </OverviewSection>
           <OverviewSection

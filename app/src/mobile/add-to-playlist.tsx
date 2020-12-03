@@ -2,13 +2,13 @@ import { Modals } from "@capacitor/core";
 import { captureException } from "@sentry/browser";
 import React from "react";
 import { HiPlus } from "react-icons/hi";
-import { usePlaylistCreate } from "../queries/playlists";
+import { createPlaylist } from "../queries/playlists";
 import { AddToPlaylistList } from "../sections/AddToPlaylistList";
 import { Song } from "../shared/universal/types";
 import { onConditions } from "../utils";
 import { useSlideUpScreen } from "./slide-up-screen";
 
-const AddToPlaylistMenu = ({ song, hide }: { song: Song; hide: () => void }) => {
+const AddToPlaylistMenu = ({ song, hide }: { song: Song | undefined; hide: () => void }) => {
   return (
     <div className="flex flex-col py-2">
       <AddToPlaylistList
@@ -21,9 +21,7 @@ const AddToPlaylistMenu = ({ song, hide }: { song: Song; hide: () => void }) => 
   );
 };
 
-export const useAddToPlaylist = (song: Song) => {
-  const createPlaylist = usePlaylistCreate();
-
+export const useAddToPlaylist = (song: Song | undefined) => {
   const { show } = useSlideUpScreen(
     "Add to Playlist",
     AddToPlaylistMenu,
