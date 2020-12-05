@@ -15,24 +15,19 @@ import { LikedIcon } from "../../components/LikedIcon";
 import { IconButton } from "../../components/IconButton";
 import { ContextMenu, ContextMenuItem } from "../../components/ContextMenu";
 import { useConfirmAction } from "../../confirm-actions";
-import { likeSong, useDeleteSong } from "../../queries/songs";
+import { deleteSong, likeSong } from "../../queries/songs";
 import { fmtMSS } from "../../utils";
 import { Link } from "../../components/Link";
 import { getAlbumRouteParams, getArtistRouteParams } from "../../routes";
 import { link } from "../../classes";
 import { showPlaylistAddModal } from "./AddToPlaylistModal";
 import Skeleton from "react-loading-skeleton";
-import {
-  SetQueueSource,
-  SongInfo,
-  checkSourcesEqual,
-  Queue,
-  useIsThePlayingSong,
-} from "../../queue";
+import { SetQueueSource, checkSourcesEqual, Queue, useIsThePlayingSong } from "../../queue";
 import { Audio } from "@jsmith21/svg-loaders-react";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { Thumbnail } from "../../components/Thumbnail";
+import { Song } from "../../shared/universal/types";
 
 const widths = {
   title: { flexGrow: 1, minWidth: 0 },
@@ -98,15 +93,14 @@ export const LoadingCell = () => {
   );
 };
 
-export interface SongTableItem<T extends SongInfo>
-  extends Omit<ContextMenuItem, "onClick" | "props"> {
-  onClick: (song: T, index: number) => void;
+export interface SongTableItem extends Omit<ContextMenuItem, "onClick" | "props"> {
+  onClick: (song: Song, index: number) => void;
 }
 
-export interface SongTableRowProps<T extends SongInfo> {
-  song: T;
+export interface SongTableRowProps {
+  song: Song;
   setSong: () => void;
-  actions: SongTableItem<T>[] | undefined;
+  actions: SongTableItem[] | undefined;
   mode: "regular" | "condensed";
   source: SetQueueSource;
   children?: React.ReactNode;
@@ -117,7 +111,7 @@ export interface SongTableRowProps<T extends SongInfo> {
   beforeShowModal?: () => void;
 }
 
-export const SongTableRow = <T extends SongInfo>({
+export const SongTableRow = ({
   song,
   setSong,
   actions,
@@ -128,11 +122,10 @@ export const SongTableRow = <T extends SongInfo>({
   index,
   style,
   beforeShowModal,
-}: SongTableRowProps<T>) => {
+}: SongTableRowProps) => {
   const [focusedPlay, setFocusedPlay] = useState(false);
   const { confirmAction } = useConfirmAction();
   const isPlaying = useIsThePlayingSong({ song, source });
-  const deleteSong = useDeleteSong();
 
   const contextMenuItems = useMemo(() => {
     const extraItems: ContextMenuItem[] =
@@ -177,7 +170,7 @@ export const SongTableRow = <T extends SongInfo>({
       },
       ...extraItems,
     ];
-  }, [actions, beforeShowModal, confirmAction, deleteSong, index, song]);
+  }, [actions, beforeShowModal, confirmAction, index, song]);
 
   const artist = song.artist && (
     <Link
@@ -315,13 +308,13 @@ export const SongTableRow = <T extends SongInfo>({
   );
 };
 
-export interface SongTableProps<T extends SongInfo> {
+export interface SongTableProps {
   /**
    * The songs. Passing in `undefined` indicates that the songs are still loading.
    */
-  songs?: T[];
+  songs?: Song[];
   loadingRows?: number;
-  actions?: SongTableItem<T>[];
+  actions?: SongTableItem[];
 
   includeDateAdded?: boolean;
   includeAlbumNumber?: boolean;
@@ -334,7 +327,7 @@ export interface SongTableProps<T extends SongInfo> {
   beforeShowModal?: () => void;
 }
 
-export const SongTable = function <T extends SongInfo>({
+export const SongTable = function ({
   songs,
   loadingRows = 5,
   actions,
@@ -343,7 +336,7 @@ export const SongTable = function <T extends SongInfo>({
   includeDateAdded,
   includeAlbumNumber,
   beforeShowModal,
-}: SongTableProps<T>) {
+}: SongTableProps) {
   const ref = useRef<List | null>(null);
   const actionsWithAddRemove = useMemo(() => {
     const actionsWithAddRemove = actions ? [...actions] : [];

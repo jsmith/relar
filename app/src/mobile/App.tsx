@@ -217,9 +217,17 @@ export const App = () => {
   return (
     <>
       <div
+        // This ID is used in ContainerScroller
+        // It's the default scroll container!
+        id="scroll-root"
+        style={{
+          // webkit-overflow-scrolling is for iOS < 13
+          // @ts-ignore
+          "-webkit-overflow-scrolling": "touch",
+        }}
         className={classNames(
-          "text-gray-700 dark:text-gray-300 flex flex-col min-h-screen",
-          "bg-white dark:bg-gray-800",
+          "text-gray-700 dark:text-gray-300 flex flex-col",
+          "bg-white dark:bg-gray-800 h-screen overflow-y-auto relative",
           route.mobileClassName,
         )}
       >

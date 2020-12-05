@@ -41,16 +41,7 @@ export interface QueueItem {
   song: Song;
   index: number;
   source: SetQueueSource;
-  /** The temporary song ID. */
-  id: string;
 }
-
-export type SongInfo = Song & {
-  /**
-   * This is a temporary ID for the song.
-   */
-  playlistId?: string;
-};
 
 export const checkSourcesEqual = (a: SetQueueSource | undefined, b: SetQueueSource | undefined) =>
   // If either are undefined
@@ -68,8 +59,9 @@ export const checkQueueItemsEqual = (
   a: Omit<QueueItem, "index"> | undefined,
   b: Omit<QueueItem, "index"> | undefined,
 ): boolean => {
+  // TODO check index if queue
   if (a === undefined || b === undefined) return false;
-  if (a.id !== b.id) return false;
+  if (a.song.id !== b.song.id) return false;
 
   // Check the source since these IDs are only unique within a source!!
   switch (a.source.type) {
@@ -91,7 +83,7 @@ export const checkQueueItemsEqual = (
 };
 
 export type SetQueueOptions = {
-  songs: SongInfo[];
+  songs: Song[];
   index?: number;
   source: SetQueueSource;
 };
@@ -264,7 +256,7 @@ export const queueLogic = () => {
     firebase.analytics().logEvent("play_song", { song_id: song.id });
 
     userData.song(song.id).update(update).catch(captureAndLogError);
-    setCurrentlyPlaying({ song, id: item.id, source, index: item.index, jump });
+    setCurrentlyPlaying({ song, source, index: item.index, jump });
   };
 
   /**
@@ -300,7 +292,7 @@ export const queueLogic = () => {
   const enqueue = (song: Song) => {
     const newQueue: QueueItem[] = [
       ...queue,
-      { song, source: { type: "manuel" }, id: uuid.v4(), index: queue.length },
+      { song, source: { type: "manuel" }, index: queue.length },
     ];
 
     if (mapping) {
@@ -356,7 +348,6 @@ export const queueLogic = () => {
         songs.map((song, index) => ({
           song,
           source: source,
-          id: song.playlistId ?? song.id,
           index,
         })),
       );
@@ -593,23 +584,16 @@ const checkSongIsPlayingSong = ({
   currentlyPlaying,
   state,
 }: {
-  song: SongInfo;
+  song: Song;
   source: SetQueueSource;
   currentlyPlaying: QueueItem | undefined;
   state: QueueState;
 }): "playing" | "paused" | "not-playing" => {
-  const id = song.playlistId ?? song.id;
-  if (!checkQueueItemsEqual({ song, id, source }, currentlyPlaying)) return "not-playing";
+  if (!checkQueueItemsEqual({ song, source }, currentlyPlaying)) return "not-playing";
   return state === "playing" ? "playing" : "paused";
 };
 
-export const useIsThePlayingSong = ({
-  song,
-  source,
-}: {
-  song: SongInfo;
-  source: SetQueueSource;
-}) => {
+export const useIsThePlayingSong = ({ song, source }: { song: Song; source: SetQueueSource }) => {
   const [isPlayingSong, setIsPlayingSong, isPlayingSongRef] = useStateWithRef(
     checkSongIsPlayingSong({
       song,

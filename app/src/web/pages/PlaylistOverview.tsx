@@ -31,7 +31,7 @@ export const PlaylistOverview = () => {
           icon: HiOutlineTrash,
           // This should always succeed
           // The check is just for TS
-          onClick: (song) => song.playlistId && removeSong(song.playlistId),
+          onClick: (_, i) => removeSong(i),
         },
       ]}
       onRename={(name) => {

@@ -225,7 +225,7 @@ export const PlaylistType = Record({
        * not need to be unique.
        */
       id: String,
-    }),
+    }).Or(String),
   ).Or(Undefined),
 
   /** When the playlist was created. */

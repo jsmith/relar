@@ -1,30 +1,25 @@
-import type { Playlist, Song } from "../shared/universal/types";
+import { Playlist, Song } from "../shared/universal/types";
 import { getUserDataOrError, serverTimestamp, useUserData } from "../firestore";
 import * as uuid from "uuid";
 import { useCallback, useMemo } from "react";
 import { useSongLookup } from "./songs";
-import type { SongInfo } from "../queue";
 import firebase from "firebase/app";
-import { useCoolPlaylists, useCoolSongs } from "../db";
-import { Modal } from "../components/Modal";
+import { useCoolPlaylists } from "../db";
 import { Modals } from "@capacitor/core";
 
 export const getPlaylistSongs = (
   songs: Playlist["songs"],
   lookup: Record<string, Song>,
-): SongInfo[] | undefined =>
+): Array<Song | undefined> | undefined =>
   songs
     // Since lookup could be empty if the songs haven't loaded yet
     // Or if a song has been deleted (we don't remove songs from playlists automatically yet)
     // Or for a variety of other possible reasons that I haven't thought of yet
-    ?.filter(({ songId }) => songId in lookup)
-    ?.map(({ songId, id }): SongInfo & { playlistId: string } => ({
-      ...lookup[songId],
-      playlistId: id,
-    }));
+    // ?.filter((item) => (typeof item === "string" ? item in lookup : item.songId in lookup))
+    ?.map((item): Song => (typeof item === "string" ? lookup[item] : lookup[item.songId]));
 
 export type PlaylistWithSongs = Omit<Playlist, "songs"> & {
-  songs: SongInfo[] | undefined;
+  songs: Array<Song | undefined> | undefined;
 };
 
 export const usePlaylistLookup = () => {
@@ -69,6 +64,7 @@ export const createPlaylist = async (name: string) => {
   });
 };
 
+// FIXME this can be a function
 export const usePlaylistAdd = () => {
   const userData = useUserData();
 
@@ -82,7 +78,11 @@ export const usePlaylistAdd = () => {
           return;
         }
 
-        if (data.songs?.find((item) => item.songId === songId)) {
+        if (
+          data.songs?.find((item) =>
+            typeof item === "string" ? item === songId : item.songId === songId,
+          )
+        ) {
           const { value } = await Modals.confirm({
             title: "Add to Playlist",
             message: "The song is already present in this playlist. Do you want to add it again?",
@@ -90,8 +90,7 @@ export const usePlaylistAdd = () => {
           if (!value) return;
         }
 
-        const newItem = { songId, id: uuid.v4() };
-        const songs: Playlist["songs"] = data.songs ? [...data.songs, newItem] : [newItem];
+        const songs: Playlist["songs"] = data.songs ? [...data.songs, songId] : [songId];
         const update: Partial<Playlist> = {
           updatedAt: serverTimestamp(),
           songs,
@@ -114,13 +113,12 @@ export const usePlaylist = (playlistId: string | undefined) => {
   return useMemo(() => (playlistId ? lookup[playlistId] : undefined), [playlistId, lookup]);
 };
 
+// FIXME this can just be a function
 export const usePlaylistRemoveSong = (playlistId: string | undefined) => {
   const userData = useUserData();
   return useCallback(
-    /**
-     * @param targetId The ID of the playlist element. This is *not* the ID of the song.
-     */
-    async (targetId: string) => {
+    // TODO does this work????????? Is there issues with filtering?
+    async (indexToDelete: number) => {
       return firebase.firestore().runTransaction(async (transaction) => {
         if (playlistId === undefined) {
           return;
@@ -130,10 +128,6 @@ export const usePlaylistRemoveSong = (playlistId: string | undefined) => {
         const playlist = await transaction.get(ref);
         const data = playlist.data();
         if (!data || !data.songs) return;
-
-        console.info(`Deleting song "${targetId}" from playlist "${playlistId}"`);
-        const indexToDelete = data.songs.findIndex(({ id }) => targetId === id);
-        if (indexToDelete === -1) return;
 
         console.info(`Found song at index ${indexToDelete}`);
         // This is in place

@@ -47,14 +47,14 @@ export const ActionSheet = () => {
     <>
       <div
         className={classNames(
-          "fixed inset-0 bg-gray-800 z-20 transition-opacity duration-300",
+          "fixed inset-0 bg-gray-800 z-40 transition-opacity duration-300",
           display ? "opacity-50" : "opacity-0 pointer-events-none",
         )}
         onClick={() => setDisplay(false)}
       />
       <div
         className={classNames(
-          "fixed bg-gray-100 dark:bg-gray-900 shadow bottom-0 inset-x-0 z-30 divide-y",
+          "fixed bg-gray-100 dark:bg-gray-900 shadow bottom-0 inset-x-0 z-50 divide-y",
           "transition-transform transform duration-300 rounded-t-lg text-gray-800",
           "dark:text-gray-200 divide-gray-300 dark:divide-gray-700 p-safe-bottom",
           display ? "translate-y-0" : "translate-y-full",

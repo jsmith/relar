@@ -12,7 +12,7 @@ export interface ContainerScrollerChildrenOptions {
 export const ContainerScroller = ({
   children,
   throttleTime = 10,
-  containerId = "root",
+  containerId = "scroll-root",
 }: {
   children: (opts: ContainerScrollerChildrenOptions) => JSX.Element;
   throttleTime?: number;

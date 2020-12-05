@@ -2,8 +2,8 @@ import firebase from "firebase/app";
 import { Song } from "../shared/universal/types";
 import { getDownloadURL } from "../storage";
 import { captureAndLogError, captureAndLog, clientStorage, clientDb } from "../utils";
-import { serverTimestamp, useUserData } from "../firestore";
-import { useCallback, useMemo } from "react";
+import { getUserDataOrError, serverTimestamp } from "../firestore";
+import { useMemo } from "react";
 import { useCoolSongs } from "../db";
 import { GeneratedType } from "../queue";
 import { getDefinedUser, getGlobalUser } from "../auth";
@@ -41,20 +41,14 @@ export const useLikedSongs = () => {
   );
 };
 
-export const useDeleteSong = () => {
-  const userData = useUserData();
+export const deleteSong = async (songId: string) => {
+  const userData = getUserDataOrError();
+  const update: Partial<Song> = {
+    deleted: true,
+    updatedAt: serverTimestamp(),
+  };
 
-  return useCallback(
-    async (songId: string) => {
-      const update: Partial<Song> = {
-        deleted: true,
-        updatedAt: serverTimestamp(),
-      };
-
-      await userData.song(songId).update(update);
-    },
-    [userData],
-  );
+  await userData.song(songId).update(update);
 };
 
 export const tryToGetSongDownloadUrlOrLog = async (

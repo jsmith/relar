@@ -2,16 +2,18 @@ import React, { CSSProperties, useCallback, useEffect, useRef, useState } from "
 import { FixedSizeGrid as Grid, FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { ThumbnailCard } from "./ThumbnailCard";
-import { SongInfo } from "../queue";
 import { Song } from "../shared/universal/types";
-import { isMobile, IS_WEB_VIEW } from "../utils";
+import { IS_WEB_VIEW } from "../utils";
 
 const mql = window.matchMedia(`(min-width: 1024px)`);
 
 const GUTTER_SIZE = 8;
 const PADDING_LEFT = 10;
 
-export interface ThumbnailCardGridProps<T extends { songs: SongInfo[] | undefined }> {
+export interface ThumbnailCardGridProps<
+  S extends Song | undefined,
+  T extends { songs: S[] | undefined }
+> {
   items: T[];
   getTitle: (item: T, index: number) => string;
   getSubtitle: (item: T, index: number) => string;
@@ -21,7 +23,10 @@ export interface ThumbnailCardGridProps<T extends { songs: SongInfo[] | undefine
   padding?: number;
 }
 
-export const ThumbnailCardGrid = function <T extends { songs: SongInfo[] | undefined }>({
+export const ThumbnailCardGrid = function <
+  S extends Song | undefined,
+  T extends { songs: S[] | undefined }
+>({
   items,
   getTitle,
   getSubtitle,
@@ -29,7 +34,7 @@ export const ThumbnailCardGrid = function <T extends { songs: SongInfo[] | undef
   play,
   force,
   padding = PADDING_LEFT,
-}: ThumbnailCardGridProps<T>) {
+}: ThumbnailCardGridProps<S, T>) {
   const columnCount = useRef(5);
   const [sizes, setSizes] = useState({ row: 210, col: 140 });
 

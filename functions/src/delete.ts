@@ -30,11 +30,15 @@ export const onDeleteSong = f.firestore.document("user_data/{userId}/songs/{song
 
     const writes: Array<undefined | (() => void)> = [];
     await admin.firestore().runTransaction(async (transaction) => {
+      // FIXME switch this to an "array-contains" query in a few weeks when *all* playlist songs
+      // are just lists of IDs
       const playlists = await transaction.get(adminDb(userId).playlists());
       playlists.forEach((playlist) => {
         const songs: Playlist["songs"] = playlist
           .data()
-          .songs?.filter(({ songId }) => songId !== song.id);
+          .songs?.filter((item) =>
+            typeof item === "string" ? item !== song.id : item.songId !== song.id,
+          );
 
         const update: Partial<Playlist> = {
           songs,

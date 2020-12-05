@@ -1,9 +1,10 @@
 import React from "react";
-import { Queue, SetQueueSource, SongInfo, useIsPlayingSource, useQueueState } from "../queue";
+import { Queue, SetQueueSource, useIsPlayingSource, useQueueState } from "../queue";
 import { Audio } from "@jsmith21/svg-loaders-react";
 import { MdPauseCircleOutline, MdPlayArrow, MdPlayCircleOutline } from "react-icons/md";
 import classNames from "classnames";
 import { IS_WEB_VIEW } from "../utils";
+import { Song } from "../shared/universal/types";
 
 export const SourcePlayButton = ({
   source,
@@ -11,7 +12,7 @@ export const SourcePlayButton = ({
   className,
 }: {
   source: SetQueueSource;
-  songs: SongInfo[] | undefined;
+  songs: Song[] | undefined;
   className?: string;
 }) => {
   const state = useQueueState();

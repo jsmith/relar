@@ -1,8 +1,7 @@
 import React, { memo, MutableRefObject, useEffect, useRef } from "react";
 import { MdAddToQueue, MdPlaylistAdd } from "react-icons/md";
-import { useDeleteSong } from "../../queries/songs";
 import { fmtMSS, useMySnackbar } from "../../utils";
-import { Queue, SetQueueSource, SongInfo, useIsThePlayingSong } from "../../queue";
+import { Queue, SetQueueSource, useIsThePlayingSong } from "../../queue";
 import {
   ListContainer,
   ListContainerMode,
@@ -17,9 +16,11 @@ import { usePlaylistRemoveSong } from "../../queries/playlists";
 import { MusicListItem } from "./MusicListItem";
 import { areEqual, FixedSizeList } from "react-window";
 import { useAddToPlaylist } from "../add-to-playlist";
+import { Song } from "../../shared/universal/types";
+import { deleteSong } from "../../queries/songs";
 
 export interface SongListProps {
-  songs: SongInfo[] | undefined;
+  songs: Song[] | undefined;
   mode?: ListContainerMode;
   className?: string;
   disableNavigator?: boolean;
@@ -35,10 +36,9 @@ const SongListRow = ({
   source,
   index,
   style,
-}: ListContainerRowProps<SongInfo> & {
+}: ListContainerRowProps<Song> & {
   source: SetQueueSource;
 }) => {
-  const deleteSong = useDeleteSong();
   const removeSong = usePlaylistRemoveSong(source.type === "playlist" ? source.id : undefined);
   const open = useMySnackbar();
   const showAddPlaylist = useAddToPlaylist(song);
@@ -60,12 +60,12 @@ const SongListRow = ({
           type: "click",
           onClick: showAddPlaylist,
         },
-        song.playlistId
+        source.type === "queue"
           ? {
               label: "Remove From Playlist",
               icon: MdPlaylistAdd,
               type: "click",
-              onClick: () => removeSong(song.playlistId!),
+              onClick: () => removeSong(index),
             }
           : undefined,
         song.artist
@@ -134,11 +134,8 @@ export const SongList = ({
   useEffect(() => {
     if (!firstRender.current || source.type !== "queue" || !list.current) return;
     firstRender.current = false;
-    const index = songs?.findIndex(
-      (song) => (song.playlistId ?? song.id) === Queue.getCurrentlyPlaying()?.id,
-    );
-
-    if (index === -1 || index === undefined) return;
+    const index = Queue.getCurrentlyPlaying()?.index;
+    if (index === undefined) return;
     list.current.scrollTo(index * 73);
   }, [songs, source]);
 

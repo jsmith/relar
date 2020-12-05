@@ -2,17 +2,17 @@ import React, { useState, useMemo } from "react";
 import { fmtMSS, pluralSongs, useGradient } from "../../utils";
 import classNames from "classnames";
 import { SongTable, SongTableItem } from "./SongTable";
-import { MdPlayCircleOutline } from "react-icons/md";
 import { HiDotsHorizontal, HiPencil, HiTrash } from "react-icons/hi";
 import { ContentEditable } from "../../components/ContentEditable";
 import Skeleton from "react-loading-skeleton";
 import { Collage } from "../../components/Collage";
-import { Queue, SetQueueSource, SongInfo } from "../../queue";
+import { SetQueueSource } from "../../queue";
 import { useSongsDuration } from "../../queries/songs";
 import { ContextMenuItem, ContextMenu } from "../../components/ContextMenu";
 import { SourcePlayButton } from "../../sections/SourcePlayButton";
+import { Song } from "../../shared/universal/types";
 
-export interface SongsOverviewProps<T extends SongInfo> {
+export interface SongsOverviewProps {
   /**
    * Define this if you can rename the title. It should return whether or not the rename was successful.
    */
@@ -20,16 +20,15 @@ export interface SongsOverviewProps<T extends SongInfo> {
   onDelete?: () => Promise<void>;
   /** The title string. Undefined means that it is still loading. */
   title: string | undefined;
-  /** The songs. */
-  songs: T[] | undefined;
+  songs: Song[] | undefined;
   infoPoints?: Array<string | undefined>;
-  songActions?: SongTableItem<T>[];
+  songActions?: SongTableItem[];
   source: SetQueueSource;
   includeDateAdded?: boolean;
   includeAlbumNumber?: boolean;
 }
 
-export const SongsOverview = <T extends SongInfo>({
+export const SongsOverview = ({
   onRename,
   onDelete,
   title,
@@ -39,7 +38,7 @@ export const SongsOverview = <T extends SongInfo>({
   source,
   includeDateAdded,
   includeAlbumNumber,
-}: SongsOverviewProps<T>) => {
+}: SongsOverviewProps) => {
   const [averageColor, setAverageColor] = useState("#cbd5e0");
   const { from, to, isLight } = useGradient(averageColor);
   const [editingName, setEditingName] = useState(false);
