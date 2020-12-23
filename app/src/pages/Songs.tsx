@@ -9,7 +9,7 @@ const SongList = React.lazy(() =>
 
 export const Songs = () => {
   const songs = useCoolSongs();
-  return songs?.length !== 0 ? (
+  return songs?.length === 0 ? (
     <EmptyState icon={RiMusicLine}>No songs found. Upload a few tunes to get started :)</EmptyState>
   ) : (
     <SongList songs={songs} source={{ type: "library" }} />
