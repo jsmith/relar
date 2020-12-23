@@ -2,6 +2,13 @@ import { WebPlugin } from "@capacitor/core";
 import { NativeAudioPlugin, PreloadOptions } from "./definitions";
 
 export class NativeAudioWeb extends WebPlugin implements NativeAudioPlugin {
+  // FIXME Fix https://sentry.io/organizations/relar/issues/1976465264/?project=5258806&query=is%3Aunresolved
+  // Look at https://stackoverflow.com/questions/36803176/how-to-prevent-the-play-request-was-interrupted-by-a-call-to-pause-error
+  // This is super important
+  // Opt-in to CORS
+  // See https://developers.google.com/web/tools/workbox/guides/advanced-recipes#cached-av
+  // crossOrigin="anonymous"
+  // preload="metadata"
   private audioElement = document.createElement("audio");
 
   constructor() {

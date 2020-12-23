@@ -5,7 +5,7 @@ import { Sidebar } from "../components/Sidebar";
 import { FaMusic } from "react-icons/fa";
 import classNames from "classnames";
 import { Player } from "./sections/Player";
-import { MdLibraryMusic, MdSearch, MdAddCircle, MdMusicNote, MdShuffle } from "react-icons/md";
+import { MdLibraryMusic, MdSearch, MdAddCircle, MdMusicNote } from "react-icons/md";
 import { AccountDropdown } from "./sections/AccountDropdown";
 import { isMobile, useDocumentTitle } from "../utils";
 import { Link } from "../components/Link";
@@ -13,8 +13,6 @@ import { button, link, bgApp } from "../classes";
 import { SkipNavLink, SkipNavContent } from "@reach/skip-nav";
 import "@reach/skip-nav/styles.css";
 import { UploadModal } from "../sections/UploadModal";
-import { LoadingSpinner } from "../components/LoadingSpinner";
-import { QueueAudio } from "../queue";
 import { QueueWeb } from "./sections/QueueWeb";
 import FocusTrap from "focus-trap-react";
 import { useStartupHooks } from "../startup";
@@ -29,10 +27,7 @@ import { New } from "../components/New";
 import { useDarkMode } from "../dark";
 import { useDeferredInstallPrompt } from "../service-worker";
 import { RiArrowDownCircleLine } from "react-icons/ri";
-
-export const LoadingPage = ({ className }: { className?: string }) => (
-  <LoadingSpinner className={classNames(className, "bg-white dark:bg-gray-900")} />
-);
+import { LoadingPage } from "../components/LoadingPage";
 
 export interface SideBarItem {
   label: string;
@@ -248,7 +243,8 @@ export const App = () => {
       </div>
       <SkipNavContent />
       <React.Suspense fallback={<LoadingPage className="flex-grow" />}>{content}</React.Suspense>
-      {user && <QueueAudio />}
     </div>
   );
 };
+
+export default App;

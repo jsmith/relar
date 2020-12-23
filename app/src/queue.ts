@@ -1,23 +1,17 @@
-import React, { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Song } from "./shared/universal/types";
 import { tryToGetSongDownloadUrlOrLog } from "./queries/songs";
-import usePortal from "react-useportal";
 import {
   captureAndLogError,
   shuffleArray,
   removeElementFromShuffled,
   useStateWithRef,
   getLocalStorage,
-  captureAndLog,
 } from "./utils";
 import firebase from "firebase/app";
 import { createEmitter } from "./events";
-import * as uuid from "uuid";
 import { captureException } from "@sentry/browser";
 import { getUserDataOrError, serverTimestamp } from "./firestore";
-import { tryToGetDownloadUrlOrLog } from "./queries/thumbnail";
-import { getDefinedUser } from "./auth";
-import { isDefined } from "./shared/universal/utils";
 import { useChangedSongs } from "./db";
 
 export type GeneratedType = "recently-added" | "recently-played" | "liked";
@@ -641,123 +635,6 @@ export const useIsPlayingSource = ({ source }: { source: SetQueueSource }) => {
   useEffect(check, [check]);
 
   return isPlaying;
-};
-
-export const QueueAudio = () => {
-  const { Portal } = usePortal();
-  const ref = useRef<HTMLAudioElement | null>(null);
-
-  const controls = useRef<AudioControls>({
-    setSrc: async (opts: { src: string; song: Song } | null) => {
-      if (opts) {
-        if (ref.current) ref.current.src = opts.src;
-        const { song } = opts;
-
-        // Great docs about this here -> https://web.dev/media-session/
-        // This is only implemented on Chrome so we need to check
-        // if the media session is available
-        if (!window.navigator.mediaSession) return;
-        const mediaSession = window.navigator.mediaSession;
-
-        const sizes = ["128", "256"] as const;
-        const batch = firebase.firestore().batch();
-        const thumbnails = sizes.map((size) =>
-          tryToGetDownloadUrlOrLog(getDefinedUser(), song, size, batch),
-        );
-
-        Promise.all(thumbnails)
-          .then((thumbnails) => {
-            // This batch can be empty and that's ok
-            // It's important that commit is called here after all of the promises have been resolved
-            batch.commit().catch(captureAndLog);
-
-            return thumbnails.filter(isDefined).map((src, i) => ({
-              src,
-              sizes: `${sizes[i]}x${sizes[i]}`,
-              // We know it's defined at this point since we are working with the artwork
-              // We need the conditional since type is "png" | "jpg" and "image/jpg" is
-              // not valid
-              type: `image/${song.artwork!.type === "png" ? "png" : "jpeg"}`,
-            }));
-          })
-          .then((artwork) => {
-            mediaSession.metadata = new MediaMetadata({
-              title: song.title,
-              artist: song.artist || "Unknown Artist",
-              album: song.albumName || "Unknown Album",
-              artwork,
-            });
-          });
-      } else {
-        // This is important since if the player is currently playing we need to make sure it stops
-        ref.current?.pause();
-      }
-    },
-    getCurrentTime: async () => ref.current?.currentTime ?? 0,
-    setVolume: (volume: number) => {
-      if (ref.current) ref.current.volume = volume;
-    },
-    setCurrentTime: (currentTime: number) => {
-      if (ref.current) ref.current.currentTime = currentTime;
-    },
-    pause: () => ref.current?.pause(),
-    play: () => ref.current?.play(),
-  });
-
-  useEffect(() => {
-    const actionHandlers = [
-      ["play", Queue.playIfNotPlaying],
-      ["pause", Queue.pauseIfPlaying],
-      ["previoustrack", Queue.previous],
-      ["nexttrack", Queue.next],
-      ["stop", Queue.stopPlaying],
-    ] as const;
-
-    const setHandler = (action: MediaSessionAction, handler?: () => void) => {
-      try {
-        // Un-setting a media session action handler is as easy as setting it to null.
-        window.navigator.mediaSession?.setActionHandler(action, handler ?? null);
-      } catch (error) {
-        console.info(`The media session action "${action}" is not supported yet.`);
-      }
-    };
-
-    for (const [action, handler] of actionHandlers) {
-      setHandler(action, handler);
-    }
-
-    return () => {
-      for (const [action] of actionHandlers) {
-        setHandler(action);
-      }
-    };
-  });
-
-  return (
-    <Portal>
-      <audio
-        // FIXME Fix https://sentry.io/organizations/relar/issues/1976465264/?project=5258806&query=is%3Aunresolved
-        // Look at https://stackoverflow.com/questions/36803176/how-to-prevent-the-play-request-was-interrupted-by-a-call-to-pause-error
-        // This is super important
-        // Opt-in to CORS
-        // See https://developers.google.com/web/tools/workbox/guides/advanced-recipes#cached-av
-        // crossOrigin="anonymous"
-        // preload="metadata"
-        ref={(el) => {
-          ref.current = el;
-          if (el === null) Queue._setRef(null);
-          else Queue._setRef(controls.current);
-        }}
-        onEnded={Queue._nextAutomatic}
-        // These are triggered if we call .pause() or if the system pauses the music
-        // ie. a user clicks play/pause using their headphones
-        onPlay={Queue.playIfNotPlaying}
-        onPause={Queue.pauseIfPlaying}
-      >
-        Your browser does not support HTML5 Audio...
-      </audio>
-    </Portal>
-  );
 };
 
 export const useHumanReadableName = (item: QueueItem | undefined) => {

@@ -10,87 +10,42 @@ const ReleaseNotes = React.lazy(() => import("./pages/ReleaseNotes"));
 const BetaGuide = React.lazy(() => import("./pages/BetaGuide"));
 const Login = React.lazy(() => import("./pages/Login"));
 const Settings = React.lazy(() => import("./mobile/pages/Settings"));
-// FIXME this is def not what we want to show on mobile
 const Search = React.lazy(() => import("./pages/Search"));
 const SearchMobile = React.lazy(() => import("./mobile/pages/Search"));
 const Signup = React.lazy(() => import("./pages/Signup"));
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
 const Home = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/Home")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/Home"),
+  isMobile() ? import("./mobile/pages/Home") : import("./web/pages/Home"),
 );
 const Songs = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/Songs")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/Songs"),
+  isMobile() ? import("./mobile/pages/Songs") : import("./web/pages/Songs"),
 );
 const Artists = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/Artists")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/Artists"),
+  isMobile() ? import("./mobile/pages/Artists") : import("./web/pages/Artists"),
 );
 const Albums = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/Albums")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/Albums"),
+  isMobile() ? import("./mobile/pages/Albums") : import("./web/pages/Albums"),
 );
 const Playlists = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/Playlists")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/Playlists"),
+  isMobile() ? import("./mobile/pages/Playlists") : import("./web/pages/Playlists"),
 );
 const Genres = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/Genres")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/Genres"),
+  isMobile() ? import("./mobile/pages/Genres") : import("./web/pages/Genres"),
 );
 const GenreOverview = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/GenreOverview")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/GenreOverview"),
+  isMobile() ? import("./mobile/pages/GenreOverview") : import("./web/pages/GenreOverview"),
 );
 const AlbumOverview = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/AlbumOverview")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/AlbumOverview"),
+  isMobile() ? import("./mobile/pages/AlbumOverview") : import("./web/pages/AlbumOverview"),
 );
 const ArtistOverview = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/ArtistOverview")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/ArtistOverview"),
+  isMobile() ? import("./mobile/pages/ArtistOverview") : import("./web/pages/ArtistOverview"),
 );
 const Generated = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/Generated")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/Generated"),
+  isMobile() ? import("./mobile/pages/Generated") : import("./web/pages/Generated"),
 );
 const PlaylistOverview = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/PlaylistOverview")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/PlaylistOverview"),
+  isMobile() ? import("./mobile/pages/PlaylistOverview") : import("./web/pages/PlaylistOverview"),
 );
 const ForgotPasswordSuccess = React.lazy(() => import("./pages/ForgotPasswordSuccess"));
 const Hero = React.lazy(() =>

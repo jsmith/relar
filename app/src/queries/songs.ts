@@ -1,15 +1,8 @@
 import firebase from "firebase/app";
 import { Song } from "../shared/universal/types";
 import { getDownloadURL } from "../storage";
-import {
-  captureAndLogError,
-  captureAndLog,
-  clientStorage,
-  clientDb,
-  openSnackbar,
-  IS_WEB_VIEW,
-} from "../utils";
-import { getUserDataOrError, serverTimestamp } from "../firestore";
+import { captureAndLogError, captureAndLog, clientStorage, clientDb, openSnackbar } from "../utils";
+import { serverTimestamp } from "../firestore";
 import { useMemo } from "react";
 import { useCoolSongs } from "../db";
 import { GeneratedType } from "../queue";

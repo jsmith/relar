@@ -5,9 +5,7 @@ import { LoadingSpinner } from "../components/LoadingSpinner";
 import { HiHome, HiOutlineCog, HiSearch } from "react-icons/hi";
 import { ActionSheet } from "./action-sheet";
 import { Plugins, StatusBarStyle } from "@capacitor/core";
-// Import to register plugin
-import "@capacitor-community/native-audio";
-import { NativeAudioPlugin } from "@capacitor-community/native-audio";
+
 import { AudioControls, Queue } from "../queue";
 import { BackButton } from "./components/BackButton";
 import { useStartupHooks } from "../startup";
@@ -30,65 +28,7 @@ import { SlideUpScreen } from "./slide-up-screen";
 import { SMALL_PLAYER_HEIGHT, TABS_HEIGHT, TOP_BAR_HEIGHT } from "./constants";
 import { createEmitter } from "../events";
 import { useDarkMode } from "../dark";
-
-const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
-
-class Controls implements AudioControls {
-  private _paused: boolean;
-  private _volume: number | undefined;
-
-  constructor() {
-    this._paused = false;
-  }
-
-  pause() {
-    this._paused = true;
-    NativeAudio.pause();
-  }
-
-  play() {
-    this._paused = false;
-    NativeAudio.play();
-  }
-
-  get paused() {
-    return this._paused;
-  }
-
-  async setSrc(opts: { src: string; song: Song } | null) {
-    if (!opts) {
-      NativeAudio.stop();
-      return;
-    }
-
-    const { src, song } = opts;
-    const cover = await tryToGetDownloadUrlOrLog(getDefinedUser(), song, "256");
-
-    await NativeAudio.preload({
-      path: src,
-      volume: this._volume ?? 1.0,
-      title: song.title,
-      artist: song.artist ?? "Unknown Artist",
-      album: song.albumName ?? "Unknown Album",
-      cover,
-    });
-  }
-
-  getCurrentTime() {
-    return NativeAudio.getCurrentTime().then(({ currentTime }) => currentTime);
-  }
-
-  setCurrentTime(currentTime: number) {
-    NativeAudio.setCurrentTime({ currentTime });
-  }
-
-  setVolume(volume: number) {
-    this._volume = volume;
-    NativeAudio.setVolume({ volume });
-  }
-}
-
-const controls = new Controls();
+import { NativeAudio } from "@capacitor-community/native-audio";
 
 export const Tab = ({
   label,
@@ -168,32 +108,19 @@ export const App = () => {
   useStartupHooks();
 
   useEffect(() => {
+    return NativeAudio.addListener("stop", () => {
+      // If the user stops the music and the big player is currently open, we should close it
+      emitter.emit("setOpenBigPlayer", false);
+    }).remove;
+  }, []);
+
+  useEffect(() => {
     if (!loading && user && route?.protected === false) {
       navigateTo("home");
     } else if (!loading && !user && route?.protected === true) {
       navigateTo("hero");
     }
   }, [loading, route?.protected, user]);
-
-  useEffect(() => {
-    const disposers = [
-      NativeAudio.addListener("complete", Queue._nextAutomatic).remove,
-      NativeAudio.addListener("play", Queue.toggleState).remove,
-      NativeAudio.addListener("pause", Queue.toggleState).remove,
-      NativeAudio.addListener("next", Queue.next).remove,
-      NativeAudio.addListener("previous", Queue.previous).remove,
-      NativeAudio.addListener("stop", () => {
-        // If the user stops the music and the big player is currently open, we should close it
-        emitter.emit("setOpenBigPlayer", false);
-        Queue.stopPlaying();
-      }).remove,
-    ];
-
-    Queue._setRef(controls);
-    return () => {
-      disposers.forEach((disposer) => disposer());
-    };
-  }, []);
 
   if (
     loading ||
@@ -222,8 +149,7 @@ export const App = () => {
         id="scroll-root"
         style={{
           // webkit-overflow-scrolling is for iOS < 13
-          // @ts-ignore
-          "-webkit-overflow-scrolling": "touch",
+          WebkitOverflowScrolling: "touch",
         }}
         className={classNames(
           "text-gray-700 dark:text-gray-300 flex flex-col",
@@ -324,3 +250,5 @@ export const App = () => {
     </>
   );
 };
+
+export default App;
