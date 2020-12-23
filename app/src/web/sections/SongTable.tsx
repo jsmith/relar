@@ -125,7 +125,7 @@ export const SongTableRow = ({
 }: SongTableRowProps) => {
   const [focusedPlay, setFocusedPlay] = useState(false);
   const { confirmAction } = useConfirmAction();
-  const isPlaying = useIsThePlayingSong({ song, source });
+  const isPlaying = useIsThePlayingSong({ song, source, index });
 
   const contextMenuItems = useMemo(() => {
     const extraItems: ContextMenuItem[] =
@@ -157,15 +157,12 @@ export const SongTableRow = ({
         label: "Delete",
         icon: MdDelete,
         onClick: async () => {
-          const confirmed = await confirmAction({
+          await confirmAction({
             title: `Delete ${song.title}`,
             subtitle: "Are you sure you want to delete this song?",
             confirmText: "Delete Song",
+            onConfirm: () => deleteSong(song.id),
           });
-
-          if (confirmed) {
-            deleteSong(song.id);
-          }
         },
       },
       ...extraItems,

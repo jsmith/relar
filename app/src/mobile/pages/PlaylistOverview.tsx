@@ -1,5 +1,5 @@
 import React from "react";
-import { onConditions, useMySnackbar } from "../../utils";
+import { onConditions, openSnackbar } from "../../utils";
 import { SongsOverview } from "../sections/SongsOverview";
 import { usePlaylist, usePlaylistDelete, usePlaylistRename } from "../../queries/playlists";
 import { Modals } from "@capacitor/core";
@@ -10,7 +10,6 @@ export const PlaylistOverview = () => {
   const playlist = usePlaylist(params.playlistId);
   const rename = usePlaylistRename(params.playlistId);
   const deletePlaylist = usePlaylistDelete(params.playlistId);
-  const open = useMySnackbar();
 
   return (
     <SongsOverview
@@ -20,7 +19,7 @@ export const PlaylistOverview = () => {
         onConditions(
           () => rename(name),
           () => {},
-          () => open("Something went wrong when renaming your playlist"),
+          () => openSnackbar("Something went wrong when renaming your playlist"),
         );
       }}
       onDelete={async () => {
@@ -35,7 +34,7 @@ export const PlaylistOverview = () => {
           onConditions(
             () => deletePlaylist(),
             () => navigateTo("playlists"),
-            () => open("Something went wrong when deleting your playlist"),
+            () => openSnackbar("Something went wrong when deleting your playlist"),
           );
         }
       }}

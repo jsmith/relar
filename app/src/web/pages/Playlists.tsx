@@ -21,7 +21,7 @@ export const Playlists = () => {
       {playlists.length > 0 ? (
         <ThumbnailCardGrid
           items={playlists}
-          getTitle={(playlist) => playlist.name}
+          getTitle={(playlist) => playlist?.name || "Unknown"}
           getSubtitle={(playlist) => songsCount(playlist.songs?.length)}
           onClick={(playlist) => navigateTo("playlist", { playlistId: playlist.id })}
           play={(playlist) =>

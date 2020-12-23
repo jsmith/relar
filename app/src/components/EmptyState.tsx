@@ -9,7 +9,7 @@ export const EmptyState = ({
   icon: IconType;
 }) => {
   return (
-    <div className="text-gray-700 flex flex-col items-center justify-center w-full max-w-lg mx-auto text-center h-full">
+    <div className="text-gray-700 dark:text-gray-300 flex flex-col items-center justify-center w-full max-w-lg mx-auto text-center h-full">
       <Icon className="w-16 h-16" />
       <div>{children}</div>
     </div>

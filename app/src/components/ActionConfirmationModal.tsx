@@ -7,7 +7,7 @@ import { OkCancelModal } from "./OkCancelModal";
 
 export interface ActionConfirmationModalProps {
   onCancel: () => void;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
   title: string;
   subtitle: string;
   confirmText: string;
@@ -28,7 +28,7 @@ export const ActionConfirmationModal = ({
 
   const checkEmail = () => {
     if (!confirmEmail || email === user?.email) {
-      onConfirm();
+      return onConfirm();
     } else {
       setError("You email does not match. Please try again!");
     }

@@ -297,3 +297,13 @@ export type BetaAPI = {
     };
   };
 };
+
+export type SongAPI = {
+  "/songs/:songId": {
+    DELETE: {
+      body: { idToken: string };
+      response: Success | KnownError<"does-not-exist" | "unauthorized"> | UnknownError;
+      params: { songId: string };
+    };
+  };
+};

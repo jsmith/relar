@@ -5,7 +5,7 @@ import { Modal } from "./Modal";
 
 export interface ModalProps {
   onCancel: () => void;
-  onOk: () => void;
+  onOk: () => void | Promise<void>;
   okText?: string;
   children: React.ReactNode;
   titleText: string;
@@ -43,15 +43,18 @@ export const OkCancelModal = ({
             id="modal-confirm-button"
             theme={okTheme}
             label={okText}
-            onClick={async () => {
-              setLoading(true);
-              try {
-                if (onOk) {
-                  await onOk();
+            onClick={() => {
+              // This is so that we don't get two loading animations
+              (async () => {
+                setLoading(true);
+                try {
+                  if (onOk) {
+                    await onOk();
+                  }
+                } finally {
+                  setLoading(false);
                 }
-              } finally {
-                setLoading(false);
-              }
+              })();
             }}
           />
         </span>

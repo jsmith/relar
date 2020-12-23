@@ -88,7 +88,7 @@ export const App = () => {
     },
     {
       label: "Search",
-      new: true,
+      new: false,
       icon: MdSearch,
       type: "click",
       onClick: () => open(),

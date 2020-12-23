@@ -1,6 +1,6 @@
 import React, { memo, MutableRefObject, useEffect, useRef } from "react";
 import { MdAddToQueue, MdPlaylistAdd } from "react-icons/md";
-import { fmtMSS, useMySnackbar } from "../../utils";
+import { fmtMSS } from "../../utils";
 import { Queue, SetQueueSource, useIsThePlayingSong } from "../../queue";
 import {
   ListContainer,
@@ -12,7 +12,7 @@ import { RiAlbumLine } from "react-icons/ri";
 import { getAlbumRouteParams, getArtistRouteParams } from "../../routes";
 import { HiTrash } from "react-icons/hi";
 import { Modals } from "@capacitor/core";
-import { usePlaylistRemoveSong } from "../../queries/playlists";
+import { removeSongFromPlaylist } from "../../queries/playlists";
 import { MusicListItem } from "./MusicListItem";
 import { areEqual, FixedSizeList } from "react-window";
 import { useAddToPlaylist } from "../add-to-playlist";
@@ -39,10 +39,8 @@ const SongListRow = ({
 }: ListContainerRowProps<Song> & {
   source: SetQueueSource;
 }) => {
-  const removeSong = usePlaylistRemoveSong(source.type === "playlist" ? source.id : undefined);
-  const open = useMySnackbar();
   const showAddPlaylist = useAddToPlaylist(song);
-  const state = useIsThePlayingSong({ song, source });
+  const state = useIsThePlayingSong({ song, source, index });
 
   return (
     <MusicListItem
@@ -60,12 +58,13 @@ const SongListRow = ({
           type: "click",
           onClick: showAddPlaylist,
         },
-        source.type === "queue"
+        source.type === "playlist"
           ? {
               label: "Remove From Playlist",
               icon: MdPlaylistAdd,
               type: "click",
-              onClick: () => removeSong(index),
+              onClick: () =>
+                removeSongFromPlaylist({ playlistId: source.id, index, songId: song.id }),
             }
           : undefined,
         song.artist
@@ -92,10 +91,9 @@ const SongListRow = ({
             Modals.confirm({
               title: "Delete Song",
               message: `Are you sure you want to delete ${song.title}?`,
-            }).then(({ value }) => {
+            }).then(async ({ value }) => {
               if (value) {
                 deleteSong(song.id);
-                open(`Successfully deleted ${song.title}`);
               }
             });
           },

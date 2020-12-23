@@ -1,38 +1,49 @@
 import * as f from "firebase-functions";
 import { adminDb, deleteAllUserData, serverTimestamp } from "./shared/node/utils";
-import { setSentryUser, wrapAndReport } from "./sentry";
+import { setSentryUser } from "./sentry";
 import { admin } from "./admin";
-import { Playlist, SongType, UserData } from "./shared/universal/types";
-import { decode } from "./shared/universal/utils";
+import * as functions from "firebase-functions";
+import { Playlist, Song, SongAPI, UserData } from "./shared/universal/types";
+import { configureExpress } from "./express-utils";
+import { TypedAsyncRouter } from "@graywolfai/rest-ts-express";
 
 export const onDeleteUser = f.auth.user().onDelete(async (user) => {
   setSentryUser({ id: user.uid, email: user.email });
   await deleteAllUserData(user.uid);
 });
 
-export const onDeleteSong = f.firestore.document("user_data/{userId}/songs/{songId}").onUpdate(
-  wrapAndReport(async (snapshot, context) => {
-    const userId = context.params.userId;
-    setSentryUser({ id: userId });
+export const app = configureExpress((app) => {
+  const router = TypedAsyncRouter<SongAPI>(app);
 
-    const before = decode(snapshot.before.data(), SongType)._unsafeUnwrap();
-    const after = decode(snapshot.after.data(), SongType)._unsafeUnwrap();
+  router.delete("/songs/:songId", async (req) => {
+    const { body } = req;
+    let user: admin.auth.DecodedIdToken;
+    const auth = admin.auth();
+    try {
+      user = await auth.verifyIdToken(body.idToken);
+    } catch (e) {
+      return {
+        type: "error",
+        code: "unauthorized",
+      };
+    }
 
-    // If the "deleted attribute" hasn't changed then don't run
-    if (before.deleted === after.deleted) return;
+    const songId = req.params.songId;
+    if (!songId) return { type: "error", code: "does-not-exist" };
 
-    // Also, if the change set "delete" to not true, then don't run the following code
-    if (!after.deleted) return;
-
-    const song = after;
-
-    const userData = adminDb(userId).doc();
+    const song = adminDb(user.uid).song(songId);
+    const userData = adminDb(user.uid).doc();
 
     const writes: Array<undefined | (() => void)> = [];
     await admin.firestore().runTransaction(async (transaction) => {
+      const update: Partial<Song> = {
+        deleted: true,
+        updatedAt: serverTimestamp(),
+      };
+
       // FIXME switch this to an "array-contains" query in a few weeks when *all* playlist songs
       // are just lists of IDs
-      const playlists = await transaction.get(adminDb(userId).playlists());
+      const playlists = await transaction.get(adminDb(user.uid).playlists());
       playlists.forEach((playlist) => {
         const songs: Playlist["songs"] = playlist
           .data()
@@ -56,6 +67,7 @@ export const onDeleteSong = f.firestore.document("user_data/{userId}/songs/{song
         writes.push(() => transaction.update(userData, update));
       }
 
+      transaction.update(song, update);
       writes.forEach((write) => write && write());
     });
 
@@ -89,5 +101,11 @@ export const onDeleteSong = f.firestore.document("user_data/{userId}/songs/{song
     //     throw e;
     //   }
     // }
-  }),
-);
+
+    return {
+      type: "success",
+    };
+  });
+});
+
+export const songApp = functions.https.onRequest(app);

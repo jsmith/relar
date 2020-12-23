@@ -7,6 +7,8 @@ export interface ConfirmActionProps {
   subtitle: string;
   confirmText: string;
   confirmEmail?: boolean;
+  onConfirm?: () => void | Promise<void>;
+  onCancel?: () => void;
 }
 
 export const ConfirmActionContext = createContext<{
@@ -24,8 +26,14 @@ export const ConfirmActionProvider = (props: React.Props<{}>) => {
       subtitle={cb.current?.props?.subtitle ?? ""}
       confirmText={cb.current?.props?.confirmText ?? ""}
       confirmEmail={cb.current?.props?.confirmEmail}
-      onCancel={() => setDisplayAndCall(false)}
-      onConfirm={() => setDisplayAndCall(true)}
+      onCancel={() => {
+        cb.current?.props.onCancel && cb.current.props.onCancel();
+        setDisplayAndCall(false);
+      }}
+      onConfirm={async () => {
+        cb.current?.props.onConfirm && (await cb.current?.props.onConfirm());
+        setDisplayAndCall(true);
+      }}
     ></ActionConfirmationModal>
   ));
 

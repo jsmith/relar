@@ -2,7 +2,7 @@ import React from "react";
 import { fmtToDate, onConditions } from "../../utils";
 import {
   usePlaylist,
-  usePlaylistRemoveSong,
+  removeSongFromPlaylist,
   usePlaylistRename,
   usePlaylistDelete,
 } from "../../queries/playlists";
@@ -14,7 +14,6 @@ import { SongsOverview } from "../sections/SongsOverview";
 export const PlaylistOverview = () => {
   const { params } = useNavigator("playlist");
   const playlist = usePlaylist(params.playlistId);
-  const removeSong = usePlaylistRemoveSong(params.playlistId);
   const rename = usePlaylistRename(params.playlistId);
   const deletePlaylist = usePlaylistDelete(params.playlistId);
   const { confirmAction } = useConfirmAction();
@@ -29,9 +28,12 @@ export const PlaylistOverview = () => {
         {
           label: "Remove From Playlist",
           icon: HiOutlineTrash,
-          // This should always succeed
-          // The check is just for TS
-          onClick: (_, i) => removeSong(i),
+          onClick: (song, index) =>
+            removeSongFromPlaylist({
+              playlistId: params.playlistId,
+              index,
+              songId: song.id,
+            }),
         },
       ]}
       onRename={(name) => {
@@ -46,18 +48,16 @@ export const PlaylistOverview = () => {
       }}
       onDelete={async () => {
         if (!playlist) return;
-        const confirmed = await confirmAction({
+        await confirmAction({
           title: "Delete Playlist",
           subtitle: `Are you sure you want to delete ${playlist.name}?`,
           confirmText: "Delete",
+          onConfirm: () =>
+            onConditions(
+              () => deletePlaylist(),
+              () => navigateTo("playlists"),
+            ),
         });
-
-        if (confirmed) {
-          onConditions(
-            () => deletePlaylist(),
-            () => navigateTo("playlists"),
-          );
-        }
       }}
     />
   );

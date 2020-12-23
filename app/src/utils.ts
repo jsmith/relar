@@ -23,6 +23,7 @@ import {
 } from "./shared/universal/types";
 import firebase from "firebase/app";
 import * as uuid from "uuid";
+import { createEmitter } from "./events";
 
 const { Storage } = Plugins;
 
@@ -657,12 +658,19 @@ export function useOnlineStatus() {
   return onlineStatus;
 }
 
+const emitter = createEmitter<{ open: [React.ReactNode, number | undefined] }>();
+export const openSnackbar = (node: React.ReactNode, duration?: number) => {
+  emitter.emit("open", node, duration);
+};
+
 export const useMySnackbar = () => {
   const mobile = useIsMobile();
   const [open] = useSnackbar(
     mobile ? {} : { position: "top-right", style: { transform: "translateY(60px)" } },
   );
-  return open;
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => emitter.on("open", (node, duration) => open(node, duration)), []);
 };
 
 export const parseIntOr = <T>(value: string | undefined, defaultValue: T) => {

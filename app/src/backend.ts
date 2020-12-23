@@ -1,6 +1,6 @@
 import axios from "@graywolfai/rest-ts-axios";
 import { env } from "./env";
-import { BetaAPI, UnknownError } from "./shared/universal/types";
+import { BetaAPI, SongAPI, UnknownError } from "./shared/universal/types";
 import { captureAndLog } from "./utils";
 
 const getOrError = (value: string | undefined): string => {
@@ -8,7 +8,10 @@ const getOrError = (value: string | undefined): string => {
   return value;
 };
 
-export const betaBackend = axios.create<BetaAPI>({ baseURL: getOrError(env.betaBaseUrl) });
+export const betaBackend = axios.create<BetaAPI>({ baseURL: getOrError(`${env.backendUrl}/auth`) });
+export const deleteBackend = axios.create<SongAPI>({
+  baseURL: getOrError(`${env.backendUrl}/delete`),
+});
 
 export const getOrUnknownError = async <T>(
   cb: () => Promise<T>,

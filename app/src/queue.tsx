@@ -56,10 +56,9 @@ export const checkSourcesEqual = (a: SetQueueSource | undefined, b: SetQueueSour
       a.type === b.type;
 
 export const checkQueueItemsEqual = (
-  a: Omit<QueueItem, "index"> | undefined,
-  b: Omit<QueueItem, "index"> | undefined,
+  a: QueueItem | undefined,
+  b: QueueItem | undefined,
 ): boolean => {
-  // TODO check index if queue
   if (a === undefined || b === undefined) return false;
   if (a.song.id !== b.song.id) return false;
 
@@ -72,7 +71,7 @@ export const checkQueueItemsEqual = (
     case "genre":
       return a.source.type === b.source.type && a.source.id === b.source.id;
     case "queue":
-      return true;
+      return a.index === b.index;
     case "library":
       return b.source.type === a.source.type;
     case "manuel":
@@ -579,41 +578,37 @@ export const useQueueItems = () => {
 };
 
 const checkSongIsPlayingSong = ({
-  song,
-  source,
-  currentlyPlaying,
+  a,
+  b,
   state,
 }: {
-  song: Song;
-  source: SetQueueSource;
-  currentlyPlaying: QueueItem | undefined;
+  a: QueueItem | undefined;
+  b: QueueItem | undefined;
   state: QueueState;
 }): "playing" | "paused" | "not-playing" => {
-  if (!checkQueueItemsEqual({ song, source }, currentlyPlaying)) return "not-playing";
+  if (!checkQueueItemsEqual(a, b)) return "not-playing";
   return state === "playing" ? "playing" : "paused";
 };
 
-export const useIsThePlayingSong = ({ song, source }: { song: Song; source: SetQueueSource }) => {
+export const useIsThePlayingSong = (item: QueueItem) => {
   const [isPlayingSong, setIsPlayingSong, isPlayingSongRef] = useStateWithRef(
     checkSongIsPlayingSong({
-      song,
-      source,
+      a: item,
+      b: Queue.getCurrentlyPlaying(),
       state: Queue.getState(),
-      currentlyPlaying: Queue.getCurrentlyPlaying(),
     }),
   );
 
   const check = useCallback(() => {
     const isPlayingSong = checkSongIsPlayingSong({
-      song,
-      source,
+      a: item,
+      b: Queue.getCurrentlyPlaying(),
       state: Queue.getState(),
-      currentlyPlaying: Queue.getCurrentlyPlaying(),
     });
 
     if (isPlayingSong === isPlayingSongRef.current) return;
     setIsPlayingSong(isPlayingSong);
-  }, [isPlayingSongRef, setIsPlayingSong, song, source]);
+  }, [isPlayingSongRef, item, setIsPlayingSong]);
 
   // Anytime the currently playing song or state changes, run the check
   // If the value hasn't changed (this will be 95% of the cases)

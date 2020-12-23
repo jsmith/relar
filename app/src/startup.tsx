@@ -3,7 +3,7 @@ import { useUser, useUserChange } from "./auth";
 import firebase from "firebase/app";
 import * as Sentry from "@sentry/browser";
 import { useCoolDB } from "./db";
-import { onConditions, useMySnackbar, useOnlineStatus } from "./utils";
+import { onConditions, openSnackbar, useMySnackbar, useOnlineStatus } from "./utils";
 import { useNavigation, useNavigator } from "./routes";
 import { Queue, useTimeUpdater } from "./queue";
 
@@ -13,8 +13,9 @@ import { Queue, useTimeUpdater } from "./queue";
 export const useStartupHooks = () => {
   const { routeId } = useNavigator("home"); // "home" is just because something is required
   const { loading } = useUser();
-  const open = useMySnackbar();
   const installEvent = useRef<null | Event>(null);
+
+  useMySnackbar();
 
   useEffect(() => {
     window.addEventListener("beforeinstallprompt", (e) => {
@@ -57,14 +58,14 @@ export const useStartupHooks = () => {
 
   useEffect(() => {
     if (!online) {
-      open("You are now offline", 5000);
+      openSnackbar("You are now offline", 5000);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [online]);
 
   useEffect(() => {
     const onError = () => {
-      open("It looks like something went wrong");
+      openSnackbar("It looks like something went wrong");
     };
 
     window.addEventListener("error", onError);

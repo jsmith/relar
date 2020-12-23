@@ -51,7 +51,7 @@ test("user can pass valid title", async () => {
   );
 });
 
-test("user can edit liked, played, lastPlayed, downloadUrl, artwork, whenLiked and deleted", async () => {
+test("user can edit liked, played, lastPlayed, downloadUrl, artwork and whenLiked", async () => {
   const song = createTestSong();
   await adminRef.set(song);
   await firebase.assertSucceeds(
@@ -64,7 +64,6 @@ test("user can edit liked, played, lastPlayed, downloadUrl, artwork, whenLiked a
       lastPlayed: "",
       artwork: "",
       whenLiked: "",
-      deleted: "",
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
     }),
   );
