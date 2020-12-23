@@ -1,6 +1,6 @@
 import React from "react";
 import { Song } from "../shared/universal/types";
-import { usePlaylistAdd } from "../queries/playlists";
+import { addSongToPlaylist } from "../queries/playlists";
 import { SearchMagnifyingGlass } from "../illustrations/SearchMagnifyingGlass";
 import { pluralSongs, fmtToDate, onConditions } from "../utils";
 import { HiChevronRight } from "react-icons/hi";
@@ -20,7 +20,6 @@ export const AddToPlaylistList = ({
   close: () => void;
 }) => {
   const playlists = useCoolPlaylists();
-  const addToPlaylist = usePlaylistAdd();
 
   return !playlists ? (
     <LoadingSpinner />
@@ -45,7 +44,7 @@ export const AddToPlaylistList = ({
               onConditions(
                 async () => {
                   if (song) {
-                    await addToPlaylist({
+                    await addSongToPlaylist({
                       playlistId: playlist.id,
                       songId: song.id,
                     });

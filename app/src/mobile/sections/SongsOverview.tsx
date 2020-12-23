@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { MdMoreVert, MdPlayArrow } from "react-icons/md";
+import { MdMoreVert } from "react-icons/md";
 import { fmtMSS, songsCount, useWindowSize } from "../../utils";
 import { useSongsDuration } from "../../queries/songs";
 import { HiPencil, HiTrash } from "react-icons/hi";
@@ -7,26 +7,23 @@ import { SongList } from "../sections/SongList";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { ActionSheetItem, openActionSheet } from "../action-sheet";
 import { Collage } from "../../components/Collage";
-import {
-  SetQueueSource,
-  SongInfo,
-  checkSourcesEqual,
-  useIsPlayingSource,
-  Queue,
-} from "../../queue";
+import { SetQueueSource } from "../../queue";
 import { Modals } from "@capacitor/core";
-import { Audio } from "@jsmith21/svg-loaders-react";
 import Skeleton from "react-loading-skeleton";
 import { SourcePlayButton } from "../../sections/SourcePlayButton";
+import { Song } from "../../shared/universal/types";
 
 export interface SongsOverviewProps {
   title: string | undefined;
   subTitle?: string;
   infoPoints?: string[];
   onDelete?: () => Promise<void>;
-  songs: SongInfo[] | undefined;
+  songs: Song[] | undefined;
   source: SetQueueSource;
-  onRename?: (newValue: string) => void;
+  onRename?: (newValue: string) => Promise<boolean>;
+  // TODO
+  includeDateAdded?: boolean;
+  includeAlbumNumber?: boolean;
 }
 
 export const SongsOverview = ({
@@ -45,7 +42,7 @@ export const SongsOverview = ({
   const topImage = useTransform(scrollY, (value) => Math.round(value * 0.3));
 
   useEffect(() => {
-    const element = document.getElementById("root");
+    const element = document.getElementById("scroll-root");
     if (!element) return;
     const onScroll = () => scrollY.set(element.scrollTop);
     element.addEventListener("scroll", onScroll);
@@ -91,7 +88,7 @@ export const SongsOverview = ({
 
   return (
     <>
-      <div style={{ width, height: width }} className="relative overflow-hidden">
+      <div style={{ width, height: width }} className="relative overflow-hidden flex-shrink-0">
         <motion.div style={{ top: topImage }} className="absolute">
           <Collage songs={songs} size="256" style={{ width, height: width }} />
         </motion.div>
@@ -138,3 +135,5 @@ export const SongsOverview = ({
     </>
   );
 };
+
+export default SongsOverview;

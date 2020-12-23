@@ -1,8 +1,6 @@
 import * as Sentry from "@sentry/browser";
-import { emit } from "process";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createEmitter } from "./events";
-import { isMobile, IS_WEB_VIEW } from "./utils";
 
 // This is not really necessary but I have an eslint rule disallowing global variable use
 const navigator = window.navigator;
@@ -103,14 +101,6 @@ export const useUpdatableServiceWorker = () => {
 // https://whatwebcando.today/articles/handling-service-worker-updates/
 export const registerWorker = () => {
   if (!("serviceWorker" in navigator)) return;
-
-  // In our mobile app, files will be served locally
-  // We *may* want to enable this in the future for smart caching of mp3 files and images
-  if (IS_WEB_VIEW) return;
-
-  // It doesn't make much sense to enable this on mobile either
-  // The app is disabled on mobile
-  if (isMobile()) return;
 
   window.addEventListener("beforeinstallprompt", (e) => {
     // Prevent the mini-infobar from appearing on mobile

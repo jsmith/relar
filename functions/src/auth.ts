@@ -1,9 +1,6 @@
-import express from "express";
-import cors from "cors";
 import { TypedAsyncRouter } from "@graywolfai/rest-ts-express";
 import { BetaAPI, BetaSignup, BetaSignupType } from "./shared/universal/types";
 import { isPasswordValid, decode } from "./shared/universal/utils";
-import * as bodyParser from "body-parser";
 import sgMail from "@sendgrid/mail";
 import { env } from "./env";
 import { admin } from "./admin";
@@ -11,6 +8,7 @@ import { Sentry, wrapAndReport, setSentryUser } from "./sentry";
 import { Result, ok, err } from "neverthrow";
 import * as functions from "firebase-functions";
 import { adminDb, betaSignups } from "./shared/node/utils";
+import { configureExpress } from "./express-utils";
 
 sgMail.setApiKey(env.mail.sendgrid_api_key);
 
@@ -19,30 +17,6 @@ function validateEmail(email: string) {
   const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   return re.test(String(email).toLowerCase());
 }
-
-export const app = express();
-
-app.use(Sentry.Handlers.requestHandler());
-app.use(bodyParser.json());
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "http://0.0.0.0:3000",
-      "http://192.168.2.16:3000",
-      "https://toga-4e3f5.web.app",
-      "https://relar-production.web.app",
-      "https://relar.app",
-      "https://staging.relar.app",
-      // iOS webview
-      "capacitor://localhost",
-      // Android webview
-      "http://localhost",
-    ],
-  }),
-);
-
-const router = TypedAsyncRouter<BetaAPI>(app);
 
 const auth = admin.auth();
 const db = admin.firestore();
@@ -66,155 +40,157 @@ const checkUserExists = async (
   }
 };
 
-router.post("/beta-signup", async (req) => {
-  if (!req.body.email) {
-    return {
-      type: "error",
-      code: "invalid-email",
-    };
-  }
+export const app = configureExpress((app) => {
+  const router = TypedAsyncRouter<BetaAPI>(app);
 
-  if (!req.body.firstName) {
-    return {
-      type: "error",
-      code: "invalid-name",
-    };
-  }
-
-  if (!["none", "ios", "android"].includes(req.body.device)) {
-    return {
-      type: "error",
-      code: "invalid-device",
-    };
-  }
-
-  if (!validateEmail(req.body.email)) {
-    return {
-      type: "error",
-      code: "invalid-email",
-    };
-  }
-
-  const result = await checkUserExists(req.body.email);
-  if (result.isErr()) {
-    Sentry.captureException(result.error);
-    return {
-      type: "error",
-      code: "unknown",
-    };
-  } else if (result.value === "exists") {
-    return {
-      type: "error",
-      code: "already-have-account",
-    };
-  }
-
-  return await db.runTransaction(async (transaction) => {
-    const betaSignupRef = betaSignups(db).doc(req.body.email);
-    const result = await transaction.get(betaSignupRef);
-    if (result.exists) {
+  router.post("/beta-signup", async (req) => {
+    if (!req.body.email) {
       return {
         type: "error",
-        code: "already-on-list",
+        code: "invalid-email",
       };
     }
 
-    const betaSignUp: BetaSignup = {
-      email: req.body.email,
-      firstName: req.body.firstName,
-      device: req.body.device,
-    };
+    if (!req.body.firstName) {
+      return {
+        type: "error",
+        code: "invalid-name",
+      };
+    }
 
-    await transaction.set(betaSignupRef, betaSignUp);
+    if (!["none", "ios", "android"].includes(req.body.device)) {
+      return {
+        type: "error",
+        code: "invalid-device",
+      };
+    }
 
-    return {
-      type: "success",
-    };
-  });
-});
+    if (!validateEmail(req.body.email)) {
+      return {
+        type: "error",
+        code: "invalid-email",
+      };
+    }
 
-router.post("/create-account", async (req) => {
-  if (!req.body.password) {
-    return {
-      type: "error",
-      code: "invalid-password",
-    };
-  }
+    const result = await checkUserExists(req.body.email);
+    if (result.isErr()) {
+      Sentry.captureException(result.error);
+      return {
+        type: "error",
+        code: "unknown",
+      };
+    } else if (result.value === "exists") {
+      return {
+        type: "error",
+        code: "already-have-account",
+      };
+    }
 
-  if (!isPasswordValid(req.body.password)) {
-    return {
-      type: "error",
-      code: "invalid-password",
-    };
-  }
-
-  return await db.runTransaction(
-    async (transaction): Promise<BetaAPI["/create-account"]["POST"]["response"]> => {
-      const result = await transaction.get(
-        betaSignups(db).collection().where("token", "==", req.body.token),
-      );
-
-      if (result.docs.length > 1) {
-        Sentry.captureMessage(
-          `Found two documents with the same token: "${req.body.token}"`,
-          Sentry.Severity.Error,
-        );
-
+    return await db.runTransaction(async (transaction) => {
+      const betaSignupRef = betaSignups(db).doc(req.body.email);
+      const result = await transaction.get(betaSignupRef);
+      if (result.exists) {
         return {
           type: "error",
-          code: "unknown",
+          code: "already-on-list",
         };
       }
 
-      if (result.docs.length === 0) {
-        return {
-          type: "error",
-          code: "invalid-token",
-        };
-      }
+      const betaSignUp: BetaSignup = {
+        email: req.body.email,
+        firstName: req.body.firstName,
+        device: req.body.device,
+      };
 
-      const doc = result.docs[0];
-      const data = doc.data();
-
-      const exists = await checkUserExists(data.email);
-      if (exists.isErr()) {
-        return {
-          type: "error",
-          code: "unknown",
-        };
-      } else if (exists.value === "exists") {
-        return {
-          type: "error",
-          code: "already-have-account",
-        };
-      }
-
-      const user = await auth.createUser({
-        displayName: data.firstName,
-        email: data.email,
-        password: req.body.password,
-        emailVerified: true,
-      });
-
-      const userData = adminDb(user.uid).doc();
-      transaction.set(userData, {
-        firstName: data.firstName,
-        songCount: 0,
-        device: data.device,
-      });
-
-      const betaSignupRef = betaSignups(db).doc(doc.id);
-      transaction.delete(betaSignupRef);
+      await transaction.set(betaSignupRef, betaSignUp);
 
       return {
         type: "success",
-        uid: user.uid,
       };
-    },
-  );
-});
+    });
+  });
 
-app.use(Sentry.Handlers.errorHandler());
+  router.post("/create-account", async (req) => {
+    if (!req.body.password) {
+      return {
+        type: "error",
+        code: "invalid-password",
+      };
+    }
+
+    if (!isPasswordValid(req.body.password)) {
+      return {
+        type: "error",
+        code: "invalid-password",
+      };
+    }
+
+    return await db.runTransaction(
+      async (transaction): Promise<BetaAPI["/create-account"]["POST"]["response"]> => {
+        const result = await transaction.get(
+          betaSignups(db).collection().where("token", "==", req.body.token),
+        );
+
+        if (result.docs.length > 1) {
+          Sentry.captureMessage(
+            `Found two documents with the same token: "${req.body.token}"`,
+            Sentry.Severity.Error,
+          );
+
+          return {
+            type: "error",
+            code: "unknown",
+          };
+        }
+
+        if (result.docs.length === 0) {
+          return {
+            type: "error",
+            code: "invalid-token",
+          };
+        }
+
+        const doc = result.docs[0];
+        const data = doc.data();
+
+        const exists = await checkUserExists(data.email);
+        if (exists.isErr()) {
+          return {
+            type: "error",
+            code: "unknown",
+          };
+        } else if (exists.value === "exists") {
+          return {
+            type: "error",
+            code: "already-have-account",
+          };
+        }
+
+        const user = await auth.createUser({
+          displayName: data.firstName,
+          email: data.email,
+          password: req.body.password,
+          emailVerified: true,
+        });
+
+        const userData = adminDb(user.uid).doc();
+        transaction.set(userData, {
+          firstName: data.firstName,
+          songCount: 0,
+          device: data.device,
+        });
+
+        const betaSignupRef = betaSignups(db).doc(doc.id);
+        transaction.delete(betaSignupRef);
+
+        return {
+          type: "success",
+          uid: user.uid,
+        };
+      },
+    );
+  });
+});
 
 export const authApp = functions.https.onRequest(app);
 

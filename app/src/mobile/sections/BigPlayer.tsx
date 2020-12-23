@@ -90,7 +90,6 @@ export const BigPlayer = ({
                     onGo: hide,
                   },
                   {
-                    // TODO test
                     label: "Add To Playlist",
                     icon: MdPlaylistAdd,
                     type: "click",

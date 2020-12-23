@@ -9,19 +9,32 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/icon-16x16.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-tap-highlight" content="no" />
+
+    <!-- add to homescreen for ios -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Relar" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
     <!-- This sets the color of the address bar in the PWA -->
     <meta name="theme-color" content="#8b5cf6" />
+
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1" /> -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover"
+    />
 
     <meta
       name="description"
       content="Relar is a cloud music hosting and streaming service for your personal audio file collection."
     />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Relar</title>
   </head>
   <body>
     <div id="root"></div>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <script type="module" src="/_dist_/web/index.js"></script>
+    <script type="module" src="/_dist_/index.js"></script>
   </body>
 </html>

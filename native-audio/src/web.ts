@@ -2,6 +2,13 @@ import { WebPlugin } from "@capacitor/core";
 import { NativeAudioPlugin, PreloadOptions } from "./definitions";
 
 export class NativeAudioWeb extends WebPlugin implements NativeAudioPlugin {
+  // FIXME Fix https://sentry.io/organizations/relar/issues/1976465264/?project=5258806&query=is%3Aunresolved
+  // Look at https://stackoverflow.com/questions/36803176/how-to-prevent-the-play-request-was-interrupted-by-a-call-to-pause-error
+  // This is super important
+  // Opt-in to CORS
+  // See https://developers.google.com/web/tools/workbox/guides/advanced-recipes#cached-av
+  // crossOrigin="anonymous"
+  // preload="metadata"
   private audioElement = document.createElement("audio");
 
   constructor() {
@@ -13,8 +20,17 @@ export class NativeAudioWeb extends WebPlugin implements NativeAudioPlugin {
     document.body.appendChild(this.audioElement);
 
     this.audioElement.onended = () => {
-      console.log("ON ENDED");
       this.notifyListeners("complete", {});
+    };
+
+    // These are triggered if we call .pause() or if the system pauses the music
+    // ie. a user clicks play/pause using their headphones
+    this.audioElement.onplay = () => {
+      this.notifyListeners("play", {});
+    };
+
+    this.audioElement.onpause = () => {
+      this.notifyListeners("pause", {});
     };
   }
 

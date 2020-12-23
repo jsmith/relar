@@ -1,12 +1,13 @@
 import firebase from "firebase/app";
 import { Song } from "../shared/universal/types";
 import { getDownloadURL } from "../storage";
-import { captureAndLogError, captureAndLog, clientStorage, clientDb } from "../utils";
-import { serverTimestamp, useUserData } from "../firestore";
-import { useCallback, useMemo } from "react";
+import { captureAndLogError, captureAndLog, clientStorage, clientDb, openSnackbar } from "../utils";
+import { serverTimestamp } from "../firestore";
+import { useMemo } from "react";
 import { useCoolSongs } from "../db";
 import { GeneratedType } from "../queue";
 import { getDefinedUser, getGlobalUser } from "../auth";
+import { deleteBackend, getOrUnknownError } from "../backend";
 
 export const useRecentlyPlayedSongs = () => {
   const songs = useCoolSongs();
@@ -41,20 +42,18 @@ export const useLikedSongs = () => {
   );
 };
 
-export const useDeleteSong = () => {
-  const userData = useUserData();
-
-  return useCallback(
-    async (songId: string) => {
-      const update: Partial<Song> = {
-        deleted: true,
-        updatedAt: serverTimestamp(),
-      };
-
-      await userData.song(songId).update(update);
-    },
-    [userData],
+export const deleteSong = async (songId: string) => {
+  const user = getDefinedUser();
+  const idToken = await user.getIdToken();
+  const { data } = await getOrUnknownError(() =>
+    deleteBackend.delete(`/songs/${songId}` as "/songs/:songId", { data: { idToken } }),
   );
+
+  if (data.type === "error") {
+    openSnackbar("Unable to delete song.");
+  } else {
+    openSnackbar(`Successfully deleted song.`);
+  }
 };
 
 export const tryToGetSongDownloadUrlOrLog = async (
@@ -115,7 +114,7 @@ export const useSongLookup = () => {
 
   return useMemo(() => {
     const lookup: { [id: string]: Song } = {};
-    if (!songs) return lookup;
+    if (!songs) return undefined;
     songs.forEach((song) => (lookup[song.id] = song));
     return lookup;
   }, [songs]);

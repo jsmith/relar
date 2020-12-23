@@ -33,7 +33,8 @@ platform :ios do
 
     firebase_app_distribution(
       app: "1:891497953282:ios:ef4d96cd5d4680e4338f1b",
-      groups: "ios-testers"
+      groups: "ios-testers",
+      release_notes: "See the release notes at https://relar.app/release-notes"
     )
   end
 end
