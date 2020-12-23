@@ -9,96 +9,30 @@ const Feedback = React.lazy(() => import("./pages/Feedback"));
 const ReleaseNotes = React.lazy(() => import("./pages/ReleaseNotes"));
 const BetaGuide = React.lazy(() => import("./pages/BetaGuide"));
 const Login = React.lazy(() => import("./pages/Login"));
-const Settings = React.lazy(() => import("./mobile/pages/Settings"));
-// FIXME this is def not what we want to show on mobile
+const Settings = React.lazy(() =>
+  isMobile() ? import("./mobile/pages/Settings") : import("./web/pages/Settings"),
+);
 const Search = React.lazy(() => import("./pages/Search"));
 const SearchMobile = React.lazy(() => import("./mobile/pages/Search"));
 const Signup = React.lazy(() => import("./pages/Signup"));
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
-const Home = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/Home")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/Home"),
-);
-const Songs = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/Songs")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/Songs"),
-);
-const Artists = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/Artists")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/Artists"),
-);
-const Albums = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/Albums")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/Albums"),
-);
-const Playlists = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/Playlists")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/Playlists"),
-);
-const Genres = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/Genres")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/Genres"),
-);
-const GenreOverview = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/GenreOverview")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/GenreOverview"),
-);
-const AlbumOverview = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/AlbumOverview")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/AlbumOverview"),
-);
-const ArtistOverview = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/ArtistOverview")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/ArtistOverview"),
-);
-const Generated = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/Generated")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/Generated"),
-);
-const PlaylistOverview = React.lazy(() =>
-  IS_WEB_VIEW
-    ? import("./mobile/pages/PlaylistOverview")
-    : isMobile()
-    ? import("./pages/UseDesktop")
-    : import("./web/pages/PlaylistOverview"),
-);
+const Home = React.lazy(() => import("./pages/Home")); // TODO
+const Songs = React.lazy(() => import("./pages/Songs"));
+const Artists = React.lazy(() => import("./pages/Artists"));
+const Albums = React.lazy(() => import("./pages/Albums"));
+const Playlists = React.lazy(() => import("./pages/Playlists"));
+const Genres = React.lazy(() => import("./pages/Genres"));
+const GenreOverview = React.lazy(() => import("./pages/GenreOverview"));
+const AlbumOverview = React.lazy(() => import("./pages/AlbumOverview"));
+const ArtistOverview = React.lazy(() => import("./pages/ArtistOverview"));
+const Generated = React.lazy(() => import("./pages/Generated"));
+const PlaylistOverview = React.lazy(() => import("./pages/PlaylistOverview"));
 const ForgotPasswordSuccess = React.lazy(() => import("./pages/ForgotPasswordSuccess"));
 const Hero = React.lazy(() =>
   IS_WEB_VIEW ? import("./mobile/pages/Hero") : import("./web/pages/Hero"),
 );
-const Account = React.lazy(() => import("./web/pages/Account"));
 const Library = React.lazy(() => import("./mobile/pages/Library"));
-const Invite = React.lazy(() => import("./web/pages/Invite"));
+const Invite = React.lazy(() => import("./pages/Invite"));
 const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
 const TermsAndConditions = React.lazy(() => import("./pages/TermsAndConditions"));
 
@@ -124,11 +58,6 @@ const createRoutes = <K extends string>(routes: Record<K, Route<K>>) => routes;
 
 export type NavigatorRoutes = {
   hero: {
-    params: {};
-    queryParams: {};
-  };
-
-  account: {
     params: {};
     queryParams: {};
   };
@@ -288,17 +217,6 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
     showTabs: false,
     dark: true,
   },
-  account: {
-    id: "account",
-    path: "/account",
-    component: Account,
-    protected: true,
-    sidebar: false,
-    className: "py-2",
-    title: "Account",
-    showBack: false,
-    showTabs: false,
-  },
   login: {
     id: "login",
     path: "/login",
@@ -349,7 +267,7 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
     component: Home,
     protected: true,
     sidebar: true,
-    className: "py-2 overflow-y-auto",
+    className: "overflow-y-auto",
     title: "Home",
     showBack: false,
     showTabs: true,

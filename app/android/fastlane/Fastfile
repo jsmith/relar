@@ -62,12 +62,10 @@ platform :android do
       }
     )
 
-    # FIXME do I want crashlytics??
-    # crashlytics
-
     firebase_app_distribution(
       app: "1:891497953282:android:10babcaaea2bb40a338f1b",
-      groups: "android-testers"
+      groups: "android-testers",
+      release_notes: "See the release notes at https://relar.app/release-notes"
     )
   end
 

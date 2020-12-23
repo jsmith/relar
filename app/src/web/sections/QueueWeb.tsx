@@ -7,18 +7,13 @@ import React, {
   useState,
   useEffect,
 } from "react";
-import {
-  Queue,
-  SongInfo,
-  useCurrentlyPlaying,
-  useHumanReadableName,
-  useQueueItems,
-} from "../../queue";
+import { Queue, useCurrentlyPlaying, useHumanReadableName, useQueueItems } from "../../queue";
 import { SongTable } from "./SongTable";
 import { MdQueueMusic, MdMoreVert } from "react-icons/md";
 import { useOnClickOutside, useCombinedRefs } from "../../utils";
 import { Button } from "../../components/Button";
 import { useHotkeys } from "react-hotkeys-hook";
+import { Song } from "../../shared/universal/types";
 
 export interface QueueProps {
   visible: boolean;
@@ -31,10 +26,7 @@ export const QueueWeb = forwardRef<HTMLDivElement, QueueProps>(
   ({ visible, close, exclude }, forwarded) => {
     const queueItems = useQueueItems();
     const currentlyPlaying = useCurrentlyPlaying();
-    const songs = useMemo(
-      () => queueItems.map(({ song, id }): SongInfo => ({ ...song, playlistId: id })),
-      [queueItems],
-    );
+    const songs = useMemo(() => queueItems.map(({ song }) => song), [queueItems]);
     const ref = useRef<HTMLDivElement | null>(null);
     const combined = useCombinedRefs(ref, forwarded);
     const [makeHidden, setMakeHidden] = useState(true);

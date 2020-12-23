@@ -1,13 +1,14 @@
 import React, { useState } from "react";
-import { CardPage } from "../../components/CardPage";
-import { Link } from "../../components/Link";
-import { routes, useNavigator } from "../../routes";
-import { Input } from "../../components/Input";
-import { BlockAlert } from "../../components/BlockAlert";
-import { Button } from "../../components/Button";
-import { betaBackend, getOrUnknownError } from "../../backend";
+import { CardPage } from "../components/CardPage";
+import { Link } from "../components/Link";
+import { useNavigator } from "../routes";
+import { Input } from "../components/Input";
+import { BlockAlert } from "../components/BlockAlert";
+import { Button } from "../components/Button";
+import { betaBackend, getOrUnknownError } from "../backend";
 import firebase from "firebase/app";
-import { textGray600 } from "../../classes";
+import { textGray600 } from "../classes";
+import { assertUnreachable } from "../utils";
 
 export const Invite = () => {
   const { params } = useNavigator("invite");
@@ -45,9 +46,9 @@ export const Invite = () => {
       case "unknown":
         setError("An unknown error occurred. Do you mind trying again?");
         break;
+      default:
+        assertUnreachable(data);
     }
-
-    // FIXME error if not all cases handled
   };
 
   return (

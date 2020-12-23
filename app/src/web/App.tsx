@@ -5,20 +5,16 @@ import { Sidebar } from "../components/Sidebar";
 import { FaMusic } from "react-icons/fa";
 import classNames from "classnames";
 import { Player } from "./sections/Player";
-import { MdLibraryMusic, MdSearch, MdAddCircle, MdMusicNote, MdShuffle } from "react-icons/md";
-import { AccountDropdown } from "./sections/AccountDropdown";
+import { MdLibraryMusic, MdSearch, MdAddCircle } from "react-icons/md";
 import { isMobile, useDocumentTitle } from "../utils";
 import { Link } from "../components/Link";
-import { button, link, bgApp } from "../classes";
+import { bgApp } from "../classes";
 import { SkipNavLink, SkipNavContent } from "@reach/skip-nav";
 import "@reach/skip-nav/styles.css";
 import { UploadModal } from "../sections/UploadModal";
-import { LoadingSpinner } from "../components/LoadingSpinner";
-import { QueueAudio } from "../queue";
 import { QueueWeb } from "./sections/QueueWeb";
 import FocusTrap from "focus-trap-react";
 import { useStartupHooks } from "../startup";
-import { LogoNText } from "../components/LogoNText";
 import { useMetadataEditor } from "../sections/MetadataEditor";
 import { usePlaylistAddModal } from "./sections/AddToPlaylistModal";
 import { LibraryHeader } from "./sections/LibraryHeader";
@@ -29,10 +25,8 @@ import { New } from "../components/New";
 import { useDarkMode } from "../dark";
 import { useDeferredInstallPrompt } from "../service-worker";
 import { RiArrowDownCircleLine } from "react-icons/ri";
-
-export const LoadingPage = ({ className }: { className?: string }) => (
-  <LoadingSpinner className={classNames(className, "bg-white dark:bg-gray-900")} />
-);
+import { LoadingPage } from "../components/LoadingPage";
+import { Toolbar } from "../sections/Toolbar";
 
 export interface SideBarItem {
   label: string;
@@ -88,7 +82,7 @@ export const App = () => {
     },
     {
       label: "Search",
-      new: true,
+      new: false,
       icon: MdSearch,
       type: "click",
       onClick: () => open(),
@@ -203,52 +197,11 @@ export const App = () => {
       style={{ backgroundColor: darkMode ? undefined : bgApp }}
     >
       <SkipNavLink className="text-gray-800" />
-      <div className="flex bg-gray-900 items-center h-16 px-3 sm:px-5 flex-shrink-0 space-x-2">
-        <Link
-          route="hero"
-          className="flex items-center space-x-2 focus:outline-none border border-transparent focus:border-gray-600 rounded"
-          label={
-            <LogoNText
-              className="space-x-2"
-              logoClassName="w-6 h-6 text-purple-500"
-              textClassName="sm:text-2xl text-xl tracking-wider"
-            />
-          }
-        />
-        {user && <div className="text-purple-500 text-2xl">|</div>}
-        {user && (
-          <Link
-            route="home"
-            className={link({ color: "text-white hover:text-purple-400" })}
-            label={
-              <div className="space-x-1">
-                <span>App</span>
-                <MdMusicNote className="inline text-purple-500" />
-              </div>
-            }
-          />
-        )}
-        <div className="flex-grow" />
-        {user ? (
-          <AccountDropdown />
-        ) : (
-          <div className="flex space-x-2 items-center sm:text-base text-sm">
-            <Link
-              className={button({ color: "purple", padding: "px-2 py-2 sm:px-4", invert: true })}
-              label="Login"
-              route="login"
-            />
-            <Link
-              className={button({ color: "purple", padding: "px-2 py-2 sm:px-4" })}
-              label="Sign Up"
-              route="signup"
-            />
-          </div>
-        )}
-      </div>
+      <Toolbar />
       <SkipNavContent />
       <React.Suspense fallback={<LoadingPage className="flex-grow" />}>{content}</React.Suspense>
-      {user && <QueueAudio />}
     </div>
   );
 };
+
+export default App;

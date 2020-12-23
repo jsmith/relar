@@ -9,7 +9,7 @@ android {
         applicationId "app.relar.mobile"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10
+        versionCode 11
         versionName "0.16.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

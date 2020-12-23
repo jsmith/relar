@@ -30,7 +30,6 @@ const createBody = (
   };
 };
 
-// describe.only("auth", () => {
 test("can successfully sign up a user by email", async () => {
   await supertest(app).post("/beta-signup").send(createBody()).expect(200, {
     type: "success",

@@ -1,19 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { getDefinedUser, useUser } from "../auth";
-import { navigateTo, NavigatorRoutes, routes, useNavigator, Route } from "../routes";
+import { useUser } from "../auth";
+import { navigateTo, NavigatorRoutes, routes, useNavigator } from "../routes";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { HiHome, HiOutlineCog, HiSearch } from "react-icons/hi";
 import { ActionSheet } from "./action-sheet";
-import { Plugins, StatusBarStyle } from "@capacitor/core";
-// Import to register plugin
-import "@capacitor-community/native-audio";
-import { NativeAudioPlugin } from "@capacitor-community/native-audio";
-import { AudioControls, Queue } from "../queue";
+import { StatusBarStyle } from "@capacitor/core";
+import { Queue } from "../queue";
 import { BackButton } from "./components/BackButton";
 import { useStartupHooks } from "../startup";
 import classNames from "classnames";
-import { tryToGetDownloadUrlOrLog } from "../queries/thumbnail";
-import { Song } from "../shared/universal/types";
 import { useDefaultStatusBar, useTemporaryStatusBar } from "./status-bar";
 import { LogoNText } from "../components/LogoNText";
 import { Link } from "../components/Link";
@@ -30,65 +25,9 @@ import { SlideUpScreen } from "./slide-up-screen";
 import { SMALL_PLAYER_HEIGHT, TABS_HEIGHT, TOP_BAR_HEIGHT } from "./constants";
 import { createEmitter } from "../events";
 import { useDarkMode } from "../dark";
-
-const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
-
-class Controls implements AudioControls {
-  private _paused: boolean;
-  private _volume: number | undefined;
-
-  constructor() {
-    this._paused = false;
-  }
-
-  pause() {
-    this._paused = true;
-    NativeAudio.pause();
-  }
-
-  play() {
-    this._paused = false;
-    NativeAudio.play();
-  }
-
-  get paused() {
-    return this._paused;
-  }
-
-  async setSrc(opts: { src: string; song: Song } | null) {
-    if (!opts) {
-      NativeAudio.stop();
-      return;
-    }
-
-    const { src, song } = opts;
-    const cover = await tryToGetDownloadUrlOrLog(getDefinedUser(), song, "256");
-
-    await NativeAudio.preload({
-      path: src,
-      volume: this._volume ?? 1.0,
-      title: song.title,
-      artist: song.artist ?? "Unknown Artist",
-      album: song.albumName ?? "Unknown Album",
-      cover,
-    });
-  }
-
-  getCurrentTime() {
-    return NativeAudio.getCurrentTime().then(({ currentTime }) => currentTime);
-  }
-
-  setCurrentTime(currentTime: number) {
-    NativeAudio.setCurrentTime({ currentTime });
-  }
-
-  setVolume(volume: number) {
-    this._volume = volume;
-    NativeAudio.setVolume({ volume });
-  }
-}
-
-const controls = new Controls();
+import { NativeAudio } from "@capacitor-community/native-audio";
+import { Toolbar } from "../sections/Toolbar";
+import { IS_WEB_VIEW } from "../utils";
 
 export const Tab = ({
   label,
@@ -168,37 +107,24 @@ export const App = () => {
   useStartupHooks();
 
   useEffect(() => {
-    if (!loading && user && route?.protected === false) {
+    return NativeAudio.addListener("stop", () => {
+      // If the user stops the music and the big player is currently open, we should close it
+      emitter.emit("setOpenBigPlayer", false);
+    }).remove;
+  }, []);
+
+  useEffect(() => {
+    if (!loading && user && route?.protected === false && IS_WEB_VIEW) {
       navigateTo("home");
     } else if (!loading && !user && route?.protected === true) {
       navigateTo("hero");
     }
   }, [loading, route?.protected, user]);
 
-  useEffect(() => {
-    const disposers = [
-      NativeAudio.addListener("complete", Queue._nextAutomatic).remove,
-      NativeAudio.addListener("play", Queue.toggleState).remove,
-      NativeAudio.addListener("pause", Queue.toggleState).remove,
-      NativeAudio.addListener("next", Queue.next).remove,
-      NativeAudio.addListener("previous", Queue.previous).remove,
-      NativeAudio.addListener("stop", () => {
-        // If the user stops the music and the big player is currently open, we should close it
-        emitter.emit("setOpenBigPlayer", false);
-        Queue.stopPlaying();
-      }).remove,
-    ];
-
-    Queue._setRef(controls);
-    return () => {
-      disposers.forEach((disposer) => disposer());
-    };
-  }, []);
-
   if (
     loading ||
     (!loading && route?.protected === true && !user) ||
-    (!loading && route?.protected === false && user)
+    (!loading && route?.protected === false && user && IS_WEB_VIEW)
   ) {
     return <LoadingSpinner className="h-screen bg-gray-900" />;
   }
@@ -217,12 +143,20 @@ export const App = () => {
   return (
     <>
       <div
+        // This ID is used in ContainerScroller
+        // It's the default scroll container!
+        id="scroll-root"
+        style={{
+          // webkit-overflow-scrolling is for iOS < 13
+          WebkitOverflowScrolling: "touch",
+        }}
         className={classNames(
-          "text-gray-700 dark:text-gray-300 flex flex-col min-h-screen",
-          "bg-white dark:bg-gray-800",
+          "text-gray-700 dark:text-gray-300 flex flex-col",
+          "bg-white dark:bg-gray-800 h-screen overflow-y-auto relative",
           route.mobileClassName,
         )}
       >
+        {route.id === "hero" && <Toolbar />}
         {route.title && (
           <>
             {/* I need this outer div since I can't set the height *and* add padding on the same element */}
@@ -316,3 +250,5 @@ export const App = () => {
     </>
   );
 };
+
+export default App;

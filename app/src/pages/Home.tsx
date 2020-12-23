@@ -1,52 +1,54 @@
 import React from "react";
-import { HomeTopic } from "../../components/HomeTopic";
-import { useRecentlyAddedSongs, useLikedSongs, useRecentlyPlayedSongs } from "../../queries/songs";
-import { SongRow } from "../../sections/SongRow";
-import { LoadingSpinner } from "../../components/LoadingSpinner";
-import { MusicalNote } from "../../illustrations/MusicalNote";
+import { HomeTopic } from "../components/HomeTopic";
+import { useRecentlyAddedSongs, useLikedSongs, useRecentlyPlayedSongs } from "../queries/songs";
+import { SongRow } from "../sections/SongRow";
+import { LoadingSpinner } from "../components/LoadingSpinner";
+import { MusicalNote } from "../illustrations/MusicalNote";
 import { MdAddCircle } from "react-icons/md";
-import { useCoolSongs } from "../../db";
+import { isMobile } from "../utils";
 
 export const Home = () => {
   const recentlyAddedSongs = useRecentlyAddedSongs();
   const likedSongs = useLikedSongs();
   const recentlyPlayed = useRecentlyPlayedSongs();
 
-  useCoolSongs();
-
   if (
     recentlyAddedSongs === undefined ||
     likedSongs === undefined ||
     recentlyPlayed === undefined
   ) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner className="flex-grow" />;
   }
 
   // Show a nice welcome page when the user opens the app :)
   if (recentlyAddedSongs.length === 0) {
     return (
-      <div className="flex flex-col justify-center items-center h-full space-y-3 w-full">
+      <div className="flex flex-col justify-center items-center h-full space-y-3 w-full px-4">
         <MusicalNote />
-        <h1 className="text-3xl text-gray-700">Welcome to Relar</h1>
-        <p className="text-gray-500">
-          Click the {`"`}
-          <MdAddCircle className="w-5 h-5 inline -mt-1" /> Upload Music{`"`} button over to your
-          left to get started!
+        <h1 className="text-3xl text-gray-700 dark:text-gray-300">Welcome to Relar</h1>
+        <p className="text-gray-600 dark:text-gray-400 text-center">
+          {isMobile() ? (
+            "Open the web app to upload music! Don't worry, things will update here automatically."
+          ) : (
+            <>
+              Click the {`"`}
+              <MdAddCircle className="w-5 h-5 inline -mt-1" /> Upload Music{`"`} button over to your
+              left to get started!
+            </>
+          )}
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-5 w-full">
+    <div className="space-y-5 w-full py-2">
       {recentlyPlayed.length > 0 && (
         <HomeTopic
           title="Recently Played"
           subTitle="Your recently played songs will appear here."
           route="generated"
           params={{ generatedType: "recently-played" }}
-          wrapperClassName=""
-          textClassName="px-5"
         >
           <SongRow generatedType="recently-played" />
         </HomeTopic>
@@ -57,8 +59,6 @@ export const Home = () => {
         subTitle="Your recently uploaded songs will appear here."
         route="generated"
         params={{ generatedType: "recently-added" }}
-        wrapperClassName=""
-        textClassName="px-5"
       >
         <SongRow generatedType="recently-added" />
       </HomeTopic>
@@ -69,13 +69,6 @@ export const Home = () => {
           subTitle="All of your liked songs will come here <3"
           route="generated"
           params={{ generatedType: "liked" }}
-          wrapperClassName=""
-          textClassName="px-5"
-          // emptyText={
-          //   <div className="text-gray-700 flex space-x-1 items-center justify-center">
-          //     <div>Press</div> <HiOutlineHeart className="w-5 h-5" /> <div>to like songs!</div>
-          //   </div>
-          // }
         >
           <SongRow generatedType="liked" />
         </HomeTopic>

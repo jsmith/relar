@@ -1,8 +1,11 @@
 import React from "react";
-import { SongsOverview } from "../sections/SongsOverview";
-import { useGeneratedTypeSongs } from "../../queries/songs";
-import { generatedTypeToName } from "../../queue";
-import { useNavigator } from "../../routes";
+import { useGeneratedTypeSongs } from "../queries/songs";
+import { generatedTypeToName } from "../queue";
+import { useNavigator } from "../routes";
+import { isMobile } from "../utils";
+const SongsOverview = React.lazy(() =>
+  isMobile() ? import("../mobile/sections/SongsOverview") : import("../web/sections/SongsOverview"),
+);
 
 export const Generated = () => {
   const { params } = useNavigator("generated");
