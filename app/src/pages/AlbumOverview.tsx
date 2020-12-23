@@ -1,7 +1,10 @@
 import React from "react";
-import { useAlbum } from "../../queries/album";
-import { SongsOverview } from "../sections/SongsOverview";
-import { useAlbumParams } from "../../routes";
+import { useAlbum } from "../queries/album";
+import { useAlbumParams } from "../routes";
+import { isMobile } from "../utils";
+const SongsOverview = React.lazy(() =>
+  isMobile() ? import("../mobile/sections/SongsOverview") : import("../web/sections/SongsOverview"),
+);
 
 export const AlbumOverview = () => {
   const params = useAlbumParams();

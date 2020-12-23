@@ -129,7 +129,6 @@ export const Account = () => {
             action={() => changeEmail(user, email, confirmPassword)}
           >
             <div className="flex items-baseline mt-3 flex-col space-y-1">
-              {/* TODO test */}
               <Input value={email} onChange={setEmail} labelClassName="w-full" />
             </div>
           </OverviewSection>

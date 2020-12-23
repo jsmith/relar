@@ -64,6 +64,16 @@ export interface NativeAudioPlugin {
     eventName: "error",
     listenerFunc: (data: { message: string }) => void
   ): PluginListenerHandle;
+
+  addListener(
+    eventName: "init-offline",
+    listenerFunc: (data: { songIds: string[] }) => void
+  ): PluginListenerHandle;
+
+  addListener(
+    eventName: "download-complete",
+    listenerFunc: (data: { songId: string }) => void
+  ): PluginListenerHandle;
 }
 
 export interface PreloadOptions {

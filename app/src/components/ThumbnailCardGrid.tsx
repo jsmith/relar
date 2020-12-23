@@ -2,16 +2,15 @@ import React, { CSSProperties, useCallback, useEffect, useRef, useState } from "
 import { FixedSizeGrid as Grid, FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { ThumbnailCard } from "./ThumbnailCard";
-import { SongInfo } from "../queue";
 import { Song } from "../shared/universal/types";
-import { isMobile, IS_WEB_VIEW } from "../utils";
+import { isMobile } from "../utils";
 
 const mql = window.matchMedia(`(min-width: 1024px)`);
 
 const GUTTER_SIZE = 8;
-const PADDING_LEFT = 10;
+const PADDING_LEFT = 7;
 
-export interface ThumbnailCardGridProps<T extends { songs: SongInfo[] | undefined }> {
+export interface ThumbnailCardGridProps<T extends { songs: Song[] | undefined }> {
   items: T[];
   getTitle: (item: T, index: number) => string;
   getSubtitle: (item: T, index: number) => string;
@@ -21,7 +20,7 @@ export interface ThumbnailCardGridProps<T extends { songs: SongInfo[] | undefine
   padding?: number;
 }
 
-export const ThumbnailCardGrid = function <T extends { songs: SongInfo[] | undefined }>({
+export const ThumbnailCardGrid = function <T extends { songs: Song[] | undefined }>({
   items,
   getTitle,
   getSubtitle,
@@ -106,7 +105,7 @@ export const ThumbnailCardGrid = function <T extends { songs: SongInfo[] | undef
             height={sizes.row}
             // When on mobile, I want to show all of the items
             // But on desktop I don't want the super ugly scroll bar
-            itemCount={IS_WEB_VIEW ? nItems : columnCount.current}
+            itemCount={isMobile() ? nItems : columnCount.current}
             itemSize={sizes.col}
             layout="horizontal"
             width={width}

@@ -225,7 +225,7 @@ export const PlaylistType = Record({
        * not need to be unique.
        */
       id: String,
-    }),
+    }).Or(String),
   ).Or(Undefined),
 
   /** When the playlist was created. */
@@ -294,6 +294,16 @@ export type BetaAPI = {
         | (Success & { uid: string })
         | KnownError<"invalid-token" | "invalid-password" | "already-have-account">
         | UnknownError;
+    };
+  };
+};
+
+export type SongAPI = {
+  "/songs/:songId": {
+    DELETE: {
+      body: { idToken: string };
+      response: Success | KnownError<"does-not-exist" | "unauthorized"> | UnknownError;
+      params: { songId: string };
     };
   };
 };

@@ -1,12 +1,16 @@
 import React, { createContext, useContext, useRef, useCallback } from "react";
 import { ActionConfirmationModal } from "./components/ActionConfirmationModal";
 import { useModal } from "react-modal-hook";
+import { isMobile } from "./utils";
+import { Modals } from "@capacitor/core";
 
 export interface ConfirmActionProps {
   title: string;
   subtitle: string;
   confirmText: string;
   confirmEmail?: boolean;
+  onConfirm?: () => void | Promise<void>;
+  onCancel?: () => void;
 }
 
 export const ConfirmActionContext = createContext<{
@@ -24,16 +28,35 @@ export const ConfirmActionProvider = (props: React.Props<{}>) => {
       subtitle={cb.current?.props?.subtitle ?? ""}
       confirmText={cb.current?.props?.confirmText ?? ""}
       confirmEmail={cb.current?.props?.confirmEmail}
-      onCancel={() => setDisplayAndCall(false)}
-      onConfirm={() => setDisplayAndCall(true)}
+      onCancel={() => {
+        cb.current?.props.onCancel && cb.current.props.onCancel();
+        setDisplayAndCall(false);
+      }}
+      onConfirm={async () => {
+        cb.current?.props.onConfirm && (await cb.current?.props.onConfirm());
+        setDisplayAndCall(true);
+      }}
     ></ActionConfirmationModal>
   ));
 
   const confirmAction = useCallback(
     (props: ConfirmActionProps) => {
       return new Promise<boolean>((resolve) => {
-        show();
-        cb.current = { resolve, props };
+        if (isMobile()) {
+          // FIXME this does not respect the confirm email option
+          // Use a prompt and then a modal
+          Modals.confirm({
+            title: props.title,
+            message: props.subtitle,
+            okButtonTitle: props.confirmText,
+          }).then(async ({ value }) => {
+            if (value && props.onConfirm) await props.onConfirm();
+            resolve(value);
+          });
+        } else {
+          cb.current = { resolve, props };
+          show();
+        }
       });
     },
     [show],

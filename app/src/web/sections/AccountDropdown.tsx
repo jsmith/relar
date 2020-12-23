@@ -69,7 +69,7 @@ export const AccountDropdown = () => {
                 <div className="py-1">
                   <Menu.Item>
                     {({ active }) => (
-                      <Link label="Settings" route="account" className={classes(active)} />
+                      <Link label="Settings" route="settings" className={classes(active)} />
                     )}
                   </Menu.Item>
                   <Menu.Item>
@@ -79,7 +79,7 @@ export const AccountDropdown = () => {
                         onClick={openShortcuts}
                       >
                         <span>Keyboard Shortcuts</span>
-                        <New />
+                        {/* <New /> */}
                       </button>
                     )}
                   </Menu.Item>
@@ -102,7 +102,7 @@ export const AccountDropdown = () => {
                   <Switch.Group as="div" className="flex items-center space-x-4 justify-between">
                     <Switch.Label className="text-sm flex items-center space-x-2">
                       <span>Dark Mode</span>
-                      <New />
+                      {/* <New /> */}
                     </Switch.Label>
                     <Switch checked={darkMode} onChange={setDarkMode} />
                   </Switch.Group>

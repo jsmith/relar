@@ -1,30 +1,46 @@
-import type { Playlist, Song } from "../shared/universal/types";
+import { Playlist, Song } from "../shared/universal/types";
 import { getUserDataOrError, serverTimestamp, useUserData } from "../firestore";
 import * as uuid from "uuid";
 import { useCallback, useMemo } from "react";
 import { useSongLookup } from "./songs";
-import type { SongInfo } from "../queue";
 import firebase from "firebase/app";
-import { useCoolPlaylists, useCoolSongs } from "../db";
-import { Modal } from "../components/Modal";
+import { useCoolPlaylists } from "../db";
 import { Modals } from "@capacitor/core";
+import { captureAndLog, captureAndLogError } from "../utils";
 
 export const getPlaylistSongs = (
   songs: Playlist["songs"],
   lookup: Record<string, Song>,
-): SongInfo[] | undefined =>
-  songs
-    // Since lookup could be empty if the songs haven't loaded yet
-    // Or if a song has been deleted (we don't remove songs from playlists automatically yet)
-    // Or for a variety of other possible reasons that I haven't thought of yet
-    ?.filter(({ songId }) => songId in lookup)
-    ?.map(({ songId, id }): SongInfo & { playlistId: string } => ({
-      ...lookup[songId],
-      playlistId: id,
-    }));
+): Array<Song> | undefined => {
+  try {
+    return (
+      songs
+        // Since lookup could be empty if the songs haven't loaded yet
+        // Or if a song has been deleted (we don't remove songs from playlists automatically yet)
+        // Or for a variety of other possible reasons that I haven't thought of yet
+        // ?.filter((item) => (typeof item === "string" ? item in lookup : item.songId in lookup))
+        ?.map(
+          (item): Song => {
+            const songId = typeof item === "string" ? item : item.songId;
+
+            // When deleting a song that is in a playlist, there is a race condition between which
+            // item is updated locally first. While testing, I've seen that the song update is
+            // received first which results in undefined being returned causing a rendering error
+            // To resolve this, I return undefined in place of the entire list which I handle while
+            // rendering
+            // The playlist update comes in right after so this happens super quickly
+            if (songId in lookup) return lookup[songId];
+            else throw Error(`IDC`);
+          },
+        )
+    );
+  } catch {
+    return undefined;
+  }
+};
 
 export type PlaylistWithSongs = Omit<Playlist, "songs"> & {
-  songs: SongInfo[] | undefined;
+  songs: Song[] | undefined;
 };
 
 export const usePlaylistLookup = () => {
@@ -35,7 +51,7 @@ export const usePlaylistLookup = () => {
     playlists?.forEach((playlist) => {
       playlistLookup[playlist.id] = {
         ...playlist,
-        songs: getPlaylistSongs(playlist.songs, lookup),
+        songs: lookup ? getPlaylistSongs(playlist.songs, lookup) : undefined,
       };
     });
 
@@ -69,44 +85,47 @@ export const createPlaylist = async (name: string) => {
   });
 };
 
-export const usePlaylistAdd = () => {
-  const userData = useUserData();
+export const addSongToPlaylist = async ({
+  playlistId,
+  songId,
+}: {
+  playlistId: string;
+  songId: string;
+}) => {
+  const userData = getUserDataOrError();
+  return await firebase.firestore().runTransaction(async (transaction) => {
+    const playlist = userData.playlist(playlistId);
+    const snap = await transaction.get(playlist);
+    const data = snap.data();
+    if (!data) {
+      return;
+    }
 
-  return useCallback(
-    async ({ playlistId, songId }: { playlistId: string; songId: string }) => {
-      return await firebase.firestore().runTransaction(async (transaction) => {
-        const playlist = userData.playlist(playlistId);
-        const snap = await transaction.get(playlist);
-        const data = snap.data();
-        if (!data) {
-          return;
-        }
-
-        if (data.songs?.find((item) => item.songId === songId)) {
-          const { value } = await Modals.confirm({
-            title: "Add to Playlist",
-            message: "The song is already present in this playlist. Do you want to add it again?",
-          });
-          if (!value) return;
-        }
-
-        const newItem = { songId, id: uuid.v4() };
-        const songs: Playlist["songs"] = data.songs ? [...data.songs, newItem] : [newItem];
-        const update: Partial<Playlist> = {
-          updatedAt: serverTimestamp(),
-          songs,
-        };
-
-        transaction.update(playlist, update);
-
-        return {
-          playlistId,
-          songs,
-        };
+    if (
+      data.songs?.find((item) =>
+        typeof item === "string" ? item === songId : item.songId === songId,
+      )
+    ) {
+      const { value } = await Modals.confirm({
+        title: "Add to Playlist",
+        message: "The song is already present in this playlist. Do you want to add it again?",
       });
-    },
-    [userData],
-  );
+      if (!value) return;
+    }
+
+    const songs: Playlist["songs"] = data.songs ? [...data.songs, songId] : [songId];
+    const update: Partial<Playlist> = {
+      updatedAt: serverTimestamp(),
+      songs,
+    };
+
+    transaction.update(playlist, update);
+
+    return {
+      playlistId,
+      songs,
+    };
+  });
 };
 
 export const usePlaylist = (playlistId: string | undefined) => {
@@ -114,41 +133,59 @@ export const usePlaylist = (playlistId: string | undefined) => {
   return useMemo(() => (playlistId ? lookup[playlistId] : undefined), [playlistId, lookup]);
 };
 
-export const usePlaylistRemoveSong = (playlistId: string | undefined) => {
-  const userData = useUserData();
-  return useCallback(
-    /**
-     * @param targetId The ID of the playlist element. This is *not* the ID of the song.
-     */
-    async (targetId: string) => {
-      return firebase.firestore().runTransaction(async (transaction) => {
-        if (playlistId === undefined) {
-          return;
-        }
+export const removeSongFromPlaylist = async ({
+  playlistId,
+  index,
+  songId: targetSongId,
+}: {
+  playlistId: string;
+  index: number;
+  songId: string;
+}) => {
+  return firebase.firestore().runTransaction(async (transaction) => {
+    if (playlistId === undefined) {
+      return;
+    }
 
-        const ref = userData.playlist(playlistId);
-        const playlist = await transaction.get(ref);
-        const data = playlist.data();
-        if (!data || !data.songs) return;
+    const userData = getUserDataOrError();
+    const ref = userData.playlist(playlistId);
+    const playlist = await transaction.get(ref);
+    const data = playlist.data();
 
-        console.info(`Deleting song "${targetId}" from playlist "${playlistId}"`);
-        const indexToDelete = data.songs.findIndex(({ id }) => targetId === id);
-        if (indexToDelete === -1) return;
+    // These conditions could happen in very rare circumstances
+    if (!data || !data.songs || index >= data.songs.length) return;
 
-        console.info(`Found song at index ${indexToDelete}`);
-        // This is in place
-        data.songs.splice(indexToDelete, 1);
-        const update: Partial<Playlist> = {
-          songs: data.songs,
-          updatedAt: serverTimestamp(),
-        };
+    const item = data.songs[index];
+    const foundSongId = typeof item === "string" ? item : item.songId;
 
-        transaction.update(ref, update);
-        return data.songs;
-      });
-    },
-    [playlistId, userData],
-  );
+    if (targetSongId !== foundSongId) {
+      // I'm worried that there are stale references in playlists
+      // Or that my logic is flawed
+      // This check is a sanity check
+      // If this ever happens, the details I log will allow me determine *why* this qoccurred
+      captureAndLogError(
+        `Tried to delete index ${index} from playlist ${playlistId} but found ID mismatch (user: ${userData.userId})`,
+        {
+          targetSongId,
+          foundSongId,
+        },
+      );
+
+      return;
+    }
+
+    console.info(`Deleting song ${index}`);
+    if (index >= data.songs.length) return;
+    // This is in place
+    data.songs.splice(index, 1);
+    const update: Partial<Playlist> = {
+      songs: data.songs,
+      updatedAt: serverTimestamp(),
+    };
+
+    transaction.update(ref, update);
+    return data.songs;
+  });
 };
 
 export const usePlaylistRename = (playlistId: string | undefined) => {

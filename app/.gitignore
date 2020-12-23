@@ -12,8 +12,5 @@ capacitor.config.json
 build
 google-api-key.json
 
-# Since this is generated
-public/index.html
-
 # Ignore since this is generated
 logo.png

@@ -31,7 +31,6 @@ service cloud.firestore {
               'downloadUrl',
               'artwork',
               'whenLiked',
-              'deleted',
               'title',
               'artist',
               'albumArtist',

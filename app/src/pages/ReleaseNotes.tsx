@@ -197,6 +197,14 @@ const changelog = create([
     fixes: ["Improved android icon", "Other small bugs and improvements"],
     features: ["Genres page on mobile"],
   },
+  {
+    version: "0.17.0",
+    date: "December 23 2020",
+    fixes: [
+      "Improved song deletion process",
+      "Mobile app now available on the mobile/tablet web browsers",
+    ],
+  },
 ]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (

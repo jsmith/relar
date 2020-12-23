@@ -1,6 +1,7 @@
 import React, { useCallback, useContext, useEffect, useRef } from "react";
 import { Plugins, StatusBarStyle } from "@capacitor/core";
 import { createContext } from "react";
+import { IS_WEB_VIEW } from "../utils";
 const { StatusBar } = Plugins;
 
 const StatusBarContext = createContext<{
@@ -16,6 +17,7 @@ export const StatusBarProvider = ({ children }: { children: React.ReactNode }) =
   const temporary = useRef<StatusBarStyle>();
 
   const setTemporary = useCallback((temp) => {
+    if (!IS_WEB_VIEW) return () => {};
     temporary.current = temp;
     StatusBar.setStyle({ style: temp });
     return () => {
@@ -25,6 +27,7 @@ export const StatusBarProvider = ({ children }: { children: React.ReactNode }) =
   }, []);
 
   const setDefault = useCallback((def) => {
+    if (!IS_WEB_VIEW) return;
     style.current = def;
     !temporary.current && StatusBar.setStyle({ style: def });
   }, []);

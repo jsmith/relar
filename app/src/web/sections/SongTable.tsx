@@ -15,24 +15,20 @@ import { LikedIcon } from "../../components/LikedIcon";
 import { IconButton } from "../../components/IconButton";
 import { ContextMenu, ContextMenuItem } from "../../components/ContextMenu";
 import { useConfirmAction } from "../../confirm-actions";
-import { likeSong, useDeleteSong } from "../../queries/songs";
+import { deleteSong, likeSong } from "../../queries/songs";
 import { fmtMSS } from "../../utils";
 import { Link } from "../../components/Link";
 import { getAlbumRouteParams, getArtistRouteParams } from "../../routes";
 import { link } from "../../classes";
 import { showPlaylistAddModal } from "./AddToPlaylistModal";
 import Skeleton from "react-loading-skeleton";
-import {
-  SetQueueSource,
-  SongInfo,
-  checkSourcesEqual,
-  Queue,
-  useIsThePlayingSong,
-} from "../../queue";
+import { SetQueueSource, checkSourcesEqual, Queue, useIsThePlayingSong } from "../../queue";
 import { Audio } from "@jsmith21/svg-loaders-react";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { Thumbnail } from "../../components/Thumbnail";
+import { Song } from "../../shared/universal/types";
+import { removeSongFromPlaylist } from "../../queries/playlists";
 
 const widths = {
   title: { flexGrow: 1, minWidth: 0 },
@@ -98,15 +94,14 @@ export const LoadingCell = () => {
   );
 };
 
-export interface SongTableItem<T extends SongInfo>
-  extends Omit<ContextMenuItem, "onClick" | "props"> {
-  onClick: (song: T, index: number) => void;
+export interface SongTableItem extends Omit<ContextMenuItem, "onClick" | "props"> {
+  onClick: (song: Song, index: number) => void;
 }
 
-export interface SongTableRowProps<T extends SongInfo> {
-  song: T;
+export interface SongTableRowProps {
+  song: Song;
   setSong: () => void;
-  actions: SongTableItem<T>[] | undefined;
+  actions: SongTableItem[] | undefined;
   mode: "regular" | "condensed";
   source: SetQueueSource;
   children?: React.ReactNode;
@@ -117,7 +112,7 @@ export interface SongTableRowProps<T extends SongInfo> {
   beforeShowModal?: () => void;
 }
 
-export const SongTableRow = <T extends SongInfo>({
+export const SongTableRow = ({
   song,
   setSong,
   actions,
@@ -128,11 +123,10 @@ export const SongTableRow = <T extends SongInfo>({
   index,
   style,
   beforeShowModal,
-}: SongTableRowProps<T>) => {
+}: SongTableRowProps) => {
   const [focusedPlay, setFocusedPlay] = useState(false);
   const { confirmAction } = useConfirmAction();
-  const isPlaying = useIsThePlayingSong({ song, source });
-  const deleteSong = useDeleteSong();
+  const isPlaying = useIsThePlayingSong({ song, source, index });
 
   const contextMenuItems = useMemo(() => {
     const extraItems: ContextMenuItem[] =
@@ -164,20 +158,17 @@ export const SongTableRow = <T extends SongInfo>({
         label: "Delete",
         icon: MdDelete,
         onClick: async () => {
-          const confirmed = await confirmAction({
+          await confirmAction({
             title: `Delete ${song.title}`,
             subtitle: "Are you sure you want to delete this song?",
             confirmText: "Delete Song",
+            onConfirm: () => deleteSong(song.id),
           });
-
-          if (confirmed) {
-            deleteSong(song.id);
-          }
         },
       },
       ...extraItems,
     ];
-  }, [actions, beforeShowModal, confirmAction, deleteSong, index, song]);
+  }, [actions, beforeShowModal, confirmAction, index, song]);
 
   const artist = song.artist && (
     <Link
@@ -315,14 +306,12 @@ export const SongTableRow = <T extends SongInfo>({
   );
 };
 
-export interface SongTableProps<T extends SongInfo> {
+export interface SongTableProps {
   /**
    * The songs. Passing in `undefined` indicates that the songs are still loading.
    */
-  songs?: T[];
+  songs?: Song[];
   loadingRows?: number;
-  actions?: SongTableItem<T>[];
-
   includeDateAdded?: boolean;
   includeAlbumNumber?: boolean;
 
@@ -334,35 +323,46 @@ export interface SongTableProps<T extends SongInfo> {
   beforeShowModal?: () => void;
 }
 
-export const SongTable = function <T extends SongInfo>({
+export const SongTable = function ({
   songs,
   loadingRows = 5,
-  actions,
   source,
   mode = "regular",
   includeDateAdded,
   includeAlbumNumber,
   beforeShowModal,
-}: SongTableProps<T>) {
+}: SongTableProps) {
   const ref = useRef<List | null>(null);
-  const actionsWithAddRemove = useMemo(() => {
-    const actionsWithAddRemove = actions ? [...actions] : [];
+  const actions = useMemo(() => {
+    const actions: SongTableItem[] = [];
+
+    if (source.type === "playlist") {
+      actions.push({
+        label: "Remove From Playlist",
+        icon: MdPlaylistAdd,
+        onClick: (song, index) =>
+          removeSongFromPlaylist({ playlistId: source.id, index, songId: song.id }),
+      });
+    }
+
     if (source.type === "queue") {
-      actionsWithAddRemove.push({
+      actions.push({
         icon: MdRemoveFromQueue,
         label: "Remove From Queue",
         onClick: (_, index) => Queue.dequeue(index),
       });
     } else {
-      actionsWithAddRemove.push({
+      actions.push({
         icon: MdAddToQueue,
         label: "Add To Queue",
         onClick: Queue.enqueue,
       });
     }
 
-    return actionsWithAddRemove;
-  }, [actions, source.type]);
+    return actions;
+    // Disabling eslint since source.id is only _sometimes_ present
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source.type, source.type === "playlist" && source.id]);
 
   const rows = useMemo(() => {
     if (!songs) {
@@ -406,7 +406,7 @@ export const SongTable = function <T extends SongInfo>({
           index={index}
           source={source}
           setSong={() => Queue.setQueue({ songs: songs ?? [], source, index })}
-          actions={actionsWithAddRemove}
+          actions={actions}
           mode={mode}
           includeDateAdded={includeDateAdded}
           includeAlbumNumber={includeAlbumNumber}
@@ -414,16 +414,7 @@ export const SongTable = function <T extends SongInfo>({
         />
       );
     },
-    [
-      actionsWithAddRemove,
-      includeDateAdded,
-      includeAlbumNumber,
-      mode,
-      rows,
-      songs,
-      source,
-      beforeShowModal,
-    ],
+    [actions, includeDateAdded, includeAlbumNumber, mode, rows, songs, source, beforeShowModal],
   );
 
   return (
@@ -467,3 +458,5 @@ export const SongTable = function <T extends SongInfo>({
     </div>
   );
 };
+
+export default SongTable;
