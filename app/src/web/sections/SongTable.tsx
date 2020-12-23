@@ -28,6 +28,7 @@ import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { Thumbnail } from "../../components/Thumbnail";
 import { Song } from "../../shared/universal/types";
+import { removeSongFromPlaylist } from "../../queries/playlists";
 
 const widths = {
   title: { flexGrow: 1, minWidth: 0 },
@@ -311,8 +312,6 @@ export interface SongTableProps {
    */
   songs?: Song[];
   loadingRows?: number;
-  actions?: SongTableItem[];
-
   includeDateAdded?: boolean;
   includeAlbumNumber?: boolean;
 
@@ -327,7 +326,6 @@ export interface SongTableProps {
 export const SongTable = function ({
   songs,
   loadingRows = 5,
-  actions,
   source,
   mode = "regular",
   includeDateAdded,
@@ -335,24 +333,36 @@ export const SongTable = function ({
   beforeShowModal,
 }: SongTableProps) {
   const ref = useRef<List | null>(null);
-  const actionsWithAddRemove = useMemo(() => {
-    const actionsWithAddRemove = actions ? [...actions] : [];
+  const actions = useMemo(() => {
+    const actions: SongTableItem[] = [];
+
+    if (source.type === "playlist") {
+      actions.push({
+        label: "Remove From Playlist",
+        icon: MdPlaylistAdd,
+        onClick: (song, index) =>
+          removeSongFromPlaylist({ playlistId: source.id, index, songId: song.id }),
+      });
+    }
+
     if (source.type === "queue") {
-      actionsWithAddRemove.push({
+      actions.push({
         icon: MdRemoveFromQueue,
         label: "Remove From Queue",
         onClick: (_, index) => Queue.dequeue(index),
       });
     } else {
-      actionsWithAddRemove.push({
+      actions.push({
         icon: MdAddToQueue,
         label: "Add To Queue",
         onClick: Queue.enqueue,
       });
     }
 
-    return actionsWithAddRemove;
-  }, [actions, source.type]);
+    return actions;
+    // Disabling eslint since source.id is only _sometimes_ present
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [source.type, source.type === "playlist" && source.id]);
 
   const rows = useMemo(() => {
     if (!songs) {
@@ -396,7 +406,7 @@ export const SongTable = function ({
           index={index}
           source={source}
           setSong={() => Queue.setQueue({ songs: songs ?? [], source, index })}
-          actions={actionsWithAddRemove}
+          actions={actions}
           mode={mode}
           includeDateAdded={includeDateAdded}
           includeAlbumNumber={includeAlbumNumber}
@@ -404,16 +414,7 @@ export const SongTable = function ({
         />
       );
     },
-    [
-      actionsWithAddRemove,
-      includeDateAdded,
-      includeAlbumNumber,
-      mode,
-      rows,
-      songs,
-      source,
-      beforeShowModal,
-    ],
+    [actions, includeDateAdded, includeAlbumNumber, mode, rows, songs, source, beforeShowModal],
   );
 
   return (
@@ -457,3 +458,5 @@ export const SongTable = function ({
     </div>
   );
 };
+
+export default SongTable;

@@ -133,7 +133,6 @@ export const SongsOverview = ({
       <div className="flex-grow flex">
         <SongTable
           songs={songs}
-          actions={songActions}
           source={source}
           includeDateAdded={includeDateAdded}
           includeAlbumNumber={includeAlbumNumber}
@@ -142,3 +141,5 @@ export const SongsOverview = ({
     </div>
   );
 };
+
+export default SongsOverview;

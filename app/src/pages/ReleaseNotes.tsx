@@ -198,9 +198,12 @@ const changelog = create([
     features: ["Genres page on mobile"],
   },
   {
-    version: "0.16.1",
+    version: "0.17.0",
     date: "December 23 2020",
-    fixes: ["Improved song deletion process"],
+    fixes: [
+      "Improved song deletion process",
+      "Mobile app now available on the mobile/tablet web browsers",
+    ],
   },
 ]).reverse();
 

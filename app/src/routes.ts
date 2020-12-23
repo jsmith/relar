@@ -9,51 +9,30 @@ const Feedback = React.lazy(() => import("./pages/Feedback"));
 const ReleaseNotes = React.lazy(() => import("./pages/ReleaseNotes"));
 const BetaGuide = React.lazy(() => import("./pages/BetaGuide"));
 const Login = React.lazy(() => import("./pages/Login"));
-const Settings = React.lazy(() => import("./mobile/pages/Settings"));
+const Settings = React.lazy(() =>
+  isMobile() ? import("./mobile/pages/Settings") : import("./web/pages/Settings"),
+);
 const Search = React.lazy(() => import("./pages/Search"));
 const SearchMobile = React.lazy(() => import("./mobile/pages/Search"));
 const Signup = React.lazy(() => import("./pages/Signup"));
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
-const Home = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/Home") : import("./web/pages/Home"),
-);
-const Songs = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/Songs") : import("./web/pages/Songs"),
-);
-const Artists = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/Artists") : import("./web/pages/Artists"),
-);
-const Albums = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/Albums") : import("./web/pages/Albums"),
-);
-const Playlists = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/Playlists") : import("./web/pages/Playlists"),
-);
-const Genres = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/Genres") : import("./web/pages/Genres"),
-);
-const GenreOverview = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/GenreOverview") : import("./web/pages/GenreOverview"),
-);
-const AlbumOverview = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/AlbumOverview") : import("./web/pages/AlbumOverview"),
-);
-const ArtistOverview = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/ArtistOverview") : import("./web/pages/ArtistOverview"),
-);
-const Generated = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/Generated") : import("./web/pages/Generated"),
-);
-const PlaylistOverview = React.lazy(() =>
-  isMobile() ? import("./mobile/pages/PlaylistOverview") : import("./web/pages/PlaylistOverview"),
-);
+const Home = React.lazy(() => import("./pages/Home")); // TODO
+const Songs = React.lazy(() => import("./pages/Songs"));
+const Artists = React.lazy(() => import("./pages/Artists"));
+const Albums = React.lazy(() => import("./pages/Albums"));
+const Playlists = React.lazy(() => import("./pages/Playlists"));
+const Genres = React.lazy(() => import("./pages/Genres"));
+const GenreOverview = React.lazy(() => import("./pages/GenreOverview"));
+const AlbumOverview = React.lazy(() => import("./pages/AlbumOverview"));
+const ArtistOverview = React.lazy(() => import("./pages/ArtistOverview"));
+const Generated = React.lazy(() => import("./pages/Generated"));
+const PlaylistOverview = React.lazy(() => import("./pages/PlaylistOverview"));
 const ForgotPasswordSuccess = React.lazy(() => import("./pages/ForgotPasswordSuccess"));
 const Hero = React.lazy(() =>
   IS_WEB_VIEW ? import("./mobile/pages/Hero") : import("./web/pages/Hero"),
 );
-const Account = React.lazy(() => import("./web/pages/Account"));
 const Library = React.lazy(() => import("./mobile/pages/Library"));
-const Invite = React.lazy(() => import("./web/pages/Invite"));
+const Invite = React.lazy(() => import("./pages/Invite"));
 const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
 const TermsAndConditions = React.lazy(() => import("./pages/TermsAndConditions"));
 
@@ -79,11 +58,6 @@ const createRoutes = <K extends string>(routes: Record<K, Route<K>>) => routes;
 
 export type NavigatorRoutes = {
   hero: {
-    params: {};
-    queryParams: {};
-  };
-
-  account: {
     params: {};
     queryParams: {};
   };
@@ -243,17 +217,6 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
     showTabs: false,
     dark: true,
   },
-  account: {
-    id: "account",
-    path: "/account",
-    component: Account,
-    protected: true,
-    sidebar: false,
-    className: "py-2",
-    title: "Account",
-    showBack: false,
-    showTabs: false,
-  },
   login: {
     id: "login",
     path: "/login",
@@ -304,7 +267,7 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
     component: Home,
     protected: true,
     sidebar: true,
-    className: "py-2 overflow-y-auto",
+    className: "overflow-y-auto",
     title: "Home",
     showBack: false,
     showTabs: true,

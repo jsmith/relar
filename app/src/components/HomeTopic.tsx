@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "./Link";
 import classNames from "classnames";
 import { NavigatorRoutes } from "../routes";
+import { isMobile } from "../utils";
 
 export interface HomeTopicProps<K extends keyof NavigatorRoutes> {
   title: string;
@@ -10,8 +11,6 @@ export interface HomeTopicProps<K extends keyof NavigatorRoutes> {
   route: K;
   params?: NavigatorRoutes[K]["params"];
   queryParams?: NavigatorRoutes[K]["queryParams"];
-  wrapperClassName?: string;
-  textClassName?: string;
   emptyText?: React.ReactNode;
 }
 
@@ -22,17 +21,16 @@ export const HomeTopic = function <K extends keyof NavigatorRoutes>({
   route,
   params,
   queryParams,
-  wrapperClassName,
-  textClassName,
 }: HomeTopicProps<K>) {
   return (
-    <div className="space-y-2 lg:space-y-3">
-      <div className={classNames("flex justify-between items-center", textClassName)}>
+    <div className="">
+      <div
+        className={classNames("flex justify-between items-center", isMobile() ? "px-3" : "px-5")}
+      >
         <div>
           <div className="text-gray-800 dark:text-gray-200 text-xl md:text-2xl leading-tight">
             {title}
           </div>
-          <div className="text-gray-500 dark:text-gray-400 text-xs">{subTitle}</div>
         </div>
         <Link
           label="See All →"
@@ -42,8 +40,16 @@ export const HomeTopic = function <K extends keyof NavigatorRoutes>({
           queryParams={queryParams}
         />
       </div>
+      <div
+        className={classNames(
+          "text-gray-500 dark:text-gray-400 text-xs",
+          isMobile() ? "px-3" : "px-5",
+        )}
+      >
+        {subTitle}
+      </div>
 
-      <div className={wrapperClassName} style={{ minHeight: "10px" }}>
+      <div className="mt-2 lg:mt-3" style={{ minHeight: "10px" }}>
         {children}
       </div>
     </div>

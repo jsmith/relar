@@ -1,7 +1,10 @@
 import React from "react";
-import { SongsOverview } from "../sections/SongsOverview";
-import { useNavigator } from "../../routes";
-import { useGenre } from "../../queries/genres";
+import { useNavigator } from "../routes";
+import { useGenre } from "../queries/genres";
+import { isMobile } from "../utils";
+const SongsOverview = React.lazy(() =>
+  isMobile() ? import("../mobile/sections/SongsOverview") : import("../web/sections/SongsOverview"),
+);
 
 export const GenreOverview = () => {
   const { params } = useNavigator("genre");

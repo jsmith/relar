@@ -1,15 +1,11 @@
 import React from "react";
-import { fmtToDate, onConditions } from "../../utils";
-import {
-  usePlaylist,
-  removeSongFromPlaylist,
-  usePlaylistRename,
-  usePlaylistDelete,
-} from "../../queries/playlists";
-import { HiOutlineTrash } from "react-icons/hi";
-import { useConfirmAction } from "../../confirm-actions";
-import { navigateTo, useNavigator } from "../../routes";
-import { SongsOverview } from "../sections/SongsOverview";
+import { fmtToDate, isMobile, onConditions, openSnackbar } from "../utils";
+import { usePlaylist, usePlaylistRename, usePlaylistDelete } from "../queries/playlists";
+import { useConfirmAction } from "../confirm-actions";
+import { navigateTo, useNavigator } from "../routes";
+const SongsOverview = React.lazy(() =>
+  isMobile() ? import("../mobile/sections/SongsOverview") : import("../web/sections/SongsOverview"),
+);
 
 export const PlaylistOverview = () => {
   const { params } = useNavigator("playlist");
@@ -24,25 +20,15 @@ export const PlaylistOverview = () => {
       title={playlist?.name}
       source={{ type: "playlist", id: params.playlistId, sourceHumanName: playlist?.name ?? "" }}
       infoPoints={playlist ? [`Created on ${fmtToDate(playlist.createdAt)}`] : []}
-      songActions={[
-        {
-          label: "Remove From Playlist",
-          icon: HiOutlineTrash,
-          onClick: (song, index) =>
-            removeSongFromPlaylist({
-              playlistId: params.playlistId,
-              index,
-              songId: song.id,
-            }),
-        },
-      ]}
       onRename={(name) => {
         return new Promise((resolve) =>
           onConditions(
             () => rename(name),
             () => resolve(true),
-            // FIXME error notification
-            () => resolve(false),
+            () => {
+              openSnackbar("There was an error renaming the playlist");
+              resolve(false);
+            },
           ),
         );
       }}

@@ -8,7 +8,7 @@ import { isMobile } from "../utils";
 const mql = window.matchMedia(`(min-width: 1024px)`);
 
 const GUTTER_SIZE = 8;
-const PADDING_LEFT = 10;
+const PADDING_LEFT = 7;
 
 export interface ThumbnailCardGridProps<T extends { songs: Song[] | undefined }> {
   items: T[];

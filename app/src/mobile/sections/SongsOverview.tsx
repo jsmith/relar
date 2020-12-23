@@ -20,7 +20,10 @@ export interface SongsOverviewProps {
   onDelete?: () => Promise<void>;
   songs: Song[] | undefined;
   source: SetQueueSource;
-  onRename?: (newValue: string) => void;
+  onRename?: (newValue: string) => Promise<boolean>;
+  // TODO
+  includeDateAdded?: boolean;
+  includeAlbumNumber?: boolean;
 }
 
 export const SongsOverview = ({
@@ -39,7 +42,7 @@ export const SongsOverview = ({
   const topImage = useTransform(scrollY, (value) => Math.round(value * 0.3));
 
   useEffect(() => {
-    const element = document.getElementById("root");
+    const element = document.getElementById("scroll-root");
     if (!element) return;
     const onScroll = () => scrollY.set(element.scrollTop);
     element.addEventListener("scroll", onScroll);
@@ -85,7 +88,7 @@ export const SongsOverview = ({
 
   return (
     <>
-      <div style={{ width, height: width }} className="relative overflow-hidden">
+      <div style={{ width, height: width }} className="relative overflow-hidden flex-shrink-0">
         <motion.div style={{ top: topImage }} className="absolute">
           <Collage songs={songs} size="256" style={{ width, height: width }} />
         </motion.div>
@@ -132,3 +135,5 @@ export const SongsOverview = ({
     </>
   );
 };
+
+export default SongsOverview;

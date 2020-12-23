@@ -69,7 +69,7 @@ export const AccountDropdown = () => {
                 <div className="py-1">
                   <Menu.Item>
                     {({ active }) => (
-                      <Link label="Settings" route="account" className={classes(active)} />
+                      <Link label="Settings" route="settings" className={classes(active)} />
                     )}
                   </Menu.Item>
                   <Menu.Item>

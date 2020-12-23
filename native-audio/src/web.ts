@@ -20,8 +20,17 @@ export class NativeAudioWeb extends WebPlugin implements NativeAudioPlugin {
     document.body.appendChild(this.audioElement);
 
     this.audioElement.onended = () => {
-      console.log("ON ENDED");
       this.notifyListeners("complete", {});
+    };
+
+    // These are triggered if we call .pause() or if the system pauses the music
+    // ie. a user clicks play/pause using their headphones
+    this.audioElement.onplay = () => {
+      this.notifyListeners("play", {});
+    };
+
+    this.audioElement.onpause = () => {
+      this.notifyListeners("pause", {});
     };
   }
 

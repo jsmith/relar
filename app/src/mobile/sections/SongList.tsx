@@ -93,7 +93,7 @@ const SongListRow = ({
               message: `Are you sure you want to delete ${song.title}?`,
             }).then(async ({ value }) => {
               if (value) {
-                deleteSong(song.id);
+                await deleteSong(song.id);
               }
             });
           },
@@ -154,3 +154,5 @@ export const SongList = ({
     />
   );
 };
+
+export default SongList;

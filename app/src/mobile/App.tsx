@@ -1,17 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { getDefinedUser, useUser } from "../auth";
-import { navigateTo, NavigatorRoutes, routes, useNavigator, Route } from "../routes";
+import { useUser } from "../auth";
+import { navigateTo, NavigatorRoutes, routes, useNavigator } from "../routes";
 import { LoadingSpinner } from "../components/LoadingSpinner";
 import { HiHome, HiOutlineCog, HiSearch } from "react-icons/hi";
 import { ActionSheet } from "./action-sheet";
-import { Plugins, StatusBarStyle } from "@capacitor/core";
-
-import { AudioControls, Queue } from "../queue";
+import { StatusBarStyle } from "@capacitor/core";
+import { Queue } from "../queue";
 import { BackButton } from "./components/BackButton";
 import { useStartupHooks } from "../startup";
 import classNames from "classnames";
-import { tryToGetDownloadUrlOrLog } from "../queries/thumbnail";
-import { Song } from "../shared/universal/types";
 import { useDefaultStatusBar, useTemporaryStatusBar } from "./status-bar";
 import { LogoNText } from "../components/LogoNText";
 import { Link } from "../components/Link";
@@ -29,6 +26,8 @@ import { SMALL_PLAYER_HEIGHT, TABS_HEIGHT, TOP_BAR_HEIGHT } from "./constants";
 import { createEmitter } from "../events";
 import { useDarkMode } from "../dark";
 import { NativeAudio } from "@capacitor-community/native-audio";
+import { Toolbar } from "../sections/Toolbar";
+import { IS_WEB_VIEW } from "../utils";
 
 export const Tab = ({
   label,
@@ -115,7 +114,7 @@ export const App = () => {
   }, []);
 
   useEffect(() => {
-    if (!loading && user && route?.protected === false) {
+    if (!loading && user && route?.protected === false && IS_WEB_VIEW) {
       navigateTo("home");
     } else if (!loading && !user && route?.protected === true) {
       navigateTo("hero");
@@ -125,7 +124,7 @@ export const App = () => {
   if (
     loading ||
     (!loading && route?.protected === true && !user) ||
-    (!loading && route?.protected === false && user)
+    (!loading && route?.protected === false && user && IS_WEB_VIEW)
   ) {
     return <LoadingSpinner className="h-screen bg-gray-900" />;
   }
@@ -157,6 +156,7 @@ export const App = () => {
           route.mobileClassName,
         )}
       >
+        {route.id === "hero" && <Toolbar />}
         {route.title && (
           <>
             {/* I need this outer div since I can't set the height *and* add padding on the same element */}
