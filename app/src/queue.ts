@@ -7,6 +7,7 @@ import {
   removeElementFromShuffled,
   useStateWithRef,
   getLocalStorage,
+  openSnackbar,
 } from "./utils";
 import firebase from "firebase/app";
 import { createEmitter } from "./events";
@@ -151,11 +152,16 @@ export const queueLogic = () => {
   const [getRepeatStorage, setRepeatStorage] = getLocalStorage<QueueRepeat>("player-mode", "none");
   getRepeatStorage().then(setRepeat);
 
+  let i = 0;
+
   // STATE
   let state: QueueState = "paused";
   const setState = (value: QueueState) => {
     state = value;
     emitter.emit("stateChange", value);
+    i++;
+
+    if (i >= 20) throw Error("wowow");
   };
 
   // VOLUME
@@ -237,13 +243,11 @@ export const queueLogic = () => {
     };
 
     if (ref) {
-      try {
-        await ref.setSrc({ src: downloadUrl, song: song });
-      } catch (e) {
+      ref.setSrc({ src: downloadUrl, song: song }).catch((e) => {
         captureException(e);
         console.error(e.toString());
-        return;
-      }
+        openSnackbar(`There was an error loading "${song.title}"`);
+      });
     }
 
     firebase.analytics().logEvent("play_song", { song_id: song.id });
