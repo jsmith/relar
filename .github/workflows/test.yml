@@ -27,7 +27,6 @@ jobs:
 
       # Patching
       - run: npx patch-package
-      - run: npx patch-package
         working-directory: app
 
       # Building

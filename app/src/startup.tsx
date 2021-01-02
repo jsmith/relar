@@ -48,6 +48,8 @@ class Controls implements AudioControls {
   async setSrc(opts: { src: string; song: Song } | null) {
     if (!opts) {
       NativeAudio.stop();
+      if (!window.navigator.mediaSession) return;
+      window.navigator.mediaSession.metadata = null;
       return;
     }
 
@@ -125,8 +127,6 @@ export const useStartupHooks = () => {
   const { routeId } = useNavigator("home"); // "home" is just because something is required
   const { loading } = useUser();
   const installEvent = useRef<null | Event>(null);
-
-  // TODO on logout does the music stop??
 
   useEffect(() => {
     const disposers = [
