@@ -1,6 +1,6 @@
 import React from "react";
-import { Audio } from "@jsmith21/svg-loaders-react";
 import classNames from "classnames";
+import { Audio } from "./Audio";
 
 export interface LoadingSpinnerProps {
   className?: string;
@@ -14,7 +14,7 @@ export const LoadingSpinner = (props: LoadingSpinnerProps) => {
         props.className,
       )}
     >
-      <Audio fill="currentColor" className="w-12 h-16" />
+      <Audio className="w-12 h-16" />
     </div>
   );
 };

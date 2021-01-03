@@ -1,6 +1,5 @@
 import * as React from "react";
 import classNames from "classnames";
-import { ThreeDots } from "@jsmith21/svg-loaders-react";
 import { useState } from "react";
 import { sleep, useIsMounted } from "../utils";
 

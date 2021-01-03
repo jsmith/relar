@@ -86,7 +86,7 @@ export const Settings = () => {
         Logout
       </button>
       <p className="text-center text-xs">
-        Use our web app @{" "}
+        Use our desktop web app @{" "}
         <a href="https://relar.app" target="_blank" rel="noreferrer" className={link()}>
           https://relar.app
         </a>{" "}
