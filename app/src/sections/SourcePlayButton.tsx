@@ -1,6 +1,6 @@
 import React from "react";
 import { Queue, SetQueueSource, useIsPlayingSource, useQueueState } from "../queue";
-import { Audio } from "@jsmith21/svg-loaders-react";
+import { Audio } from "../components/Audio";
 import { MdPauseCircleOutline, MdPlayArrow, MdPlayCircleOutline } from "react-icons/md";
 import classNames from "classnames";
 import { isMobile } from "../utils";
@@ -41,7 +41,7 @@ export const SourcePlayButton = ({
       {/* This logic is a bit weird haha */}
       {sourcesEqual && isMobile() ? (
         // If this is mobile and this is the playing "source" then show an audio animatino
-        <Audio className="w-6 h-4 text-white " fill="currentColor" disabled={state === "paused"} />
+        <Audio className="w-6 h-4 text-white " disabled={state === "paused"} />
       ) : sourcesEqual && state === "playing" ? (
         // Else if on the web player and playing show a pause button
         <MdPauseCircleOutline className="w-10 h-10" />

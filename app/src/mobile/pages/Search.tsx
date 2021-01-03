@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import React, { useRef } from "react";
 import { HiOutlineSearch } from "react-icons/hi";
 import { Input } from "../../components/Input";
@@ -20,7 +21,9 @@ export const Search = () => {
   });
 
   return (
-    <div className="p-3 flex-grow flex flex-col space-y-1 m-safe-top">
+    // "flex flex-col" makes div not be the same height as the children on safari which
+    // messes things up
+    <div className={classNames("p-3 space-y-1 m-safe-top", !results && "flex-grow flex flex-col")}>
       <Input
         inputRef={ref}
         inputClassName=""

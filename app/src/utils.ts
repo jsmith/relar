@@ -754,8 +754,6 @@ export const closeMobileKeyboard = (element: HTMLInputElement) => {
   element.readOnly = true;
   element.disabled = true;
 
-  // element.attr('readonly', 'readonly'); // Force keyboard to hide on input field.
-  // element.attr('disabled', 'true'); // Force keyboard to hide on textarea field.
   setTimeout(function () {
     element.blur(); //actually close the keyboard
     // Remove readonly attribute after keyboard is hidden.
@@ -781,4 +779,8 @@ export const itemsToFiles = () => {};
 
 export function assertUnreachable(x: never): never {
   throw new Error("Didn't expect to get here: " + x);
+}
+
+export function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }

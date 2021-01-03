@@ -115,7 +115,6 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
       return;
     }
 
-    console.log(fileList);
     const newFiles = fileList.map((file) => {
       if (file.name.endsWith(".mp3")) {
         // This assumes that uuid.v4() will always return a unique ID

@@ -242,18 +242,21 @@ export const queueLogic = () => {
       played: (firebase.firestore.FieldValue.increment(1) as unknown) as number,
     };
 
-    if (ref) {
-      ref.setSrc({ src: downloadUrl, song: song }).catch((e) => {
-        captureException(e);
-        console.error(e.toString());
-        openSnackbar(`There was an error loading "${song.title}"`);
-      });
-    }
-
     firebase.analytics().logEvent("play_song", { song_id: song.id });
 
     userData.song(song.id).update(update).catch(captureAndLogError);
     setCurrentlyPlaying({ song, source, index: item.index, jump });
+
+    if (ref) {
+      try {
+        // FIXME enter loading state here maybe?
+        await ref.setSrc({ src: downloadUrl, song: song });
+      } catch (e) {
+        captureException(e);
+        console.error(e.toString());
+        openSnackbar(`There was an error loading "${song.title}"`);
+      }
+    }
   };
 
   /**

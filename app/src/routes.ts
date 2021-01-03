@@ -16,7 +16,7 @@ const Search = React.lazy(() => import("./pages/Search"));
 const SearchMobile = React.lazy(() => import("./mobile/pages/Search"));
 const Signup = React.lazy(() => import("./pages/Signup"));
 const ForgotPassword = React.lazy(() => import("./pages/ForgotPassword"));
-const Home = React.lazy(() => import("./pages/Home")); // TODO
+const Home = React.lazy(() => import("./pages/Home"));
 const Songs = React.lazy(() => import("./pages/Songs"));
 const Artists = React.lazy(() => import("./pages/Artists"));
 const Albums = React.lazy(() => import("./pages/Albums"));
