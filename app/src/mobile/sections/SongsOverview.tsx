@@ -21,7 +21,7 @@ export interface SongsOverviewProps {
   songs: Song[] | undefined;
   source: SetQueueSource;
   onRename?: (newValue: string) => Promise<boolean>;
-  // TODO
+  // FIXME this isn't used on mobile but we can eventually
   includeDateAdded?: boolean;
   includeAlbumNumber?: boolean;
 }

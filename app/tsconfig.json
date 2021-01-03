@@ -4,8 +4,8 @@
   "extends": "@snowpack/app-scripts-react/tsconfig.base.json",
   "compilerOptions": {
     "baseUrl": "./",
-    // ES2019 so tests that use ?? and ? pass
-    "target": "ES2019",
+    // es2019 so tests that use ?? and ? pass
+    "target": "es2019",
     "paths": { "*": ["web_modules/.types/*"] },
     "importsNotUsedAsValues": "remove"
   }

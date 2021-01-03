@@ -23,31 +23,22 @@ import { isDefined } from "./shared/universal/utils";
 
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 
-class Controls implements AudioControls {
-  private _paused: boolean;
-  private _volume: number | undefined;
+const createControls = (): AudioControls => {
+  let _volume: number | undefined;
 
-  constructor() {
-    this._paused = false;
-  }
-
-  pause() {
-    this._paused = true;
+  const pause = () => {
     NativeAudio.pause();
-  }
+  };
 
-  play() {
-    this._paused = false;
+  const play = () => {
     NativeAudio.play();
-  }
+  };
 
-  get paused() {
-    return this._paused;
-  }
-
-  async setSrc(opts: { src: string; song: Song } | null) {
+  const setSrc = async (opts: { src: string; song: Song } | null) => {
     if (!opts) {
       NativeAudio.stop();
+      if (!window.navigator.mediaSession) return;
+      window.navigator.mediaSession.metadata = null;
       return;
     }
 
@@ -56,7 +47,7 @@ class Controls implements AudioControls {
 
     await NativeAudio.preload({
       path: src,
-      volume: this._volume ?? 1.0,
+      volume: _volume ?? 1.0,
       title: song.title,
       artist: song.artist ?? "Unknown Artist",
       album: song.albumName ?? "Unknown Album",
@@ -100,23 +91,30 @@ class Controls implements AudioControls {
           artwork,
         });
       });
-  }
+  };
 
-  getCurrentTime() {
+  const getCurrentTime = () => {
     return NativeAudio.getCurrentTime().then(({ currentTime }) => currentTime);
-  }
+  };
 
-  setCurrentTime(currentTime: number) {
+  const setCurrentTime = (currentTime: number) => {
     NativeAudio.setCurrentTime({ currentTime });
-  }
+  };
 
-  setVolume(volume: number) {
-    this._volume = volume;
+  const setVolume = (volume: number) => {
+    _volume = volume;
     NativeAudio.setVolume({ volume });
-  }
-}
+  };
 
-const controls = new Controls();
+  return {
+    pause,
+    play,
+    setSrc,
+    getCurrentTime,
+    setCurrentTime,
+    setVolume,
+  };
+};
 
 /**
  * Common hooks between the mobile and web app.
@@ -125,8 +123,6 @@ export const useStartupHooks = () => {
   const { routeId } = useNavigator("home"); // "home" is just because something is required
   const { loading } = useUser();
   const installEvent = useRef<null | Event>(null);
-
-  // TODO on logout does the music stop??
 
   useEffect(() => {
     const disposers = [
@@ -138,7 +134,7 @@ export const useStartupHooks = () => {
       NativeAudio.addListener("stop", () => Queue.stopPlaying).remove,
     ];
 
-    Queue._setRef(controls);
+    Queue._setRef(createControls());
     return () => disposers.forEach((disposer) => disposer());
   }, []);
 

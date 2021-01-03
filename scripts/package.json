@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "x": "node --preserve-symlinks-main --preserve-symlinks -r @graywolfai/esbuild-register"
+    "x": "node --preserve-symlinks-main --preserve-symlinks -r esm -r esbuild-register"
   },
   "dependencies": {
     "@sendgrid/mail": "^7.2.1",

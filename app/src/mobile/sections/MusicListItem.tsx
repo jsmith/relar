@@ -4,7 +4,7 @@ import { ActionSheetItem, openActionSheet } from "../action-sheet";
 import { Thumbnail } from "../../components/Thumbnail";
 import classNames from "classnames";
 import { ListContainerMode } from "../components/ListContainer";
-import { Audio } from "@jsmith21/svg-loaders-react";
+import { Audio } from "../../components/Audio";
 import { Song } from "../../shared/universal/types";
 
 export type MusicListItemState = "not-playing" | "playing" | "paused";
@@ -51,7 +51,6 @@ export const MusicListItem = ({
               "w-full text-purple-500 flex-shrink-0",
               mode === "condensed" ? "h-6" : "h-8",
             )}
-            fill="currentColor"
             disabled={state === "paused"}
           />
         ) : (

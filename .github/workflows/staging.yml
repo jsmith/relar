@@ -1,20 +1,18 @@
-name: Tests
+name: Staging
 
-on: [pull_request]
+on:
+  push:
+    branches: [master]
 
 jobs:
-  test:
+  deploy:
     runs-on: ubuntu-latest
-    # Typically it takes ~ 4 minutes to run all of the checks :)
-    timeout-minutes: 5
-
+    timeout-minutes: 10
     steps:
       # Checkout and prep
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with: { node-version: "12" }
-      - run: ./.github/scripts/decrypt.sh
-        env: { GPG_PASSWORD: "${{ secrets.GPG_PASSWORD }}" }
 
       # Install
       - uses: bahmutov/npm-install@v1
@@ -31,7 +29,14 @@ jobs:
 
       # Building
       - run: npm run build
+        working-directory: functions
+      - run: npm run build
         working-directory: native-audio
+      - run: npm run build:web-production
+        working-directory: app
+        env: { SENTRY_AUTH_TOKEN: "${{ secrets.SENTRY_AUTH_TOKEN }}" }
 
-      # Finally, run the checks!
-      - run: npm run checks
+      # Deployment
+      # PRODUCTION_FIREBASE_TOKEN generated using "firebase login:ci"
+      - run: npx firebase deploy --project staging
+        env: { FIREBASE_TOKEN: "${{ secrets.PRODUCTION_FIREBASE_TOKEN }}" }
