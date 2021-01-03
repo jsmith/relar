@@ -67,8 +67,10 @@ export const Login = () => {
           label="Password"
           type="password"
           onEnter={() => {
-            closeMobileKeyboard(passwordRef.current!);
-            buttonRef.current?.click();
+            // CLosing the mobile keyboard actually clicks the button somehow
+            // TODO test on actual mobile device
+            if (isMobile()) closeMobileKeyboard(passwordRef.current!);
+            else buttonRef.current?.click();
           }}
         />
         {error && <BlockAlert type="error">{error}</BlockAlert>}

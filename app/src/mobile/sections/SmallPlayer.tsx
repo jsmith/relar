@@ -7,7 +7,8 @@ import { Queue, useCurrentlyPlaying, useQueueState } from "../../queue";
 
 const emitter = createEmitter<{ show: [boolean] }>();
 
-export const setShowSmallPlayerPlaceholder = (value: boolean) => emitter.emit("show", value);
+export const setShowSmallPlayerPlaceholder = (value: boolean) =>
+  value !== saved && emitter.emit("show", value);
 
 let saved = false;
 emitter.on("show", (value) => (saved = value));

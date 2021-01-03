@@ -23,7 +23,7 @@ import { link } from "../../classes";
 import { showPlaylistAddModal } from "./AddToPlaylistModal";
 import Skeleton from "react-loading-skeleton";
 import { SetQueueSource, checkSourcesEqual, Queue, useIsThePlayingSong } from "../../queue";
-import { Audio } from "@jsmith21/svg-loaders-react";
+import { Audio } from "../../components/Audio";
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
 import { Thumbnail } from "../../components/Thumbnail";
@@ -215,7 +215,6 @@ export const SongTableRow = ({
           {isPlaying === "playing" || isPlaying === "paused" ? (
             <Audio
               className="w-full h-4 text-purple-500 flex-shrink-0"
-              fill="currentColor"
               disabled={isPlaying === "paused"}
             />
           ) : (

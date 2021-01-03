@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { MdErrorOutline, MdCheck } from "react-icons/md";
-import { captureAndLog, captureAndLogError } from "../utils";
+import { captureAndLog } from "../utils";
 import { AiOutlineStop } from "react-icons/ai";
-import { Audio } from "@jsmith21/svg-loaders-react";
 import { ProgressBar } from "./ProgressBar";
 import { UploadAction } from "../shared/universal/types";
 import firebase from "firebase/app";
+import { Audio } from "./Audio";
 
 export interface StorageLocation {
   path: string;
@@ -102,7 +102,6 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
         // If not running then waiting to be uploaded
         <div title={!running ? "Waiting" : progress < 100 ? "Uploading" : "Processing"}>
           <Audio
-            fill="currentColor"
             className="text-purple-700 dark:text-purple-400 w-6 h-4 flex-shrink-0"
             disabled={!running}
           />

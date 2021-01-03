@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin";
+import admin from "firebase-admin";
 import * as serviceAccount from "../../serviceAccountKey.relar-production.json";
 import * as serviceAccountStaging from "../../serviceAccountKey.relar-staging.json";
 import * as path from "path";

@@ -96,6 +96,11 @@ export const App = () => {
   const { loading, user } = useUser();
   const [dark] = useDarkMode();
 
+  useEffect(() => {
+    if (user) return;
+    setShowSmallPlayerPlaceholder(false);
+  }, [user]);
+
   const route = useMemo(() => {
     return Object.values(routes).find((route) => route.id === routeId);
   }, [routeId]);
@@ -156,7 +161,7 @@ export const App = () => {
           route.mobileClassName,
         )}
       >
-        {route.id === "hero" && <Toolbar />}
+        {route.id === "hero" && !IS_WEB_VIEW && <Toolbar />}
         {route.title && (
           <>
             {/* I need this outer div since I can't set the height *and* add padding on the same element */}

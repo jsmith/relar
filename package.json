@@ -6,20 +6,18 @@
     "checks:functions": "cd functions && npm run check:formatting && npm run check:lint && npm run check:types && firebase emulators:exec --only firestore \"npm run test\"",
     "checks": "npm run checks:app && npm run checks:functions"
   },
-  "dependencies": {
-    "throttle-debounce": "^2.3.0"
-  },
   "devDependencies": {
-    "@graywolfai/esbuild-register": "^1.1.0",
     "@types/node": "^14.14.0",
     "@typescript-eslint/eslint-plugin": "^4.2.0",
     "@typescript-eslint/parser": "^4.2.0",
-    "esbuild": "^0.6.33",
+    "esbuild": "^0.8.27",
+    "esbuild-register": "^1.1.1",
     "eslint": "^7.10.0",
     "eslint-config-restricted-globals": "^0.1.0",
     "eslint-plugin-react": "^7.21.2",
     "eslint-plugin-react-hooks": "^4.1.2",
-    "firebase-tools": "^8.16.2",
+    "esm": "^3.2.25",
+    "firebase-tools": "^9.1.0",
     "prettier": "^2.1.2",
     "typescript": "^4.0.3",
     "uvu": "^0.3.3"

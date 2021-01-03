@@ -199,11 +199,12 @@ const changelog = create([
   },
   {
     version: "0.17.0",
-    date: "December 24 2020",
+    date: "January 2 2021",
     fixes: ["Improved song deletion process"],
     features: [
       "Mobile app now available on the mobile/tablet web browsers",
       "Song now shows immediately while audio file is loading",
+      "Other internal improvements & optimizations",
     ],
   },
 ]).reverse();
