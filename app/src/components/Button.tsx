@@ -1,7 +1,7 @@
 import * as React from "react";
 import classNames from "classnames";
 import { useState } from "react";
-import { sleep, useIsMounted } from "../utils";
+import { useIsMounted } from "../utils";
 
 export interface ButtonProps
   extends React.DetailedHTMLProps<
@@ -71,7 +71,6 @@ export const Button = ({
         if (!onClick) return;
         try {
           setLoading(true);
-          await sleep(2000);
           await onClick(e);
         } finally {
           isMounted.current && setLoading(false);

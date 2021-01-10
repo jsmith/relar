@@ -1,6 +1,10 @@
 {
   "name": "app",
-  "version": "0.16.0",
+  "version": "0.17.0",
+  "license": "MPL-2.0",
+  "repository": {
+    "url": "https://github.com/jsmith/relar"
+  },
   "scripts": {
     "clean": "rm -rf build",
     "cp-cap-dev": "cp capacitor.dev.json capacitor.config.json",
@@ -24,7 +28,7 @@
     "@headlessui/react": "^0.2.0",
     "@reach/skip-nav": "^0.11.2",
     "@sentry/browser": "^5.29.2",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "classnames": "^2.2.6",
     "emotion": "^10.0.27",
     "fast-average-color": "^6.3.0",
@@ -92,6 +96,6 @@
     "snowpack": "^2.18.5",
     "tailwindcss": "^2.0.2",
     "tempy": "^1.0.0",
-    "workbox-cli": "^5.1.4"
+    "workbox-cli": "^6.0.2"
   }
 }

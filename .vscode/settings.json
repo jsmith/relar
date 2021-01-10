@@ -7,6 +7,7 @@
     "Stateful",
     "Untracked",
     "debounced",
+    "firestore",
     "graywolfai",
     "graywolftech",
     "postversion",

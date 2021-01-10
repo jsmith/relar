@@ -1,6 +1,10 @@
 {
   "name": "functions",
-  "version": "0.16.0",
+  "version": "0.17.0",
+  "license": "MPL-2.0",
+  "repository": {
+    "url": "https://github.com/jsmith/relar"
+  },
   "scripts": {
     "build": "rm -rf lib && ../node_modules/.bin/tsc",
     "test": "./test.sh",
@@ -37,7 +41,7 @@
     "@types/sharp": "^0.25.0",
     "@types/supertest": "^2.0.9",
     "@types/uuid": "^8.0.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "firebase-functions-test": "^0.1.7",
     "supertest": "^4.0.2"
   }

@@ -2,6 +2,10 @@
   "scripts": {
     "x": "node --preserve-symlinks-main --preserve-symlinks -r esm -r esbuild-register"
   },
+  "license": "MPL-2.0",
+  "repository": {
+    "url": "https://github.com/jsmith/relar"
+  },
   "dependencies": {
     "@sendgrid/mail": "^7.2.1",
     "@types/uuid": "^8.0.0",

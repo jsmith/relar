@@ -17,12 +17,6 @@
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 </p>
 
-## Maintainers
-
-| Maintainer    | GitHub                                      | Social                                           | Sponsoring Company |
-| ------------- | ------------------------------------------- | ------------------------------------------------ | ------------------ |
-| Priyank Patel | [priyankpat](https://github.com/priyankpat) | [@priyankpat\_](https://twitter.com/priyankpat_) | Ionic              |
-
 ## Installation
 
 To use npm

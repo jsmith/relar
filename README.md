@@ -1,8 +1,36 @@
 # Relar
 
-The Relar repository.
+Relar is a cloud music hosting and streaming service for your personal audio file collection. See it running at [relar.app](https://relar.app).
 
-## Environment Setup
+## Project Setup
+
+These steps will get the project set up on [Firebase](https://firebase.google.com/). Once everything is set up, you'll be able to run the app locally and deploy it to your environment.
+
+> Before starting, make sure you have this repository cloned locally 💻
+
+### 1. Firebase Project Creation
+
+The first step is to create the project in Firebase console. Head to the [console](https://console.firebase.google.com/), sign into your Google account, click the "Add project" button, give your project a name and then click "Continue". On the next page, choose whether you want to enable analytics and continue with the setup. Once you're done, click the "Create project" button and let Firebase do it's thing :) Once the project is ready, click "Continue".
+
+### 2. Firebase Authentication
+
+From the Firebase console, head to the "Authentication" tab (on the left) and then click "Get started". It should then take you to the "Sign-in method" tab. Click the "Email/password" row, turn on the first toggle (not the "Email link (passwordless sign-in)" toggle) and then click "Save".
+
+> Don't create any users now, there is a script that does this instead.
+
+### 3. Firebase Cloud Firestore
+
+Head to the "Cloud Firestore" tab and click "Create database". Select "Start in test mode", "Next", select your desired region (the default value is probably fine) and finally click "Enable".
+
+### 4. Firebase Hosting
+
+In the "Hosting" tab, click "Get started" and then follow the steps to install [`firebase-tools`](http://npmjs.com/package/firebase-tools) & login. Note that you _don't_ need to run `firebase init` or `firebase deploy` (you'll deploy things later).
+
+### 5. Firebase Functions
+
+In the "Functions" tab, click "Upgrade project". If you haven't set up a google cloud billing account before, there is lots of information online. Once you have a one set up, click "Purchase" in the modal. I recommend setting up a budget by clicking the "Set a budget alert". Once you've set your budget, click "Close". Then, you can click "Get started". Click through the modal. You should already have `firebase-tools` installed from the preview step and you don't need to deploy just yet.
+
+#### Node & npm
 
 First, you'll have to make sure you have `Node` and `npm` installed correctly (see `package.json` for version information). If not installed, we recommend the following steps to getting them set up.
 
@@ -11,13 +39,15 @@ First, you'll have to make sure you have `Node` and `npm` installed correctly (s
 
 > Although these instructions use `npm`, `yarn` can also be used if desired.
 
-## Installing Dependencies
+### Installing Dependencies
 
 The following command installs the dependencies in _all_ the repositories.
 
 ```
-make install
+npm run bootstrap
 ```
+
+### Development
 
 ## Structure
 
