@@ -94,11 +94,6 @@ const downloadObject = (tmpDir: string, bucket: string, name: string) => (): Res
   ).map(() => tmpFilePath);
 };
 
-// For reference -> https://us-central1-relar-production.cloudfunctions.net/health
-export const health = f.https.onRequest((_, res) => {
-  res.send(`Running v${env.version}`);
-});
-
 export const generateThumbs = f.storage.object().onFinalize(
   wrapAndReport(async (object) => {
     assertNameDefined(object);

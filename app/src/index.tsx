@@ -8,7 +8,7 @@ if (process.env.NODE_ENV !== "development") {
     environment: process.env.NODE_ENV,
     // See https://docs.sentry.io/workflow/releases/?platform=javascript
     release: (IS_WEB_VIEW ? "mobile" : "app") + "@" + env.version,
-    dsn: "https://ae6c432b2c074f17b223ddd11df69461@o400394.ingest.sentry.io/5258806",
+    dsn: env.sentryDsn,
     beforeSend: (e) => {
       // This error occurs in web based apps
       // FIXME probably handle this eventually

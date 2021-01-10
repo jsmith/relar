@@ -3,7 +3,7 @@ import * as sgMail from "@sendgrid/mail";
 import { env } from "./env";
 import { argv, admin } from "./admin";
 
-sgMail.setApiKey(env.mail.sendgrid_api_key);
+sgMail.setApiKey(env.sendgrid_api_key);
 
 const auth = admin.auth();
 const firestore = admin.firestore();

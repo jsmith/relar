@@ -179,18 +179,6 @@ export const SongType = Record({
 
 export type Song = Static<typeof SongType>;
 
-export const BetaSignupType = Record({
-  email: String,
-  firstName: String,
-  device: BetaDeviceType,
-}).And(
-  Partial({
-    token: String,
-  }),
-);
-
-export type BetaSignup = Static<typeof BetaSignupType>;
-
 export const UploadActionType = Record({
   id: String,
   type: Literal("upload"),
@@ -271,28 +259,17 @@ export type BetaAPI = {
         firstName: string;
         device: BetaDevice;
         email: string;
+        password: string;
       };
       response:
         | Success
         | KnownError<
-            | "already-on-list"
             | "invalid-email"
             | "already-have-account"
             | "invalid-name"
             | "invalid-device"
+            | "invalid-password"
           >
-        | UnknownError;
-    };
-  };
-  "/create-account": {
-    POST: {
-      body: {
-        token: string;
-        password: string;
-      };
-      response:
-        | (Success & { uid: string })
-        | KnownError<"invalid-token" | "invalid-password" | "already-have-account">
         | UnknownError;
     };
   };

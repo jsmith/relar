@@ -1,14 +1,22 @@
 import * as Sentry from "@sentry/node";
 import { env } from "./env";
 
+let version: string | undefined;
+try {
+  // TODO test on staging
+  const packageJson = require("./package.json");
+  version = packageJson.version;
+} catch (e) {
+  // This is only available when built but not during tests
+}
+
 Sentry.init({
-  dsn: "https://c1f6b53d686d47fc8d2f8fcf31651304@o400394.ingest.sentry.io/5295615",
-  environment: env.project,
-  // FIXME these are actually undefined during execution sadly
-  release: "functions@" + env.version,
+  dsn: env.sentry_dsn,
+  environment: process.env.GCLOUD_PROJECT,
+  release: "functions@" + version,
   beforeSend: (event) => {
-    // If it's not production *and* it's not staging, don't actually send anything
-    if (env.project !== "production" && env.project !== "staging") {
+    // TODO test that this works on staging!!
+    if (!process.env.GCLOUD_PROJECT) {
       return null;
     }
 

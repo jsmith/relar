@@ -6,7 +6,7 @@
     "url": "https://github.com/jsmith/relar"
   },
   "scripts": {
-    "build": "rm -rf lib && ../node_modules/.bin/tsc",
+    "build": "rm -rf lib && ../node_modules/.bin/tsc && cp package.json lib",
     "test": "./test.sh",
     "t": "GOOGLE_APPLICATION_CREDENTIALS=../serviceAccountKey.relar-test.json FIRESTORE_EMULATOR_HOST=localhost:8080 node --preserve-symlinks-main --preserve-symlinks -r esm -r esbuild-register",
     "check:lint": "../node_modules/.bin/eslint \"**/*.{ts,tsx}\"",

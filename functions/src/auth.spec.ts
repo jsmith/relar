@@ -1,9 +1,9 @@
 import supertest from "supertest";
-import { adminDb, betaSignups, deleteCollection } from "./shared/node/utils";
+import { adminDb, deleteCollection } from "./shared/node/utils";
 import { admin } from "./admin";
 
 import { app } from "./auth";
-import { BetaAPI, BetaSignup } from "./shared/universal/types";
+import { BetaAPI } from "./shared/universal/types";
 import { test } from "uvu";
 import assert from "uvu/assert";
 
@@ -13,7 +13,7 @@ const auth = admin.auth();
 test.before.each(async () => {
   await deleteCollection(await firestore.collection("beta_signups"));
   try {
-    const user = await auth.getUserByEmail("test@user.com");
+    const user = await getUser();
     await auth.deleteUser(user.uid);
   } catch (e) {
     // An error likely means that the user doesn't exist
@@ -27,21 +27,26 @@ const createBody = (
     firstName: body?.firstName ?? "Tester",
     email: body?.email ?? "test@user.com",
     device: body?.device ?? "ios",
+    password: body.password ?? "123456aA",
   };
 };
+
+const getUser = () => auth.getUserByEmail("test@user.com");
+
+const getUserId = () => getUser().then(({ uid }) => uid);
 
 test("can successfully sign up a user by email", async () => {
   await supertest(app).post("/beta-signup").send(createBody()).expect(200, {
     type: "success",
   });
 
-  await betaSignups(firestore)
-    .doc("test@user.com")
+  await adminDb(await getUserId())
+    .doc()
     .get()
     .then((data) =>
       assert.equal(data.data(), {
         firstName: "Tester",
-        email: "test@user.com",
+        songCount: 0,
         device: "ios",
       }),
     );
@@ -51,7 +56,7 @@ test("prevents two signups", async () => {
   await supertest(app).post("/beta-signup").send(createBody());
   await supertest(app).post("/beta-signup").send(createBody()).expect(200, {
     type: "error",
-    code: "already-on-list",
+    code: "already-have-account",
   });
 });
 
@@ -94,95 +99,25 @@ test("prevents bad devices", async () => {
     });
 });
 
-test("prevents a user with an account from signing up", async () => {
-  await auth.createUser({
-    email: "test@user.com",
-    password: "123456",
-    emailVerified: true,
-  });
-
-  await supertest(app)
-    .post("/beta-signup")
-    .send(createBody())
-    .expect(200, { type: "error", code: "already-have-account" });
-});
-
-test("can create an account", async () => {
-  const data: BetaSignup = {
-    email: "test@user.com",
-    token: "1234",
-    firstName: "Tester",
-    device: "android",
-  };
-  await betaSignups(firestore).doc("test@user.com").set(data);
-
-  const res = await supertest(app)
-    .post("/create-account")
-    .send({ password: "123456aA", token: "1234" })
-    .expect(200);
-
-  const uid: string = res.body.uid;
-
-  await betaSignups(firestore)
-    .doc("test@user.com")
-    .get()
-    .then((data) => assert.not(data.exists));
-
-  const userData = await adminDb(uid).doc().get();
-  assert.equal(userData.data(), {
-    device: "android",
-    firstName: "Tester",
-    songCount: 0,
-  });
-});
-
 test("disallows two short passwords", async () => {
   await supertest(app)
-    .post("/create-account")
+    .post("/beta-signup")
     .send({ password: "12345aA", token: "1234" })
     .expect(200, { type: "error", code: "invalid-password" });
 });
 
 test("disallows passwords with no lowercase", async () => {
   await supertest(app)
-    .post("/create-account")
+    .post("/beta-signup")
     .send({ password: "123456AA", token: "1234" })
     .expect(200, { type: "error", code: "invalid-password" });
 });
 
 test("disallows passwords with no uppercase", async () => {
   await supertest(app)
-    .post("/create-account")
+    .post("/beta-signup")
     .send({ password: "123456aa", token: "1234" })
     .expect(200, { type: "error", code: "invalid-password" });
-});
-
-test("disallows tokens that don't exist", async () => {
-  await supertest(app)
-    .post("/create-account")
-    .send({ password: "123456aA", token: "1234" })
-    .expect(200, { type: "error", code: "invalid-token" });
-});
-
-test("disallows users who already have accounts", async () => {
-  const data: BetaSignup = {
-    email: "test@user.com",
-    token: "1234",
-    device: "ios",
-    firstName: "Tester",
-  };
-  await betaSignups(firestore).doc("test@user.com").set(data);
-
-  await auth.createUser({
-    email: "test@user.com",
-    password: "123456",
-    emailVerified: true,
-  });
-
-  await supertest(app)
-    .post("/create-account")
-    .send({ password: "123456aA", token: "1234" })
-    .expect(200, { type: "error", code: "already-have-account" });
 });
 
 test.after(async () => {

@@ -208,10 +208,13 @@ const changelog = create([
     ],
   },
   {
-    version: "0.17.1",
+    version: "0.18.0",
     date: "TODO TODO 2021",
     fixes: ["Removed artificial loading on button click", "Other small bug fixes"],
-    features: ["Relar is now open source (https://github.com/jsmith/relar)!"],
+    features: [
+      "Relar is now open source (https://github.com/jsmith/relar)!",
+      "The beta is no longer closed. Anyone can sign up now :)",
+    ],
   },
 ]).reverse();
 
