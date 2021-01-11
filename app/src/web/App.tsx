@@ -6,7 +6,7 @@ import { FaMusic } from "react-icons/fa";
 import classNames from "classnames";
 import { Player } from "./sections/Player";
 import { MdLibraryMusic, MdSearch, MdAddCircle } from "react-icons/md";
-import { isMobile, useDocumentTitle } from "../utils";
+import { isMobile, openSnackbar, useDocumentTitle } from "../utils";
 import { Link } from "../components/Link";
 import { bgApp } from "../classes";
 import { SkipNavLink, SkipNavContent } from "@reach/skip-nav";
@@ -27,6 +27,8 @@ import { useDeferredInstallPrompt } from "../service-worker";
 import { RiArrowDownCircleLine } from "react-icons/ri";
 import { LoadingPage } from "../components/LoadingPage";
 import { Toolbar } from "../sections/Toolbar";
+import { Banner } from "../components/Banner";
+import { HiOutlineMail } from "react-icons/hi";
 
 export interface SideBarItem {
   label: string;
@@ -160,6 +162,18 @@ export const App = () => {
             }
           >
             <div className="h-full absolute inset-0 flex flex-col">
+              {user?.emailVerified === false && (
+                <Banner
+                  text="You need to verify your email address"
+                  onClick={() =>
+                    user
+                      ?.sendEmailVerification()
+                      .then(() => openSnackbar("Successfully sent verification email"))
+                      .catch(() => openSnackbar("Failed to send verification email"))
+                  }
+                  icon={HiOutlineMail}
+                />
+              )}
               {(isRoute(routes.songs) ||
                 isRoute(routes.artists) ||
                 isRoute(routes.albums) ||

@@ -10,6 +10,8 @@ These steps will get the project set up on [Firebase](https://firebase.google.co
 
 > Before starting, make sure you have this repository cloned locally 💻
 
+<!-- TODO move some of this to wiki -->
+
 ### 1. Node & npm
 
 First, you'll have to make sure you have `node` v12 and `npm` installed correctly. If not installed, we recommend the following steps to getting them set up.

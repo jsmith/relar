@@ -258,7 +258,6 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate, AVAssetResourceLoade
 
         commandCenter.previousTrackCommand.isEnabled = true
         commandCenter.previousTrackCommand.addTarget { [unowned self] event in
-            print("JACOB PREVIOUS")
             self.notifyListeners("previous", data: [:])
             return .success
         }

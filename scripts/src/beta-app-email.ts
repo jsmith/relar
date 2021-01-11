@@ -51,7 +51,7 @@ I hope you've been enjoying Relar so far! I'm starting to roll out the mobile ap
 
 Since this is the first time anyone has used the app, expect to encounter bugs and missing features. Using your feedback, I'll be working hard to address these issues!
 
-- Jacob
+- Relar Team
 
 If you have any issues with the installation process, let me know ASAP by replying to this email.
 `.trim(),

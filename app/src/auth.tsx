@@ -37,6 +37,22 @@ export const UserProvider = (props: React.Props<{}>) => {
   );
 
   useEffect(() => {
+    if (!user || user.emailVerified) return;
+
+    const id = setInterval(() => {
+      user.reload().then(() => {
+        if (user.emailVerified) {
+          // We have to copy of user object so the UI actually updates
+          const clone = Object.assign(Object.create(Object.getPrototypeOf(user)), user);
+          setUser(clone);
+        }
+      });
+    }, 5000);
+
+    return () => clearTimeout(id);
+  }, [user]);
+
+  useEffect(() => {
     return firebase.auth().onAuthStateChanged(checkUser);
   }, [checkUser]);
 

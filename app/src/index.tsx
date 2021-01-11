@@ -64,11 +64,11 @@ ReactDOM.render(
   <React.StrictMode>
     <DarkModeProvider>
       <UserProvider>
-        <ModalProvider>
-          <Router routes={routes}>
-            <ConfirmActionProvider>
-              <ConfirmPasswordProvider>
-                <SnackbarProvider>
+        <SnackbarProvider>
+          <ModalProvider>
+            <Router routes={routes}>
+              <ConfirmActionProvider>
+                <ConfirmPasswordProvider>
                   <SkeletonProvider>
                     <StatusBarProvider>
                       <React.Suspense fallback={<LoadingPage className="h-screen" />}>
@@ -76,11 +76,11 @@ ReactDOM.render(
                       </React.Suspense>
                     </StatusBarProvider>
                   </SkeletonProvider>
-                </SnackbarProvider>
-              </ConfirmPasswordProvider>
-            </ConfirmActionProvider>
-          </Router>
-        </ModalProvider>
+                </ConfirmPasswordProvider>
+              </ConfirmActionProvider>
+            </Router>
+          </ModalProvider>
+        </SnackbarProvider>
       </UserProvider>
     </DarkModeProvider>
   </React.StrictMode>,

@@ -8,9 +8,7 @@ import { BlockAlert } from "../components/BlockAlert";
 import firebase from "firebase/app";
 import { Select } from "../components/Select";
 import { BetaDevice } from "../shared/universal/types";
-import { textGray600 } from "../classes";
-import classNames from "classnames";
-import { isMobile } from "../utils";
+import { captureAndLog, isMobile } from "../utils";
 
 export const Signup = () => {
   const [email, setEmail] = useState("");
@@ -18,10 +16,11 @@ export const Signup = () => {
   const [firstName, setFirstName] = useState("");
   const [device, setDevice] = useState<BetaDevice>("none");
   const [error, setError] = useState<string>();
-  const [success, setSuccess] = useState(true);
+  const [success, setSuccess] = useState(false);
   const emailRef = useRef<HTMLInputElement | null>(null);
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const selectRef = useRef<HTMLSelectElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   const signup = async () => {
     setError("");
@@ -30,6 +29,14 @@ export const Signup = () => {
     );
 
     if (result.data.type === "success") {
+      try {
+        await firebase.auth().signInWithCustomToken(result.data.data.signInToken);
+      } catch (e) {
+        captureAndLog(e);
+        setError("Something went wrong. Do you mind trying again?");
+        return;
+      }
+
       firebase.analytics().logEvent("beta_sign_up", { method: "email" });
       setSuccess(true);
       return;
@@ -66,14 +73,13 @@ export const Signup = () => {
       }
     >
       <h3>Beta Sign Up</h3>
-      <p className={classNames("text-gray-500", textGray600)}>
+      <p className="text-gray-500 dark:text-gray-400">
         Want to be apart of the beta? Sign up now and you'll get immediate access to the platform.
       </p>
       {success ? (
         <BlockAlert type="success">
-          Your account has been successfully created :) Check your inbox for a confirmation email.
-          Once you confirm your email, you should now be able to{" "}
-          <Link route="login" label="login" />. In the meantime, have you seen our{" "}
+          Success! Check your inbox for a confirmation email. When you're ready, head to the{" "}
+          <Link route="home" label="app" />. Also, have you seen our{" "}
           <Link label="beta guide" route="beta-guide" />?
         </BlockAlert>
       ) : (
@@ -82,7 +88,7 @@ export const Signup = () => {
             value={firstName}
             onChange={setFirstName}
             label="First Name*"
-            onEnter={() => (isMobile() ? emailRef.current?.focus() : signup())}
+            onEnter={() => (isMobile() ? emailRef.current?.focus() : buttonRef.current?.click())}
             required
           />
           <Input
@@ -92,7 +98,7 @@ export const Signup = () => {
             label="Email*"
             type="email"
             placeholder="john@example.com"
-            onEnter={() => (isMobile() ? selectRef.current?.focus() : signup())}
+            onEnter={() => (isMobile() ? selectRef.current?.focus() : buttonRef.current?.click())}
             required
           />
           <Select
@@ -114,11 +120,12 @@ export const Signup = () => {
             label="Password*"
             type="password"
             required
-            onEnter={signup}
+            onEnter={() => buttonRef.current?.click()}
           />
 
           {error && <BlockAlert type="error">{error}</BlockAlert>}
           <Button
+            buttonRef={buttonRef}
             label="Sign Up"
             className="w-full"
             onClick={async (e) => {

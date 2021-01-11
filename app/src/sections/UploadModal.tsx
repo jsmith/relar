@@ -8,10 +8,13 @@ import { useUserStorage } from "../storage";
 import firebase from "firebase/app";
 import { useUserData } from "../firestore";
 import { UploadAction } from "../shared/universal/types";
-import { toFileArray, useStateWithRef } from "../utils";
+import { openSnackbar, toFileArray, useStateWithRef } from "../utils";
 import { MdErrorOutline } from "react-icons/md";
 import { DragDiv } from "../components/DragDiv";
 import { snapshot } from "uvu/assert";
+import { useDefinedUser } from "../auth";
+import { Button } from "../components/Button";
+import { HiCheck } from "react-icons/hi";
 
 export interface UploadModalProps {
   children?: React.ReactNode;
@@ -77,9 +80,9 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
   const [files, setFiles, filesRef] = useStateWithRef<
     Array<{
       file: File;
-      task: firebase.storage.UploadTask | undefined;
+      task: firebase.storage.UploadTask;
       action: UploadAction | undefined;
-      songId: string | undefined;
+      songId: string;
     }>
   >([]);
   const fileUpload = useRef<HTMLInputElement | null>(null);
@@ -87,6 +90,7 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
   const createdSnapshot = useRef<(() => void) | null>(null);
   const userData = useUserData();
   const uploadQueue = useRef(createUploadQueue());
+  const user = useDefinedUser();
 
   useEffect(() => {
     if (files.length > 0 && !createdSnapshot.current) {
@@ -111,33 +115,26 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
   }, [files, filesRef, setFiles, userData]);
 
   const addFiles = (fileList: File[]) => {
+    if (!user.emailVerified) return;
+
     if (!fileList) {
       return;
     }
 
     const newFiles = fileList.map((file) => {
-      if (file.name.endsWith(".mp3")) {
-        // This assumes that uuid.v4() will always return a unique ID
-        // Users also only have the ability to create but not overwrite files
-        const id = uuid.v4();
-        const ref = storage.song(id, file.name);
-        const task = ref.put(file);
-        uploadQueue.current.push(task);
+      // This assumes that uuid.v4() will always return a unique ID
+      // Users also only have the ability to create but not overwrite files
+      const id = uuid.v4();
+      const ref = storage.song(id, file.name);
+      const task = ref.put(file);
+      uploadQueue.current.push(task);
 
-        return {
-          songId: id,
-          task,
-          action: undefined,
-          file,
-        };
-      } else {
-        return {
-          songId: undefined,
-          task: undefined,
-          action: undefined,
-          file,
-        };
-      }
+      return {
+        songId: id,
+        task,
+        action: undefined,
+        file,
+      };
     });
 
     firebase.analytics().logEvent("songs_uploaded", {
@@ -158,7 +155,6 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
         <AriaModal
           titleText="Upload Music to Library"
           onExit={() => setDisplay(false)}
-          initialFocus="#upload-music-button"
           getApplicationNode={() => document.getElementById("root")!}
           underlayStyle={{ paddingTop: "2em" }}
           dialogClass="absolute inset-0 m-8 rounded-lg bg-white dark:bg-gray-900 z-10 p-5"
@@ -205,7 +201,7 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
                   or drag more files!
                 </div>
               </div>
-            ) : (
+            ) : user.emailVerified ? (
               <div className="flex items-center justify-center flex-col h-full">
                 <FiMusic className="w-20 h-20 text-purple-500" />
                 <h1 className="text-purple-800 dark:text-purple-200 text-2xl" id="modal-headline">
@@ -223,6 +219,17 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
                 >
                   SELECT FROM YOUR COMPUTER
                 </button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full space-y-4">
+                <FiMusic className="w-20 h-20 text-purple-500" />
+                <div className="text-purple-800 dark:text-purple-200">
+                  You need to verify your email before you can upload any music.
+                </div>
+                <Button
+                  label="Resend Verification Email"
+                  onClick={() => user.sendEmailVerification()}
+                />
               </div>
             )}
           </div>

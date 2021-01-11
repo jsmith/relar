@@ -648,14 +648,16 @@ export function useOnlineStatus() {
 }
 
 const emitter = createEmitter<{ open: [React.ReactNode, number | undefined] }>();
-export const openSnackbar = (node: React.ReactNode, duration: number = 4000) => {
+export const openSnackbar = (node: React.ReactNode, duration: number = 50000) => {
   emitter.emit("open", node, duration);
 };
 
 export const useMySnackbar = () => {
   const mobile = useIsMobile();
   const [open] = useSnackbar(
-    mobile ? {} : { position: "top-right", style: { transform: "translateY(60px)" } },
+    mobile
+      ? { style: { zIndex: 50 } }
+      : { position: "top-right", style: { transform: "translateY(60px)", zIndex: 50 } },
   );
 
   // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -262,7 +262,7 @@ export type BetaAPI = {
         password: string;
       };
       response:
-        | Success
+        | SuccessWithData<{ signInToken: string }>
         | KnownError<
             | "invalid-email"
             | "already-have-account"

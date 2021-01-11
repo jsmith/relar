@@ -27,7 +27,7 @@ const createBody = (
     firstName: body?.firstName ?? "Tester",
     email: body?.email ?? "test@user.com",
     device: body?.device ?? "ios",
-    password: body.password ?? "123456aA",
+    password: body?.password ?? "123456aA",
   };
 };
 
@@ -36,9 +36,7 @@ const getUser = () => auth.getUserByEmail("test@user.com");
 const getUserId = () => getUser().then(({ uid }) => uid);
 
 test("can successfully sign up a user by email", async () => {
-  await supertest(app).post("/beta-signup").send(createBody()).expect(200, {
-    type: "success",
-  });
+  await supertest(app).post("/beta-signup").send(createBody()).expect(200);
 
   await adminDb(await getUserId())
     .doc()
@@ -102,21 +100,21 @@ test("prevents bad devices", async () => {
 test("disallows two short passwords", async () => {
   await supertest(app)
     .post("/beta-signup")
-    .send({ password: "12345aA", token: "1234" })
+    .send(createBody({ password: "12345aA" }))
     .expect(200, { type: "error", code: "invalid-password" });
 });
 
 test("disallows passwords with no lowercase", async () => {
   await supertest(app)
     .post("/beta-signup")
-    .send({ password: "123456AA", token: "1234" })
+    .send(createBody({ password: "123456AA" }))
     .expect(200, { type: "error", code: "invalid-password" });
 });
 
 test("disallows passwords with no uppercase", async () => {
   await supertest(app)
     .post("/beta-signup")
-    .send({ password: "123456aa", token: "1234" })
+    .send(createBody({ password: "123456AA" }))
     .expect(200, { type: "error", code: "invalid-password" });
 });
 

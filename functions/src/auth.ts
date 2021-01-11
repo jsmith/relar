@@ -19,7 +19,6 @@ function validateEmail(email: string) {
 }
 
 const auth = admin.auth();
-const db = admin.firestore();
 
 const checkUserExists = async (
   email: string,
@@ -40,6 +39,31 @@ const checkUserExists = async (
   }
 };
 
+const sendVerificationEmail = async ({
+  email,
+  firstName,
+}: {
+  email: string;
+  firstName: string;
+}) => {
+  const verificationLink = await auth.generateEmailVerificationLink(email);
+
+  await sgMail.send({
+    from: "contact@relar.app",
+    to: email,
+    subject: "Relar Email Verification",
+    text: `
+Hey ${firstName},
+
+You have successfully signed up for the Relar private beta! Click on the following link to verify your email.
+
+${verificationLink}
+
+- Relar Team
+    `,
+  });
+};
+
 export const app = configureExpress((app) => {
   const router = TypedAsyncRouter<BetaAPI>(app);
 
@@ -48,42 +72,42 @@ export const app = configureExpress((app) => {
       return {
         type: "error",
         code: "invalid-email",
-      };
+      } as const;
     }
 
     if (!req.body.password) {
       return {
         type: "error",
         code: "invalid-password",
-      };
+      } as const;
     }
 
     if (!isPasswordValid(req.body.password)) {
       return {
         type: "error",
         code: "invalid-password",
-      };
+      } as const;
     }
 
     if (!req.body.firstName) {
       return {
         type: "error",
         code: "invalid-name",
-      };
+      } as const;
     }
 
     if (!["none", "ios", "android"].includes(req.body.device)) {
       return {
         type: "error",
         code: "invalid-device",
-      };
+      } as const;
     }
 
     if (!validateEmail(req.body.email)) {
       return {
         type: "error",
         code: "invalid-email",
-      };
+      } as const;
     }
 
     const result = await checkUserExists(req.body.email);
@@ -92,12 +116,12 @@ export const app = configureExpress((app) => {
       return {
         type: "error",
         code: "unknown",
-      };
+      } as const;
     } else if (result.value === "exists") {
       return {
         type: "error",
         code: "already-have-account",
-      };
+      } as const;
     }
 
     const user = await auth.createUser({
@@ -114,9 +138,12 @@ export const app = configureExpress((app) => {
       device: req.body.device,
     });
 
+    const token = await auth.createCustomToken(user.uid);
+
     return {
       type: "success",
-    };
+      data: { signInToken: token },
+    } as const;
   });
 });
 
@@ -125,6 +152,7 @@ export const authApp = functions.https.onRequest(app);
 export const onSignUp = functions.auth.user().onCreate(
   wrapAndReport(async (user) => {
     setSentryUser({ id: user.uid, email: user.email });
+    await sendVerificationEmail({ email: user.email!, firstName: user.displayName! });
     if (!env.notification_email) return;
     // Don't send the email if the "to" email is undefined
     await sgMail.send({

@@ -7,7 +7,6 @@ import * as mm from "music-metadata";
 import { ObjectMetadata } from "firebase-functions/lib/providers/storage";
 import { Song, UserDataType, Artwork, UploadAction } from "./shared/universal/types";
 import { admin } from "./admin";
-import { env } from "./env";
 import { adminDb, md5Hash, serverTimestamp, createTmpDir } from "./shared/node/utils";
 import { wrapAndReport, setSentryUser, Sentry } from "./sentry";
 import * as uuid from "uuid";
@@ -253,6 +252,22 @@ export const createSong = f.storage.object().onFinalize(
       await action.update(update);
       return ok<unknown, ProcessingError | Info>({});
     };
+
+    try {
+      const user = await admin.auth().getUser(userId);
+
+      if (!user.emailVerified)
+        return processError({
+          type: "error",
+          disableSentry: true,
+          message: "You need to verify your email first.",
+        });
+    } catch (e) {
+      return processError({
+        type: "error",
+        message: "There was an error verifying your account.",
+      });
+    }
 
     const filePath = await ok<ObjectMetadata, ProcessingError>(object)
       // So apparently this value is set my browsers and is extremely unreliable
