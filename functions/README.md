@@ -2,4 +2,4 @@
 
 The Relar cloud functions.
 
-## Testing Setup
+> Check out the [wiki](https://github.com/jsmith/relar/wiki) for more information.

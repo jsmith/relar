@@ -20,5 +20,5 @@ export const env = {
   appId: getOrError("SNOWPACK_PUBLIC_APP_ID"),
   measurementId: getOrError("SNOWPACK_PUBLIC_MEASUREMENT_ID"),
   version: getOrError("SNOWPACK_PUBLIC_PACKAGE_VERSION"),
-  sentryDsn: getOrError("SNOWPACK_PUBLIC_FIREBASE_DSN"),
+  sentryDsn: getOrError("SNOWPACK_PUBLIC_SENTRY_DSN"),
 };

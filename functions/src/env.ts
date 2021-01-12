@@ -22,6 +22,6 @@ export function get(
 
 export const env = {
   sendgrid_api_key: getOrError(config.env, "sendgrid_api_key"),
-  sentry_dsn: getOrError(config.env, "sentry_dsn"),
+  sentry_dsn: get(config.env, "sentry_dsn"),
   notification_email: get(config.env, "notification_email"),
 };

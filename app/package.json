@@ -10,7 +10,7 @@
     "cp-cap-dev": "cp capacitor.dev.json capacitor.config.json",
     "cp-cap-prod": "cp capacitor.prod.json capacitor.config.json",
     "build:sw": "workbox injectManifest",
-    "dev:mobile": "npm run cp-cap-dev && SNOWPACK_PUBLIC_MOBILE=1 snowpack dev",
+    "dev:mobile": "npm run cp-cap-dev && cap copy && SNOWPACK_PUBLIC_MOBILE=1 snowpack dev",
     "build:mobile-production": "npm run clean && npm run cp-cap-prod && SNOWPACK_PUBLIC_MOBILE=1 snowpack build && npm run build:sw",
     "build:mobile-staging": "npm run clean && npm run cp-cap-prod && SNOWPACK_PUBLIC_MOBILE=1 NODE_ENV=staging snowpack build && npm run build:sw",
     "dev:web": "snowpack dev",
