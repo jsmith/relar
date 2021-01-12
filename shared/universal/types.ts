@@ -27,16 +27,13 @@ export const BetaDeviceType = Literal("ios").Or(Literal("android")).Or(Literal("
 
 export type BetaDevice = Static<typeof BetaDeviceType>;
 
-export const UserDataType = Record({
+export const UserDataType = Partial({
+  songCount: Number.Or(Undefined),
   firstName: String,
+  sentMobileBeta: Boolean,
   /** What device the user choose */
   device: BetaDeviceType,
-  songCount: Number.Or(Undefined),
-}).And(
-  Partial({
-    sentMobileBeta: Boolean,
-  }),
-);
+});
 
 export type UserData = Static<typeof UserDataType>;
 

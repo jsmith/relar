@@ -198,7 +198,7 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate, AVAssetResourceLoade
     @objc func stop(_ call: CAPPluginCall) {
         self.aVAudioPlayer?.pause()
         
-        // TODO ensure controls are disabled too
+        // FIXME ensure controls are disabled too
         let nowPlayingInfo = [String : Any]()
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
 
@@ -368,7 +368,7 @@ public class NativeAudio: CAPPlugin, AVAudioPlayerDelegate, AVAssetResourceLoade
                     let data = try Data(contentsOf: fileURL)
                     print("CACHING TO " + asset.url.absoluteString)
                     print("Count -> \(data.count)")
-                    // TODO asset.url.absoluteString has token
+                    // FIXME asset.url.absoluteString has token
                     // Create method that extract the parameters and ignores query parameters
                     self.storage?.async.setObject(data, forKey: asset.url.absoluteString, completion: { _ in })
                     print("STORED DATA IN CACHE")

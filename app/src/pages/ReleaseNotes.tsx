@@ -209,14 +209,16 @@ const changelog = create([
   },
   {
     version: "0.18.0",
-    date: "TODO TODO 2021",
+    date: "January 14 2021",
     fixes: ["Removed artificial loading on button click", "Other small bug fixes"],
     features: [
       "Relar is now open source (https://github.com/jsmith/relar)!",
-      "The beta is no longer closed. Anyone can sign up now :)",
+      "Relar is now an open beta.",
     ],
   },
 ]).reverse();
+
+// TODO test sign up and login mobile
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (
   <div className="text-sm flex items-baseline space-x-2" key={change}>
