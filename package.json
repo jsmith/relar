@@ -9,7 +9,8 @@
     "checks:app": "cd app && npm run check:formatting && npm run check:lint && npm run check:types && npm run test",
     "checks:functions": "cd functions && npm run check:formatting && npm run check:lint && npm run check:types && firebase emulators:exec --only firestore \"npm run test\"",
     "checks": "npm run checks:app && npm run checks:functions",
-    "bootstrap": "npm i && cd app && npm i && cd ../functions && npm i && cd ../native-audio && npm i && ./link.sh"
+    "bootstrap": "npm i && cd app && npm i && cd ../functions && npm i && cd ../native-audio && npm i && ./link.sh",
+    "emulator": "firebase emulators:start --only firestore"
   },
   "devDependencies": {
     "@types/node": "^14.14.0",
