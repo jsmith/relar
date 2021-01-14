@@ -8,7 +8,7 @@ export interface ButtonProps
     React.ButtonHTMLAttributes<HTMLButtonElement>,
     HTMLButtonElement
   > {
-  label?: string;
+  label?: React.ReactNode;
   theme?: "purple" | "red" | "none" | "disabled" | "white";
   invert?: boolean;
   height?: string;

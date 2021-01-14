@@ -9,6 +9,7 @@ import firebase from "firebase/app";
 import { Select } from "../components/Select";
 import { BetaDevice } from "../shared/universal/types";
 import { captureAndLog, isMobile } from "../utils";
+import classNames from "classnames";
 
 export const Signup = () => {
   const [email, setEmail] = useState("");
@@ -21,6 +22,7 @@ export const Signup = () => {
   const passwordRef = useRef<HTMLInputElement | null>(null);
   const selectRef = useRef<HTMLSelectElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
+  const [focused, setFocused] = useState(false);
 
   const signup = async () => {
     setError("");
@@ -83,13 +85,15 @@ export const Signup = () => {
           <Link label="beta guide" route="beta-guide" />?
         </BlockAlert>
       ) : (
-        <div className="space-y-3">
+        <div className={classNames("space-y-4", focused && "pb-48")}>
           <Input
             value={firstName}
             onChange={setFirstName}
             label="First Name*"
             onEnter={() => (isMobile() ? emailRef.current?.focus() : buttonRef.current?.click())}
             required
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
           />
           <Input
             inputRef={emailRef}
@@ -100,6 +104,8 @@ export const Signup = () => {
             placeholder="john@example.com"
             onEnter={() => (isMobile() ? selectRef.current?.focus() : buttonRef.current?.click())}
             required
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
           />
           <Select
             selectRef={selectRef}
@@ -111,6 +117,8 @@ export const Signup = () => {
               { value: "android", label: "Android" },
               { value: "ios", label: "iOS" },
             ]}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
           />
 
           <Input
@@ -121,6 +129,8 @@ export const Signup = () => {
             type="password"
             required
             onEnter={() => buttonRef.current?.click()}
+            onFocus={() => setFocused(true)}
+            onBlur={() => setFocused(false)}
           />
 
           {error && <BlockAlert type="error">{error}</BlockAlert>}

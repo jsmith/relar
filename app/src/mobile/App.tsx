@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useUser } from "../auth";
 import { navigateTo, NavigatorRoutes, routes, useNavigator } from "../routes";
 import { LoadingSpinner } from "../components/LoadingSpinner";
-import { HiHome, HiOutlineCog, HiSearch } from "react-icons/hi";
+import { HiHome, HiOutlineCog, HiOutlineMail, HiSearch } from "react-icons/hi";
 import { ActionSheet } from "./action-sheet";
 import { StatusBarStyle } from "@capacitor/core";
 import { Queue } from "../queue";
@@ -27,7 +27,9 @@ import { createEmitter } from "../events";
 import { useDarkMode } from "../dark";
 import { NativeAudio } from "@capacitor-community/native-audio";
 import { Toolbar } from "../sections/Toolbar";
-import { IS_WEB_VIEW } from "../utils";
+import { IS_WEB_VIEW, openSnackbar } from "../utils";
+import { Banner } from "../components/Banner";
+import { RiMailSendLine } from "react-icons/ri";
 
 export const Tab = ({
   label,
@@ -119,17 +121,22 @@ export const App = () => {
   }, []);
 
   useEffect(() => {
-    if (!loading && user && route?.protected === false && IS_WEB_VIEW) {
+    // 1. If still loading do nothing
+    // 2. If the user is defined and we are on the "hero" page (ie. login/signup page) and this is
+    // the mobile app then go to the home page
+    // 3. Else if the user is not defined and we are on a protected page then go to the
+    // login/signup page
+    if (!loading && user && route?.id === "hero" && IS_WEB_VIEW) {
       navigateTo("home");
     } else if (!loading && !user && route?.protected === true) {
       navigateTo("hero");
     }
-  }, [loading, route?.protected, user]);
+  }, [loading, route?.id, route?.protected, user]);
 
   if (
     loading ||
     (!loading && route?.protected === true && !user) ||
-    (!loading && route?.protected === false && user && IS_WEB_VIEW)
+    (!loading && user && route?.id === "hero" && IS_WEB_VIEW)
   ) {
     return <LoadingSpinner className="h-screen bg-gray-900" />;
   }
@@ -200,6 +207,24 @@ export const App = () => {
               className="w-full flex-shrink-0 m-safe-top"
               style={{ height: TOP_BAR_HEIGHT }}
             />
+
+            {user?.emailVerified === false && (
+              <Banner
+                text="Verify your email address"
+                onClick={() =>
+                  user
+                    ?.sendEmailVerification()
+                    .then(() => openSnackbar("Successfully sent verification email"))
+                    .catch(() => openSnackbar("Failed to send verification email"))
+                }
+                label={
+                  <>
+                    Resend
+                    <RiMailSendLine className="ml-2 w-4 h-4" />
+                  </>
+                }
+              />
+            )}
           </>
         )}
 

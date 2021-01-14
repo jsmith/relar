@@ -17,6 +17,8 @@ export type InputProps = {
   inputRef?: React.Ref<HTMLInputElement>;
   iconRight?: IconType;
   iconClassName?: string;
+  onFocus?: () => void;
+  onBlur?: () => void;
 } & (
   | {
       type?: "email" | "password";
@@ -44,6 +46,8 @@ export const Input = (props: InputProps) => {
         value={props.value ?? ""}
         type={props.type}
         id={props.inputId}
+        onBlur={props.onBlur}
+        onFocus={props.onFocus}
         className={classNames("w-full", field(), props.inputClassName, props.iconRight && "pr-10")}
         placeholder={props.placeholder}
         onChange={(e) =>
