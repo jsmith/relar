@@ -10,5 +10,10 @@ serviceAccountKey*
 scripts/.env
 *.log
 
+app/.env.staging
+app/.env.production
+app/.env.development
+app/.env
+
 # Ignore since this is generated
 public/index.html

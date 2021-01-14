@@ -165,6 +165,7 @@ export const App = () => {
               {user?.emailVerified === false && (
                 <Banner
                   text="You need to verify your email address"
+                  label="Verify Email Address"
                   onClick={() =>
                     user
                       ?.sendEmailVerification()

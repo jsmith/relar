@@ -30,18 +30,15 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
     setRunning(snapshot.state === firebase.storage.TaskState.RUNNING);
   };
 
-  // TODO test confirm email does banner go away?
-
   useEffect(() => {
-    if (!file.name.endsWith(".mp3")) {
-      setError("Invalid File Format. Only Mp3 files are accepted.");
+    if (file.size > 20 * 1024 * 1024) {
+      setError("This file is greater than 20MB");
       task.cancel();
       return;
     }
 
-    // TODO test
-    if (file.size > 20 * 1024 * 1024) {
-      setError("This file is greater than 20MB.");
+    if (!file.name.endsWith(".mp3")) {
+      setError("Only Mp3 files are accepted");
       task.cancel();
       return;
     }
