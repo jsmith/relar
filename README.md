@@ -1,11 +1,22 @@
-⚠ Looking for a contributor to help with new features and bug fixes ⚠
-
 # Relar
 
-Relar is a cloud music hosting and streaming service for your personal audio file collection. See it running at [https://relar.app](https://relar.app).
+![Build Status](https://img.shields.io/github/workflow/status/jsmith/relar/Release?style=for-the-badge&logo=GitHub)
+![Version](https://img.shields.io/github/package-json/v/jsmith/relar?style=for-the-badge)
 
-<!-- TODO link to wiki -->
+![Relar Image](https://relar.app/screenshot.png)
 
-## References
+Welcome to the Relar repository 🎵
 
-- Logo made by [bqlqn](https://www.flaticon.com/authors/bqlqn) from [Flaticon](https://www.flaticon.com)
+## About
+
+Relar is a cloud music hosting and streaming service for your personal audio file collection. I started it in May 2020 when I became aware that Google Play Music was being removed later that year. Initially, I hoped to offer both a free and premium service but am starting a new job soon and won't have the necessary time to dedicate to this project. Instead, Relar is now an open source project :)
+
+↳ See it running at [https://relar.app](https://relar.app)
+
+## Contributing
+
+See [our Wiki](https://github.com/jsmith/relar/wiki) to learn about contributing to the project!
+
+## Acknowledgements
+
+Relar logo made by [bqlqn](https://www.flaticon.com/authors/bqlqn) from [Flaticon](https://www.flaticon.com)
