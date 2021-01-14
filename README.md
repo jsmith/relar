@@ -11,7 +11,7 @@ Welcome to the Relar repository 🎵
 
 Relar is a cloud music hosting and streaming service for your personal audio file collection. I started it in May 2020 when I became aware that Google Play Music was being removed later that year. Initially, I hoped to offer both a free and premium service but am starting a new job soon and won't have the necessary time to dedicate to this project. Instead, Relar is now an open source project :)
 
-↳ See it running at [https://relar.app](https://relar.app)
+See it running at [https://relar.app](https://relar.app)
 
 ## Contributing
 
