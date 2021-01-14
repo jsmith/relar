@@ -65,22 +65,6 @@ export const Account = () => {
   const { confirmPassword } = useConfirmPassword();
   const { confirmAction } = useConfirmAction();
 
-  // const renderAction = (action: UploadAction) => {
-  //   return (
-  //     <div className="flex justify-between">
-  //       <div>
-  //         <div>{action.fileName}</div>
-  //         <div>{fmtToDate(action.createdAt)}</div>
-  //       </div>
-
-  //       <div>
-  //         <div className="">{action.status}</div>
-  //         <div className="">{action.message}</div>
-  //       </div>
-  //     </div>
-  //   );
-  // };
-
   return (
     <div className="px-6 min-h-0 overflow-y-scroll">
       <Tabs className="max-w-2xl m-auto my-5 sm:my-10 p-4 rounded bg-white dark:bg-gray-900 shadow-lg flex">

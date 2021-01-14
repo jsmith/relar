@@ -13,7 +13,7 @@ export interface StorageLocation {
 
 export interface UploadRowProps {
   file: File;
-  task: firebase.storage.UploadTask | undefined;
+  task: firebase.storage.UploadTask;
   action: UploadAction | undefined;
   onRemove: () => void;
 }
@@ -25,62 +25,54 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
   const [running, setRunning] = useState(true);
 
   const handleSnapshot = (snapshot: firebase.storage.UploadTaskSnapshot) => {
-    if (snapshot.totalBytes > 20 * 1024 * 1024) {
-      setError("This file is greater than 20MB.");
-      task?.cancel();
-      return;
-    }
-
     const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
     setProgress(progress);
     setRunning(snapshot.state === firebase.storage.TaskState.RUNNING);
-    // switch (snapshot.state) {
-    //   case firebase.storage.TaskState.PAUSED:
-    //     break;
-    //   case firebase.storage.TaskState.RUNNING:
-    //     break;
-    //   case firebase.storage.TaskState.SUCCESS:
-    //     break;
-    //   case firebase.storage.TaskState.ERROR:
-    //     break;
-    //   case firebase.storage.TaskState.CANCELED:
-    //     break;
-    // }
   };
 
+  // TODO test confirm email does banner go away?
+
   useEffect(() => {
-    if (task) {
-      // This is super important to restore state since events won't fire after the fact
-      handleSnapshot(task.snapshot);
-      return task.on(
-        "state_changed",
-        handleSnapshot,
-        (e) => {
-          const code: "storage/canceled" | "storage/retry-limit-exceeded" = (e as any).code;
-          switch (code) {
-            case "storage/canceled":
-              setCancelled(true);
-              break;
-            case "storage/retry-limit-exceeded":
-              setError("The maximum time limit has been exceeded. Try uploading again.");
-              break;
-            default:
-              setError("Something went wrong during the upload.");
-              captureAndLog(e, {
-                code,
-              });
-          }
-        },
-        () => {
-          // This is called on completion
-        },
-      ) as undefined | (() => void);
-    } else {
-      // This assumes that tasks are undefined *only* when the file format is not mp3
+    if (!file.name.endsWith(".mp3")) {
       setError("Invalid File Format. Only Mp3 files are accepted.");
+      task.cancel();
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [task]);
+
+    // TODO test
+    if (file.size > 20 * 1024 * 1024) {
+      setError("This file is greater than 20MB.");
+      task.cancel();
+      return;
+    }
+
+    // This is super important to restore state since events won't fire after the fact
+    handleSnapshot(task.snapshot);
+
+    return task.on(
+      "state_changed",
+      handleSnapshot,
+      (e) => {
+        const code: "storage/canceled" | "storage/retry-limit-exceeded" = (e as any).code;
+        switch (code) {
+          case "storage/canceled":
+            setCancelled(true);
+            break;
+          case "storage/retry-limit-exceeded":
+            setError("The maximum time limit has been exceeded. Try uploading again.");
+            break;
+          default:
+            setError("Something went wrong during the upload.");
+            captureAndLog(e, {
+              code,
+            });
+        }
+      },
+      () => {
+        // This is called on completion
+      },
+    ) as undefined | (() => void);
+  }, [file, task]);
 
   return (
     <div className="py-2 space-x-2 flex items-center group">

@@ -10,7 +10,7 @@ export const LoadingSpinner = (props: LoadingSpinnerProps) => {
   return (
     <div
       className={classNames(
-        "text-purple-600 dark:text-purple-500 flex flex-col items-center justify-center w-full relative",
+        "text-purple-600 dark:text-purple-500 flex flex-col items-center justify-center w-full",
         props.className,
       )}
     >

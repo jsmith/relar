@@ -468,7 +468,7 @@ public class NativeAudio extends Plugin implements AudioManager.OnAudioFocusChan
       case KeyEvent.KEYCODE_HEADSETHOOK:
       case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
         // FIXME what causes this??
-        // TODO handle
+        // FIXME handle
         notifyListeners("toggle", new JSObject());
         break;
       default:

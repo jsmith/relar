@@ -15,35 +15,6 @@
 
 default_platform(:android)
 
-# This is how I generated this information
-# ➜ keytool -genkey -v -keystore relar-key.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias relar-key-alias
-# Enter keystore password:  
-# Re-enter new password: 
-# What is your first and last name?
-#   [Unknown]:  Jacob Smith
-# What is the name of your organizational unit?
-#   [Unknown]:  Mobile
-# What is the name of your organization?
-#   [Unknown]:  Relar
-# What is the name of your City or Locality?
-#   [Unknown]:  Fredericton
-# What is the name of your State or Province?
-#   [Unknown]:  NB
-# What is the two-letter country code for this unit?
-#   [Unknown]:  CA
-# Is CN=Jacob Smith, OU=Mobile, O=Relar, L=Fredericton, ST=NB, C=CA correct?
-#   [no]:  yes
-# 
-# Generating 2,048 bit RSA key pair and self-signed certificate (SHA256withRSA) with a validity of 10,000 days
-#         for: CN=Jacob Smith, OU=Mobile, O=Relar, L=Fredericton, ST=NB, C=CA
-# Enter key password for <relar-key-alias>
-#         (RETURN if same as keystore password):  
-# Re-enter new password: 
-# [Storing relar-key.jks]
-# 
-# Warning:
-# The JKS keystore uses a proprietary format. It is recommended to migrate to PKCS12 which is an industry standard format using "keytool -importkeystore -srckeystore relar-key.jks -destkeystore relar-key.jks -deststoretype pkcs12".
-
 platform :android do
   desc "Runs all the tests"
   lane :test do

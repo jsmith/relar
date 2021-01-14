@@ -152,16 +152,11 @@ export const queueLogic = () => {
   const [getRepeatStorage, setRepeatStorage] = getLocalStorage<QueueRepeat>("player-mode", "none");
   getRepeatStorage().then(setRepeat);
 
-  let i = 0;
-
   // STATE
   let state: QueueState = "paused";
   const setState = (value: QueueState) => {
     state = value;
     emitter.emit("stateChange", value);
-    i++;
-
-    if (i >= 20) throw Error("wowow");
   };
 
   // VOLUME

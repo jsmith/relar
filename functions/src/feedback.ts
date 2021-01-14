@@ -7,7 +7,7 @@ import path from "path";
 import { env } from "./env";
 import { admin } from "./admin";
 
-sgMail.setApiKey(env.mail.sendgrid_api_key);
+sgMail.setApiKey(env.sendgrid_api_key);
 
 const auth = admin.auth();
 
@@ -24,7 +24,7 @@ export const onFeedbackGiven = functions.firestore
 
       setSentryUser({ id: userId });
 
-      if (!env.mail.notification_email) {
+      if (!env.notification_email) {
         Sentry.captureMessage("notification_email not set");
         return;
       }
@@ -67,7 +67,7 @@ export const onFeedbackGiven = functions.firestore
       const user = await auth.getUser(userId);
       await sgMail.send({
         from: "contact@relar.app",
-        to: env.mail.notification_email,
+        to: env.notification_email,
         subject: `Relar Feedback From ${user.email} [${type}]`,
         html: `
         <div>

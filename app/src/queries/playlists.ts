@@ -6,7 +6,7 @@ import { useSongLookup } from "./songs";
 import firebase from "firebase/app";
 import { useCoolPlaylists } from "../db";
 import { Modals } from "@capacitor/core";
-import { captureAndLog, captureAndLogError } from "../utils";
+import { captureAndLogError } from "../utils";
 
 export const getPlaylistSongs = (
   songs: Playlist["songs"],

@@ -1,6 +1,5 @@
 import React, { MutableRefObject, useEffect, useRef, useState } from "react";
-import { Modal } from "../components/Modal";
-import { link, textGray600 } from "../classes";
+import { link } from "../classes";
 import { IssueOutlineOffset } from "../illustrations/IssueOutlineOffset";
 import classNames from "classnames";
 import { IdeaIcon } from "../illustrations/IdeaIcon";
@@ -290,7 +289,7 @@ export const FeedbackSection = ({
                         >
                           {file.name}
                         </a>
-                        <div className={classNames("text-xs leading-none", textGray600)}>
+                        <div className="text-xs leading-none text-gray-500 dark:text-gray-400">
                           {bytesToHumanReadable(file.size)}
                         </div>
                       </div>

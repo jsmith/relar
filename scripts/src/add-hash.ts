@@ -1,4 +1,4 @@
-import { admin, directory } from "./admin";
+import { admin, songsDirectory } from "./admin";
 import { Song } from "./shared/universal/types";
 import * as path from "path";
 import { removedUndefinedValues } from "./shared/universal/utils";
@@ -9,22 +9,22 @@ const main = async () => {
   const firestore = admin.firestore();
   const query = firestore.collectionGroup("songs") as admin.firestore.Query<Song>;
   const snapshot = await query.get();
-  console.log(`Found ${snapshot.docs.length} songs!`);
-  console.log(`Downloading and processing songs in ${directory}`);
+  console.info(`Found ${snapshot.docs.length} songs!`);
+  console.info(`Downloading and processing songs in ${songsDirectory}`);
 
   // Although a transaction would be more appropriate, I'm just using a batch
   const writes: Array<Write<Song>> = [];
   let i = 0;
   for (const doc of snapshot.docs) {
     i++;
-    console.log(`Processing ${i} / ${snapshot.docs.length}`);
+    console.info(`Processing ${i} / ${snapshot.docs.length}`);
     const data = doc.data();
     if (data.deleted || data.hash) continue;
 
     const destination = path.join(directory, `${data.id}.mp3`);
     const result = await md5Hash(destination);
     if (result.isErr()) {
-      console.log(`Unable to MD5 hash "${destination}": ` + result.error);
+      console.info(`Unable to MD5 hash "${destination}": ` + result.error);
       return;
     }
 

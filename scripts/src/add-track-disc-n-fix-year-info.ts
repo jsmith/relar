@@ -18,8 +18,8 @@ const main = async () => {
   }
 
   const snapshot = await query.get();
-  console.log(`Found ${snapshot.docs.length} songs!`);
-  console.log(`Downloading and processing songs in ${directory}`);
+  console.info(`Found ${snapshot.docs.length} songs!`);
+  console.info(`Downloading and processing songs in ${directory}`);
 
   // Although a transaction would be more appropriate, I'm just using a batch
   let i = 0;
@@ -28,20 +28,20 @@ const main = async () => {
     i++;
     const data = doc.data() as Song;
     if (data.deleted) {
-      console.log(`Skipping ${doc.ref.path}`);
+      console.info(`Skipping ${doc.ref.path}`);
       continue;
     }
 
     const items = doc.ref.path.split("/");
     const userId = items[1];
-    console.log(`Processing ${doc.ref.path}... (${i}/${snapshot.docs.length})`);
+    console.info(`Processing ${doc.ref.path}... (${i}/${snapshot.docs.length})`);
     const song = adminStorage(userId).song(data.id, data.fileName);
     const destination = path.join(directory, `${data.id}.mp3`);
 
     try {
       fs.statSync(destination);
     } catch {
-      console.log(`Downloading to ${destination}`);
+      console.info(`Downloading to ${destination}`);
       await song.download({
         destination,
       });
@@ -64,11 +64,11 @@ const main = async () => {
     writes.push([doc.ref, removedUndefinedValues(update)]);
   }
 
-  console.log(`Success! Writing batch...`);
+  console.info(`Success! Writing batch...`);
 
   let start = 0;
   while (start < writes.length) {
-    console.log(`Writing ${start} -> ${Math.min(500, writes.length - start)}`);
+    console.info(`Writing ${start} -> ${Math.min(500, writes.length - start)}`);
     const batch = firestore.batch();
     writes.slice(start, start + 500).forEach(([ref, update]) => batch.update(ref, update));
     await batch.commit();

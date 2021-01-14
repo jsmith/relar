@@ -1,7 +1,7 @@
 import * as React from "react";
 import classNames from "classnames";
 import { useState } from "react";
-import { sleep, useIsMounted } from "../utils";
+import { useIsMounted } from "../utils";
 
 export interface ButtonProps
   extends React.DetailedHTMLProps<
@@ -9,7 +9,7 @@ export interface ButtonProps
     HTMLButtonElement
   > {
   label?: string;
-  theme?: "purple" | "red" | "none" | "disabled";
+  theme?: "purple" | "red" | "none" | "disabled" | "white";
   invert?: boolean;
   height?: string;
   buttonRef?: React.Ref<HTMLButtonElement>;
@@ -39,6 +39,10 @@ const classes = {
       "dark:bg-gray-800 dark:border-gray-700",
     ),
     invert: "text-white border-gray-100",
+  },
+  white: {
+    default: classNames("border-transparent text-indigo-600 bg-white hover:bg-indigo-50"),
+    invert: "text-white border-white",
   },
 };
 
@@ -71,7 +75,6 @@ export const Button = ({
         if (!onClick) return;
         try {
           setLoading(true);
-          await sleep(2000);
           await onClick(e);
         } finally {
           isMounted.current && setLoading(false);
@@ -81,7 +84,7 @@ export const Button = ({
     >
       {loading && (
         <svg
-          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+          className="animate-spin -ml-1 mr-3 h-5 w-5"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
           viewBox="0 0 24 24"

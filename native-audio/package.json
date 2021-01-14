@@ -1,8 +1,11 @@
 {
   "name": "@capacitor-community/native-audio",
   "version": "0.1.3",
+  "license": "MPL-2.0",
+  "repository": {
+    "url": "https://github.com/jsmith/relar"
+  },
   "description": "A native plugin for native audio engine",
-  "homepage": "https://github.com/capacitor-community/native-audio",
   "main": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
   "scripts": {
@@ -12,8 +15,6 @@
     "prepublishOnly": "npm run build",
     "npm-publish": "np"
   },
-  "author": "Priyank Patel <priyank.patel@stackspace.ca>",
-  "license": "MIT",
   "dependencies": {
     "@capacitor/core": "latest"
   },
@@ -21,8 +22,8 @@
     "@capacitor/android": "latest",
     "@capacitor/ios": "latest",
     "husky": "^4.2.5",
-    "np": "^6.2.4",
-    "prettier-plugin-java": "^0.8.0",
+    "np": "^7.2.0",
+    "prettier-plugin-java": "^1.0.1",
     "pretty-quick": "^2.0.1",
     "typescript": "^4.0.3"
   },
@@ -32,11 +33,6 @@
     "android/",
     "CapacitorCommunityNativeAudio.podspec"
   ],
-  "keywords": [
-    "capacitor",
-    "plugin",
-    "native"
-  ],
   "capacitor": {
     "ios": {
       "src": "ios"
@@ -44,12 +40,5 @@
     "android": {
       "src": "android"
     }
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/capacitor-community/native-audio"
-  },
-  "bugs": {
-    "url": "https://github.com/capacitor-community/native-audio/issues"
   }
 }
