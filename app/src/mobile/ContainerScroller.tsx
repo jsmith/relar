@@ -27,11 +27,6 @@ export const ContainerScroller = ({
     const onScroll = throttle(throttleTime, () => {
       const { offsetTop = 0 } = outerRef.current ?? {};
       const scrollTop = container.scrollTop - offsetTop;
-      // console.log("EVENT", {
-      //   scrollTop,
-      //   offsetTop,
-      //   containerScrollTop: container.scrollTop,
-      // });
       ref.current && ref.current.scrollTo(scrollTop);
     });
 
@@ -48,7 +43,6 @@ export const ContainerScroller = ({
       const top = container.scrollTop;
       const { offsetTop = 0 } = outerRef.current ?? {};
       scrollOffset += Math.min(top, offsetTop);
-      // console.log("MANUAL", { top, offsetTop, scrollOffset });
       container.scrollTo(0, scrollOffset);
     },
     [container],

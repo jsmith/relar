@@ -32,7 +32,6 @@ const Hero = React.lazy(() =>
   IS_WEB_VIEW ? import("./mobile/pages/Hero") : import("./web/pages/Hero"),
 );
 const Library = React.lazy(() => import("./mobile/pages/Library"));
-const Invite = React.lazy(() => import("./pages/Invite"));
 const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
 const TermsAndConditions = React.lazy(() => import("./pages/TermsAndConditions"));
 
@@ -121,10 +120,6 @@ export type NavigatorRoutes = {
   };
   artist: {
     params: { artistName: string };
-    queryParams: {};
-  };
-  invite: {
-    params: { invite: string };
     queryParams: {};
   };
   playlist: {
@@ -355,16 +350,6 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
     title: "Artist",
     showBack: true,
     showTabs: true,
-  },
-  invite: {
-    id: "invite",
-    path: "/invite/:invite",
-    component: Invite,
-    protected: false,
-    sidebar: false,
-    title: "Invite",
-    showBack: false,
-    showTabs: false,
   },
   playlists: {
     id: "playlists",

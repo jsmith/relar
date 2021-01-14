@@ -1,13 +1,6 @@
 import admin from "firebase-admin";
 import * as path from "path";
-import {
-  UserData,
-  Song,
-  BetaSignup,
-  Playlist,
-  UploadAction,
-  FirestoreTimestamp,
-} from "../universal/types";
+import { UserData, Song, Playlist, UploadAction, FirestoreTimestamp } from "../universal/types";
 import { GetFilesResponse } from "@google-cloud/storage";
 import * as fs from "fs-extra";
 import * as crypto from "crypto";
@@ -96,14 +89,6 @@ export const adminDb = (userId: string) => {
       db.collection(`user_data/${userId}/playlists`) as CollectionReference<Playlist>,
     playlist: (id: string) =>
       db.doc(`user_data/${userId}/playlists/${id}`) as DocumentReference<Playlist>,
-  };
-};
-
-export const betaSignups = (db: FirebaseFirestore.Firestore) => {
-  return {
-    doc: (email: string) => db.doc(`beta_signups/${email}`),
-    collection: () =>
-      db.collection("beta_signups") as FirebaseFirestore.CollectionReference<BetaSignup>,
   };
 };
 

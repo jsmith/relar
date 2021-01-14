@@ -8,29 +8,35 @@ import { BlockAlert } from "../components/BlockAlert";
 import firebase from "firebase/app";
 import { Select } from "../components/Select";
 import { BetaDevice } from "../shared/universal/types";
-import { textGray600 } from "../classes";
-import classNames from "classnames";
-import { isMobile } from "../utils";
-
-const BETA_TEXT =
-  "Want to be apart of the beta? Sign up now and we'll add you to our testers list.";
+import { captureAndLog, isMobile } from "../utils";
 
 export const Signup = () => {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
   const [device, setDevice] = useState<BetaDevice>("none");
   const [error, setError] = useState<string>();
   const [success, setSuccess] = useState(false);
   const emailRef = useRef<HTMLInputElement | null>(null);
+  const passwordRef = useRef<HTMLInputElement | null>(null);
   const selectRef = useRef<HTMLSelectElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   const signup = async () => {
     setError("");
     const result = await getOrUnknownError(() =>
-      betaBackend.post("/beta-signup", { email, firstName, device }),
+      betaBackend.post("/beta-signup", { email, firstName, device, password }),
     );
 
     if (result.data.type === "success") {
+      try {
+        await firebase.auth().signInWithCustomToken(result.data.data.signInToken);
+      } catch (e) {
+        captureAndLog(e);
+        setError("Something went wrong. Do you mind trying again?");
+        return;
+      }
+
       firebase.analytics().logEvent("beta_sign_up", { method: "email" });
       setSuccess(true);
       return;
@@ -38,8 +44,8 @@ export const Signup = () => {
       const local = result.data;
       const getError = (): string => {
         switch (local.code) {
-          case "already-on-list":
-            return "Ok I know you really want on try the app but you're already on the list 💗";
+          case "invalid-password":
+            return "Your password is invalid. Make sure that it is at least 8 characters, has one lowercase and one uppercase character.";
           case "already-have-account":
             return "Sooo you actually already have an account? I hope you are enjoying it 💕";
           case "invalid-email":
@@ -49,7 +55,7 @@ export const Signup = () => {
           case "invalid-name":
             return "Please provide your first name";
           case "unknown":
-            return "Somewheres something went wrong. Do you mind trying again?";
+            return "Somewhere something went wrong. Do you mind trying again?";
         }
       };
 
@@ -67,16 +73,22 @@ export const Signup = () => {
       }
     >
       <h3>Beta Sign Up</h3>
-      <p className={classNames("text-gray-500", textGray600)}>{BETA_TEXT}</p>
+      <p className="text-gray-500 dark:text-gray-400">
+        Want to be apart of the beta? Sign up now and you'll get immediate access to the platform.
+      </p>
       {success ? (
-        <BlockAlert type="success">Success!! Thank you so much for signing up :)</BlockAlert>
+        <BlockAlert type="success">
+          Success! Check your inbox for a confirmation email. When you're ready, head to the{" "}
+          <Link route="home" label="app" />. Also, have you seen our{" "}
+          <Link label="beta guide" route="beta-guide" />?
+        </BlockAlert>
       ) : (
         <div className="space-y-3">
           <Input
             value={firstName}
             onChange={setFirstName}
             label="First Name*"
-            onEnter={() => (isMobile() ? emailRef.current?.focus() : signup())}
+            onEnter={() => (isMobile() ? emailRef.current?.focus() : buttonRef.current?.click())}
             required
           />
           <Input
@@ -86,7 +98,7 @@ export const Signup = () => {
             label="Email*"
             type="email"
             placeholder="john@example.com"
-            onEnter={() => (isMobile() ? selectRef.current?.focus() : signup())}
+            onEnter={() => (isMobile() ? selectRef.current?.focus() : buttonRef.current?.click())}
             required
           />
           <Select
@@ -100,8 +112,20 @@ export const Signup = () => {
               { value: "ios", label: "iOS" },
             ]}
           />
+
+          <Input
+            inputRef={passwordRef}
+            value={password}
+            onChange={setPassword}
+            label="Password*"
+            type="password"
+            required
+            onEnter={() => buttonRef.current?.click()}
+          />
+
           {error && <BlockAlert type="error">{error}</BlockAlert>}
           <Button
+            buttonRef={buttonRef}
             label="Sign Up"
             className="w-full"
             onClick={async (e) => {

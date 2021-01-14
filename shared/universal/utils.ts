@@ -28,7 +28,7 @@ export const decode = <V extends Runtype<any>>(
 // at least six characters
 // at least one number, one lowercase and one uppercase letter
 export const isPasswordValid = (password: string) => {
-  return /(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/.test(password);
+  return /[a-z]/.test(password) && /[A-Z]/.test(password) && password.length >= 8;
 };
 
 export const isDefined = <T>(value: T | undefined | null): value is T =>

@@ -1,10 +1,9 @@
-import * as uuid from "uuid";
-import { BetaSignup, UserData } from "./shared/universal/types";
+import { UserData } from "./shared/universal/types";
 import sgMail from "@sendgrid/mail";
 import { env } from "./env";
 import { argv, admin } from "./admin";
 
-sgMail.setApiKey(env.mail.sendgrid_api_key);
+sgMail.setApiKey(env.sendgrid_api_key);
 
 const auth = admin.auth();
 const firestore = admin.firestore();
@@ -52,7 +51,7 @@ I hope you've been enjoying Relar so far! I'm starting to roll out the mobile ap
 
 Since this is the first time anyone has used the app, expect to encounter bugs and missing features. Using your feedback, I'll be working hard to address these issues!
 
-- Jacob
+- Relar Team
 
 If you have any issues with the installation process, let me know ASAP by replying to this email.
 `.trim(),

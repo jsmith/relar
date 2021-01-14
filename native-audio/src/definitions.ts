@@ -56,7 +56,7 @@ export interface NativeAudioPlugin {
     listenerFunc: () => void
   ): PluginListenerHandle;
 
-  // TODO add iOS and client support
+  // FIXME add iOS and client support
   /**
    * Add a listener for one of the various events.
    */

@@ -27,16 +27,13 @@ export const BetaDeviceType = Literal("ios").Or(Literal("android")).Or(Literal("
 
 export type BetaDevice = Static<typeof BetaDeviceType>;
 
-export const UserDataType = Record({
+export const UserDataType = Partial({
+  songCount: Number.Or(Undefined),
   firstName: String,
+  sentMobileBeta: Boolean,
   /** What device the user choose */
   device: BetaDeviceType,
-  songCount: Number.Or(Undefined),
-}).And(
-  Partial({
-    sentMobileBeta: Boolean,
-  }),
-);
+});
 
 export type UserData = Static<typeof UserDataType>;
 
@@ -179,18 +176,6 @@ export const SongType = Record({
 
 export type Song = Static<typeof SongType>;
 
-export const BetaSignupType = Record({
-  email: String,
-  firstName: String,
-  device: BetaDeviceType,
-}).And(
-  Partial({
-    token: String,
-  }),
-);
-
-export type BetaSignup = Static<typeof BetaSignupType>;
-
 export const UploadActionType = Record({
   id: String,
   type: Literal("upload"),
@@ -271,28 +256,17 @@ export type BetaAPI = {
         firstName: string;
         device: BetaDevice;
         email: string;
+        password: string;
       };
       response:
-        | Success
+        | SuccessWithData<{ signInToken: string }>
         | KnownError<
-            | "already-on-list"
             | "invalid-email"
             | "already-have-account"
             | "invalid-name"
             | "invalid-device"
+            | "invalid-password"
           >
-        | UnknownError;
-    };
-  };
-  "/create-account": {
-    POST: {
-      body: {
-        token: string;
-        password: string;
-      };
-      response:
-        | (Success & { uid: string })
-        | KnownError<"invalid-token" | "invalid-password" | "already-have-account">
         | UnknownError;
     };
   };

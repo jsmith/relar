@@ -199,7 +199,7 @@ const changelog = create([
   },
   {
     version: "0.17.0",
-    date: "January 2 2021",
+    date: "January 3 2021",
     fixes: ["Improved song deletion process"],
     features: [
       "Mobile app now available on the mobile/tablet web browsers",
@@ -207,7 +207,18 @@ const changelog = create([
       "Other internal improvements & optimizations",
     ],
   },
+  {
+    version: "0.18.0",
+    date: "January 14 2021",
+    fixes: ["Removed artificial loading on button click", "Other small bug fixes"],
+    features: [
+      "Relar is now open source (https://github.com/jsmith/relar)!",
+      "Relar is now an open beta.",
+    ],
+  },
 ]).reverse();
+
+// TODO test sign up and login mobile
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (
   <div className="text-sm flex items-baseline space-x-2" key={change}>

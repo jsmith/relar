@@ -140,6 +140,20 @@ test("works when uploading a valid song with just a title", async () => {
   );
 });
 
+test.before(async () => {
+  try {
+    await admin.auth().deleteUser("testUser");
+  } catch {
+    //
+  }
+
+  await admin.auth().createUser({
+    uid: "testUser",
+    email: "test@test.com",
+    emailVerified: true,
+  });
+});
+
 test.before.each(async () => {
   try {
     await deleteAllUserData("testUser");

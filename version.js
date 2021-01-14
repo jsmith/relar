@@ -104,11 +104,6 @@ console.log(`Android versionName ${versionName} -> ${version}`);
 if (build !== undefined)
   console.log(`Android versionCode ${versionCode} -> ${newBuildNumber}`);
 console.log(`environment.version ${version}`);
-
-execSync(
-  `firebase --project production functions:config:set environment.version=${version}`
-);
-
 if (build !== undefined)
   androidContents = androidVersionCodeReplace(`$1${newBuildNumber}`);
 androidContents = androidVersionNameReplace(`$1"${version}"`, androidContents);

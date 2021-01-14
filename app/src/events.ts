@@ -1,4 +1,3 @@
-// Using small event library since creating your own event lib is actually error prone
 import mitt from "mitt";
 
 export interface Events {

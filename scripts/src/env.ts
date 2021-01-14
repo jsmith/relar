@@ -11,7 +11,5 @@ export function getOsEnv(key: string): string {
 }
 
 export const env = {
-  mail: {
-    sendgrid_api_key: getOsEnv("SENDGRID_API_KEY"),
-  },
+  sendgrid_api_key: getOsEnv("sendgrid_api_key"),
 };
