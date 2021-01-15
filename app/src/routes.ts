@@ -321,9 +321,10 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
     showBack: true,
     showTabs: true,
   },
+  // TODO test
   album: {
     id: "album",
-    path: "/library/albums/:artist/:album",
+    path: "/library/albums/:artist@/:album@",
     component: AlbumOverview,
     protected: true,
     sidebar: true,
@@ -343,7 +344,7 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
   },
   artist: {
     id: "artist",
-    path: "/library/artists/:artistName",
+    path: "/library/artists/:artistName@",
     component: ArtistOverview,
     protected: true,
     sidebar: true,

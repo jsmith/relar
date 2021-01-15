@@ -13,6 +13,8 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with: { node-version: "12" }
+      - run: ./.github/scripts/decrypt.sh
+        env: { GPG_PASSWORD: "${{ secrets.GPG_PASSWORD }}" }
 
       # Install
       - uses: bahmutov/npm-install@v1
@@ -23,16 +25,12 @@ jobs:
         with: { working-directory: "native-audio" }
       - uses: bahmutov/npm-install@v1
 
-      # Patching
-      - run: npx patch-package
-        working-directory: app
-
       # Building
       - run: npm run build
         working-directory: functions
       - run: npm run build
         working-directory: native-audio
-      - run: npm run build:web-production
+      - run: npm run build:web-staging
         working-directory: app
         env: { SENTRY_AUTH_TOKEN: "${{ secrets.SENTRY_AUTH_TOKEN }}" }
 

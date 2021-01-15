@@ -25,10 +25,6 @@ jobs:
         with: { working-directory: "native-audio" }
       - uses: bahmutov/npm-install@v1
 
-      # Patching
-      - run: npx patch-package
-        working-directory: app
-
       # Building
       - run: npm run build
         working-directory: native-audio
