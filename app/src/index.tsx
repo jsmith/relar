@@ -2,7 +2,7 @@ import { env } from "./env";
 import * as Sentry from "@sentry/browser";
 import { isMobile, IS_WEB_VIEW } from "./utils";
 
-if (process.env.NODE_ENV !== "development") {
+if (import.meta.env && import.meta.env?.NODE_ENV !== "development") {
   // Only enable sentry in production
   Sentry.init({
     environment: process.env.NODE_ENV,
@@ -26,7 +26,7 @@ if (process.env.NODE_ENV !== "development") {
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Router } from "@graywolfai/react-tiniest-router";
+import { Router } from "little-react-router";
 import { routes } from "./routes";
 import { UserProvider } from "./auth";
 import { ConfirmActionProvider } from "./confirm-actions";

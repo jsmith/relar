@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { RouterContextType, RouteType, useRouter } from "@graywolfai/react-tiniest-router";
+import { RouterContextType, RouteType, useRouter } from "little-react-router";
 import { isMobile, IS_WEB_VIEW } from "./utils";
 import { createEmitter } from "./events";
 import { GeneratedType } from "./queue";
@@ -34,6 +34,13 @@ const Hero = React.lazy(() =>
 const Library = React.lazy(() => import("./mobile/pages/Library"));
 const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
 const TermsAndConditions = React.lazy(() => import("./pages/TermsAndConditions"));
+
+/**
+ * This file creates an almost 100% type safe router. It's built on "little-react-router".
+ *
+ * It's a bit verbose but it does the job super well! You always pass in the right parameters
+ * and query parameters.
+ */
 
 export type Route<ID extends string> = {
   id: ID;

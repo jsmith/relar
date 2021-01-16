@@ -43,13 +43,13 @@
 
 @font-face {
   font-family: "FiraMono";
-  /* We need this since we mount src/shared to _dist_/shared */
-  src: url("/_dist_/fonts/Apercu-Mono.ttf") format("truetype");
+  /* We need this since we mount src/shared to dist/shared */
+  src: url("/dist/fonts/Apercu-Mono.ttf") format("truetype");
 }
 
 @font-face {
   font-family: "FiraMono";
-  src: url("/_dist_/fonts/Apercu-MonoBold.ttf") format("truetype");
+  src: url("/dist/fonts/Apercu-MonoBold.ttf") format("truetype");
   font-weight: bold;
 }
 

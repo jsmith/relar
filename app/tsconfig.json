@@ -1,12 +1,23 @@
 {
   "include": ["src", "types"],
   "exclude": ["node_modules", "src/shared/node"],
-  "extends": "@snowpack/app-scripts-react/tsconfig.base.json",
   "compilerOptions": {
+    "module": "esnext",
+    "moduleResolution": "node",
+    "jsx": "preserve",
+    "allowSyntheticDefaultImports": true,
+    /* more strict checking for errors that per-file transpilers like `esbuild` would crash */
+    "isolatedModules": true,
+    /* noEmit - We only use TypeScript for type checking. */
+    "noEmit": true,
+    /* Additional Options */
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
     "baseUrl": "./",
     // es2019 so tests that use ?? and ? pass
     "target": "es2019",
-    "paths": { "*": ["web_modules/.types/*"] },
-    "importsNotUsedAsValues": "remove"
+    "paths": { "*": ["web_modules/.types/*"] }
   }
 }

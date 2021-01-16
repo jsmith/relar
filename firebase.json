@@ -29,7 +29,7 @@
       "**/.*",
       "**/node_modules/**",
       "**/__snowpack__/**",
-      "**/_dist_/**",
+      "**/dist/**",
       "**/web_modules/**"
     ],
     "rewrites": [
