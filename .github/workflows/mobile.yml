@@ -13,6 +13,8 @@ jobs:
       - uses: actions/setup-node@v1
         with: { node-version: "12" }
       - uses: actions/setup-ruby@v1
+      - run: ./.github/scripts/decrypt.sh
+        env: { GPG_PASSWORD: "${{ secrets.GPG_PASSWORD }}" }
       - working-directory: app
         # Install the same version of bundler that I used
         # or else bundle install fails...

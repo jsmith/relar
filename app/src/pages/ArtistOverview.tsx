@@ -10,8 +10,6 @@ export const ArtistOverview = () => {
   const artistName = useArtistNameFromParams();
   const artist = useArtist(artistName);
 
-  console.log(artistName, artist);
-
   return (
     <SongsOverview
       songs={artist?.songs}

@@ -11,6 +11,8 @@ capacitor.config.json
 
 build
 google-api-key.json
+google-services.json
+GoogleService-Info.plist
 
 # Ignore since this is generated
 logo.png

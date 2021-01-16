@@ -34,7 +34,7 @@ export const Feature = ({
         <h2 className="text-gray-800 dark:text-gray-200 text-lg title-font font-bold mb-2">
           {title}
         </h2>
-        <p className="leading-relaxed text-gray-500 dark:text-gray-300 text-sm">{text}</p>
+        <p className="leading-relaxed text-gray-600 dark:text-gray-300 text-sm">{text}</p>
         {/* <a className="mt-3 text-indigo-500 inline-flex items-center">Learn More →</a> */}
       </div>
     </div>

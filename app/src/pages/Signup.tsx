@@ -85,7 +85,7 @@ export const Signup = () => {
           <Link label="beta guide" route="beta-guide" />?
         </BlockAlert>
       ) : (
-        <div className={classNames("space-y-4", focused && "pb-48")}>
+        <div className={classNames("space-y-4", focused && isMobile() && "pb-48")}>
           <Input
             value={firstName}
             onChange={setFirstName}

@@ -196,10 +196,7 @@ export const useNavigator = <K extends keyof NavigatorRoutes>(_route: K) => {
 export const useNavigation = () => {
   const { goTo } = useRouter();
   useEffect(() => {
-    console.log("START NAVIGATION");
     return emitter.on("navigate", (route, params, queryParams) => {
-      console.log("NAVIGATE", route, params, queryParams, emitter);
-      console.log(Error().stack);
       goTo(route, params, queryParams);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps

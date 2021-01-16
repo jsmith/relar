@@ -26,7 +26,9 @@ export const Banner = ({ onClose, text, onClick, icon: Icon, label, href }: Bann
                 <Icon className="h-6 w-6 text-white" />
               </span>
             )}
-            <p className={classNames(Icon && "ml-3", "font-medium text-white truncate")}>{text}</p>
+            <div className={classNames(Icon && "ml-3", "font-medium text-white truncate")}>
+              {text}
+            </div>
           </div>
           {href ? (
             <a target="_blank" rel="noreferrer" href={href} className={button({ theme: "white" })}>

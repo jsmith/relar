@@ -39,6 +39,8 @@ const checkUserExists = async (
   }
 };
 
+// TODO encode
+
 const sendVerificationEmail = async ({
   email,
   firstName,
@@ -55,7 +57,7 @@ const sendVerificationEmail = async ({
     text: `
 Hey ${firstName},
 
-You have successfully signed up for the Relar private beta! Click on the following link to verify your email.
+You have successfully signed up for the Relar private beta! Before getting started, make sure to check out the beta guide at https://relar.app/beta-guide. Also, feel free to join the Relar discord server at https://discord.gg/A83FHss :) Click on the following link to verify your email.
 
 ${verificationLink}
 
