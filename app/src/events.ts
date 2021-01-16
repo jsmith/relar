@@ -4,8 +4,6 @@ export interface Events {
   [name: string]: any[];
 }
 
-mitt;
-
 export const createEmitter = <E extends Events>() => {
   const emitter = mitt();
 
