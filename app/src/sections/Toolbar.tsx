@@ -40,18 +40,13 @@ export const Toolbar = () => {
         <div className="flex space-x-2 items-center sm:text-base text-sm">
           <Link
             className={button({
-              color: "purple",
-              padding: "px-2 py-2 sm:px-4",
+              theme: "purple",
               invert: true,
             })}
             label="Login"
             route="login"
           />
-          <Link
-            className={button({ color: "purple", padding: "px-2 py-2 sm:px-4" })}
-            label="Sign Up"
-            route="signup"
-          />
+          <Link className={button({ theme: "purple" })} label="Sign Up" route="signup" />
         </div>
       ) : isMobile() ? null : (
         <AccountDropdown />

@@ -17,6 +17,12 @@ See it running at [https://relar.app](https://relar.app)
 
 See [our Wiki](https://github.com/jsmith/relar/wiki) to learn about contributing to the project!
 
+## Support
+
+I plan to keep Relar hosted for free (with upload restrictions), implementing features and fixing bugs. Any support would be greatly appreciated ♥
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/F2F238VRI)
+
 ## Acknowledgements
 
 Relar logo made by [bqlqn](https://www.flaticon.com/authors/bqlqn) from [Flaticon](https://www.flaticon.com)

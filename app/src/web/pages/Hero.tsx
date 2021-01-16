@@ -10,6 +10,9 @@ import { CgUndo } from "react-icons/cg";
 import { LogoNText } from "../../components/LogoNText";
 import { IoLogoAndroid, IoLogoApple } from "react-icons/io";
 import { HiCode } from "react-icons/hi";
+import { Banner } from "../../components/Banner";
+import { RiExternalLinkLine, RiGithubFill, RiGithubLine } from "react-icons/ri";
+import { FiCoffee } from "react-icons/fi";
 
 const faq = [
   [
@@ -58,6 +61,23 @@ export const Hero = () => {
   // FIXME reduce x margin/padding on small devices
   return (
     <div className="flex flex-col flex-grow overflow-y-auto">
+      <Banner
+        text={
+          <>
+            <div className="hidden sm:block">Relar is now open source on GitHub</div>
+            <div className="sm:hidden">Relar is now open source</div>
+          </>
+        }
+        label={
+          <>
+            <span className="hidden sm:block">Open Repository</span>
+            <span className="sm:hidden">Open</span>
+            <RiExternalLinkLine className="span w-5 h-5 ml-1" />
+          </>
+        }
+        icon={RiGithubLine}
+        href="https://github.com/jsmith/relar"
+      />
       <div className="py-16 px-10 md:px-20 lg:w-4/5 mx-auto flex-grow space-y-24">
         <div className="flex">
           <div className="space-y-5 sm:max-w-md">
@@ -139,7 +159,7 @@ export const Hero = () => {
             glitch
           />
           <div className="flex justify-center mt-8">
-            <Link label="Beta Sign Up →" className={button({ color: "purple" })} route="signup" />
+            <Link label="Beta Sign Up →" className={button({ theme: "purple" })} route="signup" />
           </div>
           <div className="h-16" />
           <div className="text-gray-800 dark:text-gray-200 space-y-4">
@@ -153,6 +173,18 @@ export const Hero = () => {
                 </div>
               ))}
             </div>
+          </div>
+
+          <div className="flex justify-center mt-12">
+            <a
+              href="https://ko-fi.com/F2F238VRI"
+              target="_blank"
+              rel="noreferrer"
+              className={button({ theme: "white" })}
+            >
+              <FiCoffee className="inline mr-2" />
+              <span>Support me on Ko-fi</span>
+            </a>
           </div>
         </div>
       </div>

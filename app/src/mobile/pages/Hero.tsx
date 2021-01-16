@@ -20,7 +20,7 @@ export const Hero = () => {
       </div>
       <Link
         label="Beta Sign Up →"
-        className={classNames(button({ color: "purple", invert: true }), "text-xl")}
+        className={classNames(button({ theme: "purple", invert: true }), "text-xl")}
         route="signup"
       />
       <Link label="Login" className="mt-5 uppercase text-xl" route="login" />

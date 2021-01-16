@@ -25,11 +25,11 @@ export const Footer = () => {
         <span className="flex items-center space-x-2">
           <a
             className="text-xs text-center"
-            href="https://github.com/jsmith/relar-roadmap/projects/1"
+            href="https://github.com/jsmith/relar"
             target="_blank"
             rel="noreferrer"
           >
-            Roadmap
+            Github
           </a>
           <span>•</span>
           <Link className="text-xs text-center" route="release-notes" label="Release Notes" />
