@@ -1,10 +1,8 @@
 name: Staging
 
-# TODO REVERT
 on:
-  [push]
-  # push:
-  #   branches: [master]
+  push:
+    branches: [master]
 
 jobs:
   deploy:
