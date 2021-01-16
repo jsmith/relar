@@ -196,7 +196,10 @@ export const useNavigator = <K extends keyof NavigatorRoutes>(_route: K) => {
 export const useNavigation = () => {
   const { goTo } = useRouter();
   useEffect(() => {
+    console.log("START NAVIGATION");
     return emitter.on("navigate", (route, params, queryParams) => {
+      console.log("NAVIGATE", route, params, queryParams, emitter);
+      console.log(Error().stack);
       goTo(route, params, queryParams);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -328,7 +331,6 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
     showBack: true,
     showTabs: true,
   },
-  // TODO test
   album: {
     id: "album",
     path: "/library/albums/:artist@/:album@",
@@ -336,6 +338,16 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
     protected: true,
     sidebar: true,
     title: "Album",
+    showBack: true,
+    showTabs: true,
+  },
+  artist: {
+    id: "artist",
+    path: "/library/artists/:artistName",
+    component: ArtistOverview,
+    protected: true,
+    sidebar: true,
+    title: "Artist",
     showBack: true,
     showTabs: true,
   },
@@ -349,16 +361,7 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
     showBack: true,
     showTabs: true,
   },
-  artist: {
-    id: "artist",
-    path: "/library/artists/:artistName@",
-    component: ArtistOverview,
-    protected: true,
-    sidebar: true,
-    title: "Artist",
-    showBack: true,
-    showTabs: true,
-  },
+
   playlists: {
     id: "playlists",
     path: "/library/playlists",

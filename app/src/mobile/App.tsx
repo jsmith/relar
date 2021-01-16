@@ -30,6 +30,7 @@ import { Toolbar } from "../sections/Toolbar";
 import { IS_WEB_VIEW, openSnackbar } from "../utils";
 import { Banner } from "../components/Banner";
 import { RiMailSendLine } from "react-icons/ri";
+import { _404 } from "../pages/_404";
 
 export const Tab = ({
   label,
@@ -142,14 +143,7 @@ export const App = () => {
   }
 
   if (!route) {
-    return (
-      <div className="flex flex-col">
-        <div>This is a 404</div>
-        <div>
-          Take me <Link route="home" label="home" />?
-        </div>
-      </div>
-    );
+    return <_404 />;
   }
 
   return (

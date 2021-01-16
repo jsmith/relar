@@ -85,7 +85,9 @@ export const ThumbnailCardGrid = function <T extends { songs: Song[] | undefined
             width: style.width - GUTTER_SIZE,
             height: style.height - GUTTER_SIZE,
           }}
-          onClick={() => onClick(item, index)}
+          onClick={() => {
+            onClick(item, index);
+          }}
           play={() => play(item, index)}
         />
       );

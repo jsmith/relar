@@ -48,7 +48,7 @@ export const ThumbnailCard = ({
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         title={title}
-        onClick={onClick}
+        onClick={() => {}}
       >
         {title}
       </div>
