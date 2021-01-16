@@ -1,5 +1,6 @@
 name: Staging
 
+# TODO REVERT
 on:
   [push]
   # push:
@@ -37,5 +38,5 @@ jobs:
 
       # Deployment
       # PRODUCTION_FIREBASE_TOKEN generated using "firebase login:ci"
-      - run: npx firebase deploy --project staging
+      - run: npx firebase deploy --project relar-staging
         env: { FIREBASE_TOKEN: "${{ secrets.PRODUCTION_FIREBASE_TOKEN }}" }

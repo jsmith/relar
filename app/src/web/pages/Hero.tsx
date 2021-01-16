@@ -180,7 +180,7 @@ export const Hero = () => {
               href="https://ko-fi.com/F2F238VRI"
               target="_blank"
               rel="noreferrer"
-              className={button({ theme: "white" })}
+              className={button({ theme: "white", className: "shadow-md" })}
             >
               <FiCoffee className="inline mr-2" />
               <span>Support me on Ko-fi</span>
