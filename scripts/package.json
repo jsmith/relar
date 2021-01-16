@@ -7,16 +7,16 @@
     "url": "https://github.com/jsmith/relar"
   },
   "dependencies": {
-    "@sendgrid/mail": "^7.2.1",
+    "@sendgrid/mail": "^7.4.2",
     "@types/uuid": "^8.0.0",
     "dotenv": "^8.2.0",
-    "firebase": "^7.20.0",
-    "firebase-admin": "^9.0.0",
+    "firebase": "^7.24.0",
+    "firebase-admin": "^9.4.2",
     "fs-extra": "^9.0.1",
-    "music-metadata": "^7.4.1",
+    "music-metadata": "^7.6.4",
     "neverthrow": "^2.7.1",
     "runtypes": "^4.3.0",
-    "sharp": "^0.26.2",
-    "uuid": "^8.3.0"
+    "sharp": "^0.26.3",
+    "uuid": "^8.3.2"
   }
 }

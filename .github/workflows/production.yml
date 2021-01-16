@@ -1,13 +1,13 @@
-name: Tests
+name: Production
 
-on: [pull_request]
+on:
+  push:
+    tags: ["v*"] # Push events to matching v*, i.e. v1.0, v20.15.10
 
 jobs:
-  test:
+  deploy:
     runs-on: ubuntu-latest
-    # Typically it takes ~ 4 minutes to run all of the checks :)
-    timeout-minutes: 5
-
+    timeout-minutes: 10
     steps:
       # Checkout and prep
       - uses: actions/checkout@v2
@@ -27,7 +27,14 @@ jobs:
 
       # Building
       - run: npm run build
+        working-directory: functions
+      - run: npm run build
         working-directory: native-audio
+      - run: npm run build:web-production
+        working-directory: app
+        env: { SENTRY_AUTH_TOKEN: "${{ secrets.SENTRY_AUTH_TOKEN }}" }
 
-      # Finally, run the checks!
-      - run: npm run checks
+      # Deployment
+      # PRODUCTION_FIREBASE_TOKEN generated using "firebase login:ci"
+      - run: npx firebase deploy --project relar-production
+        env: { FIREBASE_TOKEN: "${{ secrets.PRODUCTION_FIREBASE_TOKEN }}" }

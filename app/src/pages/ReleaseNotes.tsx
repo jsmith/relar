@@ -214,6 +214,7 @@ const changelog = create([
     features: [
       "Relar is now open source (https://github.com/jsmith/relar)!",
       "Relar is now an open beta.",
+      "Added GitHub and Ko-fi links on homepage",
     ],
   },
 ]).reverse();

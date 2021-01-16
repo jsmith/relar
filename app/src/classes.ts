@@ -1,36 +1,55 @@
 import classNames from "classnames";
 
-const classes = {
+export type ButtonTheme = "purple" | "red" | "none" | "disabled" | "white";
+
+const classes: { [K in ButtonTheme]: { default: string; invert: string } } = {
   purple: {
     default:
-      "bg-purple-600 text-white focus:bg-purple-500 hover:bg-purple-500 focus:border-purple-700",
-    invert: "text-white border-purple-500",
+      "border-transparent bg-purple-600 text-white focus:bg-purple-500 hover:bg-purple-500 focus:border-purple-700",
+    invert: "text-white border-purple-500 text-white",
+  },
+  red: {
+    default:
+      "border-transparent bg-red-600 text-white focus:bg-red-500 hover:bg-red-500 focus:border-red-700",
+    invert: "text-white border-red-500",
+  },
+  none: {
+    default: classNames(
+      "border-gray-300 bg-white text-gray-700 focus:bg-gray-100 hover:bg-gray-100 focus:border-gray-500",
+      "dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:bg-gray-700",
+    ),
+    invert: "text-white border-gray-100",
+  },
+  disabled: {
+    default: classNames(
+      "border-gray-100 bg-gray-200 text-gray-500 cursor-not-allowed",
+      "dark:bg-gray-800 dark:border-gray-700",
+    ),
+    invert: "text-white border-gray-100",
+  },
+  white: {
+    default: classNames("border-transparent text-indigo-600 bg-white hover:bg-indigo-50"),
+    invert: "text-white border-white",
   },
 };
 
 export const bgApp = "#f2f2f3";
 
-export const button = ({
-  color = "purple",
-  padding = "px-4 py-2",
-  invert,
-}: {
-  color?: "purple";
-  padding?: string;
+type ButtonOptions = {
+  theme?: ButtonTheme;
   invert?: boolean;
-}) => {
-  const className = invert
-    ? classNames("bg-transparent", classes[color].invert)
-    : classNames(
-        "border-transparent focus:outline-none focus:border-purple-700",
-        classes[color].default,
-      );
+  className?: string;
+};
 
+export const button = ({ theme = "purple", invert, className }: ButtonOptions = {}) => {
   return classNames(
-    "border uppercase font-medium rounded-md",
+    "flex justify-center items-center border uppercase font-medium rounded-md focus:outline-none",
+    "transition duration-150 ease-in-out px-2 sm:px-4 py-2",
+    invert
+      ? classNames("bg-transparent", classes[theme].invert)
+      : classNames("focus:outline-none", classes[theme].default),
     className,
-    padding,
-    "transition duration-150 ease-in-out",
+    // height, TODO
   );
 };
 

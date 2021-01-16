@@ -29,6 +29,7 @@ import { LoadingPage } from "../components/LoadingPage";
 import { Toolbar } from "../sections/Toolbar";
 import { Banner } from "../components/Banner";
 import { HiOutlineMail } from "react-icons/hi";
+import { _404 } from "../pages/_404";
 
 export interface SideBarItem {
   label: string;
@@ -198,12 +199,7 @@ export const App = () => {
     ) : route?.id ? (
       <route.component />
     ) : (
-      <div className="flex flex-col text-black w-full flex-grow justify-center items-center">
-        <div>This is a 404</div>
-        <div>
-          Take me <Link route="home" label="home" />?
-        </div>
-      </div>
+      <_404 />
     );
 
   return (

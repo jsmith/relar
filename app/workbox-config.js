@@ -3,5 +3,5 @@ module.exports = {
   globPatterns: ["**/*.{js,css,ttf,png,svg,ico,html,txt,json}"],
   swDest: "build/sw.js",
   swSrc: "public/sw.js",
-  globIgnores: ["_dist_/**/*", "web_modules/**/*"],
+  globIgnores: ["dist/**/*", "web_modules/**/*"],
 };

@@ -10,36 +10,16 @@ if (!process.env.SENTRY_AUTH_TOKEN && process.env.NODE_ENV !== "development") {
 process.env.SNOWPACK_PUBLIC_PACKAGE_VERSION = pkg.version;
 
 module.exports = {
-  extends: "@snowpack/app-scripts-react",
-  install: [
-    "firebase/app",
-    "firebase/auth",
-    "firebase/firestore",
-    "firebase/storage",
-    "firebase/analytics",
-    "firebase/performance",
-  ],
   mount: {
-    "src/shared": "/_dist_/shared",
+    public: { url: "/", static: true },
+    src: { url: "/dist" },
+    "src/shared": "/dist/shared",
   },
-  scripts: {
-    "build:css": "postcss",
-  },
-  exclude: ["**/src/shared/node/**", "**/load-env.ts"],
-  devOptions: {
-    port: 3000,
-  },
-  // Not released as of 2.17.1
-  // experiments: {
-  //   optimize: {
-  //     bundle: true,
-  //     minify: true,
-  //     target: "es2017",
-  //     entrypoints: "public/index.html",
-  //     // preload: true,
-  //   },
-  // },
   plugins: [
+    "@snowpack/plugin-react-refresh",
+    "@snowpack/plugin-dotenv",
+    "@snowpack/plugin-typescript",
+    "@snowpack/plugin-postcss",
     [
       "@snowpack/plugin-webpack",
       {
@@ -63,4 +43,29 @@ module.exports = {
       },
     ],
   ],
+  packageOptions: {
+    knownEntrypoints: [
+      "firebase/app",
+      "firebase/auth",
+      "firebase/firestore",
+      "firebase/storage",
+      "firebase/analytics",
+      "firebase/performance",
+    ],
+  },
+  routes: [{ match: "routes", src: ".*", dest: "/index.html" }],
+  exclude: ["**/src/shared/node/**", "**/load-env.ts"],
+  devOptions: {
+    port: 3000,
+  },
+  // Not released as of 2.17.1
+  // experiments: {
+  //   optimize: {
+  //     bundle: true,
+  //     minify: true,
+  //     target: "es2017",
+  //     entrypoints: "public/index.html",
+  //     // preload: true,
+  //   },
+  // },
 };

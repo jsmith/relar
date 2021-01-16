@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { RouterContextType, RouteType, useRouter } from "@graywolfai/react-tiniest-router";
+import { RouterContextType, RouteType, useRouter } from "little-react-router";
 import { isMobile, IS_WEB_VIEW } from "./utils";
 import { createEmitter } from "./events";
 import { GeneratedType } from "./queue";
@@ -34,6 +34,13 @@ const Hero = React.lazy(() =>
 const Library = React.lazy(() => import("./mobile/pages/Library"));
 const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
 const TermsAndConditions = React.lazy(() => import("./pages/TermsAndConditions"));
+
+/**
+ * This file creates an almost 100% type safe router. It's built on "little-react-router".
+ *
+ * It's a bit verbose but it does the job super well! You always pass in the right parameters
+ * and query parameters.
+ */
 
 export type Route<ID extends string> = {
   id: ID;
@@ -189,7 +196,10 @@ export const useNavigator = <K extends keyof NavigatorRoutes>(_route: K) => {
 export const useNavigation = () => {
   const { goTo } = useRouter();
   useEffect(() => {
+    console.log("START NAVIGATION");
     return emitter.on("navigate", (route, params, queryParams) => {
+      console.log("NAVIGATE", route, params, queryParams, emitter);
+      console.log(Error().stack);
       goTo(route, params, queryParams);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -323,21 +333,11 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
   },
   album: {
     id: "album",
-    path: "/library/albums/:artist/:album",
+    path: "/library/albums/:artist@/:album@",
     component: AlbumOverview,
     protected: true,
     sidebar: true,
     title: "Album",
-    showBack: true,
-    showTabs: true,
-  },
-  artists: {
-    id: "artists",
-    path: "/library/artists",
-    component: Artists,
-    protected: true,
-    sidebar: true,
-    title: "Artists",
     showBack: true,
     showTabs: true,
   },
@@ -351,6 +351,17 @@ export const routes = createRoutes<keyof NavigatorRoutes>({
     showBack: true,
     showTabs: true,
   },
+  artists: {
+    id: "artists",
+    path: "/library/artists",
+    component: Artists,
+    protected: true,
+    sidebar: true,
+    title: "Artists",
+    showBack: true,
+    showTabs: true,
+  },
+
   playlists: {
     id: "playlists",
     path: "/library/playlists",

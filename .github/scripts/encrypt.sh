@@ -6,3 +6,6 @@ gpg -o $ROOT/.github/secrets/serviceAccountKey.relar-test.json.gpg --symmetric -
 gpg -o $ROOT/.github/secrets/.runtimeconfig.json.gpg --symmetric --cipher-algo AES256 $ROOT/functions/.runtimeconfig.json
 gpg -o $ROOT/.github/secrets/google-api-key.json.gpg --symmetric --cipher-algo AES256 $ROOT/app/google-api-key.json
 gpg -o $ROOT/.github/secrets/relar-key.jks.gpg --symmetric --cipher-algo AES256 $ROOT/app/android/relar-key.jks
+gpg -o $ROOT/.github/secrets/.env.production.gpg --symmetric --cipher-algo AES256 $ROOT/app/.env.production
+gpg -o $ROOT/.github/secrets/.env.staging.gpg --symmetric --cipher-algo AES256 $ROOT/app/.env.staging
+gpg -o $ROOT/.github/secrets/.env.development.gpg --symmetric --cipher-algo AES256 $ROOT/app/.env.development

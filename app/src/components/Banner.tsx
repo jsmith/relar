@@ -2,18 +2,20 @@ import classNames from "classnames";
 import React from "react";
 import { HiX } from "react-icons/hi";
 import { IconType } from "react-icons/lib";
+import { button } from "../classes";
 import { Button } from "./Button";
 import { IconButton } from "./IconButton";
 
 export interface BannerProps {
   onClose?: () => void;
-  text?: string;
+  text?: React.ReactNode;
   onClick?: () => Promise<void> | void;
+  href?: string;
   icon?: IconType;
   label?: React.ReactNode;
 }
 
-export const Banner = ({ onClose, text, onClick, icon: Icon, label }: BannerProps) => {
+export const Banner = ({ onClose, text, onClick, icon: Icon, label, href }: BannerProps) => {
   return (
     <div className="bg-purple-700">
       <div className="max-w-7xl mx-auto py-3 px-3 sm:px-6 lg:px-8">
@@ -26,7 +28,13 @@ export const Banner = ({ onClose, text, onClick, icon: Icon, label }: BannerProp
             )}
             <p className={classNames(Icon && "ml-3", "font-medium text-white truncate")}>{text}</p>
           </div>
-          <Button label={label} theme="white" onClick={onClick} />
+          {href ? (
+            <a target="_blank" rel="noreferrer" href={href} className={button({ theme: "white" })}>
+              {label}
+            </a>
+          ) : (
+            <Button label={label} theme="white" onClick={onClick} />
+          )}
           {onClose && <IconButton icon={HiX} title="Close" />}
         </div>
       </div>

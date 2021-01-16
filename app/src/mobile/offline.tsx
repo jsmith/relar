@@ -1,3 +1,7 @@
+/**
+ * THIS FILE IS NOT CURRENTLY USED AND HASN'T BEEN TESTED
+ */
+
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { Plugins } from "@capacitor/core";
 import { createContext } from "react";

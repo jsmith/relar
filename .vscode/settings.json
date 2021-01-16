@@ -3,6 +3,7 @@
   "editor.formatOnSave": true,
   "cSpell.words": [
     "Devtools",
+    "Entrypoints",
     "Relar",
     "Stateful",
     "Untracked",
@@ -19,5 +20,7 @@
   "search.exclude": {
     ".cache/": true,
     "dist/": true
-  }
+  },
+  "javascript.preferences.importModuleSpecifier": "relative",
+  "typescript.preferences.importModuleSpecifier": "relative"
 }

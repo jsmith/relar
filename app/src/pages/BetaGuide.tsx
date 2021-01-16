@@ -81,7 +81,7 @@ export const BetaGuide = () => {
           Have your seen the{" "}
           <a
             className={link()}
-            href="https://github.com/jsmith/relar-roadmap/projects/1"
+            href="https://github.com/jsmith/relar/projects/1"
             target="_blank"
             rel="noreferrer"
           >

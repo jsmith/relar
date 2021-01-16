@@ -1,5 +1,4 @@
 import React, { forwardRef, useMemo } from "react";
-import { RouteType, RouterStateType } from "@graywolfai/react-tiniest-router";
 import classNames from "classnames";
 import { link } from "../classes";
 import { navigateTo, NavigatorRoutes, routes } from "../routes";
