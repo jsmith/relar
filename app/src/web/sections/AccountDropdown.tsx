@@ -8,7 +8,6 @@ import { useModal } from "react-modal-hook";
 import { FeedbackModal } from "../../sections/FeedbackModal";
 import firebase from "firebase/app";
 import { Link } from "../../components/Link";
-import { New } from "../../components/New";
 import { openShortcuts } from "../../shortcuts";
 import { useDarkMode } from "../../dark";
 import { useUpdatableServiceWorker } from "../../service-worker";

@@ -1,6 +1,6 @@
 // Import to register plugin
 import "@capacitor-community/native-audio";
-import { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { getDefinedUser, useUser, useUserChange } from "./auth";
 import firebase from "firebase/app";
 import * as Sentry from "@sentry/browser";
@@ -20,6 +20,11 @@ import { useTimeUpdater, AudioControls, Queue } from "./queue";
 import { tryToGetDownloadUrlOrLog } from "./queries/thumbnail";
 import { Song } from "./shared/universal/types";
 import { isDefined } from "./shared/universal/utils";
+import { useBanner } from "./banner";
+import { RiExternalLinkLine, RiGithubLine, RiMailSendLine } from "react-icons/ri";
+import { useUpdatableServiceWorker } from "./service-worker";
+import { BannerProps } from "./components/Banner";
+import { HiRefresh } from "react-icons/hi";
 
 const { NativeAudio } = (Plugins as unknown) as { NativeAudio: NativeAudioPlugin };
 
@@ -123,8 +128,65 @@ export const useStartupHooks = () => {
   const { routeId } = useNavigator("home"); // "home" is just because something is required
   const { loading } = useUser();
   const installEvent = useRef<null | Event>(null);
-  const registered = useRef(false);
+  const update = useUpdatableServiceWorker();
   const { user } = useUser();
+
+  useBanner(
+    useRef({
+      text: (
+        <>
+          <div className="hidden sm:block">Relar is now open source on GitHub</div>
+          <div className="sm:hidden">Relar is now open source</div>
+        </>
+      ),
+      label: (
+        <>
+          <span className="hidden sm:block">Open Repository</span>
+          <span className="sm:hidden">Open</span>
+          <RiExternalLinkLine className="span w-5 h-5 ml-1" />
+        </>
+      ),
+      icon: RiGithubLine,
+      href: "https://github.com/jsmith/relar",
+      precedence: 2,
+      onlyPublic: true,
+    }).current,
+  );
+
+  const verifyBanner = useMemo(
+    () => ({
+      text: "Verify your email address",
+      onClick: () =>
+        user
+          ?.sendEmailVerification()
+          .then(() => openSnackbar("Successfully sent verification email"))
+          .catch(() => openSnackbar("Failed to send verification email")),
+
+      label: (
+        <>
+          Resend
+          <RiMailSendLine className="ml-2 w-4 h-4" />
+        </>
+      ),
+      precedence: 3,
+    }),
+    [user],
+  );
+
+  useBanner(user?.emailVerified === false && verifyBanner);
+
+  const updateAppBanner = useMemo(
+    () => ({
+      icon: HiRefresh,
+      text: "An update to Relar is available",
+      label: "Update Now",
+      onClick: update,
+      precedence: 4,
+    }),
+    [update],
+  );
+
+  useBanner(update && updateAppBanner);
 
   useEffect(() => {
     const disposers = [

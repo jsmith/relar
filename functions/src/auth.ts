@@ -39,8 +39,6 @@ const checkUserExists = async (
   }
 };
 
-// TODO encode
-
 const sendVerificationEmail = async ({
   email,
   firstName,

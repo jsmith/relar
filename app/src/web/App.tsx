@@ -28,8 +28,8 @@ import { RiArrowDownCircleLine } from "react-icons/ri";
 import { LoadingPage } from "../components/LoadingPage";
 import { Toolbar } from "../sections/Toolbar";
 import { Banner } from "../components/Banner";
-import { HiOutlineMail } from "react-icons/hi";
 import { _404 } from "../pages/_404";
+import { useCurrentBanner } from "../banner";
 
 export interface SideBarItem {
   label: string;
@@ -63,6 +63,7 @@ export const App = () => {
 
   const closeQueue = useCallback(() => setQueueDisplay(false), []);
   const install = useDeferredInstallPrompt();
+  const banner = useCurrentBanner();
 
   if (loading) {
     return <LoadingPage className="h-screen" />;
@@ -163,19 +164,7 @@ export const App = () => {
             }
           >
             <div className="h-full absolute inset-0 flex flex-col">
-              {user?.emailVerified === false && (
-                <Banner
-                  text="You need to verify your email address"
-                  label="Verify Email Address"
-                  onClick={() =>
-                    user
-                      ?.sendEmailVerification()
-                      .then(() => openSnackbar("Successfully sent verification email"))
-                      .catch(() => openSnackbar("Failed to send verification email"))
-                  }
-                  icon={HiOutlineMail}
-                />
-              )}
+              {banner && !banner.onlyPublic && <Banner {...banner} />}
               {(isRoute(routes.songs) ||
                 isRoute(routes.artists) ||
                 isRoute(routes.albums) ||
@@ -197,7 +186,10 @@ export const App = () => {
         <Player toggleQueue={() => setQueueDisplay(!queueDisplay)} refFunc={playerRef} />
       </UploadModal>
     ) : route?.id ? (
-      <route.component />
+      <>
+        {banner && <Banner {...banner} />}
+        <route.component />
+      </>
     ) : (
       <_404 />
     );

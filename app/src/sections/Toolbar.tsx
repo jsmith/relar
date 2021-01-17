@@ -9,6 +9,7 @@ import { AccountDropdown } from "../web/sections/AccountDropdown";
 
 export const Toolbar = () => {
   const { user } = useUser();
+
   return (
     <div className="flex bg-gray-900 items-center h-16 px-3 sm:px-5 flex-shrink-0 space-x-2">
       <Link

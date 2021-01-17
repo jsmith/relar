@@ -7,7 +7,6 @@ import { resetDB } from "../../db";
 import { Switch } from "../../components/Switch";
 import { useDarkMode } from "../../dark";
 import { HiOutlineInformationCircle } from "react-icons/hi";
-import ReactTooltip from "react-tooltip";
 import { navigateTo } from "../../routes";
 
 export const Settings = () => {
@@ -21,17 +20,10 @@ export const Settings = () => {
       </div>
 
       <div className="flex items-center space-x-2">
-        <span className="text-sm">Local Cache</span>
-        <a
-          data-tip={LOCAL_CACHE_TEXT}
-          data-event="click focus"
-          data-multiline={true}
-          data-place="bottom"
-        >
-          <HiOutlineInformationCircle className="w-5 h-5" />
-        </a>
-        <ReactTooltip globalEventOff="click" />
-
+        <div>
+          <div className="text-sm">Local Cache</div>
+          <div className="text-xs">{LOCAL_CACHE_TEXT.replace(/<br>/g, "")}</div>
+        </div>
         <div className="flex-grow" />
         <button
           className="px-3 py-1 bg-purple-500 text-white rounded border-b-2 border-purple-700 shadow-sm uppercase"

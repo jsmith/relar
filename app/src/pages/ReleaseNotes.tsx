@@ -225,7 +225,10 @@ const changelog = create([
   {
     version: "0.18.2",
     date: "January 17 2021",
-    fixes: ["Added back invite page for users who haven't accepted their invite yet"],
+    fixes: [
+      "Added back invite page for users who haven't accepted their invite yet",
+      "Added banner that ensures users update the app",
+    ],
   },
 ]).reverse();
 

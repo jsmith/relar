@@ -12,6 +12,7 @@ import { captureAndLog, isMobile } from "../utils";
 import classNames from "classnames";
 import { useNavigator } from "../routes";
 import { Banner } from "../components/Banner";
+import { useBanner } from "../banner";
 
 export const Signup = () => {
   const { queryParams } = useNavigator("signup");
@@ -27,6 +28,21 @@ export const Signup = () => {
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const [focused, setFocused] = useState(false);
   const [showBanner, setShowBanner] = useState(true);
+
+  const banner = useRef({
+    text: (
+      <>
+        <div className="hidden sm:block">
+          Relar is now an open beta and you no longer need an invite code
+        </div>
+        <div className="sm:hidden">Relar is now an open beta</div>
+      </>
+    ),
+    onClose: () => setShowBanner(false),
+    precedence: 5,
+  });
+
+  useBanner(queryParams.fromInvite === "true" && showBanner && banner.current);
 
   const signup = async () => {
     setError("");
@@ -71,19 +87,6 @@ export const Signup = () => {
 
   return (
     <>
-      {queryParams.fromInvite === "true" && showBanner && (
-        <Banner
-          text={
-            <>
-              <div className="hidden sm:block">
-                Relar is now an open beta and you no longer need an invite code
-              </div>
-              <div className="sm:hidden">Relar is now an open beta</div>
-            </>
-          }
-          onClose={() => setShowBanner(false)}
-        />
-      )}
       <CardPage
         footer={
           <div className="space-x-2 flex justify-center items-center h-full">

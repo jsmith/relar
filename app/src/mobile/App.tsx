@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useUser } from "../auth";
 import { navigateTo, NavigatorRoutes, routes, useNavigator } from "../routes";
 import { LoadingSpinner } from "../components/LoadingSpinner";
-import { HiHome, HiOutlineCog, HiOutlineMail, HiSearch } from "react-icons/hi";
+import { HiHome, HiOutlineCog, HiSearch } from "react-icons/hi";
 import { ActionSheet } from "./action-sheet";
 import { StatusBarStyle } from "@capacitor/core";
 import { Queue } from "../queue";
@@ -27,10 +27,10 @@ import { createEmitter } from "../events";
 import { useDarkMode } from "../dark";
 import { NativeAudio } from "@capacitor-community/native-audio";
 import { Toolbar } from "../sections/Toolbar";
-import { IS_WEB_VIEW, openSnackbar } from "../utils";
+import { IS_WEB_VIEW } from "../utils";
 import { Banner } from "../components/Banner";
-import { RiMailSendLine } from "react-icons/ri";
 import { _404 } from "../pages/_404";
+import { useCurrentBanner } from "../banner";
 
 export const Tab = ({
   label,
@@ -134,6 +134,8 @@ export const App = () => {
     }
   }, [loading, route?.id, route?.protected, user]);
 
+  const banner = useCurrentBanner();
+
   if (
     loading ||
     (!loading && route?.protected === true && !user) ||
@@ -201,25 +203,11 @@ export const App = () => {
               className="w-full flex-shrink-0 m-safe-top"
               style={{ height: TOP_BAR_HEIGHT }}
             />
-
-            {user?.emailVerified === false && (
-              <Banner
-                text="Verify your email address"
-                onClick={() =>
-                  user
-                    ?.sendEmailVerification()
-                    .then(() => openSnackbar("Successfully sent verification email"))
-                    .catch(() => openSnackbar("Failed to send verification email"))
-                }
-                label={
-                  <>
-                    Resend
-                    <RiMailSendLine className="ml-2 w-4 h-4" />
-                  </>
-                }
-              />
-            )}
           </>
+        )}
+
+        {banner && ((route.protected && !banner.onlyPublic) || !route.protected) && (
+          <Banner {...banner} />
         )}
 
         {/* Why do I have flex here? It's because of how Safari handles % in flex situations (I'd typically using h-full) */}
