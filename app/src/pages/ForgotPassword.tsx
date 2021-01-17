@@ -28,6 +28,7 @@ export const ForgotPassword = () => {
           <Link route="login" label="Login" />
         </div>
       }
+      verticallyCenter
     >
       <h4 className="text-center">Forgot Your Password?</h4>
       {success ? (

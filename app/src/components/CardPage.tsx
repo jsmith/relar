@@ -6,18 +6,24 @@ export interface CardPageProps {
   children?: React.ReactNode;
   footer?: React.ReactNode;
   cardClassName?: string;
+  verticallyCenter?: boolean;
 }
 
-export const CardPage = ({ children, footer, cardClassName }: CardPageProps) => {
+export const CardPage = ({ children, footer, cardClassName, verticallyCenter }: CardPageProps) => {
   return (
     // It's important that we only justify things to the center of the screen vertically so that
     // on mobile, when the keyboard comes up, it doesn't block the input
-    <div className="flex flex-col items-center sm:justify-center text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 md:bg-transparent w-full flex-grow overflow-y-scroll">
+    <div
+      className={classNames(
+        "flex flex-col items-center text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 md:bg-transparent w-full flex-grow overflow-y-scroll",
+        verticallyCenter && "sm:justify-center",
+      )}
+    >
       {/* CARD */}
       <div
         className={classNames(
           "md:shadow-xl rounded-lg px-6 bg-white dark:bg-gray-900 w-full max-w-sm space-y-4",
-          "py-4 border-transparent md:border dark:border-gray-700",
+          "py-4 border-transparent md:border dark:border-gray-700 my-5",
           cardClassName,
         )}
       >

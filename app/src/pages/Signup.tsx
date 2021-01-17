@@ -10,8 +10,11 @@ import { Select } from "../components/Select";
 import { BetaDevice } from "../shared/universal/types";
 import { captureAndLog, isMobile } from "../utils";
 import classNames from "classnames";
+import { useNavigator } from "../routes";
+import { Banner } from "../components/Banner";
 
 export const Signup = () => {
+  const { queryParams } = useNavigator("signup");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -23,6 +26,7 @@ export const Signup = () => {
   const selectRef = useRef<HTMLSelectElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const [focused, setFocused] = useState(false);
+  const [showBanner, setShowBanner] = useState(true);
 
   const signup = async () => {
     setError("");
@@ -66,86 +70,101 @@ export const Signup = () => {
   };
 
   return (
-    <CardPage
-      footer={
-        <div className="space-x-2 flex justify-center items-center h-full">
-          <span>Already have an account?</span>
-          <Link route="login" label="Login" />
-        </div>
-      }
-    >
-      <h3>Beta Sign Up</h3>
-      <p className="text-gray-500 dark:text-gray-400">
-        Want to be apart of the beta? Sign up now and you'll get immediate access to the platform.
-      </p>
-      {success ? (
-        <BlockAlert type="success">
-          Success! Check your inbox for a confirmation email. When you're ready, head to the{" "}
-          <Link route="home" label="app" />. Also, have you seen our{" "}
-          <Link label="beta guide" route="beta-guide" />?
-        </BlockAlert>
-      ) : (
-        <div className={classNames("space-y-4", focused && isMobile() && "pb-48")}>
-          <Input
-            value={firstName}
-            onChange={setFirstName}
-            label="First Name*"
-            onEnter={() => (isMobile() ? emailRef.current?.focus() : buttonRef.current?.click())}
-            required
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-          />
-          <Input
-            inputRef={emailRef}
-            value={email}
-            onChange={setEmail}
-            label="Email*"
-            type="email"
-            placeholder="john@example.com"
-            onEnter={() => (isMobile() ? selectRef.current?.focus() : buttonRef.current?.click())}
-            required
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-          />
-          <Select
-            selectRef={selectRef}
-            label="Device"
-            selected={device}
-            onSelect={setDevice}
-            options={[
-              { value: "none", label: "None" },
-              { value: "android", label: "Android" },
-              { value: "ios", label: "iOS" },
-            ]}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-          />
-
-          <Input
-            inputRef={passwordRef}
-            value={password}
-            onChange={setPassword}
-            label="Password*"
-            type="password"
-            required
-            onEnter={() => buttonRef.current?.click()}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-          />
-
-          {error && <BlockAlert type="error">{error}</BlockAlert>}
-          <Button
-            buttonRef={buttonRef}
-            label="Sign Up"
-            className="w-full"
-            onClick={async (e) => {
-              e.preventDefault();
-              await signup();
-            }}
-          />
-        </div>
+    <>
+      {queryParams.fromInvite === "true" && showBanner && (
+        <Banner
+          text={
+            <>
+              <div className="hidden sm:block">
+                Relar is now an open beta and you no longer need an invite code
+              </div>
+              <div className="sm:hidden">Relar is now an open beta</div>
+            </>
+          }
+          onClose={() => setShowBanner(false)}
+        />
       )}
-    </CardPage>
+      <CardPage
+        footer={
+          <div className="space-x-2 flex justify-center items-center h-full">
+            <span>Already have an account?</span>
+            <Link route="login" label="Login" />
+          </div>
+        }
+      >
+        <h3>Beta Sign Up</h3>
+        <p className="text-gray-500 dark:text-gray-400">
+          Want to be apart of the beta? Sign up now and you'll get immediate access to the platform.
+        </p>
+        {success ? (
+          <BlockAlert type="success">
+            Success! Check your inbox for a confirmation email. When you're ready, head to the{" "}
+            <Link route="home" label="app" />. Also, have you seen our{" "}
+            <Link label="beta guide" route="beta-guide" />?
+          </BlockAlert>
+        ) : (
+          <div className={classNames("space-y-4", focused && isMobile() && "pb-48")}>
+            <Input
+              value={firstName}
+              onChange={setFirstName}
+              label="First Name*"
+              onEnter={() => (isMobile() ? emailRef.current?.focus() : buttonRef.current?.click())}
+              required
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+            />
+            <Input
+              inputRef={emailRef}
+              value={email}
+              onChange={setEmail}
+              label="Email*"
+              type="email"
+              placeholder="john@example.com"
+              onEnter={() => (isMobile() ? selectRef.current?.focus() : buttonRef.current?.click())}
+              required
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+            />
+            <Select
+              selectRef={selectRef}
+              label="Device"
+              selected={device}
+              onSelect={setDevice}
+              options={[
+                { value: "none", label: "None" },
+                { value: "android", label: "Android" },
+                { value: "ios", label: "iOS" },
+              ]}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+            />
+
+            <Input
+              inputRef={passwordRef}
+              value={password}
+              onChange={setPassword}
+              label="Password*"
+              type="password"
+              required
+              onEnter={() => buttonRef.current?.click()}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+            />
+
+            {error && <BlockAlert type="error">{error}</BlockAlert>}
+            <Button
+              buttonRef={buttonRef}
+              label="Sign Up"
+              className="w-full"
+              onClick={async (e) => {
+                e.preventDefault();
+                await signup();
+              }}
+            />
+          </div>
+        )}
+      </CardPage>
+    </>
   );
 };
 

@@ -50,6 +50,7 @@ export const Login = () => {
           <Link route="signup" label="Sign Up" />
         </div>
       }
+      verticallyCenter
     >
       <div className="space-y-3">
         <Input

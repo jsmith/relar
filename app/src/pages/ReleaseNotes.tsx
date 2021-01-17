@@ -222,6 +222,11 @@ const changelog = create([
     date: "January 16 2021",
     fixes: ["Removed billing information from settings", "Fixed FAQ on homepage"],
   },
+  {
+    version: "0.18.2",
+    date: "January 17 2021",
+    fixes: ["Added back invite page for users who haven't accepted their invite yet"],
+  },
 ]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (

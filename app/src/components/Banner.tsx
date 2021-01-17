@@ -35,9 +35,11 @@ export const Banner = ({ onClose, text, onClick, icon: Icon, label, href }: Bann
               {label}
             </a>
           ) : (
-            <Button label={label} theme="white" onClick={onClick} />
+            label && <Button label={label} theme="white" onClick={onClick} />
           )}
-          {onClose && <IconButton icon={HiX} title="Close" />}
+          {onClose && (
+            <IconButton className="w-4 h-4" icon={HiX} title="Close the banner" onClick={onClose} />
+          )}
         </div>
       </div>
     </div>

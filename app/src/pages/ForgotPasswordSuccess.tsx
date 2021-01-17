@@ -38,6 +38,7 @@ export const ForgotPasswordSuccess = () => {
           <LinkButton label="Resend Email" onClick={resendEmail} />
         </div>
       }
+      verticallyCenter
       cardClassName="flex flex-col items-center"
     >
       <h4 className="text-center">Check Your Email</h4>

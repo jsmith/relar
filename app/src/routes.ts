@@ -34,6 +34,7 @@ const Hero = React.lazy(() =>
 const Library = React.lazy(() => import("./mobile/pages/Library"));
 const PrivacyPolicy = React.lazy(() => import("./pages/PrivacyPolicy"));
 const TermsAndConditions = React.lazy(() => import("./pages/TermsAndConditions"));
+const Invite = React.lazy(() => import("./pages/Invite"));
 
 /**
  * This file creates an almost 100% type safe router. It's built on "little-react-router".
@@ -63,6 +64,10 @@ export type Route<ID extends string> = {
 const createRoutes = <K extends string>(routes: Record<K, Route<K>>) => routes;
 
 export type NavigatorRoutes = {
+  invite: {
+    params: { invite: string };
+    queryParams: {};
+  };
   hero: {
     params: {};
     queryParams: {};
@@ -73,7 +78,9 @@ export type NavigatorRoutes = {
   };
   signup: {
     params: {};
-    queryParams: {};
+    queryParams: {
+      fromInvite: "true" | "false"; // or not there at all
+    };
   };
   forgotPassword: {
     params: {};
@@ -206,6 +213,16 @@ export const useNavigation = () => {
 // FIXME how can we make titles dynamic?? It would be nice to have something generic
 // But the easiest solution would probably be some kind of hook
 export const routes = createRoutes<keyof NavigatorRoutes>({
+  invite: {
+    id: "invite",
+    path: "/invite/:invite",
+    component: Invite,
+    protected: false,
+    sidebar: false,
+    title: "Invite",
+    showBack: false,
+    showTabs: false,
+  },
   hero: {
     id: "hero",
     path: "/",
