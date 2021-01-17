@@ -1,6 +1,6 @@
 # Relar
 
-![Build Status](https://img.shields.io/github/workflow/status/jsmith/relar/Tests?style=for-the-badge&logo=GitHub)
+![Build Status](https://img.shields.io/github/workflow/status/jsmith/relar/Production?style=for-the-badge&logo=GitHub)
 ![Version](https://img.shields.io/github/package-json/v/jsmith/relar?style=for-the-badge)
 
 ![Relar Image](https://relar.app/screenshot.png)
