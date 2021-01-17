@@ -29,7 +29,7 @@ const faq = [
   // ],
   [
     "Will Relar eventually cost money?",
-    "Yes, in order to ensure longevity, Relar will eventually offer premium plans. A free plan will also be available for those who want to test the service.",
+    "In order to ensure longevity, Relar might eventually offer premium plans. A free plan will also be available for those who want to test the service.",
   ],
   [
     "Do you actually have iOS and Android apps?",

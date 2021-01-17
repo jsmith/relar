@@ -49,7 +49,6 @@ export const button = ({ theme = "purple", invert, className }: ButtonOptions = 
       ? classNames("bg-transparent", classes[theme].invert)
       : classNames("focus:outline-none", classes[theme].default),
     className,
-    // height, TODO
   );
 };
 

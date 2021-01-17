@@ -123,6 +123,8 @@ export const useStartupHooks = () => {
   const { routeId } = useNavigator("home"); // "home" is just because something is required
   const { loading } = useUser();
   const installEvent = useRef<null | Event>(null);
+  const registered = useRef(false);
+  const { user } = useUser();
 
   useEffect(() => {
     const disposers = [

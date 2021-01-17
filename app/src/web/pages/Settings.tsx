@@ -82,14 +82,14 @@ export const Account = () => {
             selectedClassName="bg-purple-100 dark:bg-gray-800"
             className="cursor-pointer py-2 px-2 text-gray-800 dark:text-gray-200"
           >
-            Billing
+            Usage
           </Tab>
-          <Tab
+          {/* <Tab
             selectedClassName="bg-purple-100 dark:bg-gray-800"
             className="cursor-pointer py-2 px-2 text-gray-800 dark:text-gray-200"
           >
             Invoices
-          </Tab>
+          </Tab> */}
         </TabList>
         <div className="w-4 flex-shrink-0" />
         <TabPanel className="text-gray-800 dark:text-gray-200" selectedClassName="flex-grow">
@@ -151,11 +151,10 @@ export const Account = () => {
           className="text-gray-800 dark:text-gray-200 space-y-2"
           selectedClassName="flex-grow"
         >
-          <h1 className="text-2xl">Billing</h1>
+          <h1 className="text-2xl">Usage</h1>
           <div className="rounded bg-blue-100 text-blue-700 p-3 text-sm">
             <span className="font-bold">You are currently enjoying the beta service for free.</span>{" "}
-            This allows you to upload 500 songs and stream to your devices. Once premium accounts
-            are available you will be able to upgrade.
+            This allows you to upload 500 songs and stream to your devices.
           </div>
           <div className="space-y-1">
             <h2 className="text-xl">Limits</h2>
@@ -187,13 +186,13 @@ export const Account = () => {
             </div>
           </div> */}
         </TabPanel>
-        <TabPanel className="text-gray-800 dark:text-gray-200" selectedClassName="flex-grow">
+        {/* <TabPanel className="text-gray-800 dark:text-gray-200" selectedClassName="flex-grow">
           <h1 className="text-2xl">Invoices</h1>
           <h3 className="text-gray-700 dark:text-gray-400 font-bold">No Invoices Found</h3>
           <p className="text-sm text-gray-500">
             If you subscribe to the premium features, your invoices will appear here.
           </p>
-        </TabPanel>
+        </TabPanel> */}
       </Tabs>
     </div>
   );

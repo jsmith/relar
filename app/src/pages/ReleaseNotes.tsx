@@ -209,13 +209,18 @@ const changelog = create([
   },
   {
     version: "0.18.0",
-    date: "January 14 2021",
+    date: "January 16 2021",
     fixes: ["Removed artificial loading on button click", "Other small bug fixes"],
     features: [
       "Relar is now open source (https://github.com/jsmith/relar)!",
       "Relar is now an open beta.",
       "Added GitHub and Ko-fi links on homepage",
     ],
+  },
+  {
+    version: "0.18.1",
+    date: "January 16 2021",
+    fixes: ["Removed billing information from settings", "Fixed FAQ on homepage"],
   },
 ]).reverse();
 
