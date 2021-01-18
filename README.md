@@ -13,6 +13,10 @@ Relar is a cloud music hosting and streaming service for your personal audio fil
 
 See it running at [https://relar.app](https://relar.app)
 
+## Tech
+
+Relar is built using [React](https://reactjs.org), [Tailwind CSS](https://tailwindcss.com), [Firebase](https://firebase.google.com) and [Snowpack](https://www.snowpack.dev). For the mobile apps, we use the exact same tech in addition to [Capacitor](https://capacitorjs.com) for deployment to iOS and Android. We also use a ton of other amazing JavaScript packages such as [`neverthrow`](https://github.com/supermacro/neverthrow), [`framer-motion`](https://www.framer.com/motion), [`esbuild`](https://github.com/evanw/esbuild), [`workbox`](https://developers.google.com/web/tools/workbox) and [`react-window`](https://github.com/bvaughn/react-window).
+
 ## Contributing
 
 See [our Wiki](https://github.com/jsmith/relar/wiki) to learn about contributing to the project!
