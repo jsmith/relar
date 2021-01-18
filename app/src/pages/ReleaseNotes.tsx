@@ -230,6 +230,11 @@ const changelog = create([
       "Added banner that ensures users update the app",
     ],
   },
+  {
+    version: "0.18.3",
+    date: "January 18 2021",
+    fixes: ["Fixed copyright date"],
+  },
 ]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (
