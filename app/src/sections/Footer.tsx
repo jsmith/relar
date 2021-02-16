@@ -38,7 +38,7 @@ export const Footer = () => {
           <span>•</span>
           <Link className="text-xs text-center" route="terms" label="Terms" />
           <span>•</span>
-          <a href="mailto:contact@relar.app" className="text-xs text-center">
+          <a href="mailto:jsmith@hey.com" className="text-xs text-center">
             Contact
           </a>
         </span>

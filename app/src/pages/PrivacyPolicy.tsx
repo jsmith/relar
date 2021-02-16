@@ -185,11 +185,11 @@ export const PrivacyPolicy = () => {
 
         <H2>Getting in Contact</H2>
         <P>
-          Questions about this privacy policy can be sent to <i>contact@relar.app</i>.
+          Questions about this privacy policy can be sent to <i>jsmith@hey.com</i>.
         </P>
 
         <P id="update-date" className="text-sm pt-8">
-          This document was last updated on October 25th, 2020.
+          This document was last updated on February 16th, 2021.
         </P>
       </div>
       <Footer />

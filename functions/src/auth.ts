@@ -49,7 +49,7 @@ const sendVerificationEmail = async ({
   const verificationLink = await auth.generateEmailVerificationLink(email);
 
   await sgMail.send({
-    from: "contact@relar.app",
+    from: "jsmith@hey.com",
     to: email,
     subject: "Relar Email Verification",
     text: `
@@ -156,7 +156,7 @@ export const onSignUp = functions.auth.user().onCreate(
     if (!env.notification_email) return;
     // Don't send the email if the "to" email is undefined
     await sgMail.send({
-      from: "contact@relar.app",
+      from: "jsmith@hey.com",
       to: env.notification_email,
       subject: `Relar Beta Signup (${user.email})`,
       text: `It looks a new user (${user.email}) signed up!!`,

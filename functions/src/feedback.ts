@@ -66,7 +66,7 @@ export const onFeedbackGiven = functions.firestore
 
       const user = await auth.getUser(userId);
       await sgMail.send({
-        from: "contact@relar.app",
+        from: "jsmith@hey.com",
         to: env.notification_email,
         subject: `Relar Feedback From ${user.email} [${type}]`,
         html: `

@@ -21,7 +21,7 @@ export const BetaGuide = () => {
           features to prioritize and can fix existing bugs. Once logged in, navigate to the account
           dropdown in the top right corner and click "Feedback". From there, you can file your
           feature request, bug report or provide other general feedback. Alternatively, contact me
-          at <span className="font-bold">contact@relar.app</span> or sign up for the{" "}
+          at <span className="font-bold">jsmith@hey.com</span> or sign up for the{" "}
           <a className={link()} href="https://discord.gg/A83FHss" rel="noreferrer" target="_blank">
             discord server
           </a>{" "}
