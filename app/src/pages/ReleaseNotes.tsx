@@ -235,6 +235,13 @@ const changelog = create([
     date: "January 18 2021",
     fixes: ["Fixed copyright date"],
   },
+  {
+    version: "0.19.0",
+    date: "May 8 2021",
+    features: [
+      "Added the ability to customize the file limit size for each user. If you want yours adjusted, you can email jsmith@hey.com.",
+    ],
+  },
 ]).reverse();
 
 const renderSingleChange = (change: string, type: "fix" | "feature" | "removed") => (
