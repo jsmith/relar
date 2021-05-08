@@ -29,6 +29,8 @@ export type BetaDevice = Static<typeof BetaDeviceType>;
 
 export const UserDataType = Partial({
   songCount: Number.Or(Undefined),
+  /** A per user limit. If not defined, a hardcoded limit is used. In MB. */
+  fileSizeLimit: Number.Or(Undefined),
   firstName: String,
   sentMobileBeta: Boolean,
   /** What device the user choose */

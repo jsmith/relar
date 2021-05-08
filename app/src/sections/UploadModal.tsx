@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { FiMusic } from "react-icons/fi";
 import AriaModal from "react-aria-modal";
 import * as uuid from "uuid";
@@ -15,6 +15,8 @@ import { snapshot } from "uvu/assert";
 import { useDefinedUser } from "../auth";
 import { Button } from "../components/Button";
 import { HiCheck } from "react-icons/hi";
+import { SIZE_LIMIT } from "../shared/universal/utils";
+import { useUserDataDoc } from "../queries/user";
 
 export interface UploadModalProps {
   children?: React.ReactNode;
@@ -91,6 +93,8 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
   const userData = useUserData();
   const uploadQueue = useRef(createUploadQueue());
   const user = useDefinedUser();
+  const userDoc = useUserDataDoc();
+  const sizeLimit = useMemo(() => userDoc?.fileSizeLimit ?? SIZE_LIMIT, [userDoc?.fileSizeLimit]);
 
   useEffect(() => {
     if (files.length > 0 && !createdSnapshot.current) {
@@ -178,6 +182,7 @@ export const UploadModal = ({ children, className, display, setDisplay }: Upload
                       file={file}
                       task={task}
                       action={action}
+                      sizeLimit={sizeLimit}
                       onRemove={() =>
                         setFiles([...files.slice(0, i), ...files.slice(i + 1, files.length)])
                       }

@@ -11,6 +11,7 @@ import { LogoNText } from "../../components/LogoNText";
 import { IoLogoAndroid, IoLogoApple } from "react-icons/io";
 import { HiCode } from "react-icons/hi";
 import { FiCoffee } from "react-icons/fi";
+import { SIZE_LIMIT } from "../../shared/universal/utils";
 
 const faq = [
   [
@@ -19,11 +20,11 @@ const faq = [
   ],
   [
     "Are there any limits to the amount of uploaded songs?",
-    "To limit initial costs, each account can only upload 500 songs. Additionally, each file is limited to 20 MB. These limits will be removed or raised before the official release",
+    `To limit initial costs, each account can only upload 500 songs. Additionally, each file is limited to ${SIZE_LIMIT} MB. These limits will be removed or raised before the official release`,
   ],
   // [
   //   "Are there any limits to the size of each file?",
-  //   "Each song is currently limited to 20 MB. Larger files will be supported before the official release.",
+  //   `Each song is currently limited to ${SIZE_LIMIT} MB. Larger files will be supported before the official release.`,
   // ],
   [
     "Will Relar eventually cost money?",

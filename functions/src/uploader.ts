@@ -10,7 +10,7 @@ import { admin } from "./admin";
 import { adminDb, md5Hash, serverTimestamp, createTmpDir } from "./shared/node/utils";
 import { wrapAndReport, setSentryUser, Sentry } from "./sentry";
 import * as uuid from "uuid";
-import { removedUndefinedValues } from "./shared/universal/utils";
+import { removedUndefinedValues, SIZE_LIMIT } from "./shared/universal/utils";
 
 // This is where the max songs limit is set
 // To update this in production just update this value and
@@ -297,6 +297,10 @@ export const createSong = f.storage.object().onFinalize(
       const userData = adminDb(userId);
       const newSongRef = userData.song(songId);
 
+      const stat = await fs.stat(filePath.value);
+      // stat.size is the size in bytes
+      const fileSize = stat.size;
+
       const duration = metadata.value.format.duration;
       if (duration === undefined) {
         return processError({
@@ -332,6 +336,15 @@ export const createSong = f.storage.object().onFinalize(
           return processError({
             type: "error",
             message: `Invalid user data (${result.key}): ${result.message}`,
+          });
+        }
+
+        const sizeLimit = result.value.fileSizeLimit ?? SIZE_LIMIT;
+        if (fileSize > sizeLimit * 1024 * 1024) {
+          return processError({
+            type: "cancelled",
+            disableSentry: true,
+            message: `Exceeded maximum file size (${sizeLimit} MB).`,
           });
         }
 

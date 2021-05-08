@@ -1,5 +1,6 @@
-import { Song, UserData, Playlist, UserFeedback, UploadAction } from "./types";
 import { Runtype, Static, Success, Failure } from "runtypes";
+
+export const SIZE_LIMIT = 20;
 
 export type DecodeResult<T> = (Success<T> | Failure) & {
   _unsafeUnwrap: () => T;

@@ -14,6 +14,7 @@ import { HiOutlineX } from "react-icons/hi";
 import { DragDiv } from "../components/DragDiv";
 import { useUserStorage } from "../storage";
 import { Link } from "../components/Link";
+import { SIZE_LIMIT } from "../shared/universal/utils";
 
 export interface FeedbackProps {
   onExit: () => void;
@@ -60,8 +61,7 @@ const IconInput = ({
   );
 };
 
-// Maybe keep this in sync with the song size restriction?
-const twentyMb = 1024 * 1024 * 20;
+const sizeLimitMb = 1024 * 1024 * SIZE_LIMIT;
 
 export const FeedbackSection = ({
   setLoading,
@@ -115,8 +115,8 @@ export const FeedbackSection = ({
     setLoading && setLoading(true);
     try {
       for (const { file } of files) {
-        if (file.size > twentyMb) {
-          setError(`"${file.name}" is larger than 20 MB`);
+        if (file.size > sizeLimitMb) {
+          setError(`"${file.name}" is larger than ${SIZE_LIMIT} MB`);
           return;
         }
 

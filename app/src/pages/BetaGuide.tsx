@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "../components/Link";
 import { link } from "../classes";
 import { H1, P, H2, LI } from "../components/markdown";
+import { SIZE_LIMIT } from "../shared/universal/utils";
 
 export const BetaGuide = () => {
   return (
@@ -63,7 +64,7 @@ export const BetaGuide = () => {
         </P>
         <ul className="mt-2">
           <LI>You can only upload 500 songs</LI>
-          <LI>Each song can be at most 20 MB</LI>
+          <LI>{`Each song can be at most ${SIZE_LIMIT} MB`}</LI>
           <LI>You cannot download or backup songs that have been uploaded</LI>
           <LI>You cannot edit album metadata</LI>
           <LI>You cannot upload new album covers to songs after being uploaded</LI>
