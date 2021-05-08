@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { MdErrorOutline, MdCheck } from "react-icons/md";
 import { captureAndLog } from "../utils";
 import { AiOutlineStop } from "react-icons/ai";
@@ -16,9 +16,10 @@ export interface UploadRowProps {
   task: firebase.storage.UploadTask;
   action: UploadAction | undefined;
   onRemove: () => void;
+  sizeLimit: number;
 }
 
-export const UploadRow = ({ file, task, action }: UploadRowProps) => {
+export const UploadRow = ({ file, task, action, sizeLimit }: UploadRowProps) => {
   const [error, setError] = useState("");
   const [cancelled, setCancelled] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -31,8 +32,8 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
   };
 
   useEffect(() => {
-    if (file.size > 20 * 1024 * 1024) {
-      setError("This file is greater than 20MB");
+    if (file.size > sizeLimit * 1024 * 1024) {
+      setError(`This file is greater than ${sizeLimit} MB`);
       task.cancel();
       return;
     }
@@ -69,7 +70,7 @@ export const UploadRow = ({ file, task, action }: UploadRowProps) => {
         // This is called on completion
       },
     ) as undefined | (() => void);
-  }, [file, task]);
+  }, [file, sizeLimit, task]);
 
   return (
     <div className="py-2 space-x-2 flex items-center group">

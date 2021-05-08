@@ -4,8 +4,10 @@ service firebase.storage {
   	match /{userId} {
     	match /songs/{songId}/{fileName} {
       	allow get: if request.auth.uid == userId;
-        // 20MB limit
-        allow create: if request.auth.uid == userId && request.resource.size <= 20 * 1024 * 1024;
+        // This limit is not the actual limit anymore
+        // Now we support a general limit for all users and specific limits for users
+        // that overrides the general limit
+        allow create: if request.auth.uid == userId && request.resource.size <= 100 * 1024 * 1024;
       }
       
       match /song_artwork/{songId}/{artworkFileName} {
